@@ -26,6 +26,37 @@ At first, only `matplotlib.pyplot` will be implemented, but `plotly` or others c
 #### Output folder
 Where configuration file, output files, as well as a copy of input files will be saved.
 
+#### Input files
+A 4\*3 matrix:
+|                           |Emission Yield |Emission energy distribution |Emission angle distribution|
+|---------------------------|---------------|-----------------------------|---------------------------|
+|"True" secondaries         |               |                             |                           |
+|Elastically backscattered  |               |                             |                           |
+|Inelastically backscattered|               |                             |                           |
+|Total                      |               |                             |                           |
+
+You have to enter files according to the desired model.
+Some examples.
+
+For Vaughan:
+|                           |Emission Yield |Emission energy distribution |Emission angle distribution|
+|---------------------------|---------------|-----------------------------|---------------------------|
+|"True" secondaries         | ❌            |❌                           |❌                         |
+|Elastically backscattered  | ❌            |❌                           |❌                         |
+|Inelastically backscattered| ❌            |❌                           |❌                         |
+|Total                      | ✅            |❌                           |❌                         |
+
+For Dionne 3D:
+|                           |Emission Yield |Emission energy distribution |Emission angle distribution|
+|---------------------------|---------------|-----------------------------|---------------------------|
+|"True" secondaries         | ❌            |❌                           |❌                         |
+|Elastically backscattered  | ✅            |❌                           |❌                         |
+|Inelastically backscattered| ✅            |❌                           |❌                         |
+|Total                      | ✅            |❌                           |❌                         |
+
+Note for Dionne 3D: the perfectest (sic) solution would be to integrate SLAB (Marc Villemant implementation).
+Takes no entry file.
+
 #### Path(s) to TEEY file(s)
 | Incident energy (eV) | TEEY @ 0 deg | TEEY @ 20 deg |
 | -------------------- | ------------ | ------------- |
