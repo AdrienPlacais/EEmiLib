@@ -1,6 +1,8 @@
 Electron emission fitter
 ========================
-This library offers a way to fit several electron emission models on electron emission data.
+This software gathers several electron emission models.
+They can be fitted on data files (generally experimental).
+
 Two types of outputs can be generated:
 - Text files holding the different emission yields at different impact angles/impact energies.
 - Electron emission models parameters.
@@ -54,8 +56,22 @@ For Dionne 3D:
 |Inelastically backscattered| ✅            |❌                           |❌                         |
 |Total                      | ✅            |❌                           |❌                         |
 
-Note for Dionne 3D: the perfectest (sic) solution would be to integrate SLAB (Marc Villemant implementation).
-Takes no entry file.
+For Chung and Everhart:
+|                           |Emission Yield |Emission energy distribution |Emission angle distribution|
+|---------------------------|---------------|-----------------------------|---------------------------|
+|"True" secondaries         | ❌            |✅                           |❌                         |
+|Elastically backscattered  | ❌            |❌                           |❌                         |
+|Inelastically backscattered| ❌            |❌                           |❌                         |
+|Total                      | ❌            |❌                           |❌                         |
+
+Note: the idea of this software is to fit a model on experimental data.
+**However**, if you want to plot/tabulate a model when you already know the model parameters:
+
+1. Feed in dummy electron emission files.
+2. Enter the desired values for the different parameters with very tight lower/upper boundaries.
+3. Click on `Fit!`.
+This is not really a fit, but you will plot the model with the desired parameters values.
+And you can click `Export tabulated` to save tabulated values.
 
 #### Path(s) to TEEY file(s)
 | Incident energy (eV) | TEEY @ 0 deg | TEEY @ 20 deg |
