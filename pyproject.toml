@@ -1,0 +1,31 @@
+[project]
+authors = [
+   { name = "Adrien Plaçais", email = "placais@lpsc.in2p3.fr" },
+]
+classifiers = [
+   "License :: OSI Approved :: MIT License",
+   "Operating System :: OS Independent",
+   "Programming Language :: Python :: 3",
+]
+description = "Fit various electron emission models on experimental data"
+name = "ElectronEmittionFitter"
+readme = "README.md"
+requires-python = ">=3.12"
+version = "0.0.1"
+
+[project.urls]
+Homepage = "https://gitlab.in2p3.fr/electron_emission/electron_emission_fitter"
+
+[tool.pytest.ini_options]
+addopts = ["--import-mode=importlib", "--strict-markers"]
+filterwarnings = ["ignore:.*cKDTree.*:DeprecationWarning"]
+markers = []
+minversion = "6.0"
+testpaths = ["tests"]
+
+[tool.isort]
+profile = "black"
+src_paths = ["./electron_emission_fitter"]
+
+[tool.black]
+line-length = 79
