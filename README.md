@@ -17,6 +17,7 @@ Input via a GUI.
 Internally, the configuration will be stored as a dict and saved as a `.toml`.
 The configuration file should allow reproducing results.
 A `Import` button should allow reusing a previous configuration.
+The name of the version and the commit number should appear in the configuration file.
 
 #### Plotter
 A scroll-down menu allows setting the `Plotter`.
@@ -71,10 +72,34 @@ Defined by lower and upper values as well as number of points.
 Several tabs allowing to select the model to fit.
 Selecting a tab will gray out unused inputs, *e.g.* selecting `Vaughan` will gray out the energy distribution file selector.
 
+### Model tabs
+In every `Model` tab, there is the list of the model parameters.
+
+#### Model parameters
+A first box retaining the value is filled in by the `Fit!` button, but user can change it manually.
+Two cases define lower/upper values, which can be infinity (to deactivate limit).
+Default value comes from associated paper, but can be modified by user.
+
+#### `Fit!`
+The `Fit!` button will fit the model parameters on the given data.
+It fills in the values of the models parameters.
+
+#### `Plot`
+This button plots the data from measurement files, and on top of it the modelled data (dashed).
+Vaughan will only plot the TEEY, but Dionne 3D will create TEEY, EBEEY, IBEEY, SEEY on the same plot, and angular distribution, and energy distribution.
+If relatable, the figure should hold an angle and/or energy box where we can set what we want to plot.
+
+#### `Export tabulated`
+Saves tabulated modelled data in `Output folder`.
+Proper format?
+
+#### `Save model parameters`
+Saves model parameters in `Output folder`.
+Proper format?
+
 #### To do
 [ ] Format of input text files? Look at `.hdf5`? Or try to accept `.csv`, `.xlsx`, `.odt`, `.txt`...? Look at my ONERA files.
-
-
+[ ] Format of output text files?
 
 Roadmap
 =======
