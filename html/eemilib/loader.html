@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EEmiLib &mdash; EEmiLib  documentation</title>
+  <title>loader package &mdash; EEmiLib  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
@@ -45,9 +45,9 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="requirements_note.html">Requirements note</a></li>
-<li class="toctree-l1"><a class="reference internal" href="models.html">Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../manual/requirements_note.html">Requirements note</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../manual/models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../manual/roadmap.html">Roadmap</a></li>
 </ul>
 
         </div>
@@ -64,9 +64,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">EEmiLib</li>
+      <li class="breadcrumb-item active">loader package</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/manual/presentation.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/eemilib/loader.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -74,22 +74,26 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="eemilib">
-<h1>EEmiLib<a class="headerlink" href="#eemilib" title="Link to this heading"></a></h1>
-<p>EEmiLib (Electron EMIssion Library) holds several electron emission models and offers a simple way to fit the on electron emission data.
-It is focused on electron emission models for multipactor simulation, <em>i.e.</em> for impinging energies ranging from few eV to several hundreds of eV.</p>
-<p>Two types of outputs can be generated:
-- Text files holding the different emission yields at different impact angles/impact energies.
-- Electron emission models parameters.</p>
-</section>
-<section id="scope">
-<h1>Scope<a class="headerlink" href="#scope" title="Link to this heading"></a></h1>
-<p>Low-energies (multipactor)
-Discrimination of secondary, backscattered</p>
-<div class="admonition-todo admonition" id="id1">
-<p class="admonition-title">Todo</p>
-<p>Present the code.</p>
+  <section id="module-loader">
+<span id="loader-package"></span><h1>loader package<a class="headerlink" href="#module-loader" title="Link to this heading"></a></h1>
+<p>Define objects to load the different formats of electron emission files.</p>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="loader.loader.html">loader.loader module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="loader.loader.html#loader.loader.Loader"><code class="docutils literal notranslate"><span class="pre">Loader</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="loader.loader.html#loader.loader.Loader._abc_impl"><code class="docutils literal notranslate"><span class="pre">Loader._abc_impl</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="loader.loader.html#loader.loader.Loader.load_emission_angle_distribution"><code class="docutils literal notranslate"><span class="pre">Loader.load_emission_angle_distribution()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="loader.loader.html#loader.loader.Loader.load_emission_energy_distribution"><code class="docutils literal notranslate"><span class="pre">Loader.load_emission_energy_distribution()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="loader.loader.html#loader.loader.Loader.load_emission_yield"><code class="docutils literal notranslate"><span class="pre">Loader.load_emission_yield()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 </div>
+</section>
 </section>
 
 
