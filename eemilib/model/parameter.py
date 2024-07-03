@@ -1,0 +1,83 @@
+"""Define a model parameter."""
+
+import numpy as np
+
+
+class Parameter:
+    """An electron emission model parameter."""
+
+    _tol: float = 1e-10
+
+    def __init__(
+        self,
+        markdown: str,
+        unit: str = "1",
+        value: float = 0.0,
+        lower_bound: float = -np.inf,
+        upper_bound: float = np.inf,
+    ) -> None:
+        """Instantiate the parameter.
+
+        Parameters
+        ----------
+        markdown : str
+            The name of the parameter, in markdown format.
+        unit : str, optional
+            The unit of the parameter. The default is ``"1"`` (no unit).
+        value : float, optional
+            A first value for the parameter. The default is ``0.``.
+        lower_bound : float, optional
+            A first lower bound for the parameter. The default is ``-np.inf``.
+        upper_bound : float, optional
+            A first upper bound for the parameter. The default is ``np.inf``.
+
+        """
+        self.markdown = markdown
+        self.unit = unit
+        self._value = value
+        self._lower_bound = lower_bound
+        self._upper_bound = upper_bound
+
+    @property
+    def name(self) -> str:
+        """Return markdown name of parameter with its unit."""
+        return f"{self.markdown} [{self.unit}]"
+
+    @property
+    def value(self) -> float:
+        """Give the current value of the parameter."""
+        return self._value
+
+    @value.setter
+    def value(self, value: float) -> None:
+        """Set the value of the parameter."""
+        self._value = value
+        return
+
+    @property
+    def lower_bound(self) -> float:
+        """Give the current lower bound of the parameter."""
+        return self._lower_bound
+
+    @lower_bound.setter
+    def lower_bound(self, lower_bound: float) -> None:
+        """Set the lower bound of the parameter."""
+        self._lower_bound = lower_bound
+        return
+
+    @property
+    def upper_bound(self) -> float:
+        """Give the current upper bound of the parameter."""
+        return self._upper_bound
+
+    @upper_bound.setter
+    def upper_bound(self, upper_bound: float) -> None:
+        """Set the upper bound of the parameter."""
+        self._upper_bound = upper_bound
+        return
+
+    def lock(self) -> None:
+        """Set the parameter to its current value."""
+        bound_1, bound_2 = self.value - self._tol, self.value + self._tol
+        self.lower_bound = min(bound_1, bound_2)
+        self.upper_bound = max(bound_1, bound_2)
