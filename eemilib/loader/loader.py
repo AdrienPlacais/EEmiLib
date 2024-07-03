@@ -1,4 +1,5 @@
 """Define the ABC for the :class:`Loader`."""
+
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any
@@ -6,6 +7,8 @@ from typing import Any
 import pandas as pd
 
 paths = Path | str
+
+EY_col1 = "Energy [eV]"
 
 
 class Loader(ABC):
