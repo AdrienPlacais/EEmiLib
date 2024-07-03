@@ -13,8 +13,11 @@ class Parameter:
         markdown: str,
         unit: str = "1",
         value: float = 0.0,
+        *,
         lower_bound: float = -np.inf,
         upper_bound: float = np.inf,
+        description: str = "",
+        is_locked: bool = False,
     ) -> None:
         """Instantiate the parameter.
 
@@ -30,6 +33,9 @@ class Parameter:
             A first lower bound for the parameter. The default is ``-np.inf``.
         upper_bound : float, optional
             A first upper bound for the parameter. The default is ``np.inf``.
+        description : str, optional
+            A description string for the parameter. The default is an empty
+            string.
 
         """
         self.markdown = markdown
@@ -37,6 +43,8 @@ class Parameter:
         self._value = value
         self._lower_bound = lower_bound
         self._upper_bound = upper_bound
+        self.description = description
+        self.is_locked = is_locked
 
     @property
     def name(self) -> str:
@@ -52,7 +60,9 @@ class Parameter:
     def value(self, value: float) -> None:
         """Set the value of the parameter."""
         self._value = value
-        return
+        if not self.is_locked:
+            return
+        self._set_tiny_bounds()
 
     @property
     def lower_bound(self) -> float:
@@ -78,6 +88,17 @@ class Parameter:
 
     def lock(self) -> None:
         """Set the parameter to its current value."""
+        self.is_locked = True
+        self._set_tiny_bounds()
+
+    def unlock(self) -> None:
+        """Allow parameter to be changed again during optimisation."""
+        self.is_locked = False
+        self.lower_bound = -np.inf
+        self.upper_bound = +np.inf
+
+    def _set_tiny_bounds(self) -> None:
+        """Set tiny bounds around :attr:`value`."""
         bound_1, bound_2 = self.value - self._tol, self.value + self._tol
         self.lower_bound = min(bound_1, bound_2)
         self.upper_bound = max(bound_1, bound_2)
