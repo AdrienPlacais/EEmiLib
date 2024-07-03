@@ -48,13 +48,25 @@ class DeesseLoader(Loader):
         all_data = []
         for file in filepath:
             full_data = pd.read_csv(file, **kwargs)
-            incidence_angle = float(full_data.iloc[5].iloc[-1][:-1])
+            incidence_angle = self._extract_incidence_angle(full_data)
             interesting_data = full_data[[col1, col2]].rename(
                 columns={col1: "Energy [eV]", col2: f"{incidence_angle} [deg]"}
             )
             all_data.append(interesting_data)
 
         return pd.concat(all_data)
+
+    def _extract_incidence_angle(self, full_data: pd.DataFrame) -> float:
+        """Try to get the incidence angle in the file."""
+        row_number = 5
+        col_number = -1
+        angle_as_str = full_data.iloc[row_number].iloc[col_number]
+        assert isinstance(angle_as_str, str)
+        try:
+            angle = float(angle_as_str)
+        except ValueError:
+            angle = float(angle_as_str[:-1])
+        return angle
 
     def load_emission_angle_distribution(self, *args) -> Any:
         raise NotImplementedError
