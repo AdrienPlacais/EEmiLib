@@ -1,4 +1,5 @@
 """Define an object to store an emission yield."""
+
 from pathlib import Path
 from typing import Literal, Self
 
@@ -11,7 +12,11 @@ from eemilib.loader.loader import Loader
 class EmissionYield(EmissionData):
     """An emission yield."""
 
-    def __init__(self, population: Literal["SE", "EBE", "IBE", "all"], data: pd.DataFrame) -> None:
+    def __init__(
+        self,
+        population: Literal["SE", "EBE", "IBE", "all"],
+        data: pd.DataFrame,
+    ) -> None:
         """Instantiate the data.
 
         Parameters
@@ -29,11 +34,11 @@ class EmissionYield(EmissionData):
 
     @classmethod
     def from_filepath(
-            cls,
-                 population: Literal["SE", "EBE", "IBE", "all"],
-                 loader: Loader,
-                 *filepath: str | Path
-                 ) -> Self:
+        cls,
+        population: Literal["SE", "EBE", "IBE", "all"],
+        loader: Loader,
+        *filepath: str | Path,
+    ) -> Self:
         """Instantiate the data from files.
 
         Parameters
