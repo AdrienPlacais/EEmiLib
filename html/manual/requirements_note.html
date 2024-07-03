@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Requirements note &mdash; Electron Emission Fitter  documentation</title>
+  <title>Requirements note &mdash; EEmiLib  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
@@ -35,7 +35,7 @@
           
           
           <a href="../index.html" class="icon icon-home">
-            Electron Emission Fitter
+            EEmiLib
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -61,7 +61,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">Electron Emission Fitter</a>
+          <a href="../index.html">EEmiLib</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -103,6 +103,127 @@ At first, only <code class="docutils literal notranslate"><span class="pre">matp
 <h3>Output folder<a class="headerlink" href="#output-folder" title="Link to this heading"></a></h3>
 <p>Where configuration file, output files, as well as a copy of input files will be saved.</p>
 </section>
+<section id="input-files">
+<h3>Input files<a class="headerlink" href="#input-files" title="Link to this heading"></a></h3>
+<p>A 4*3 matrix:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p>Emission Yield</p></th>
+<th class="head"><p>Emission energy distribution</p></th>
+<th class="head"><p>Emission angle distribution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>“True” secondaries</p></td>
+<td></td>
+<td><p>📁 <code class="docutils literal notranslate"><span class="pre">/path/to/file</span></code></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>Elastically backscattered</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>Inelastically backscattered</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>Total</p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>The different models will need different files (see examples in <a class="reference internal" href="models.html#models-link"><span class="std std-ref">Models</span></a>).
+You click on the 📁 to open the File Explorer, but you can also manually type the path.
+The magic keyword <code class="docutils literal notranslate"><span class="pre">%dummy</span></code> is allowed.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>the idea of this software is to fit a model on experimental data.
+<strong>However</strong>, if you want to plot/tabulate a model when you already know the model parameters:</p>
+<ol class="arabic simple">
+<li><p>Feed in dummy electron emission files.</p></li>
+<li><p>Enter the desired values for the different parameters with very tight lower/upper boundaries.</p></li>
+<li><p>Click on <code class="docutils literal notranslate"><span class="pre">Fit!</span></code>.</p></li>
+</ol>
+<p>This is not really a fit, but you will plot the model with the desired parameters values.
+And you can click <code class="docutils literal notranslate"><span class="pre">Export</span> <span class="pre">tabulated</span></code> to save tabulated values.</p>
+</div>
+</section>
+<section id="path-s-to-teey-file-s">
+<h3>Path(s) to TEEY file(s)<a class="headerlink" href="#path-s-to-teey-file-s" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Incident energy (eV)</p></th>
+<th class="head"><p>TEEY &#64; 0 deg</p></th>
+<th class="head"><p>TEEY &#64; 20 deg</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>…</p></td>
+<td><p>…</p></td>
+<td><p>…</p></td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li><p>TEEY measurements at various incidence angles are not mandatory.</p></li>
+<li><p>Header shall describe measurement process, etc.</p></li>
+<li><p>It should be possible to give several files, each corresponding to an incidence angle.
+- Energy points can be different from one file to another.
+- The value of the incidence angle should be the name of the column.</p></li>
+<li><p>There is a <code class="docutils literal notranslate"><span class="pre">Plot</span></code> button to show the data understood by the code.</p></li>
+</ul>
+</section>
+<section id="paths-to-emission-energy-distribution">
+<h3>Paths to emission energy distribution<a class="headerlink" href="#paths-to-emission-energy-distribution" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Emission energy (eV)</p></th>
+<th class="head"><p>dE/dW</p></th>
+<th class="head"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>…</p></td>
+<td><p>…</p></td>
+<td><p>…</p></td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li><p>Several columns:
+- For several impact energies?
+- Or for several impact angles?</p></li>
+<li><p>There is a <code class="docutils literal notranslate"><span class="pre">Plot</span></code> button to show the data understood by the code.</p></li>
+</ul>
+</section>
+<section id="paths-to-emission-angle-distribution">
+<h3>Paths to emission angle distribution<a class="headerlink" href="#paths-to-emission-angle-distribution" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Emission angle (deg)</p></th>
+<th class="head"><p>dE/dtheta</p></th>
+<th class="head"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>…</p></td>
+<td><p>…</p></td>
+<td><p>…</p></td>
+</tr>
+</tbody>
+</table>
+<ul class="simple">
+<li><p>Several columns:
+- For several impact energies?
+- Or for several impact angles?</p></li>
+<li><p>There is a <code class="docutils literal notranslate"><span class="pre">Plot</span></code> button to show the data understood by the code.</p></li>
+</ul>
+</section>
 <section id="fitting-ranges">
 <h3>Fitting ranges<a class="headerlink" href="#fitting-ranges" title="Link to this heading"></a></h3>
 <p>Ranges of PE angle and energy on which the fit will be made.
@@ -123,6 +244,33 @@ Selecting a tab will gray out unused inputs, <em>e.g.</em> selecting <code class
 <h4>Model tabs<a class="headerlink" href="#model-tabs" title="Link to this heading"></a></h4>
 <p>In every <code class="docutils literal notranslate"><span class="pre">Model</span></code> tab, there is the list of the model parameters.</p>
 </section>
+</section>
+<section id="model-parameters">
+<h3>Model parameters<a class="headerlink" href="#model-parameters" title="Link to this heading"></a></h3>
+<p>A first box retaining the value is filled in by the <code class="docutils literal notranslate"><span class="pre">Fit!</span></code> button, but user can change it manually.
+Two cases define lower/upper values, which can be infinity (to deactivate limit).
+Default value comes from associated paper, but can be modified by user.</p>
+</section>
+<section id="fit">
+<h3><code class="docutils literal notranslate"><span class="pre">Fit!</span></code><a class="headerlink" href="#fit" title="Link to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">Fit!</span></code> button will fit the model parameters on the given data.
+It fills in the values of the models parameters.</p>
+</section>
+<section id="plot">
+<h3><code class="docutils literal notranslate"><span class="pre">Plot</span></code><a class="headerlink" href="#plot" title="Link to this heading"></a></h3>
+<p>This button plots the data from measurement files, and on top of it the modelled data (dashed).
+Vaughan will only plot the TEEY, but Dionne 3D will create TEEY, EBEEY, IBEEY, SEEY on the same plot, and angular distribution, and energy distribution.
+If relatable, the figure should hold an angle and/or energy box where we can set what we want to plot.</p>
+</section>
+<section id="export-tabulated">
+<h3><code class="docutils literal notranslate"><span class="pre">Export</span> <span class="pre">tabulated</span></code><a class="headerlink" href="#export-tabulated" title="Link to this heading"></a></h3>
+<p>Saves tabulated modelled data in <code class="docutils literal notranslate"><span class="pre">Output</span> <span class="pre">folder</span></code>.
+Proper format?</p>
+</section>
+<section id="save-model-parameters">
+<h3><code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">model</span> <span class="pre">parameters</span></code><a class="headerlink" href="#save-model-parameters" title="Link to this heading"></a></h3>
+<p>Saves model parameters in <code class="docutils literal notranslate"><span class="pre">Output</span> <span class="pre">folder</span></code>.
+Proper format?</p>
 </section>
 <section id="to-do">
 <h3>To do<a class="headerlink" href="#to-do" title="Link to this heading"></a></h3>

@@ -21,7 +21,7 @@ Output folder
 """""""""""""
 Where configuration file, output files, as well as a copy of input files will be saved.
 
-.. include:: files.rst
+.. include:: /manual/requirements_note/files.rst
 
 Fitting ranges
 """"""""""""""
@@ -44,7 +44,7 @@ Model tabs
 ^^^^^^^^^^
 In every `Model` tab, there is the list of the model parameters.
 
-.. include:: model_parameters.rst
+.. include:: /manual/requirements_note/model_parameters.rst
 
 To do
 """""

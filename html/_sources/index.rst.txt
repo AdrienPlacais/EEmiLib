@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Electron Emission Fitter's documentation!
-====================================================
+Welcome to EEmiLib's documentation!
+===================================
 
 .. include:: manual/presentation.rst
 
