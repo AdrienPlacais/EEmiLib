@@ -11,3 +11,7 @@ Scope
 =====
 Low-energies (multipactor)
 Discrimination of secondary, backscattered
+
+Notes
+=====
+* Would be interesting to handle error bars too.
