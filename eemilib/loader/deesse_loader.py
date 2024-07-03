@@ -7,7 +7,7 @@ from typing import Any
 
 import pandas as pd
 
-from eemilib.loader.loader import Loader
+from eemilib.loader.loader import EY_col1, Loader
 
 
 class DeesseLoader(Loader):
@@ -45,16 +45,17 @@ class DeesseLoader(Loader):
             "encoding": "latin1",
             "header": 5,
         }
-        all_data = []
+        all_df = []
         for file in filepath:
-            full_data = pd.read_csv(file, **kwargs)
-            incidence_angle = self._extract_incidence_angle(full_data)
-            interesting_data = full_data[[col1, col2]].rename(
-                columns={col1: "Energy [eV]", col2: f"{incidence_angle} [deg]"}
+            full_df = pd.read_csv(file, **kwargs)
+            incidence_angle = self._extract_incidence_angle(full_df)
+            of_interest_df = full_df[[col1, col2]].rename(
+                columns={col1: EY_col1, col2: f"{incidence_angle} [deg]"}
             )
-            all_data.append(interesting_data)
+            all_df.append(of_interest_df.set_index(EY_col1))
 
-        return pd.concat(all_data)
+        concatenated = pd.concat(all_df, axis=1)
+        return concatenated.reset_index()
 
     def _extract_incidence_angle(self, full_data: pd.DataFrame) -> float:
         """Try to get the incidence angle in the file."""
