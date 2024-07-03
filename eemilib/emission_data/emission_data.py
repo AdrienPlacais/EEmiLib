@@ -1,5 +1,6 @@
 """Define the base object that will store emission data."""
-from abc import abstractmethod
+
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Literal, Self
 
@@ -8,13 +9,14 @@ import pandas as pd
 from eemilib.loader.loader import Loader
 
 
-class EmissionData(pd.DataFrame):
+class EmissionData(ABC):
     """A yield, energy distribution or angular distribution."""
 
-    def __init__(self,
-                 population: Literal["SE", "EBE", "IBE", "all"],
-                 data: pd.DataFrame,
-                 ) -> None:
+    def __init__(
+        self,
+        population: Literal["SE", "EBE", "IBE", "all"],
+        data: pd.DataFrame,
+    ) -> None:
         """Instantiate the data.
 
         Parameters
@@ -26,12 +28,17 @@ class EmissionData(pd.DataFrame):
             follow specications (see subclasses documentation).
 
         """
-        super().__init__(data)
         self.population = population
+        self.data = data
 
-    @abstractmethod
     @classmethod
-    def from_filepath( cls, population: Literal["SE", "EBE", "IBE", "all"], loader: Loader, *filepath: str | Path) -> Self:
+    @abstractmethod
+    def from_filepath(
+        cls,
+        population: Literal["SE", "EBE", "IBE", "all"],
+        loader: Loader,
+        *filepath: str | Path,
+    ) -> Self:
         """Instantiate the data from files.
 
         Parameters

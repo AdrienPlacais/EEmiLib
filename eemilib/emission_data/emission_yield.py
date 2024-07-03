@@ -6,7 +6,7 @@ from typing import Literal, Self
 import pandas as pd
 
 from eemilib.emission_data.emission_data import EmissionData
-from eemilib.loader.loader import Loader
+from eemilib.loader.loader import EY_col1, Loader
 
 
 class EmissionYield(EmissionData):
@@ -31,6 +31,10 @@ class EmissionYield(EmissionData):
 
         """
         super().__init__(population, data)
+        self.energies = data[EY_col1].to_numpy()
+        self.angles = [
+            float(col.split()[0]) for col in data.columns if col != EY_col1
+        ]
 
     @classmethod
     def from_filepath(
