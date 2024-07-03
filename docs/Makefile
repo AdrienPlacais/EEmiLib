@@ -6,7 +6,7 @@
 SPHINXOPTS    ?=
 SPHINXBUILD   ?= sphinx-build
 SOURCEDIR     = .
-BUILDDIR      = ../../electron_emission_fitter-docs/
+BUILDDIR      = ../../eemilib-docs/
 
 # Put it first so that "make" without argument is like "make help".
 help:

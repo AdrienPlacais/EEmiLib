@@ -13,10 +13,10 @@ import sys
 sys.path.insert(
     0,
     os.path.abspath(
-        "/home/placais/Documents/Simulation/python/electron_emission_fitter/electron_emission_fitter/"
+        "/home/placais/Documents/Simulation/python/eemilib/eemilib/"
     ),
 )
-project = "Electron Emission Fitter"
+project = "EEmiLib"
 copyright = "2024, Adrien Plaçais"
 author = "Adrien Plaçais"
 release = "0.0.1"

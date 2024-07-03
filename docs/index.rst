@@ -1,10 +1,10 @@
-.. Electron Emission Fitter documentation master file, created by
+.. EEmiLib documentation master file, created by
    sphinx-quickstart on Tue Jul  2 19:10:08 2024.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Electron Emission Fitter's documentation!
-====================================================
+Welcome to EEmiLib's documentation!
+===================================
 
 .. include:: manual/presentation.rst
 
