@@ -6,9 +6,11 @@
 Welcome to Electron Emission Fitter's documentation!
 ====================================================
 
+.. include:: manual/presentation.rst
+
 .. toctree::
    :maxdepth: 4
-   :caption: Contents:
+   :caption: Contents
    :titlesonly:
    :glob:
 
@@ -24,3 +26,4 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
