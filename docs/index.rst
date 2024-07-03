@@ -7,8 +7,14 @@ Welcome to Electron Emission Fitter's documentation!
 ====================================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
    :caption: Contents:
+   :titlesonly:
+   :glob:
+
+   manual/requirements_note
+   manual/models
+   manual/roadmap
 
 
 
