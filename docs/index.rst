@@ -17,6 +17,7 @@ Welcome to EEmiLib's documentation!
    manual/requirements_note
    manual/models
    manual/roadmap
+   API reference <eemilib/modules>
 
 
 
