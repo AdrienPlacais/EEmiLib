@@ -3,6 +3,7 @@
 from abc import ABC, abstractmethod
 
 import numpy as np
+import pandas as pd
 
 from eemilib.model.parameter import Parameter
 
@@ -20,7 +21,7 @@ class Model(ABC):
 
     def teey(
         self, energy: np.ndarray, theta: np.ndarray, *args, **kwargs
-    ) -> np.ndarray:
+    ) -> pd.DataFrame:
         r"""Compute TEEY :math:`\sigma`."""
         return _default_ey(energy, theta)
 
@@ -35,8 +36,11 @@ class Model(ABC):
         """Find the best parameters for the current model."""
 
 
-def _default_ey(energy: np.ndarray, theta: np.ndarray) -> np.ndarray:
+def _default_ey(energy: np.ndarray, theta: np.ndarray) -> pd.DataFrame:
     """Return a null array with proper shape."""
     n_energy = len(energy)
     n_theta = len(theta)
-    return np.zeros((n_energy, n_theta))
+    out = np.zeros((n_energy, n_theta))
+    out_dict = {f"{the} [deg]": out[:, j] for the, j in enumerate(theta)}
+    out_dict["Energy [eV]"] = energy
+    return pd.DataFrame(out_dict)

@@ -1,6 +1,17 @@
-"""Create the Vaughan model, to compute TEEY."""
+"""Create the Vaughan model, to compute TEEY.
+
+.. todo::
+    Make this robust. Especially the _vaughan_func.
+
+.. todo::
+    Clarify the Vaughan shade. Traditional? SPARK3D? CST?
+
+"""
+
+import math
 
 import numpy as np
+import pandas as pd
 
 from eemilib.emission_data.emission_yield import EmissionYield
 from eemilib.model.model import Model
@@ -57,12 +68,57 @@ class Vaughan(Model):
             ),
         }
 
-    def teey(self, energy: np.ndarray, theta: np.ndarray) -> np.ndarray:
-        r"""Compute TEEY :math:`\sigma`."""
-        return super().teey(energy, theta)
+    def teey(self, energy: np.ndarray, theta: np.ndarray) -> pd.DataFrame:
+        r"""Compute TEEY :math:`\sigma`.
+
+        .. todo::
+            This method could be so much simpler and efficient.
+
+        """
+        out = np.zeros((len(energy), len(theta)))
+        for i, ene in enumerate(energy):
+            for j, the in enumerate(theta):
+                out[i, j] = _vaughan_func(ene, the, **self.parameters)
+
+        out_dict = {f"{the} [deg]": out[:, j] for j, the in enumerate(theta)}
+        out_dict["Energy [eV]"] = energy
+        return pd.DataFrame(out_dict)
 
     def find_optimal_parameters(self, emission_yield: EmissionYield) -> None:
         """Match with position of first crossover and maximum."""
         assert emission_yield.population == "all"
         self.parameters["E_max"].value = emission_yield.e_max
         self.parameters["teey_max"].value = emission_yield.ey_max
+
+
+def _vaughan_func(
+    ene: float,
+    the: float,
+    E_0: Parameter,
+    E_max: Parameter,
+    teey_max: Parameter,
+    teey_low: Parameter,
+    k_se: Parameter,
+    k_s: Parameter,
+    **parameters,
+) -> float | np.ndarray:
+    """Compute the TEEY for incident energy E."""
+    mod_e_max = E_max.value * (
+        1.0 + k_se.value * math.radians(the) ** 2 / (2.0 * math.pi)
+    )
+    mod_teey_max = teey_max.value * (
+        1.0 + k_s.value * math.radians(the) ** 2 / (2.0 * math.pi)
+    )
+    if ene < E_0.value:
+        return teey_low.value
+
+    xi = (ene - E_0.value) / (mod_e_max - E_0.value)
+
+    if xi <= 1.0:
+        k = 0.56
+    elif xi <= 3.6:
+        k = 0.25
+    else:
+        return mod_teey_max * 1.125 / (xi**0.35)
+
+    return mod_teey_max * (xi * np.exp(1.0 - xi)) ** k
