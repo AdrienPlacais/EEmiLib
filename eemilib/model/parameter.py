@@ -46,6 +46,10 @@ class Parameter:
         self.description = description
         self.is_locked = is_locked
 
+    def __repr__(self) -> str:
+        """Print out name of parameter and current value."""
+        return f"{self.name}: {self.value}"
+
     @property
     def name(self) -> str:
         """Return markdown name of parameter with its unit."""
