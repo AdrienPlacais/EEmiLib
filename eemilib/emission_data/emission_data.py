@@ -1,4 +1,10 @@
-"""Define the base object that will store emission data."""
+"""Define the base object that will store emission data.
+
+.. todo::
+    Add an ``interpolate`` or ``resample`` method. Would be used to have more
+    points, in particular when there is few points.
+
+"""
 
 from abc import ABC, abstractmethod
 from pathlib import Path
