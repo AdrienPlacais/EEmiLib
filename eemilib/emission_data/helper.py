@@ -29,15 +29,19 @@ def trim(
 
     Returns
     -------
-    trimmed : pd.DataFrame
+    trimed : pd.DataFrame
         ``normal_ey`` but with energies ranging only from ``min_e`` to
         ``max_e``.
 
     """
     if min_e >= 0:
-        normal_ey = normal_ey[normal_ey[EY_col1] >= min_e]
+        trimed = normal_ey[normal_ey[EY_col1] >= min_e]
+        assert isinstance(trimed, pd.DataFrame)
+        normal_ey = trimed
     if max_e >= 0:
-        normal_ey = normal_ey[normal_ey[EY_col1] <= max_e]
+        trimed = normal_ey[normal_ey[EY_col1] <= max_e]
+        assert isinstance(trimed, pd.DataFrame)
+        normal_ey = trimed
 
     return normal_ey.reset_index(drop=True)
 
