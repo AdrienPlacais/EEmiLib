@@ -46,19 +46,23 @@ def trim(
     return normal_ey.reset_index(drop=True)
 
 
-def resample(
-    normal_ey: pd.DataFrame,
-    min_e: float = -1.0,
-    max_e: float = -1.0,
-    n_interp: int = -1,
-) -> pd.DataFrame:
+def resample(ey: pd.DataFrame, n_interp: int = -1) -> pd.DataFrame:
     """Return the emission yield with more points and/or updated limits."""
-    if min_e < 0.0:
-        min_e = normal_ey[EY_col1].min()
-        assert isinstance(min_e, float)
-    if max_e < 0.0:
-        max_e = normal_ey[EY_col1].max()
-        assert isinstance(max_e, float)
+    if n_interp < 0:
+        return ey
+    new_ey = {
+        EY_col1: np.linspace(ey[EY_col1].min(), ey[EY_col1].max(), n_interp)
+    }
+    for col_name in ey.columns:
+        if col_name == EY_col1:
+            continue
+        new_ey[col_name] = np.interp(
+            x=new_ey[EY_col1],
+            xp=ey[EY_col1],
+            fp=ey[col_name],
+        )
+
+    return pd.DataFrame(new_ey)
 
 
 def get_ec1(

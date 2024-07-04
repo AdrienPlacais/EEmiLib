@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from eemilib.emission_data.helper import trim
+from eemilib.emission_data.helper import resample, trim
 from eemilib.loader.loader import EY_col1, EY_colnorm
 
 
@@ -38,3 +38,33 @@ class TestTrim:
         expected = self.normal_ey.iloc[3:-3]
         returned = trim(self.normal_ey, min_e=30, max_e=70)
         assert np.array_equal(expected, returned)
+
+
+class TestResample:
+    """Test that resampling emission yield works."""
+
+    def _generate_fake_ey(self, n_points: int) -> pd.DataFrame:
+        """Generate a generic emission yield."""
+        assert n_points % 2 == 1
+        half = int((n_points + 1) / 2)
+        fake_ey = pd.DataFrame(
+            {
+                EY_col1: np.linspace(0, 200, n_points),
+                EY_colnorm: np.hstack(
+                    (
+                        np.linspace(0.5, 2.5, half),
+                        np.linspace(2.5, 0.5, half)[1:],
+                    )
+                ),
+            }
+        )
+        return fake_ey
+
+    def test_resample(self) -> None:
+        """Test resampling the emission yield."""
+        n_orig, n_resample = 11, 15
+        expected = self._generate_fake_ey(n_resample)
+        original = self._generate_fake_ey(n_orig)
+        returned = resample(original, n_resample)
+        print(returned - expected)
+        assert np.allclose(returned, expected, atol=1e-15)
