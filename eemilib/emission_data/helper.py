@@ -65,6 +65,53 @@ def resample(ey: pd.DataFrame, n_interp: int = -1) -> pd.DataFrame:
     return pd.DataFrame(new_ey)
 
 
+def get_emax_eymax(normal_ey: pd.DataFrame) -> tuple[float, float]:
+    """Get energy and max emission yields."""
+    ser_max = normal_ey.loc[normal_ey[EY_colnorm].idxmax()]
+    e_max = ser_max[EY_col1]
+    ey_max = ser_max[EY_colnorm]
+    return e_max, ey_max
+
+
+def get_crossover_energies(
+    normal_ey: pd.DataFrame, e_max: float, min_e: float = 10.0
+) -> tuple[tuple[float, float], tuple[float, float]]:
+    """Compute first and second crossover energies.
+
+    Parameters
+    ----------
+    normal_ey : pd.DataFrame
+        Holds energy of PEs as well as emission yield at nominal incidence.
+    e_max : float
+        Energy of maximum emission yield. Used to discriminate
+        :math:`E_{c1}` from :math:`E_{c2}`.
+    min_e : float, optional
+        Energy under which :math:`E_{c1}` is not searched. It is useful if
+        emission yield data comes from a model which sets the emission
+        yield to unity at very low energies (eg some implementations of
+        Vaughan). The default value is 10 eV.
+
+    Returns
+    -------
+    tuple[float, float]
+        First crossover energy, corresponding emission yield.
+    tuple[float, float]
+        Second crossover energy, corresponding emission yield.
+
+    """
+    first_half = trim(normal_ey, min_e=min_e, max_e=e_max)
+    ser_ec1 = first_half.loc[(first_half[EY_colnorm] - 1.0).abs().idxmin()]
+    ec1 = ser_ec1[EY_col1]
+    ey_ec1 = ser_ec1[EY_colnorm]
+
+    second_half = trim(normal_ey, min_e=e_max)
+    ser_ec2 = second_half.loc[(second_half[EY_colnorm] - 1.0).abs().idxmin()]
+    ec2 = ser_ec2[EY_col1]
+    ey_ec2 = ser_ec2[EY_colnorm]
+
+    return (ec1, ey_ec1), (ec2, ey_ec2)
+
+
 def get_ec1(
     normal_ey: pd.DataFrame,
     min_e: float = -1.0,
