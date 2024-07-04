@@ -12,6 +12,8 @@ Scope
 Low-energies (multipactor)
 Discrimination of secondary, backscattered
 
-Notes
-=====
-* Would be interesting to handle error bars too.
+Notes/todo
+==========
+* [ ] Would be interesting to handle error bars too.
+* [ ] Control on interpolation of loaded experimental data.
+* [ ] Show some measurables to evaluate a model quality. Nicolas Fil criterions in particular.
