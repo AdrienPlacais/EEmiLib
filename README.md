@@ -16,4 +16,5 @@ Notes/todo
 ==========
 * [ ] Would be interesting to handle error bars too.
 * [ ] Control on interpolation of loaded experimental data.
+* [ ] Possibility to smoothen measured data?
 * [ ] Show some measurables to evaluate a model quality. Nicolas Fil criterions in particular.
