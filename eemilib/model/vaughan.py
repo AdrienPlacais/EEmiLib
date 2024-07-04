@@ -2,6 +2,7 @@
 
 import numpy as np
 
+from eemilib.emission_data.emission_yield import EmissionYield
 from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 
@@ -60,6 +61,8 @@ class Vaughan(Model):
         r"""Compute TEEY :math:`\sigma`."""
         return super().teey(energy, theta)
 
-    def find_optimal_parameters(self) -> None:
-        """Match with position of first crossover and maximum. """
-        return super().find_optimal_parameters()
+    def find_optimal_parameters(self, emission_yield: EmissionYield) -> None:
+        """Match with position of first crossover and maximum."""
+        assert emission_yield.population == "all"
+        self.parameters["E_max"].value = emission_yield.e_max
+        self.parameters["teey_max"].value = emission_yield.ey_max
