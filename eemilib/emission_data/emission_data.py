@@ -57,3 +57,8 @@ class EmissionData(ABC):
             Path(s) to file holding data under study.
 
         """
+
+    @property
+    @abstractmethod
+    def label(self) -> str:
+        """Print markdown info."""

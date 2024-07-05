@@ -13,6 +13,13 @@ from eemilib.emission_data.helper import (
 )
 from eemilib.loader.loader import EY_col1, EY_colnorm, Loader
 
+markdown = {
+    "SE": r"SEEY $\delta$",
+    "EBE": r"EBEEY $\eta_e$",
+    "IBE": r"IBEEY $\eta_i$",
+    "all": r"TEEY $\sigma$",
+}
+
 
 class EmissionYield(EmissionData):
     """An emission yield."""
@@ -66,6 +73,11 @@ class EmissionYield(EmissionData):
         """
         data = loader.load_emission_yield(*filepath)
         return cls(population, data)
+
+    @property
+    def label(self) -> str:
+        """Print nature of data (markdown)."""
+        return markdown[self.population]
 
     def _parameters(
         self,
