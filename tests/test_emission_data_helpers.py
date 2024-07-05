@@ -2,17 +2,19 @@
 
 import numpy as np
 import pandas as pd
-import pytest
 
+from eemilib.constants import EY_col_energy, EY_col_normal
 from eemilib.emission_data.helper import resample, trim
-from eemilib.loader.loader import EY_col1, EY_colnorm
 
 
 class TestTrim:
     """Test that trimming works."""
 
     normal_ey = pd.DataFrame(
-        {EY_col1: np.linspace(0.0, 100.0, 11), EY_colnorm: np.random.rand(11)}
+        {
+            EY_col_energy: np.linspace(0.0, 100.0, 11),
+            EY_col_normal: np.random.rand(11),
+        }
     )
 
     def test_no_trim(self) -> None:
@@ -49,8 +51,8 @@ class TestResample:
         half = int((n_points + 1) / 2)
         fake_ey = pd.DataFrame(
             {
-                EY_col1: np.linspace(0, 200, n_points),
-                EY_colnorm: np.hstack(
+                EY_col_energy: np.linspace(0, 200, n_points),
+                EY_col_normal: np.hstack(
                     (
                         np.linspace(0.5, 2.5, half),
                         np.linspace(2.5, 0.5, half)[1:],

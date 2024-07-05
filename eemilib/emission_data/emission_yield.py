@@ -1,7 +1,7 @@
 """Define an object to store an emission yield."""
 
 from pathlib import Path
-from typing import Literal, Self
+from typing import Self
 
 import pandas as pd
 
@@ -11,7 +11,8 @@ from eemilib.emission_data.helper import (
     get_emax_eymax,
     resample,
 )
-from eemilib.loader.loader import EY_col1, EY_colnorm, Loader
+from eemilib.loader.loader import Loader
+from eemilib.util.constants import EY_col_energy, EY_col_normal, ImplementedPop
 
 markdown = {
     "SE": r"SEEY $\delta$",
@@ -26,14 +27,14 @@ class EmissionYield(EmissionData):
 
     def __init__(
         self,
-        population: Literal["SE", "EBE", "IBE", "all"],
+        population: ImplementedPop,
         data: pd.DataFrame,
     ) -> None:
         """Instantiate the data.
 
         Parameters
         ----------
-        population : Literal["SE", "EBE", "IBE", "all"]
+        population : ImplementedPop
             The concerned population of electrons.
         data : pd.DataFrame
             Structure holding the data. Must have a ``Energy (eV)`` column
@@ -43,9 +44,11 @@ class EmissionYield(EmissionData):
 
         """
         super().__init__(population, data)
-        self.energies = data[EY_col1].to_numpy()
+        self.energies = data[EY_col_energy].to_numpy()
         self.angles = [
-            float(col.split()[0]) for col in data.columns if col != EY_col1
+            float(col.split()[0])
+            for col in data.columns
+            if col != EY_col_energy
         ]
         if self.population in ("SE", "all"):
             self.e_max, self.ey_max, self.e_c1, self.e_c2 = self._parameters(
@@ -55,7 +58,7 @@ class EmissionYield(EmissionData):
     @classmethod
     def from_filepath(
         cls,
-        population: Literal["SE", "EBE", "IBE", "all"],
+        population: ImplementedPop,
         loader: Loader,
         *filepath: str | Path,
     ) -> Self:
@@ -65,7 +68,7 @@ class EmissionYield(EmissionData):
         ----------
         loader : Loader
             The object that will load the data.
-        population : Literal["SE", "EBE", "IBE", "all"]
+        population : ImplementedPop
             The concerned population of electrons.
         *filepath : str | Path
             Path(s) to file holding data under study.
@@ -86,7 +89,7 @@ class EmissionYield(EmissionData):
         """Compute the characteristics of the emission yield."""
         assert 0.0 in self.angles, "Need the normal incidence measurements."
 
-        normal_ey = self.data[[EY_col1, EY_colnorm]]
+        normal_ey = self.data[[EY_col_energy, EY_col_normal]]
         assert isinstance(normal_ey, pd.DataFrame)
         normal_ey = resample(normal_ey, n_resample)
 

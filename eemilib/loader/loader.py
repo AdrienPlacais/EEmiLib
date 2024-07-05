@@ -8,9 +8,6 @@ import pandas as pd
 
 paths = Path | str
 
-EY_col1 = "Energy [eV]"
-EY_colnorm = "0.0 [deg]"
-
 
 class Loader(ABC):
     """Define the base class for loading various electron emission files."""

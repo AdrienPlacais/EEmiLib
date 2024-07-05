@@ -1,16 +1,14 @@
 """Define plotter relying on pandas."""
 
-from abc import ABC, abstractmethod
 from typing import Any
 
 import numpy as np
-import pandas as pd
 from matplotlib.axes import Axes
 
 from eemilib.emission_data.emission_yield import EmissionYield
-from eemilib.loader.loader import EY_col1
 from eemilib.model.model import Model
 from eemilib.plotter.plotter import Plotter
+from eemilib.util.constants import EY_col_energy
 
 
 class PandasPlotter(Plotter):
@@ -21,7 +19,7 @@ class PandasPlotter(Plotter):
     ) -> Axes:
         """Plot :class:`.EmissionYield` data."""
         axes = emission_yield.data.plot(
-            x=EY_col1,
+            x=EY_col_energy,
             ax=axes,
             grid=True,
             ylabel=emission_yield.label,
@@ -41,7 +39,7 @@ class PandasPlotter(Plotter):
         if axes is not None:
             axes.set_prop_cycle(None)
         to_plot = model.teey(energies, angles)
-        to_plot.plot(x=EY_col1, ax=axes, ls="--", grid=True, **kwargs)
+        to_plot.plot(x=EY_col_energy, ax=axes, ls="--", grid=True, **kwargs)
 
     def plot_emission_energy_distribution(
         self, emission_energies: Any, distributions: Any, **kwargs

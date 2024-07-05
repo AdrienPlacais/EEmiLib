@@ -1,23 +1,17 @@
-"""Define the base object that will store emission data.
+"""Define an object to store an emission energy distribution."""
 
-.. todo::
-    Add an ``interpolate`` or ``resample`` method. Would be used to have more
-    points, in particular when there is few points.
-
-"""
-
-from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Self
 
 import pandas as pd
 
+from eemilib.emission_data.emission_data import EmissionData
 from eemilib.loader.loader import Loader
 from eemilib.util.constants import ImplementedPop
 
 
-class EmissionData(ABC):
-    """A yield, energy distribution or angular distribution."""
+class EmissionEnergyDistribution(EmissionData):
+    """An emission energy distribution."""
 
     def __init__(
         self,
@@ -31,15 +25,16 @@ class EmissionData(ABC):
         population : ImplementedPop
             The concerned population of electrons.
         data : pd.DataFrame
-            Structure holding the data. Column headers as well as units must
-            follow specications (see subclasses documentation).
+            Structure holding the data. Must have a ``Energy (eV)`` column
+            holding PEs energy. And one or several columns ``theta [deg]``,
+            where `theta` is the value of the incidence angle and content is
+            corresponding emission yield.
 
         """
-        self.population = population
-        self.data = data
+        super().__init__(population, data)
+        raise NotImplementedError
 
     @classmethod
-    @abstractmethod
     def from_filepath(
         cls,
         population: ImplementedPop,
@@ -58,8 +53,10 @@ class EmissionData(ABC):
             Path(s) to file holding data under study.
 
         """
+        data = loader.load_emission_energy_distribution(*filepath)
+        return cls(population, data)
 
     @property
-    @abstractmethod
     def label(self) -> str:
-        """Print markdown info."""
+        """Print nature of data (markdown)."""
+        raise NotImplementedError
