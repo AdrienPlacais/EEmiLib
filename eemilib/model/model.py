@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 import pandas as pd
 
+from eemilib.model.model_config import ModelConfig
 from eemilib.model.parameter import Parameter
 
 
@@ -14,6 +15,7 @@ class Model(ABC):
     considers_energy: bool
     is_3d: bool
     is_dielectrics_compatible: bool
+    model_config: ModelConfig
 
     def __init__(self) -> None:
         """Instantiate the object."""

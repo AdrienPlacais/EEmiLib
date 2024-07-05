@@ -15,6 +15,7 @@ import pandas as pd
 
 from eemilib.emission_data.emission_yield import EmissionYield
 from eemilib.model.model import Model
+from eemilib.model.model_config import ModelConfig
 from eemilib.model.parameter import Parameter
 
 
@@ -24,6 +25,11 @@ class Vaughan(Model):
     considers_energy = True
     is_3d = True
     is_dielectrics_compatible = False
+    model_config = ModelConfig(
+        emission_yield_files=("all"),
+        emission_energy_files=(),
+        emission_angle_files=(),
+    )
 
     def __init__(self) -> None:
         """Instantiate the object.
