@@ -1,4 +1,4 @@
-"""Define an object to store an emission energy distribution."""
+"""Define an object to store an emission angle distribution."""
 
 from pathlib import Path
 from typing import Self
@@ -10,8 +10,8 @@ from eemilib.loader.loader import Loader
 from eemilib.util.constants import ImplementedPop
 
 
-class EmissionEnergyDistribution(EmissionData):
-    """An emission energy distribution."""
+class EmissionAngleDistribution(EmissionData):
+    """An emission angle distribution."""
 
     def __init__(
         self,
@@ -25,10 +25,10 @@ class EmissionEnergyDistribution(EmissionData):
         population : ImplementedPop
             The concerned population of electrons.
         data : pd.DataFrame
-            Structure holding the data. Must have a ``Energy (eV)`` column
-            holding PEs energy. And one or several columns ``theta [deg]``,
+            Structure holding the data. Must have an ``Angle [deg]`` column
+            holding PEs angle. And one or several columns ``theta [deg]``,
             where `theta` is the value of the incidence angle and content is
-            corresponding emission energy.
+            corresponding emission angle.
 
         """
         super().__init__(population, data)
@@ -53,7 +53,7 @@ class EmissionEnergyDistribution(EmissionData):
             Path(s) to file holding data under study.
 
         """
-        data = loader.load_emission_energy_distribution(*filepath)
+        data = loader.load_emission_angle_distribution(*filepath)
         return cls(population, data)
 
     @property
