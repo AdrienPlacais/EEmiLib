@@ -53,7 +53,9 @@ class DataMatrix:
     ) -> tuple[ImplementedPop, ImplementedEmissionData]:
         """Give the desired natures."""
         population_type = row_to_pop[row]
+        assert isinstance(population_type, ImplementedPop)
         emission_data_type = col_to_emission_data_type[col]
+        assert isinstance(emission_data_type, ImplementedEmissionData)
         return population_type, emission_data_type
 
     def set_files_by_index(
@@ -91,7 +93,7 @@ class DataMatrix:
         row, col = self._natures_to_indexes(population, emission_data_type)
         self.set_data_by_index(emission_data, row, col)
 
-    def load_data(self, loader: Loader):
+    def load_data(self, loader: Loader) -> None:
         """Load all filepaths in :attr:`files_matrix`.
 
         .. todo::
