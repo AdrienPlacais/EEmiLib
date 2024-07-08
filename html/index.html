@@ -19,6 +19,8 @@
         <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -91,6 +93,15 @@ It is focused on electron emission models for multipactor simulation, <em>i.e.</
 <h1>Scope<a class="headerlink" href="#scope" title="Link to this heading"></a></h1>
 <p>Low-energies (multipactor)
 Discrimination of secondary, backscattered</p>
+</section>
+<section id="notes-todo">
+<h1>Notes/todo<a class="headerlink" href="#notes-todo" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p>[ ] Would be interesting to handle error bars too.</p></li>
+<li><p>[ ] Control on interpolation of loaded experimental data.</p></li>
+<li><p>[ ] Possibility to smoothen measured data?</p></li>
+<li><p>[ ] Show some measurables to evaluate a model quality. Nicolas Fil criterions in particular.</p></li>
+</ul>
 <div class="admonition-todo admonition" id="id1">
 <p class="admonition-title">Todo</p>
 <p>Present the code.</p>
@@ -106,16 +117,39 @@ Discrimination of secondary, backscattered</p>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="manual/roadmap.html">Roadmap</a></li>
 <li class="toctree-l1"><a class="reference internal" href="eemilib/modules.html">API reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="eemilib/loader.html">loader package</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="eemilib/loader.loader.html">loader.loader module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="eemilib/eemilib.html">eemilib package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="eemilib/eemilib.emission_data.html">eemilib.emission_data package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="eemilib/eemilib.emission_data.data_matrix.html">eemilib.emission_data.data_matrix module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="eemilib/eemilib.emission_data.emission_angle_distribution.html">eemilib.emission_data.emission_angle_distribution module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="eemilib/eemilib.emission_data.emission_data.html">eemilib.emission_data.emission_data module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="eemilib/eemilib.emission_data.emission_energy_distribution.html">eemilib.emission_data.emission_energy_distribution module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="eemilib/eemilib.emission_data.emission_yield.html">eemilib.emission_data.emission_yield module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="eemilib/eemilib.emission_data.helper.html">eemilib.emission_data.helper module</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="eemilib/model.html">model package</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="eemilib/model.parameter.html">model.parameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eemilib/eemilib.loader.html">eemilib.loader package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="eemilib/eemilib.loader.deesse_loader.html">eemilib.loader.deesse_loader module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="eemilib/eemilib.loader.loader.html">eemilib.loader.loader module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="eemilib/eemilib.loader.pandas_loader.html">eemilib.loader.pandas_loader module</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="eemilib/plotter.html">plotter package</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="eemilib/plotter.plotter.html">plotter.plotter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eemilib/eemilib.model.html">eemilib.model package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="eemilib/eemilib.model.model.html">eemilib.model.model module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="eemilib/eemilib.model.model_config.html">eemilib.model.model_config module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="eemilib/eemilib.model.parameter.html">eemilib.model.parameter module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="eemilib/eemilib.model.vaughan.html">eemilib.model.vaughan module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="eemilib/eemilib.plotter.html">eemilib.plotter package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="eemilib/eemilib.plotter.pandas.html">eemilib.plotter.pandas module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="eemilib/eemilib.plotter.plotter.html">eemilib.plotter.plotter module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="eemilib/eemilib.ui.html">eemilib.ui package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eemilib/eemilib.util.html">eemilib.util package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="eemilib/eemilib.util.constants.html">eemilib.util.constants module</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

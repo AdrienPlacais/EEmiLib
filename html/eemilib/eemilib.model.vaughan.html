@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>eemilib.model.vaughan module &mdash; EEmiLib  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="eemilib.plotter package" href="eemilib.plotter.html" />
+    <link rel="prev" title="eemilib.model.parameter module" href="eemilib.model.parameter.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            EEmiLib
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../manual/requirements_note.html">Requirements note</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../manual/models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../manual/roadmap.html">Roadmap</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="eemilib.html">eemilib package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="eemilib.emission_data.html">eemilib.emission_data package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eemilib.loader.html">eemilib.loader package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="eemilib.model.html">eemilib.model package</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="eemilib.model.model.html">eemilib.model.model module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="eemilib.model.model_config.html">eemilib.model.model_config module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="eemilib.model.parameter.html">eemilib.model.parameter module</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">eemilib.model.vaughan module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="eemilib.plotter.html">eemilib.plotter package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eemilib.ui.html">eemilib.ui package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eemilib.util.html">eemilib.util package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">EEmiLib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">eemilib</a></li>
+          <li class="breadcrumb-item"><a href="eemilib.html">eemilib package</a></li>
+          <li class="breadcrumb-item"><a href="eemilib.model.html">eemilib.model package</a></li>
+      <li class="breadcrumb-item active">eemilib.model.vaughan module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/eemilib/eemilib.model.vaughan.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-eemilib.model.vaughan">
+<span id="eemilib-model-vaughan-module"></span><h1>eemilib.model.vaughan module<a class="headerlink" href="#module-eemilib.model.vaughan" title="Link to this heading"></a></h1>
+<p>Create the Vaughan model, to compute TEEY.</p>
+<div class="admonition-todo admonition" id="id1">
+<p class="admonition-title">Todo</p>
+<p>Make this robust. Especially the _vaughan_func.</p>
+</div>
+<div class="admonition-todo admonition" id="id2">
+<p class="admonition-title">Todo</p>
+<p>Clarify the Vaughan shade. Traditional? SPARK3D? CST?</p>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Vaughan</span></span><a class="headerlink" href="#eemilib.model.vaughan.Vaughan" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="eemilib.model.model.html#eemilib.model.model.Model" title="eemilib.model.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></a></p>
+<p>Define the classic Vaughan model.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#eemilib.model.vaughan.Vaughan.__init__" title="Link to this definition"></a></dt>
+<dd><p>Instantiate the object.</p>
+<div class="admonition-todo admonition" id="id3">
+<p class="admonition-title">Todo</p>
+<p>Replace the E_0p by a delta_transition=1eV or something.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan._abc_impl">
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc._abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#eemilib.model.vaughan.Vaughan._abc_impl" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.considers_energy">
+<span class="sig-name descname"><span class="pre">considers_energy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#eemilib.model.vaughan.Vaughan.considers_energy" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.find_optimal_parameters">
+<span class="sig-name descname"><span class="pre">find_optimal_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">emission_yield</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="eemilib.emission_data.emission_yield.html#eemilib.emission_data.emission_yield.EmissionYield" title="eemilib.emission_data.emission_yield.EmissionYield"><span class="pre">EmissionYield</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#eemilib.model.vaughan.Vaughan.find_optimal_parameters" title="Link to this definition"></a></dt>
+<dd><p>Match with position of first crossover and maximum.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.is_3d">
+<span class="sig-name descname"><span class="pre">is_3d</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#eemilib.model.vaughan.Vaughan.is_3d" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.is_dielectrics_compatible">
+<span class="sig-name descname"><span class="pre">is_dielectrics_compatible</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#eemilib.model.vaughan.Vaughan.is_dielectrics_compatible" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="eemilib.model.model_config.html#eemilib.model.model_config.ModelConfig" title="eemilib.model.model_config.ModelConfig"><span class="pre">ModelConfig</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">ModelConfig(emission_yield_files='all',</span> <span class="pre">emission_energy_files=(),</span> <span class="pre">emission_angle_files=())</span></em><a class="headerlink" href="#eemilib.model.vaughan.Vaughan.model_config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.teey">
+<span class="sig-name descname"><span class="pre">teey</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#eemilib.model.vaughan.Vaughan.teey" title="Link to this definition"></a></dt>
+<dd><p>Compute TEEY <span class="math notranslate nohighlight">\(\sigma\)</span>.</p>
+<div class="admonition-todo admonition" id="id4">
+<p class="admonition-title">Todo</p>
+<p>This method could be so much simpler and efficient.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="eemilib.model.vaughan._vaughan_func">
+<span class="sig-name descname"><span class="pre">_vaughan_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ene</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">the</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E_0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="eemilib.model.parameter.html#eemilib.model.parameter.Parameter" title="eemilib.model.parameter.Parameter"><span class="pre">Parameter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">E_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="eemilib.model.parameter.html#eemilib.model.parameter.Parameter" title="eemilib.model.parameter.Parameter"><span class="pre">Parameter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">teey_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="eemilib.model.parameter.html#eemilib.model.parameter.Parameter" title="eemilib.model.parameter.Parameter"><span class="pre">Parameter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">teey_low</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="eemilib.model.parameter.html#eemilib.model.parameter.Parameter" title="eemilib.model.parameter.Parameter"><span class="pre">Parameter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_se</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="eemilib.model.parameter.html#eemilib.model.parameter.Parameter" title="eemilib.model.parameter.Parameter"><span class="pre">Parameter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="eemilib.model.parameter.html#eemilib.model.parameter.Parameter" title="eemilib.model.parameter.Parameter"><span class="pre">Parameter</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></span><a class="headerlink" href="#eemilib.model.vaughan._vaughan_func" title="Link to this definition"></a></dt>
+<dd><p>Compute the TEEY for incident energy E.</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="eemilib.model.parameter.html" class="btn btn-neutral float-left" title="eemilib.model.parameter module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="eemilib.plotter.html" class="btn btn-neutral float-right" title="eemilib.plotter package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Adrien Plaçais.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

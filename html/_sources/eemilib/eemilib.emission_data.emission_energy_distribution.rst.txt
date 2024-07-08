@@ -1,0 +1,7 @@
+eemilib.emission\_data.emission\_energy\_distribution module
+============================================================
+
+.. automodule:: eemilib.emission_data.emission_energy_distribution
+   :members:
+   :undoc-members:
+   :show-inheritance:
