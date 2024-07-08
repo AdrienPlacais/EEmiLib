@@ -1,7 +1,7 @@
-plotter package
-===============
+eemilib.util package
+====================
 
-.. automodule:: plotter
+.. automodule:: eemilib.util
    :members:
    :undoc-members:
    :show-inheritance:
@@ -12,4 +12,4 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   plotter.plotter
+   eemilib.util.constants

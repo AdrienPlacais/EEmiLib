@@ -12,9 +12,7 @@ import sys
 
 sys.path.insert(
     0,
-    os.path.abspath(
-        "/home/placais/Documents/Simulation/python/eemilib/eemilib/"
-    ),
+    os.path.abspath("/home/placais/Documents/Simulation/python/eemilib/"),
 )
 project = "EEmiLib"
 copyright = "2024, Adrien Plaçais"
