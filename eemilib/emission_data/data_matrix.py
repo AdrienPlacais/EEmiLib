@@ -1,4 +1,9 @@
-"""Store the filepaths entered by user."""
+"""Store the filepaths entered by user.
+
+.. todo::
+    Methods to reset filepaths/data
+
+"""
 
 from collections.abc import Collection
 
@@ -11,7 +16,12 @@ from eemilib.emission_data.emission_energy_distribution import (
 )
 from eemilib.emission_data.emission_yield import EmissionYield
 from eemilib.loader.loader import Loader
-from eemilib.util.constants import ImplementedEmissionData, ImplementedPop
+from eemilib.model.model_config import ModelConfig
+from eemilib.util.constants import (
+    IMPLEMENTED_EMISSION_DATA,
+    ImplementedEmissionData,
+    ImplementedPop,
+)
 
 pop_to_row = {"SE": 0, "EBE": 1, "IBE": 2, "all": 3}
 row_to_pop = {val: key for key, val in pop_to_row.items()}
@@ -124,3 +134,34 @@ class DataMatrix:
                         pop, loader, *filepath
                     )
                     self.set_data_by_index(emission_data, row, col)
+
+    def assert_has_all_mandatory_files(
+        self, model_config: ModelConfig
+    ) -> None:
+        """Tell if files defined by :attr:`.Model.model_config` are set."""
+        for emission_data_type, corresponding_attribute in zip(
+            IMPLEMENTED_EMISSION_DATA,
+            (
+                "emission_yield_files",
+                "emission_energy_files",
+                "emission_angle_files",
+            ),
+        ):
+            mandatory_data_type = getattr(
+                model_config, corresponding_attribute
+            )
+
+            for mandatory_population in mandatory_data_type:
+                row, col = self._natures_to_indexes(
+                    mandatory_population, emission_data_type
+                )
+                filepath = self.files_matrix[row][col]
+                assert filepath is not None, (
+                    f"You must define a {emission_data_type} filepath for"
+                    + f" population {mandatory_population}"
+                )
+                data_object = self.data_matrix[row][col]
+                assert data_object is not None, (
+                    f"You must load {emission_data_type} filepath for "
+                    + f"population {mandatory_population}"
+                )
