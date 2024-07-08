@@ -12,14 +12,12 @@ from eemilib.emission_data.helper import (
     resample,
 )
 from eemilib.loader.loader import Loader
-from eemilib.util.constants import EY_col_energy, EY_col_normal, ImplementedPop
-
-markdown = {
-    "SE": r"SEEY $\delta$",
-    "EBE": r"EBEEY $\eta_e$",
-    "IBE": r"IBEEY $\eta_i$",
-    "all": r"TEEY $\sigma$",
-}
+from eemilib.util.constants import (
+    EY_col_energy,
+    EY_col_normal,
+    ImplementedPop,
+    markdown,
+)
 
 
 class EmissionYield(EmissionData):
