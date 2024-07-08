@@ -2,7 +2,14 @@
 
 from collections.abc import Collection
 
+from eemilib.emission_data.emission_angle_distribution import (
+    EmissionAngleDistribution,
+)
 from eemilib.emission_data.emission_data import EmissionData
+from eemilib.emission_data.emission_energy_distribution import (
+    EmissionEnergyDistribution,
+)
+from eemilib.emission_data.emission_yield import EmissionYield
 from eemilib.loader.loader import Loader
 from eemilib.util.constants import ImplementedEmissionData, ImplementedPop
 
@@ -68,38 +75,50 @@ class DataMatrix:
         self,
         files: str | Collection[str],
         population: ImplementedPop,
-        emission_data_name: ImplementedEmissionData,
+        emission_data_type: ImplementedEmissionData,
     ) -> None:
         """Set the file(s) by position."""
-        row = pop_to_row[population]
-        col = emission_data_type_to_col[emission_data_name]
+        row, col = self._natures_to_indexes(population, emission_data_type)
         self.set_files_by_index(files, row, col)
 
     def set_data_by_name(
         self,
         emission_data: EmissionData | Collection[EmissionData],
         population: ImplementedPop,
-        emission_data_name: ImplementedEmissionData,
+        emission_data_type: ImplementedEmissionData,
     ) -> None:
         """Set the data by position."""
-        row = pop_to_row[population]
-        col = emission_data_type_to_col[emission_data_name]
+        row, col = self._natures_to_indexes(population, emission_data_type)
         self.set_data_by_index(emission_data, row, col)
 
     def load_data(self, loader: Loader):
-        """Load all the data in the object."""
-        for row, pop in zip(self.files_matrix, ImplementedPop):
-            for filepath, method_name in zip(
-                row,
-                (
-                    "load_emission_yield",
-                    "load_emission_energy_distribution",
-                    "load_emission_angle_distribution",
-                ),
-            ):
+        """Load all filepaths in :attr:`files_matrix`.
+
+        .. todo::
+            Could be more concise.
+
+        """
+        for pop, row in pop_to_row.items():
+            assert isinstance(pop, ImplementedPop)
+            for data_type, col in emission_data_type_to_col.items():
+                filepath = self.files_matrix[row][col]
                 if filepath is None:
                     continue
-                loader_method = getattr(loader, method_name)
 
-                if isinstance(filepath, str):
-                    emission_data_df = loader_method(filepath)
+                if data_type == "Emission Yield":
+                    emission_data = EmissionYield.from_filepath(
+                        pop, loader, *filepath
+                    )
+                    self.set_data_by_index(emission_data, row, col)
+
+                if data_type == "Emission Energy":
+                    emission_data = EmissionEnergyDistribution.from_filepath(
+                        pop, loader, *filepath
+                    )
+                    self.set_data_by_index(emission_data, row, col)
+
+                if data_type == "Emission Angle":
+                    emission_data = EmissionAngleDistribution.from_filepath(
+                        pop, loader, *filepath
+                    )
+                    self.set_data_by_index(emission_data, row, col)
