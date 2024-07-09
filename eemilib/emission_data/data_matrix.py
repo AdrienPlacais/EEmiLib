@@ -20,6 +20,7 @@ from eemilib.loader.loader import Loader
 from eemilib.model.model_config import ModelConfig
 from eemilib.util.constants import (
     IMPLEMENTED_EMISSION_DATA,
+    IMPLEMENTED_POP,
     ImplementedEmissionData,
     ImplementedPop,
 )
@@ -117,7 +118,7 @@ class DataMatrix:
 
         """
         for pop, row in pop_to_row.items():
-            assert isinstance(pop, ImplementedPop)
+            assert pop in IMPLEMENTED_POP
             for data_type, col in emission_data_type_to_col.items():
                 filepath = self.files_matrix[row][col]
                 if filepath is None:
