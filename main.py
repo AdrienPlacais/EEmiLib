@@ -37,29 +37,22 @@ def main():
     # =========================================================================
     # Second horizontal screen portion: several tabs with different models
     # =========================================================================
-    model = Vaughan
-    data_matrix.assert_has_all_mandatory_files(model.model_config)
+    model = Vaughan()
 
-    # To change
-    emission_yield = data_matrix.data_matrix[3][0]
-    assert isinstance(emission_yield, EmissionYield)
-    model_instance = model()
-    # Should take full `DataMatrix` as input
-    model_instance.find_optimal_parameters(emission_yield)
+    # The "Fit!" button
+    model.find_optimal_parameters(data_matrix)
 
     # =========================================================================
     # A third horizontal screen portion, or with the files
     # =========================================================================
     plotter = PandasPlotter()
-    axes = plotter.plot_emission_yield_data(emission_yield)
+    axes = plotter.plot_emission_yield_data(data_matrix.data_matrix[3][0])
     energies = np.linspace(0, 1000, 1001)
     angles = np.linspace(0, 60, 4)
-    plotter.plot_emission_yield_model(
-        model_instance, energies, angles, axes=axes
-    )
+    plotter.plot_emission_yield_model(model, energies, angles, axes=axes)
 
-    return emission_yield, model
+    return
 
 
 if __name__ == "__main__":
-    emission_yield, model = main()
+    main()

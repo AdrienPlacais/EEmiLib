@@ -13,6 +13,7 @@ import math
 import numpy as np
 import pandas as pd
 
+from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.emission_data.emission_yield import EmissionYield
 from eemilib.model.model import Model
 from eemilib.model.model_config import ModelConfig
@@ -90,9 +91,17 @@ class Vaughan(Model):
         out_dict["Energy [eV]"] = energy
         return pd.DataFrame(out_dict)
 
-    def find_optimal_parameters(self, emission_yield: EmissionYield) -> None:
+    def find_optimal_parameters(
+        self, data_matrix: DataMatrix, **kwargs
+    ) -> None:
         """Match with position of first crossover and maximum."""
+        data_matrix.assert_has_all_mandatory_files(self.model_config)
+
+        # Could be more compact
+        emission_yield = data_matrix.data_matrix[3][0]
+        assert isinstance(emission_yield, EmissionYield)
         assert emission_yield.population == "all"
+
         self.parameters["E_max"].value = emission_yield.e_max
         self.parameters["teey_max"].value = emission_yield.ey_max
 
