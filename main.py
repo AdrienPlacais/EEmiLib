@@ -23,7 +23,7 @@ def main() -> None:
     )
 
     # =========================================================================
-    # First horizontal screen portion: first tab
+    # Horizontal screen portion 1 of 3
     # =========================================================================
     data_matrix = DataMatrix()
 
@@ -44,17 +44,29 @@ def main() -> None:
     data_matrix.load_data(loader)
 
     # =========================================================================
-    # Second horizontal screen portion: several tabs with different models
+    # Horizontal screen portion 2 of 3
     # =========================================================================
     # A dropdown menu. Possible values are modules in eemilib.model, deriving
     # from Model
     model = Vaughan()
 
-    # The "Fit!" button
+    # A matrix with 6 columns, n rows
+    # There is one row per (key, value) pair in Model.parameters attribute
+    # The list of columns is:
+    # 0: parameter.markdown
+    # 1: parameter.unit
+    # 2: parameter.value (editable, editing it updates parameter.value parameter)
+    # 3: parameter.lower_bound (editable, editing it updates parameter.lower_bound parameter)
+    # 4: parameter.upper_bound (editable, editing it updates parameter.upper_bound parameter)
+    # 5: a "lock" checkbox. checking it calls the parameter.lock method. unchecking it calls the paramer.unlock method
+
+    # The "Fit!" button, at the bottom
     model.find_optimal_parameters(data_matrix)
+    # It will update the values of model.parameters[key].value, so the matrix
+    # above should be updated too
 
     # =========================================================================
-    # A third horizontal screen portion, or with the files
+    # Horizontal screen, portion 3 of 3
     # =========================================================================
     # A dropdown menu. Possible values are modules in eemilib.plotter, deriving
     # from Plotter
