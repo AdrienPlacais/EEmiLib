@@ -26,7 +26,9 @@ def main():
     # First horizontal screen portion: first tab
     # =========================================================================
     data_matrix = DataMatrix()
-    data_matrix.set_files_by_name(filepaths, "all", "Emission Yield")
+    data_matrix.set_files(
+        filepaths, population="all", emission_data_type="Emission Yield"
+    )
 
     # Dropdown menu to select loader
     loader = DeesseLoader()
