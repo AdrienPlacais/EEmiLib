@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import sys
 
+sys.path.append("/home/placais/Documents/Simulation/python/eemilib/")
+
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
     QApplication,
@@ -20,11 +22,14 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
+from eemilib.util.constants import IMPLEMENTED_EMISSION_DATA, IMPLEMENTED_POP
+
 
 class MainWindow(QMainWindow):
+
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Simulation GUI")
+        self.setWindowTitle("EEmiLib GUI")
 
         # Central widget
         self.central_widget = QWidget()
@@ -63,8 +68,8 @@ class MainWindow(QMainWindow):
         self.file_matrix_layout = QGridLayout()
 
         # Row and column labels
-        row_labels = ["SE", "EBE", "IBE", "all"]
-        col_labels = ["Emission Yield", "Emission Energy", "Emission Angle"]
+        row_labels = IMPLEMENTED_POP
+        col_labels = IMPLEMENTED_EMISSION_DATA
 
         for i, label in enumerate(row_labels):
             self.file_matrix_layout.addWidget(QLabel(label), i + 1, 0)
