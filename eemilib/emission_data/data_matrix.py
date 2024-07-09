@@ -6,6 +6,7 @@
 """
 
 from collections.abc import Collection
+from pathlib import Path
 
 from eemilib.emission_data.emission_angle_distribution import (
     EmissionAngleDistribution,
@@ -40,7 +41,9 @@ class DataMatrix:
 
     def __init__(self) -> None:
         """Instantiate the object."""
-        self.files_matrix: list[list[None | str | Collection[str]]]
+        self.files_matrix: list[
+            list[None | str | Collection[str] | Path | Collection[Path]]
+        ]
         self.files_matrix = [[None for _ in range(3)] for _ in range(4)]
 
         self.data_matrix: list[
@@ -69,7 +72,10 @@ class DataMatrix:
         return population_type, emission_data_type
 
     def set_files_by_index(
-        self, files: str | Collection[str], row: int, col: int
+        self,
+        files: str | Collection[str] | Path | Collection[Path],
+        row: int,
+        col: int,
     ) -> None:
         """Set the file(s) by position."""
         self.files_matrix[row][col] = files
@@ -85,7 +91,7 @@ class DataMatrix:
 
     def set_files_by_name(
         self,
-        files: str | Collection[str],
+        files: str | Collection[str] | Path | Collection[Path],
         population: ImplementedPop,
         emission_data_type: ImplementedEmissionData,
     ) -> None:
