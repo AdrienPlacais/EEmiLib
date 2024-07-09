@@ -102,11 +102,59 @@
   <section id="module-eemilib.model.model">
 <span id="eemilib-model-model-module"></span><h1>eemilib.model.model module<a class="headerlink" href="#module-eemilib.model.model" title="Link to this heading"></a></h1>
 <p>Define the base class for all electron emission models.</p>
+<div class="admonition-todo admonition" id="id1">
+<p class="admonition-title">Todo</p>
+<p>Define all the properties: EBEEY, emission energy distributions, etc.</p>
+</div>
 <dl class="py class">
 <dt class="sig sig-object py" id="eemilib.model.model.Model">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Model</span></span><a class="headerlink" href="#eemilib.model.model.Model" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
 <p>Define the base electron emission model.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="eemilib.model.model.Model.considers_energy">
+<span class="sig-name descname"><span class="pre">considers_energy</span></span><a class="headerlink" href="#eemilib.model.model.Model.considers_energy" title="Link to this definition"></a></dt>
+<dd><p>Tell if the model has a dependency over PES impact energy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="eemilib.model.model.Model.is_3d">
+<span class="sig-name descname"><span class="pre">is_3d</span></span><a class="headerlink" href="#eemilib.model.model.Model.is_3d" title="Link to this definition"></a></dt>
+<dd><p>Tell if the model has a dependency over PES impact angle.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="eemilib.model.model.Model.is_dielectrics_compatible">
+<span class="sig-name descname"><span class="pre">is_dielectrics_compatible</span></span><a class="headerlink" href="#eemilib.model.model.Model.is_dielectrics_compatible" title="Link to this definition"></a></dt>
+<dd><p>Tell if the model can take the surface-trapped charges into account.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="eemilib.model.model.Model.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><a class="headerlink" href="#eemilib.model.model.Model.model_config" title="Link to this definition"></a></dt>
+<dd><p>List the files that the model needs to know in order to work.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="eemilib.model.model_config.html#eemilib.model.model_config.ModelConfig" title="eemilib.model.model_config.ModelConfig">ModelConfig</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="eemilib.model.model.Model.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#eemilib.model.model.Model.__init__" title="Link to this definition"></a></dt>
@@ -119,34 +167,34 @@
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="eemilib.model.model.Model.considers_energy">
-<span class="sig-name descname"><span class="pre">considers_energy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#eemilib.model.model.Model.considers_energy" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">considers_energy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="eemilib.model.model.Model.find_optimal_parameters">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">find_optimal_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#eemilib.model.model.Model.find_optimal_parameters" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">find_optimal_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="eemilib.emission_data.data_matrix.html#eemilib.emission_data.data_matrix.DataMatrix" title="eemilib.emission_data.data_matrix.DataMatrix"><span class="pre">DataMatrix</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#eemilib.model.model.Model.find_optimal_parameters" title="Link to this definition"></a></dt>
 <dd><p>Find the best parameters for the current model.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="eemilib.model.model.Model.is_3d">
-<span class="sig-name descname"><span class="pre">is_3d</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#eemilib.model.model.Model.is_3d" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">is_3d</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="eemilib.model.model.Model.is_dielectrics_compatible">
-<span class="sig-name descname"><span class="pre">is_dielectrics_compatible</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#eemilib.model.model.Model.is_dielectrics_compatible" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">is_dielectrics_compatible</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="eemilib.model.model.Model.model_config">
-<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="eemilib.model.model_config.html#eemilib.model.model_config.ModelConfig" title="eemilib.model.model_config.ModelConfig"><span class="pre">ModelConfig</span></a></em><a class="headerlink" href="#eemilib.model.model.Model.model_config" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="eemilib.model.model_config.html#eemilib.model.model_config.ModelConfig" title="eemilib.model.model_config.ModelConfig"><span class="pre">ModelConfig</span></a></em><a class="headerlink" href="#id4" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="eemilib.model.model.Model.seey">
-<span class="sig-name descname"><span class="pre">seey</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#eemilib.model.model.Model.seey" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">seey</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#eemilib.model.model.Model.seey" title="Link to this definition"></a></dt>
 <dd><p>Compute SEEY <span class="math notranslate nohighlight">\(\delta\)</span>.</p>
 </dd></dl>
 
