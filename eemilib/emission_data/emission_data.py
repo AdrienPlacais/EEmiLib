@@ -13,6 +13,7 @@ from typing import Self
 import pandas as pd
 
 from eemilib.loader.loader import Loader
+from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import ImplementedPop
 
 
@@ -63,3 +64,9 @@ class EmissionData(ABC):
     @abstractmethod
     def label(self) -> str:
         """Print markdown info."""
+
+    @abstractmethod
+    def plot[
+        T
+    ](self, plotter: Plotter, *args, axes: T | None = None, **kwargs) -> T:
+        """Plot the contained data using plotter."""

@@ -5,7 +5,6 @@ from pathlib import Path
 import numpy as np
 
 from eemilib.emission_data.data_matrix import DataMatrix
-from eemilib.emission_data.emission_yield import EmissionYield
 from eemilib.loader.deesse_loader import DeesseLoader
 from eemilib.model.vaughan import Vaughan
 from eemilib.plotter.pandas import PandasPlotter
@@ -48,11 +47,18 @@ def main():
     # A third horizontal screen portion, or with the files
     # =========================================================================
     plotter = PandasPlotter()
-    axes = plotter.plot_emission_yield_data(data_matrix.data_matrix[3][0])
+    axes = data_matrix.data_matrix[3][0].plot(plotter)
+
     energies = np.linspace(0, 1000, 1001)
     angles = np.linspace(0, 60, 4)
-    plotter.plot_emission_yield_model(model, energies, angles, axes=axes)
-
+    axes = model.plot(
+        plotter,
+        population="all",
+        emission_data_type="Emission Yield",
+        energies=energies,
+        angles=angles,
+        axes=axes,
+    )
     return
 
 

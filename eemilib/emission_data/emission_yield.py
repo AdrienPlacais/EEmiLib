@@ -12,6 +12,7 @@ from eemilib.emission_data.helper import (
     resample,
 )
 from eemilib.loader.loader import Loader
+from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
     EY_col_energy,
     EY_col_normal,
@@ -172,3 +173,27 @@ class EmissionYield(EmissionData):
             ec2 = None
 
         return ec1, ec2
+
+    def plot[
+        T
+    ](
+        self,
+        plotter: Plotter,
+        *args,
+        lw: float | None = 0.0,
+        marker: str | None = "+",
+        axes: T | None = None,
+        grid: bool = True,
+        **kwargs,
+    ) -> T:
+        """Plot the contained data using plotter."""
+        return plotter.plot_emission_yield(
+            emission_yield=self.data,
+            *args,
+            axes=axes,
+            lw=lw,
+            marker=marker,
+            grid=grid,
+            label=self.label,
+            **kwargs,
+        )

@@ -13,6 +13,8 @@ import pandas as pd
 from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.model.model_config import ModelConfig
 from eemilib.model.parameter import Parameter
+from eemilib.plotter.plotter import Plotter
+from eemilib.util.constants import ImplementedEmissionData, ImplementedPop
 
 
 class Model(ABC):
@@ -57,6 +59,30 @@ class Model(ABC):
         self, data_matrix: DataMatrix, **kwargs
     ) -> None:
         """Find the best parameters for the current model."""
+
+    def plot[
+        T
+    ](
+        self,
+        plotter: Plotter,
+        population: ImplementedPop,
+        emission_data_type: ImplementedEmissionData,
+        energies: np.ndarray,
+        angles: np.ndarray,
+        axes: T | None = None,
+        grid: bool = True,
+        **kwargs,
+    ) -> T:
+        """Plot desired modelled data."""
+        if population != "all":
+            raise NotImplementedError
+        if emission_data_type != "Emission Yield":
+            raise NotImplementedError
+
+        emission_yield = self.teey(energies, angles)
+        return plotter.plot_emission_yield(
+            emission_yield, axes=axes, ls="--", grid=grid, **kwargs
+        )
 
 
 def _default_ey(energy: np.ndarray, theta: np.ndarray) -> pd.DataFrame:
