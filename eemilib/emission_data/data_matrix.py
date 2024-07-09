@@ -19,6 +19,7 @@ from eemilib.emission_data.emission_energy_distribution import (
 from eemilib.emission_data.emission_yield import EmissionYield
 from eemilib.loader.loader import Loader
 from eemilib.model.model_config import ModelConfig
+from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
     IMPLEMENTED_EMISSION_DATA,
     IMPLEMENTED_POP,
@@ -373,3 +374,28 @@ class DataMatrix:
                     f"You must load {emission_data_type} filepath for "
                     + f"population {mandatory_population}"
                 )
+
+    def plot[
+        T
+    ](
+        self,
+        plotter: Plotter,
+        population: ImplementedPop,
+        emission_data_type: ImplementedEmissionData,
+        axes: T | None = None,
+        **kwargs,
+    ) -> (T | None):
+        """Plot desired measured data."""
+        to_plot = self.get_data(
+            population=population, emission_data_type=emission_data_type
+        )  # type: ignore
+
+        if to_plot is None:
+            return
+
+        if isinstance(to_plot, EmissionData):
+            return to_plot.plot(plotter, axes=axes, **kwargs)
+
+        for sub_to_plot in to_plot:
+            axes = sub_to_plot.plot(plotter, axes=axes, **kwargs)
+        return axes

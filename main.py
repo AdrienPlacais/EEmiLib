@@ -29,7 +29,8 @@ def main():
         filepaths, population="all", emission_data_type="Emission Yield"
     )
 
-    # Dropdown menu to select loader
+    # Dropdown menu. Possible values are modules in eemilib.loader, deriving
+    # from Loader
     loader = DeesseLoader()
 
     # "Load" button
@@ -38,6 +39,8 @@ def main():
     # =========================================================================
     # Second horizontal screen portion: several tabs with different models
     # =========================================================================
+    # A dropdown menu. Possible values are modules in eemilib.model, deriving
+    # from Model
     model = Vaughan()
 
     # The "Fit!" button
@@ -46,17 +49,39 @@ def main():
     # =========================================================================
     # A third horizontal screen portion, or with the files
     # =========================================================================
+    # A dropdown menu. Possible values are modules in eemilib.plotter, deriving
+    # from Plotter
     plotter = PandasPlotter()
-    axes = data_matrix.data_matrix[3][0].plot(plotter)
 
-    energies = np.linspace(0, 1000, 1001)
-    angles = np.linspace(0, 60, 4)
+    # Cases to tick (several values possible); the possible values are in the
+    # tuple constants.ImplementedPop
+    population = "all"
+    # Case to tick (one value possible); the possible values are in
+    # constants.ImplementedEmissionData
+    emission_data_type = "Emission Yield"
+
+    # The "Plot measured" button
+    axes = data_matrix.plot(
+        plotter, population=population, emission_data_type=emission_data_type
+    )
+
+    # Energy [eV]: (here start, stop, nstep boxes)
+    e_start = 0
+    e_end = 1000
+    n_e = 1001
+
+    # Angles [deg]: (here start, stop, nstep boxes)
+    theta_start = 0
+    theta_end = 60
+    n_theta = 4
+
+    # The "Plot model" button
     axes = model.plot(
         plotter,
-        population="all",
-        emission_data_type="Emission Yield",
-        energies=energies,
-        angles=angles,
+        population=population,
+        emission_data_type=emission_data_type,
+        energies=np.linspace(e_start, e_end, n_e),
+        angles=np.linspace(theta_start, theta_end, n_theta),
         axes=axes,
     )
     return
