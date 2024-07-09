@@ -10,7 +10,8 @@ from eemilib.model.vaughan import Vaughan
 from eemilib.plotter.pandas import PandasPlotter
 
 
-def main():
+def main() -> None:
+    """Define the simple basic workflow to adapt as GUI."""
     base_folder = Path(
         "/home/placais/Documents/Simulation/python/eemilib/data/deesse/"
     )
@@ -25,8 +26,14 @@ def main():
     # First horizontal screen portion: first tab
     # =========================================================================
     data_matrix = DataMatrix()
+
+    # A matrix with 4 rows, 3 cols. You click on a cell, a window opens and you
+    # select the file(s) to open.
     data_matrix.set_files(
-        filepaths, population="all", emission_data_type="Emission Yield"
+        # filepaths, population="all", emission_data_type="Emission Yield"
+        filepaths,
+        row=3,
+        col=0,
     )
 
     # Dropdown menu. Possible values are modules in eemilib.loader, deriving
