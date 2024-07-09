@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Define a GUI."""
 import sys
 
 sys.path.append("/home/placais/Documents/Simulation/python/eemilib/")
@@ -17,19 +18,29 @@ from PyQt5.QtWidgets import (
     QMainWindow,
     QPushButton,
     QTableWidget,
-    QTableWidgetItem,
     QVBoxLayout,
     QWidget,
 )
 
+from eemilib.emission_data.data_matrix import DataMatrix
+from eemilib.loader.loader import Loader
+from eemilib.model.model import Model
+from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import IMPLEMENTED_EMISSION_DATA, IMPLEMENTED_POP
+from eemilib.util.helper import get_classes
 
 
 class MainWindow(QMainWindow):
 
     def __init__(self):
+        # EEmiLib attributes
+        self.data_matrix = DataMatrix()
+
         super().__init__()
         self.setWindowTitle("EEmiLib GUI")
+
+        # GUI attributes
+        self.file_lists: list[list[None | QListWidget]]
 
         # Central widget
         self.central_widget = QWidget()
@@ -50,26 +61,25 @@ class MainWindow(QMainWindow):
         # Loader dropdown and Load Data button
         loader_layout = QHBoxLayout()
         self.loader_dropdown = QComboBox()
-        self.loader_dropdown.addItems(
-            ["DeesseLoader"]
-        )  # Add other loaders as needed
+        self.loader_dropdown.addItems(get_classes("eemilib/loader", Loader))
         loader_layout.addWidget(QLabel("Select Loader:"))
         loader_layout.addWidget(self.loader_dropdown)
 
-        self.load_button = QPushButton("Load Data")
+        self.load_button = QPushButton("Load data")
         self.load_button.clicked.connect(self.load_data)
         loader_layout.addWidget(self.load_button)
 
         self.main_layout.addLayout(loader_layout)
 
     def setup_file_selection_matrix(self):
-        # File selection matrix (4x3 grid)
-        self.file_matrix_group = QGroupBox("File Selection Matrix")
+        self.file_matrix_group = QGroupBox("Files selection matrix")
         self.file_matrix_layout = QGridLayout()
 
         # Row and column labels
         row_labels = IMPLEMENTED_POP
         col_labels = IMPLEMENTED_EMISSION_DATA
+        n_rows = len(row_labels)
+        n_cols = len(col_labels)
 
         for i, label in enumerate(row_labels):
             self.file_matrix_layout.addWidget(QLabel(label), i + 1, 0)
@@ -77,9 +87,11 @@ class MainWindow(QMainWindow):
         for j, label in enumerate(col_labels):
             self.file_matrix_layout.addWidget(QLabel(label), 0, j + 1)
 
-        self.file_lists = [[None for _ in range(3)] for _ in range(4)]
-        for i in range(4):
-            for j in range(3):
+        self.file_lists = [
+            [None for _ in range(n_cols)] for _ in range(n_rows)
+        ]
+        for i in range(n_rows):
+            for j in range(n_cols):
                 cell_layout = QHBoxLayout()
                 button = QPushButton("📂")
                 button.setFont(QFont("Segoe UI Emoji", 10))
@@ -99,11 +111,13 @@ class MainWindow(QMainWindow):
         # Model selection dropdown and Fit Model button
         model_selection_layout = QHBoxLayout()
         self.model_dropdown = QComboBox()
-        self.model_dropdown.addItems(["Vaughan"])  # Add other models as needed
-        model_selection_layout.addWidget(QLabel("Select Model:"))
+        self.model_dropdown.addItems(get_classes("eemilib/model", Model))
+        model_selection_layout.addWidget(
+            QLabel("Select electron emission model:")
+        )
         model_selection_layout.addWidget(self.model_dropdown)
 
-        self.fit_button = QPushButton("Fit Model")
+        self.fit_button = QPushButton("Fit!")
         self.fit_button.clicked.connect(self.fit_model)
         model_selection_layout.addWidget(self.fit_button)
 
@@ -111,7 +125,7 @@ class MainWindow(QMainWindow):
 
     def setup_model_configuration(self):
         # Model configuration group
-        self.model_config_group = QGroupBox("Model Configuration")
+        self.model_config_group = QGroupBox("Model configuration")
         self.model_config_layout = QVBoxLayout()
 
         self.model_table = QTableWidget(0, 6)
@@ -140,13 +154,13 @@ class MainWindow(QMainWindow):
         # Energy inputs
         energy_layout = QHBoxLayout()
         energy_layout.addWidget(QLabel("Energy [eV]"))
-        energy_layout.addWidget(QLabel("First"))
+        energy_layout.addWidget(QLabel("first"))
         self.energy_first = QLineEdit()
         energy_layout.addWidget(self.energy_first)
-        energy_layout.addWidget(QLabel("Last"))
+        energy_layout.addWidget(QLabel("last"))
         self.energy_last = QLineEdit()
         energy_layout.addWidget(self.energy_last)
-        energy_layout.addWidget(QLabel("Points"))
+        energy_layout.addWidget(QLabel("n points"))
         self.energy_points = QLineEdit()
         energy_layout.addWidget(self.energy_points)
         self.energy_angle_layout.addLayout(energy_layout)
@@ -154,13 +168,13 @@ class MainWindow(QMainWindow):
         # Angle inputs
         angle_layout = QHBoxLayout()
         angle_layout.addWidget(QLabel("Angle [deg]"))
-        angle_layout.addWidget(QLabel("First"))
+        angle_layout.addWidget(QLabel("first"))
         self.angle_first = QLineEdit()
         angle_layout.addWidget(self.angle_first)
-        angle_layout.addWidget(QLabel("Last"))
+        angle_layout.addWidget(QLabel("last"))
         self.angle_last = QLineEdit()
         angle_layout.addWidget(self.angle_last)
-        angle_layout.addWidget(QLabel("Points"))
+        angle_layout.addWidget(QLabel("n points"))
         self.angle_points = QLineEdit()
         angle_layout.addWidget(self.angle_points)
         self.energy_angle_layout.addLayout(angle_layout)
@@ -173,22 +187,22 @@ class MainWindow(QMainWindow):
         plotter_layout = QHBoxLayout()
         self.plotter_dropdown = QComboBox()
         self.plotter_dropdown.addItems(
-            ["PandasPlotter"]
+            get_classes("eemilib/plotter", Plotter)
         )  # Add other plotters as needed
         plotter_layout.addWidget(QLabel("Select Plotter:"))
         plotter_layout.addWidget(self.plotter_dropdown)
 
-        self.plot_measured_button = QPushButton("Plot Measured")
+        self.plot_measured_button = QPushButton("Plot file")
         self.plot_measured_button.clicked.connect(self.plot_measured)
         plotter_layout.addWidget(self.plot_measured_button)
 
-        self.plot_model_button = QPushButton("Plot Model")
+        self.plot_model_button = QPushButton("Plot model")
         self.plot_model_button.clicked.connect(self.plot_model)
         plotter_layout.addWidget(self.plot_model_button)
 
         self.main_layout.addLayout(plotter_layout)
 
-    def select_files(self, row, col):
+    def select_files(self, row: int, col: int) -> None:
         options = QFileDialog.Options()
         file_names, _ = QFileDialog.getOpenFileNames(
             self,
@@ -198,13 +212,20 @@ class MainWindow(QMainWindow):
             options=options,
         )
         if file_names:
-            self.file_lists[row][col].clear()
-            self.file_lists[row][col].addItems(file_names)
-            # Here you would typically store the file paths in your DataMatrix
+            current_file_lists = self.file_lists[row][col]
+            assert current_file_lists is not None
+            current_file_lists.clear()
+            current_file_lists.addItems(file_names)
+            self.data_matrix.set_files(file_names, row=row, col=col)
 
-    def load_data(self):
-        # Implement data loading logic
+    def load_data(self) -> None:
+        """Load all the files set in GUI."""
         print("Loading data...")
+        # if loader is None:
+        #     print("missing arg")
+        #     return
+        # self.data_matrix.load_data(loader)
+        # print("Data loaded!")
 
     def fit_model(self):
         # Implement model fitting logic
