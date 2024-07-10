@@ -18,7 +18,6 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "plot_acceptance-cli=cli.plot_acceptance:main",
             "eemilib-gui=gui.gui:main",
         ],
     },
