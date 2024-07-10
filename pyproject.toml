@@ -35,6 +35,13 @@ eemilib-gui = "eemilib.gui.gui:main"
 Documentation = " https://electron-emission-fitter-electron-emission-83105ebd6cd34bd4e7a3.pages.in2p3.fr/html/index.html"
 Homepage = "https://gitlab.in2p3.fr/electron_emission/eemilib"
 
+[tool.black]
+line-length = 79
+
+[tool.isort]
+profile = "black"
+src_paths = ["./eemilib/"]
+
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib", "--strict-markers"]
 filterwarnings = ["ignore:.*cKDTree.*:DeprecationWarning"]
@@ -42,12 +49,11 @@ markers = []
 minversion = "6.0"
 testpaths = ["tests"]
 
-[tool.isort]
-profile = "black"
-src_paths = ["./eemilib/"]
+[tool.setuptools]
+package-dir = { "" = "src" }
 
-[tool.black]
-line-length = 79
+[tool.setuptools.packages]
+find = { where = ["src"] }
 
 [build-system]
 build-backend = "setuptools.build_meta"
