@@ -2,8 +2,6 @@
 """Define a GUI."""
 import sys
 
-sys.path.append("/home/placais/Documents/Simulation/python/eemilib/")
-
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
     QApplication,
@@ -240,8 +238,12 @@ class MainWindow(QMainWindow):
         print("Plotting model data...")
 
 
-if __name__ == "__main__":
+def main():
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
     sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    main()

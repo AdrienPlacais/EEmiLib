@@ -29,7 +29,7 @@ requires-python = ">=3.12"
 version = "0.0.1"
 
 [project.scripts]
-eemilib-gui = "gui.gui:main"
+eemilib-gui = "eemilib.gui.gui:main"
 
 [project.urls]
 Documentation = " https://electron-emission-fitter-electron-emission-83105ebd6cd34bd4e7a3.pages.in2p3.fr/html/index.html"
