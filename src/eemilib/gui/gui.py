@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Define a GUI."""
 import importlib
-import inspect
 import sys
 
 from eemilib.emission_data.data_matrix import DataMatrix
@@ -9,24 +8,16 @@ from eemilib.gui.helper import setup_dropdown, setup_linspace_entries
 from eemilib.loader.loader import Loader
 from eemilib.model.model import Model
 from eemilib.plotter.plotter import Plotter
-from eemilib.util.constants import (
-    IMPLEMENTED_EMISSION_DATA,
-    IMPLEMENTED_POP,
-    ImplementedEmissionData,
-    ImplementedPop,
-)
-from eemilib.util.helper import get_classes
+from eemilib.util.constants import IMPLEMENTED_EMISSION_DATA, IMPLEMENTED_POP
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
-    QComboBox,
     QFileDialog,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
-    QLineEdit,
     QListWidget,
     QMainWindow,
     QPushButton,
