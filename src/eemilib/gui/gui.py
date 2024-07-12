@@ -168,6 +168,7 @@ class MainWindow(QMainWindow):
             checkbox = QRadioButton(data)
             self.data_checkboxes.append(checkbox)
             data_plot_layout.addWidget(checkbox)
+        self.main_layout.addLayout(data_plot_layout)
 
     def _set_up_population_to_plot_checkboxes(self) -> None:
         """Add checkbox to select which population should be plotted."""
@@ -178,6 +179,7 @@ class MainWindow(QMainWindow):
             checkbox = QCheckBox(pop)
             self.population_checkboxes.append(checkbox)
             population_plot_layout.addWidget(checkbox)
+        self.main_layout.addLayout(population_plot_layout)
 
     def setup_plotter_dropdown(self) -> None:
         """Set the :class:`.Plotter` related interface."""
@@ -236,8 +238,8 @@ class MainWindow(QMainWindow):
         self.data_matrix.load_data(loader)
         print("Data loaded!")
 
-    def fit_model(self):
-        # Implement model fitting logic
+    def fit_model(self) -> None:
+        """Perform the fit on the loaded data."""
         selected_model = self.model_dropdown.currentText()
         module_name = self.model_classes[selected_model]
         model_module = importlib.import_module(module_name)
@@ -246,6 +248,7 @@ class MainWindow(QMainWindow):
         # Instantiate the model with the current data matrix
         model = model_class()
         model.find_optimal_parameters(self.data_matrix)
+        optimal_parameters = model.parameters
 
         # Read parameters from the GUI and set them in the model
         # params = {}
@@ -265,7 +268,7 @@ class MainWindow(QMainWindow):
         # Implement plotting measured data logic
         print("Plotting measured data...")
 
-    def plot_model(self):
+    def plot_model(self) -> None:
         # Implement plotting model data logic
         print("Plotting model data...")
 
