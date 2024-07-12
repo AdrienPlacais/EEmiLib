@@ -260,7 +260,28 @@ class MainWindow(QMainWindow):
 
     def fit_model(self):
         # Implement model fitting logic
-        print("Fitting model...")
+        selected_model = self.model_dropdown.currentText()
+        module_name = self.model_classes[selected_model]
+        model_module = importlib.import_module(module_name)
+        model_class = getattr(model_module, selected_model)
+
+        # Instantiate the model with the current data matrix
+        model = model_class()
+        model.find_optimal_parameters(self.data_matrix)
+
+        # Read parameters from the GUI and set them in the model
+        # params = {}
+        # for row in range(self.model_table.rowCount()):
+        #     param_name = self.model_table.item(row, 0).text()
+        #     param_value = float(self.model_table.item(row, 2).text())
+        #     params[param_name] = param_value
+        #
+        # model.set_parameters(params)
+        #
+        # # Fit the model
+        # model.fit()
+
+        print("Model fitted successfully!")
 
     def plot_measured(self):
         # Implement plotting measured data logic
