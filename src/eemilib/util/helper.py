@@ -7,28 +7,20 @@ import pkgutil
 from abc import ABCMeta
 
 
-def get_classes(module_path: str, base_class: ABCMeta) -> list[str]:
+def get_classes(module_name: str, base_class: ABCMeta) -> dict:
     """In ``module_path``, get every class inheriting from ``class_type``.
 
     Used by the GUI to dynamically keep track of the :class:`.Loader`,
     :class:`.Model` and :class:`.Plotter` that are implemented.
 
     """
-    base_module = importlib.import_module(module_path)
-    class_list = []
-    for _, module_name, is_pkg in pkgutil.iter_modules(
-        [os.path.dirname(base_module.__file__)]
+    classes = {}
+    package = __import__(module_name, fromlist=[""])
+    for loader, name, is_pkg in pkgutil.walk_packages(
+        package.__path__, package.__name__ + "."
     ):
-        if is_pkg:
-            continue
-        full_module_name = f"{module_path}.{module_name}"
-        try:
-            imported_module = importlib.import_module(full_module_name)
-        except ImportError as e:
-            print(f"Error importing {full_module_name}: {e}")
-            continue
-
-        for name, obj in inspect.getmembers(imported_module, inspect.isclass):
-            if issubclass(obj, base_class) and obj is not base_class:
-                class_list.append(name)
-    return class_list
+        module = __import__(name, fromlist=[""])
+        for name, cls in inspect.getmembers(module, inspect.isclass):
+            if issubclass(cls, base_class) and cls is not base_class:
+                classes[name] = module.__name__
+    return classes

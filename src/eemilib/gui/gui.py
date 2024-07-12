@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Define a GUI."""
+import importlib
+import inspect
 import sys
 
 from eemilib.emission_data.data_matrix import DataMatrix
@@ -59,8 +61,9 @@ class MainWindow(QMainWindow):
     def setup_loader_dropdown(self):
         # Loader dropdown and Load Data button
         loader_layout = QHBoxLayout()
+        self.loader_classes = get_classes("eemilib.loader", Loader)
         self.loader_dropdown = QComboBox()
-        self.loader_dropdown.addItems(get_classes("eemilib.loader", Loader))
+        self.loader_dropdown.addItems(self.loader_classes.keys())
         loader_layout.addWidget(QLabel("Select Loader:"))
         loader_layout.addWidget(self.loader_dropdown)
 
@@ -109,8 +112,9 @@ class MainWindow(QMainWindow):
     def setup_model_selection(self):
         # Model selection dropdown and Fit Model button
         model_selection_layout = QHBoxLayout()
+        self.model_classes = get_classes("eemilib.model", Model)
         self.model_dropdown = QComboBox()
-        self.model_dropdown.addItems(get_classes("eemilib.model", Model))
+        self.model_dropdown.addItems(self.model_classes.keys())
         model_selection_layout.addWidget(
             QLabel("Select electron emission model:")
         )
@@ -200,10 +204,9 @@ class MainWindow(QMainWindow):
             population_plot_layout.addWidget(checkbox)
 
         plotter_layout = QHBoxLayout()
+        self.plotter_classes = get_classes("eemilib.plotter", Plotter)
         self.plotter_dropdown = QComboBox()
-        self.plotter_dropdown.addItems(
-            get_classes("eemilib.plotter", Plotter)
-        )  # Add other plotters as needed
+        self.plotter_dropdown.addItems(self.plotter_classes.keys())
         plotter_layout.addWidget(QLabel("Select Plotter:"))
         plotter_layout.addWidget(self.plotter_dropdown)
 
@@ -215,9 +218,6 @@ class MainWindow(QMainWindow):
         self.plot_model_button.clicked.connect(self.plot_model)
         plotter_layout.addWidget(self.plot_model_button)
 
-        # Add checkboxes and plotter layout to the main layout
-        self.main_layout.addLayout(data_plot_layout)
-        self.main_layout.addLayout(population_plot_layout)
         self.main_layout.addLayout(plotter_layout)
 
     def select_files(self, row: int, col: int) -> None:
@@ -234,16 +234,29 @@ class MainWindow(QMainWindow):
             assert current_file_lists is not None
             current_file_lists.clear()
             current_file_lists.addItems(file_names)
-            self.data_matrix.set_files(file_names, row=row, col=col)
+            # self.data_matrix.set_files(file_names, row=row, col=col)
 
     def load_data(self) -> None:
         """Load all the files set in GUI."""
-        print("Loading data...")
-        # if loader is None:
-        #     print("missing arg")
-        #     return
-        # self.data_matrix.load_data(loader)
-        # print("Data loaded!")
+        selected_loader = self.loader_dropdown.currentText()
+        module_name = self.loader_classes[selected_loader]
+        loader_module = importlib.import_module(module_name)
+        loader_class = getattr(loader_module, selected_loader)
+
+        loader = loader_class()
+
+        for i in range(len(IMPLEMENTED_POP)):
+            for j in range(len(IMPLEMENTED_EMISSION_DATA)):
+                file_list_widget = self.file_lists[i][j]
+                if file_list_widget is not None:
+                    file_names = [
+                        file_list_widget.item(k).text()
+                        for k in range(file_list_widget.count())
+                    ]
+                    self.data_matrix.set_files(file_names, row=i, col=j)
+
+        self.data_matrix.load_data(loader)
+        print("Data loaded!")
 
     def fit_model(self):
         # Implement model fitting logic
