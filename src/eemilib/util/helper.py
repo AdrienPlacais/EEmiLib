@@ -1,8 +1,6 @@
 """Define generic utility functions."""
 
-import importlib
 import inspect
-import os
 import pkgutil
 from abc import ABCMeta
 
@@ -16,7 +14,7 @@ def get_classes(module_name: str, base_class: ABCMeta) -> dict:
     """
     classes = {}
     package = __import__(module_name, fromlist=[""])
-    for loader, name, is_pkg in pkgutil.walk_packages(
+    for _, name, _ in pkgutil.walk_packages(
         package.__path__, package.__name__ + "."
     ):
         module = __import__(name, fromlist=[""])
