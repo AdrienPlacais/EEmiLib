@@ -4,12 +4,12 @@ from abc import ABCMeta
 from typing import Any
 
 from eemilib.util.helper import get_classes
+from PyQt5.QtGui import QDoubleValidator, QIntValidator
 from PyQt5.QtWidgets import (
     QComboBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QMainWindow,
     QPushButton,
 )
 
@@ -66,6 +66,7 @@ def setup_dropdown(
 
 def setup_linspace_entries(
     label: str,
+    max_value: float | None = None,
 ) -> tuple[QHBoxLayout, QLineEdit, QLineEdit, QLineEdit]:
     """Create an input to call np.linspace."""
     layout = QHBoxLayout()
@@ -74,13 +75,26 @@ def setup_linspace_entries(
 
     layout.addWidget(QLabel("first"))
     first = QLineEdit()
+    first_validator = QDoubleValidator()
+    first_validator.setBottom(0)
+    if max_value is not None:
+        first_validator.setTop(max_value)
+    first.setValidator(first_validator)
     layout.addWidget(first)
 
     layout.addWidget(QLabel("last"))
     last = QLineEdit()
+    last_validator = QDoubleValidator()
+    last_validator.setBottom(0)
+    if max_value is not None:
+        last_validator.setTop(max_value)
+    last.setValidator(last_validator)
     layout.addWidget(last)
 
     layout.addWidget(QLabel("n points"))
     points = QLineEdit()
+    points_validator = QIntValidator()
+    points_validator.setBottom(0)
+    points.setValidator(points_validator)
     layout.addWidget(points)
     return layout, first, last, points
