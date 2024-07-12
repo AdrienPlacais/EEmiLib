@@ -287,13 +287,22 @@ class MainWindow(QMainWindow):
         if len(populations) == 0:
             print("Please provide at least one population to plot.")
             return
-        emission_data_type = "Emission Yield"
+
+        emission_data_type = [
+            IMPLEMENTED_EMISSION_DATA[i]
+            for i, checked in enumerate(self.data_checkboxes)
+            if checked.isChecked()
+        ]
+        if len(emission_data_type) == 0:
+            print("Please provide a type of data to plot.")
+            return
+
         self.axes = self.data_matrix.plot(
             plotter,
             population=populations,
-            emission_data_type=emission_data_type,
+            emission_data_type=emission_data_type[0],
             axes=self.axes,
-        )
+        )  # type: ignore
 
     def plot_model(self) -> None:
         pass
