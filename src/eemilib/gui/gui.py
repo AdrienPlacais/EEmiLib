@@ -2,9 +2,16 @@
 """Define a GUI."""
 import sys
 
+from eemilib.emission_data.data_matrix import DataMatrix
+from eemilib.loader.loader import Loader
+from eemilib.model.model import Model
+from eemilib.plotter.plotter import Plotter
+from eemilib.util.constants import IMPLEMENTED_EMISSION_DATA, IMPLEMENTED_POP
+from eemilib.util.helper import get_classes
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
     QApplication,
+    QCheckBox,
     QComboBox,
     QFileDialog,
     QGridLayout,
@@ -15,17 +22,11 @@ from PyQt5.QtWidgets import (
     QListWidget,
     QMainWindow,
     QPushButton,
+    QRadioButton,
     QTableWidget,
     QVBoxLayout,
     QWidget,
 )
-
-from eemilib.emission_data.data_matrix import DataMatrix
-from eemilib.loader.loader import Loader
-from eemilib.model.model import Model
-from eemilib.plotter.plotter import Plotter
-from eemilib.util.constants import IMPLEMENTED_EMISSION_DATA, IMPLEMENTED_POP
-from eemilib.util.helper import get_classes
 
 
 class MainWindow(QMainWindow):
@@ -59,7 +60,7 @@ class MainWindow(QMainWindow):
         # Loader dropdown and Load Data button
         loader_layout = QHBoxLayout()
         self.loader_dropdown = QComboBox()
-        self.loader_dropdown.addItems(get_classes("eemilib/loader", Loader))
+        self.loader_dropdown.addItems(get_classes("eemilib.loader", Loader))
         loader_layout.addWidget(QLabel("Select Loader:"))
         loader_layout.addWidget(self.loader_dropdown)
 
@@ -109,7 +110,7 @@ class MainWindow(QMainWindow):
         # Model selection dropdown and Fit Model button
         model_selection_layout = QHBoxLayout()
         self.model_dropdown = QComboBox()
-        self.model_dropdown.addItems(get_classes("eemilib/model", Model))
+        self.model_dropdown.addItems(get_classes("eemilib.model", Model))
         model_selection_layout.addWidget(
             QLabel("Select electron emission model:")
         )
@@ -181,11 +182,27 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.energy_angle_group)
 
     def setup_plotter_dropdown(self):
-        # Plotter dropdown and Plot buttons
+        # Data and Population checkboxes
+        data_plot_layout = QHBoxLayout()
+        data_plot_layout.addWidget(QLabel("Data to plot:"))
+        self.data_checkboxes = []
+        for data in IMPLEMENTED_EMISSION_DATA:
+            checkbox = QRadioButton(data)
+            self.data_checkboxes.append(checkbox)
+            data_plot_layout.addWidget(checkbox)
+
+        population_plot_layout = QHBoxLayout()
+        population_plot_layout.addWidget(QLabel("Population to plot:"))
+        self.population_checkboxes = []
+        for pop in IMPLEMENTED_POP:
+            checkbox = QCheckBox(pop)
+            self.population_checkboxes.append(checkbox)
+            population_plot_layout.addWidget(checkbox)
+
         plotter_layout = QHBoxLayout()
         self.plotter_dropdown = QComboBox()
         self.plotter_dropdown.addItems(
-            get_classes("eemilib/plotter", Plotter)
+            get_classes("eemilib.plotter", Plotter)
         )  # Add other plotters as needed
         plotter_layout.addWidget(QLabel("Select Plotter:"))
         plotter_layout.addWidget(self.plotter_dropdown)
@@ -198,6 +215,9 @@ class MainWindow(QMainWindow):
         self.plot_model_button.clicked.connect(self.plot_model)
         plotter_layout.addWidget(self.plot_model_button)
 
+        # Add checkboxes and plotter layout to the main layout
+        self.main_layout.addLayout(data_plot_layout)
+        self.main_layout.addLayout(population_plot_layout)
         self.main_layout.addLayout(plotter_layout)
 
     def select_files(self, row: int, col: int) -> None:
@@ -246,4 +266,5 @@ def main():
 
 
 if __name__ == "__main__":
+    print(f"{IMPLEMENTED_POP = }")
     main()
