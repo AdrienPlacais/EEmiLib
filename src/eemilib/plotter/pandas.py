@@ -1,10 +1,10 @@
 """Define plotter relying on pandas."""
 
+import matplotlib.pyplot as plt
 import pandas as pd
-from matplotlib.axes import Axes
-
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import EY_col_energy
+from matplotlib.axes import Axes
 
 
 class PandasPlotter(Plotter):
@@ -27,6 +27,7 @@ class PandasPlotter(Plotter):
             **kwargs,
         )
         assert isinstance(axes, Axes)
+        plt.show()
         return axes
 
     def plot_emission_energy_distribution(
