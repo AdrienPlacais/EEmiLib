@@ -1,0 +1,65 @@
+"""Define functions to be as DRY as possible."""
+
+from abc import ABCMeta
+from typing import Any
+
+from eemilib.util.helper import get_classes
+from PyQt5.QtWidgets import (
+    QComboBox,
+    QHBoxLayout,
+    QLabel,
+    QMainWindow,
+    QPushButton,
+)
+
+
+def setup_dropdown(
+    module_name: str,
+    base_class: ABCMeta,
+    buttons_args: dict[str, Any],
+):
+    """Set up interface with a dropdown menu and a button next to it.
+
+    Parameters
+    ----------
+    module_name : str
+        Where the entries of the dropdown will be searched.
+    base_class : ABCMeta
+        The base class from which dropdown entries should inherit.
+    buttons : dict[str, Any]
+        Dictionary where the keys are the name of the buttons to add next to
+        the dropdown menu, and values the callable that will be called when
+        clicking the button.
+
+    Returns
+    -------
+    classes : dict[str, str]
+        Keys are the name of the objects inheriting from ``base_class`` found
+        in ``module_name``. Values are the path leading to them.
+    layout : QHBoxLayout
+        Layout holding together ``dropdown`` and ``button``.
+    dropdown : QComboBox
+        Dropdown menu holding the keys of ``classes``.
+    buttons : list[QPushButton]
+        The buttons next to the dropdown menu.
+
+    """
+    classes = get_classes(module_name, base_class)
+
+    layout = QHBoxLayout()
+
+    dropdown = QComboBox()
+    dropdown.addItems(classes.keys())
+    layout.addWidget(QLabel(f"Select {base_class.__name__}:"))
+    layout.addWidget(dropdown)
+
+    buttons = []
+    for name, action in buttons_args.items():
+        button = QPushButton(name)
+        button.clicked.connect(action)
+        layout.addWidget(button)
+        buttons.append(button)
+
+    return classes, layout, dropdown, buttons
+
+    # window.main_layout.addLayout(layout)
