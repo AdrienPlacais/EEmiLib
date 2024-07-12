@@ -5,6 +5,7 @@ import inspect
 import sys
 
 from eemilib.emission_data.data_matrix import DataMatrix
+from eemilib.gui.helper import setup_dropdown
 from eemilib.loader.loader import Loader
 from eemilib.model.model import Model
 from eemilib.plotter.plotter import Plotter
@@ -53,25 +54,22 @@ class MainWindow(QMainWindow):
         # Add components
         self.setup_loader_dropdown()
         self.setup_file_selection_matrix()
-        self.setup_model_selection()
+        self.setup_model_dropdown()
         self.setup_model_configuration()
         self.setup_energy_angle_inputs()
         self.setup_plotter_dropdown()
 
-    def setup_loader_dropdown(self):
-        # Loader dropdown and Load Data button
-        loader_layout = QHBoxLayout()
-        self.loader_classes = get_classes("eemilib.loader", Loader)
-        self.loader_dropdown = QComboBox()
-        self.loader_dropdown.addItems(self.loader_classes.keys())
-        loader_layout.addWidget(QLabel("Select Loader:"))
-        loader_layout.addWidget(self.loader_dropdown)
-
-        self.load_button = QPushButton("Load data")
-        self.load_button.clicked.connect(self.load_data)
-        loader_layout.addWidget(self.load_button)
-
-        self.main_layout.addLayout(loader_layout)
+    def setup_loader_dropdown(self) -> None:
+        """Set the :class:`.Loader` related interface."""
+        classes, layout, dropdown, buttons = setup_dropdown(
+            module_name="eemilib.loader",
+            base_class=Loader,
+            buttons_args={"Load data": self.load_data},
+        )
+        self.loader_classes = classes
+        self.main_layout.addLayout(layout)
+        self.loader_dropdown = dropdown
+        self.load_button = buttons[0]
 
     def setup_file_selection_matrix(self):
         self.file_matrix_group = QGroupBox("Files selection matrix")
@@ -109,22 +107,17 @@ class MainWindow(QMainWindow):
         self.file_matrix_group.setLayout(self.file_matrix_layout)
         self.main_layout.addWidget(self.file_matrix_group)
 
-    def setup_model_selection(self):
-        # Model selection dropdown and Fit Model button
-        model_selection_layout = QHBoxLayout()
-        self.model_classes = get_classes("eemilib.model", Model)
-        self.model_dropdown = QComboBox()
-        self.model_dropdown.addItems(self.model_classes.keys())
-        model_selection_layout.addWidget(
-            QLabel("Select electron emission model:")
+    def setup_model_dropdown(self) -> None:
+        """Set the :class:`.Model` related interface."""
+        classes, layout, dropdown, buttons = setup_dropdown(
+            module_name="eemilib.model",
+            base_class=Model,
+            buttons_args={"Fit!": self.fit_model},
         )
-        model_selection_layout.addWidget(self.model_dropdown)
-
-        self.fit_button = QPushButton("Fit!")
-        self.fit_button.clicked.connect(self.fit_model)
-        model_selection_layout.addWidget(self.fit_button)
-
-        self.main_layout.addLayout(model_selection_layout)
+        self.model_classes = classes
+        self.main_layout.addLayout(layout)
+        self.model_dropdown = dropdown
+        self.fit_button = buttons[0]
 
     def setup_model_configuration(self):
         # Model configuration group
@@ -185,8 +178,8 @@ class MainWindow(QMainWindow):
         self.energy_angle_group.setLayout(self.energy_angle_layout)
         self.main_layout.addWidget(self.energy_angle_group)
 
-    def setup_plotter_dropdown(self):
-        # Data and Population checkboxes
+    def _set_up_data_to_plot_checkboxes(self) -> None:
+        """Add checkbox to select which data should be plotted."""
         data_plot_layout = QHBoxLayout()
         data_plot_layout.addWidget(QLabel("Data to plot:"))
         self.data_checkboxes = []
@@ -195,6 +188,8 @@ class MainWindow(QMainWindow):
             self.data_checkboxes.append(checkbox)
             data_plot_layout.addWidget(checkbox)
 
+    def _set_up_population_to_plot_checkboxes(self) -> None:
+        """Add checkbox to select which population should be plotted."""
         population_plot_layout = QHBoxLayout()
         population_plot_layout.addWidget(QLabel("Population to plot:"))
         self.population_checkboxes = []
@@ -203,22 +198,24 @@ class MainWindow(QMainWindow):
             self.population_checkboxes.append(checkbox)
             population_plot_layout.addWidget(checkbox)
 
-        plotter_layout = QHBoxLayout()
-        self.plotter_classes = get_classes("eemilib.plotter", Plotter)
-        self.plotter_dropdown = QComboBox()
-        self.plotter_dropdown.addItems(self.plotter_classes.keys())
-        plotter_layout.addWidget(QLabel("Select Plotter:"))
-        plotter_layout.addWidget(self.plotter_dropdown)
+    def setup_plotter_dropdown(self) -> None:
+        """Set the :class:`.Plotter` related interface."""
+        self._set_up_data_to_plot_checkboxes()
+        self._set_up_population_to_plot_checkboxes()
 
-        self.plot_measured_button = QPushButton("Plot file")
-        self.plot_measured_button.clicked.connect(self.plot_measured)
-        plotter_layout.addWidget(self.plot_measured_button)
-
-        self.plot_model_button = QPushButton("Plot model")
-        self.plot_model_button.clicked.connect(self.plot_model)
-        plotter_layout.addWidget(self.plot_model_button)
-
-        self.main_layout.addLayout(plotter_layout)
+        classes, layout, dropdown, buttons = setup_dropdown(
+            module_name="eemilib.plotter",
+            base_class=Plotter,
+            buttons_args={
+                "Plot file": self.plot_measured,
+                "Plot model": self.plot_model,
+            },
+        )
+        self.plotter_classes = classes
+        self.main_layout.addLayout(layout)
+        self.plotter_dropdown = dropdown
+        self.plot_measured_button = buttons[0]
+        self.plot_model_button = buttons[1]
 
     def select_files(self, row: int, col: int) -> None:
         options = QFileDialog.Options()
