@@ -66,7 +66,6 @@ class DataMatrix:
         emission_data_type: ImplementedEmissionData,
     ) -> tuple[int, int]:
         """Give the desired indexes."""
-        print(f"{population_type = }")
         return (
             pop_to_row[population_type],
             emission_data_type_to_col[emission_data_type],
