@@ -2,9 +2,8 @@
 
 import numpy as np
 import pandas as pd
-
-from eemilib.constants import EY_col_energy, EY_col_normal
 from eemilib.emission_data.helper import resample, trim
+from eemilib.util.constants import EY_col_energy, EY_col_normal
 
 
 class TestTrim:
