@@ -180,7 +180,7 @@ class MainWindow(QMainWindow):
         """Add checkbox to select which population should be plotted."""
         population_plot_layout = QHBoxLayout()
         population_plot_layout.addWidget(QLabel("Population to plot:"))
-        self.population_checkboxes = []
+        self.population_checkboxes: list[QCheckBox] = []
         for pop in IMPLEMENTED_POP:
             checkbox = QCheckBox(pop)
             self.population_checkboxes.append(checkbox)
@@ -279,11 +279,18 @@ class MainWindow(QMainWindow):
         plotter_class = getattr(plotter_module, selected_plotter)
         plotter = plotter_class()
 
-        population = "all"
+        populations = [
+            IMPLEMENTED_POP[i]
+            for i, checked in enumerate(self.population_checkboxes)
+            if checked.isChecked()
+        ]
+        if len(populations) == 0:
+            print("Please provide at least one population to plot.")
+            return
         emission_data_type = "Emission Yield"
         self.axes = self.data_matrix.plot(
             plotter,
-            population=population,
+            population=populations,
             emission_data_type=emission_data_type,
             axes=self.axes,
         )
