@@ -314,7 +314,7 @@ class DataMatrix:
                     population=pop, emission_data_type=data_type
                 )  # type: ignore
 
-                if filepath is None:
+                if not filepath:
                     continue
 
                 emission_data = None
