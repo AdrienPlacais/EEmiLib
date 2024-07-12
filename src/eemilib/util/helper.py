@@ -5,14 +5,27 @@ import pkgutil
 from abc import ABCMeta
 
 
-def get_classes(module_name: str, base_class: ABCMeta) -> dict:
+def get_classes(module_name: str, base_class: ABCMeta) -> dict[str, str]:
     """In ``module_path``, get every class inheriting from ``class_type``.
 
     Used by the GUI to dynamically keep track of the :class:`.Loader`,
     :class:`.Model` and :class:`.Plotter` that are implemented.
 
+    Parameters
+    ----------
+    module_name : str
+        The name of a module.
+    base_class : ABCMeta
+        The mother object that classes should inherit from.
+
+    Returns
+    -------
+    classes : dict[str, str]
+        Keys are the name of the objects inheriting from ``base_class`` found
+        in ``module_name``. Values are the path leading to them.
+
     """
-    classes = {}
+    classes: dict[str, str] = {}
     package = __import__(module_name, fromlist=[""])
     for _, name, _ in pkgutil.walk_packages(
         package.__path__, package.__name__ + "."
