@@ -6,6 +6,7 @@ from abc import ABCMeta
 from types import ModuleType
 from typing import Literal
 
+import numpy as np
 from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.gui.helper import setup_dropdown, setup_linspace_entries
 from eemilib.loader.loader import Loader
@@ -26,6 +27,7 @@ from PyQt5.QtWidgets import (
     QGroupBox,
     QHBoxLayout,
     QLabel,
+    QLineEdit,
     QListWidget,
     QMainWindow,
     QPushButton,
@@ -302,7 +304,26 @@ class MainWindow(QMainWindow):
 
     def plot_model(self) -> None:
         """Plot the desired data, as modelled."""
-        pass
+        plotter = self._dropdown_to_class("plotter")()
+
+        success_pop, populations = self._get_populations_to_plot()
+        success_data, emission_data_type = (
+            self._get_emission_data_type_to_plot()
+        )
+        if not (success_pop and success_data):
+            return
+        success_ene, energies = self._gen_linspace("energy")
+        success_angle, angles = self._gen_linspace("angle")
+        if not (success_ene and success_angle):
+            return
+        self.axes = self.model.plot(
+            plotter,
+            population=populations,
+            emission_data_type=emission_data_type,
+            energies=energies,
+            angles=angles,
+            axes=self.axes,
+        )
 
     def _new_axes(self) -> None:
         """Remove the stored axes to plot on a new one."""
@@ -335,6 +356,37 @@ class MainWindow(QMainWindow):
             print("Please provide at least one population to plot.")
             success = False
         return success, populations
+
+    def _gen_linspace(
+        self, variable: Literal["energy", "angle"]
+    ) -> tuple[bool, np.ndarray]:
+        """Take the desired input, check validity, create array of values."""
+        success = True
+        linspace_args = []
+        for box in ("first", "last", "points"):
+            line_name = "_".join((variable, box))
+            qline_edit = getattr(self, line_name, None)
+            if qline_edit is None:
+                print(f"The attribute {line_name} is not defined.")
+                success = False
+                continue
+
+            assert isinstance(qline_edit, QLineEdit)
+            value = qline_edit.displayText()
+            if not value:
+                print(f"You must give a value in {line_name}.")
+                success = False
+                continue
+            linspace_args.append(value)
+
+        if not success:
+            return success, np.linspace(0, 10, 11)
+
+        return success, np.linspace(
+            float(linspace_args[0]),
+            float(linspace_args[1]),
+            int(linspace_args[2]),
+        )
 
 
 def main():
