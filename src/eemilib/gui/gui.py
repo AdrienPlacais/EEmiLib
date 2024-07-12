@@ -5,7 +5,7 @@ import inspect
 import sys
 
 from eemilib.emission_data.data_matrix import DataMatrix
-from eemilib.gui.helper import setup_dropdown
+from eemilib.gui.helper import setup_dropdown, setup_linspace_entries
 from eemilib.loader.loader import Loader
 from eemilib.model.model import Model
 from eemilib.plotter.plotter import Plotter
@@ -33,8 +33,10 @@ from PyQt5.QtWidgets import (
 
 
 class MainWindow(QMainWindow):
+    """This object holds the GUI."""
 
     def __init__(self):
+        """Create the GUI."""
         # EEmiLib attributes
         self.data_matrix = DataMatrix()
 
@@ -44,42 +46,25 @@ class MainWindow(QMainWindow):
         # GUI attributes
         self.file_lists: list[list[None | QListWidget]]
 
-        # Central widget
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
 
-        # Main layout
         self.main_layout = QVBoxLayout(self.central_widget)
 
-        # Add components
-        self.setup_loader_dropdown()
         self.setup_file_selection_matrix()
+        self.setup_loader_dropdown()
         self.setup_model_dropdown()
         self.setup_model_configuration()
         self.setup_energy_angle_inputs()
         self.setup_plotter_dropdown()
 
-    def setup_loader_dropdown(self) -> None:
-        """Set the :class:`.Loader` related interface."""
-        classes, layout, dropdown, buttons = setup_dropdown(
-            module_name="eemilib.loader",
-            base_class=Loader,
-            buttons_args={"Load data": self.load_data},
-        )
-        self.loader_classes = classes
-        self.main_layout.addLayout(layout)
-        self.loader_dropdown = dropdown
-        self.load_button = buttons[0]
-
-    def setup_file_selection_matrix(self):
+    def setup_file_selection_matrix(self) -> None:
+        """Create the 4 * 3 matrix to select the files to load."""
         self.file_matrix_group = QGroupBox("Files selection matrix")
         self.file_matrix_layout = QGridLayout()
 
-        # Row and column labels
-        row_labels = IMPLEMENTED_POP
-        col_labels = IMPLEMENTED_EMISSION_DATA
-        n_rows = len(row_labels)
-        n_cols = len(col_labels)
+        row_labels, col_labels = IMPLEMENTED_POP, IMPLEMENTED_EMISSION_DATA
+        n_rows, n_cols = len(row_labels), len(col_labels)
 
         for i, label in enumerate(row_labels):
             self.file_matrix_layout.addWidget(QLabel(label), i + 1, 0)
@@ -106,6 +91,18 @@ class MainWindow(QMainWindow):
 
         self.file_matrix_group.setLayout(self.file_matrix_layout)
         self.main_layout.addWidget(self.file_matrix_group)
+
+    def setup_loader_dropdown(self) -> None:
+        """Set the :class:`.Loader` related interface."""
+        classes, layout, dropdown, buttons = setup_dropdown(
+            module_name="eemilib.loader",
+            base_class=Loader,
+            buttons_args={"Load data": self.load_data},
+        )
+        self.loader_classes = classes
+        self.main_layout.addLayout(layout)
+        self.loader_dropdown = dropdown
+        self.load_button = buttons[0]
 
     def setup_model_dropdown(self) -> None:
         """Set the :class:`.Model` related interface."""
@@ -147,33 +144,17 @@ class MainWindow(QMainWindow):
         )
         self.energy_angle_layout = QVBoxLayout()
 
-        # Energy inputs
-        energy_layout = QHBoxLayout()
-        energy_layout.addWidget(QLabel("Energy [eV]"))
-        energy_layout.addWidget(QLabel("first"))
-        self.energy_first = QLineEdit()
-        energy_layout.addWidget(self.energy_first)
-        energy_layout.addWidget(QLabel("last"))
-        self.energy_last = QLineEdit()
-        energy_layout.addWidget(self.energy_last)
-        energy_layout.addWidget(QLabel("n points"))
-        self.energy_points = QLineEdit()
-        energy_layout.addWidget(self.energy_points)
-        self.energy_angle_layout.addLayout(energy_layout)
+        layout, first, last, points = setup_linspace_entries("Energy [eV]")
+        self.energy_angle_layout.addLayout(layout)
+        self.energy_first = first
+        self.energy_last = last
+        self.energy_points = points
 
-        # Angle inputs
-        angle_layout = QHBoxLayout()
-        angle_layout.addWidget(QLabel("Angle [deg]"))
-        angle_layout.addWidget(QLabel("first"))
-        self.angle_first = QLineEdit()
-        angle_layout.addWidget(self.angle_first)
-        angle_layout.addWidget(QLabel("last"))
-        self.angle_last = QLineEdit()
-        angle_layout.addWidget(self.angle_last)
-        angle_layout.addWidget(QLabel("n points"))
-        self.angle_points = QLineEdit()
-        angle_layout.addWidget(self.angle_points)
-        self.energy_angle_layout.addLayout(angle_layout)
+        layout, first, last, points = setup_linspace_entries("Angle [deg]")
+        self.energy_angle_layout.addLayout(layout)
+        self.angle_first = first
+        self.angle_last = last
+        self.angle_points = points
 
         self.energy_angle_group.setLayout(self.energy_angle_layout)
         self.main_layout.addWidget(self.energy_angle_group)

@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import (
     QComboBox,
     QHBoxLayout,
     QLabel,
+    QLineEdit,
     QMainWindow,
     QPushButton,
 )
@@ -63,3 +64,25 @@ def setup_dropdown(
     return classes, layout, dropdown, buttons
 
     # window.main_layout.addLayout(layout)
+
+
+def setup_linspace_entries(
+    label: str,
+) -> tuple[QHBoxLayout, QLineEdit, QLineEdit, QLineEdit]:
+    """Create an input to call np.linspace."""
+    layout = QHBoxLayout()
+
+    layout.addWidget(QLabel(label))
+
+    layout.addWidget(QLabel("first"))
+    first = QLineEdit()
+    layout.addWidget(first)
+
+    layout.addWidget(QLabel("last"))
+    last = QLineEdit()
+    layout.addWidget(last)
+
+    layout.addWidget(QLabel("n points"))
+    points = QLineEdit()
+    layout.addWidget(points)
+    return layout, first, last, points
