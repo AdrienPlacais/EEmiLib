@@ -8,6 +8,7 @@
 from abc import ABC, abstractmethod
 from collections.abc import Collection
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from eemilib.emission_data.data_matrix import DataMatrix
@@ -99,6 +100,7 @@ class Model(ABC):
             emission_yield, axes=axes, ls="--", grid=grid, **kwargs
         )
         assert axes is not None
+        plt.show()
         return axes
 
 
