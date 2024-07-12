@@ -2,6 +2,9 @@
 """Define a GUI."""
 import importlib
 import sys
+from abc import ABCMeta
+from types import ModuleType
+from typing import Literal
 
 from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.gui.helper import setup_dropdown, setup_linspace_entries
@@ -214,14 +217,32 @@ class MainWindow(QMainWindow):
             current_file_lists.addItems(file_names)
             # self.data_matrix.set_files(file_names, row=row, col=col)
 
+    def _dropdown_to_class(
+        self, attribute: Literal["loader", "plotter", "model"]
+    ) -> ABCMeta:
+        """Convert dropdown entry to class."""
+        dropdown_name = "_".join((attribute, "dropdown"))
+        dropdown = getattr(self, dropdown_name, None)
+        assert (
+            dropdown is not None
+        ), f" The dropdown attribute {dropdown_name} is not defined."
+
+        module_names_to_paths = "_".join((attribute, "classes"))
+        module_name_to_path = getattr(self, module_names_to_paths, None)
+        assert module_name_to_path is not None, (
+            f"The dictionary {module_names_to_paths}, linking every module"
+            " name to its path, is not defined."
+        )
+
+        selected: str = dropdown.currentText()
+        module_path: str = module_name_to_path[selected]
+        module: ModuleType = importlib.import_module(module_path)
+        my_class = getattr(module, selected)
+        return my_class
+
     def load_data(self) -> None:
         """Load all the files set in GUI."""
-        selected_loader = self.loader_dropdown.currentText()
-        module_name = self.loader_classes[selected_loader]
-        loader_module = importlib.import_module(module_name)
-        loader_class = getattr(loader_module, selected_loader)
-
-        loader = loader_class()
+        loader = self._dropdown_to_class("loader")()
 
         for i in range(len(IMPLEMENTED_POP)):
             for j in range(len(IMPLEMENTED_EMISSION_DATA)):
@@ -238,13 +259,7 @@ class MainWindow(QMainWindow):
 
     def fit_model(self) -> None:
         """Perform the fit on the loaded data."""
-        selected_model = self.model_dropdown.currentText()
-        module_name = self.model_classes[selected_model]
-        model_module = importlib.import_module(module_name)
-        model_class = getattr(model_module, selected_model)
-
-        # Instantiate the model with the current data matrix
-        model = model_class()
+        model = self._dropdown_to_class("model")()
         model.find_optimal_parameters(self.data_matrix)
         optimal_parameters = model.parameters
 
@@ -264,11 +279,7 @@ class MainWindow(QMainWindow):
 
     def plot_measured(self):
         """Plot the desired data, as imported."""
-        selected_plotter: str = self.plotter_dropdown.currentText()
-        plotter_module_name: str = self.plotter_classes[selected_plotter]
-        plotter_module = importlib.import_module(plotter_module_name)
-        plotter_class = getattr(plotter_module, selected_plotter)
-        plotter = plotter_class()
+        plotter = self._dropdown_to_class("plotter")()
 
         populations = [
             IMPLEMENTED_POP[i]
