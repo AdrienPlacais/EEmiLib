@@ -6,10 +6,10 @@
 """
 
 from abc import ABC, abstractmethod
+from collections.abc import Collection
 
 import numpy as np
 import pandas as pd
-
 from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.model.model_config import ModelConfig
 from eemilib.model.parameter import Parameter
@@ -65,7 +65,7 @@ class Model(ABC):
     ](
         self,
         plotter: Plotter,
-        population: ImplementedPop,
+        population: ImplementedPop | Collection[ImplementedPop],
         emission_data_type: ImplementedEmissionData,
         energies: np.ndarray,
         angles: np.ndarray,
@@ -74,15 +74,32 @@ class Model(ABC):
         **kwargs,
     ) -> T:
         """Plot desired modelled data."""
+        if isinstance(population, Collection) and not isinstance(
+            population, str
+        ):
+            for pop in population:
+                axes = self.plot(
+                    plotter,
+                    pop,
+                    emission_data_type,
+                    energies,
+                    angles,
+                    axes=axes,
+                    grid=grid,
+                    **kwargs,
+                )
+            return axes
         if population != "all":
             raise NotImplementedError
         if emission_data_type != "Emission Yield":
             raise NotImplementedError
 
         emission_yield = self.teey(energies, angles)
-        return plotter.plot_emission_yield(
+        axes = plotter.plot_emission_yield(
             emission_yield, axes=axes, ls="--", grid=grid, **kwargs
         )
+        assert axes is not None
+        return axes
 
 
 def _default_ey(energy: np.ndarray, theta: np.ndarray) -> pd.DataFrame:
