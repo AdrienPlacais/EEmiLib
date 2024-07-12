@@ -9,7 +9,12 @@ from eemilib.gui.helper import setup_dropdown, setup_linspace_entries
 from eemilib.loader.loader import Loader
 from eemilib.model.model import Model
 from eemilib.plotter.plotter import Plotter
-from eemilib.util.constants import IMPLEMENTED_EMISSION_DATA, IMPLEMENTED_POP
+from eemilib.util.constants import (
+    IMPLEMENTED_EMISSION_DATA,
+    IMPLEMENTED_POP,
+    ImplementedEmissionData,
+    ImplementedPop,
+)
 from eemilib.util.helper import get_classes
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
@@ -39,6 +44,7 @@ class MainWindow(QMainWindow):
         """Create the GUI."""
         # EEmiLib attributes
         self.data_matrix = DataMatrix()
+        self.axes = None
 
         super().__init__()
         self.setWindowTitle("EEmiLib GUI")
@@ -192,6 +198,7 @@ class MainWindow(QMainWindow):
             buttons_args={
                 "Plot file": self.plot_measured,
                 "Plot model": self.plot_model,
+                "New figure": self._new_axes,
             },
         )
         self.plotter_classes = classes
@@ -265,12 +272,28 @@ class MainWindow(QMainWindow):
         print("Model fitted successfully!")
 
     def plot_measured(self):
-        # Implement plotting measured data logic
-        print("Plotting measured data...")
+        """Plot the desired data, as imported."""
+        selected_plotter: str = self.plotter_dropdown.currentText()
+        plotter_module_name: str = self.plotter_classes[selected_plotter]
+        plotter_module = importlib.import_module(plotter_module_name)
+        plotter_class = getattr(plotter_module, selected_plotter)
+        plotter = plotter_class()
+
+        population = "all"
+        emission_data_type = "Emission Yield"
+        self.axes = self.data_matrix.plot(
+            plotter,
+            population=population,
+            emission_data_type=emission_data_type,
+            axes=self.axes,
+        )
 
     def plot_model(self) -> None:
-        # Implement plotting model data logic
-        print("Plotting model data...")
+        pass
+
+    def _new_axes(self) -> None:
+        """Remove the stored axes to plot on a new one."""
+        self.axes = None
 
 
 def main():
