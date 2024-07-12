@@ -11,7 +11,12 @@ from eemilib.gui.helper import setup_dropdown, setup_linspace_entries
 from eemilib.loader.loader import Loader
 from eemilib.model.model import Model
 from eemilib.plotter.plotter import Plotter
-from eemilib.util.constants import IMPLEMENTED_EMISSION_DATA, IMPLEMENTED_POP
+from eemilib.util.constants import (
+    IMPLEMENTED_EMISSION_DATA,
+    IMPLEMENTED_POP,
+    ImplementedEmissionData,
+    ImplementedPop,
+)
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
     QApplication,
@@ -38,6 +43,7 @@ class MainWindow(QMainWindow):
         """Create the GUI."""
         # EEmiLib attributes
         self.data_matrix = DataMatrix()
+        self.model: Model
         self.axes = None
 
         super().__init__()
@@ -259,9 +265,10 @@ class MainWindow(QMainWindow):
 
     def fit_model(self) -> None:
         """Perform the fit on the loaded data."""
-        model = self._dropdown_to_class("model")()
-        model.find_optimal_parameters(self.data_matrix)
-        optimal_parameters = model.parameters
+        self.model = self._dropdown_to_class("model")()
+        self.model.find_optimal_parameters(self.data_matrix)
+        optimal_parameters = self.model.parameters
+        print(optimal_parameters)
 
         # Read parameters from the GUI and set them in the model
         # params = {}
@@ -275,21 +282,37 @@ class MainWindow(QMainWindow):
         # # Fit the model
         # model.fit()
 
-        print("Model fitted successfully!")
-
-    def plot_measured(self):
+    def plot_measured(self) -> None:
         """Plot the desired data, as imported."""
         plotter = self._dropdown_to_class("plotter")()
 
-        populations = [
-            IMPLEMENTED_POP[i]
-            for i, checked in enumerate(self.population_checkboxes)
-            if checked.isChecked()
-        ]
-        if len(populations) == 0:
-            print("Please provide at least one population to plot.")
+        success_pop, populations = self._get_populations_to_plot()
+        success_data, emission_data_type = (
+            self._get_emission_data_type_to_plot()
+        )
+        if not (success_pop and success_data):
             return
 
+        self.axes = self.data_matrix.plot(
+            plotter,
+            population=populations,
+            emission_data_type=emission_data_type,
+            axes=self.axes,
+        )
+
+    def plot_model(self) -> None:
+        """Plot the desired data, as modelled."""
+        pass
+
+    def _new_axes(self) -> None:
+        """Remove the stored axes to plot on a new one."""
+        self.axes = None
+
+    def _get_emission_data_type_to_plot(
+        self,
+    ) -> tuple[bool, ImplementedEmissionData]:
+        """Read input to determine the emission data type to plot."""
+        success = True
         emission_data_type = [
             IMPLEMENTED_EMISSION_DATA[i]
             for i, checked in enumerate(self.data_checkboxes)
@@ -297,21 +320,21 @@ class MainWindow(QMainWindow):
         ]
         if len(emission_data_type) == 0:
             print("Please provide a type of data to plot.")
-            return
+            success = False
+        return success, emission_data_type[0]
 
-        self.axes = self.data_matrix.plot(
-            plotter,
-            population=populations,
-            emission_data_type=emission_data_type[0],
-            axes=self.axes,
-        )  # type: ignore
-
-    def plot_model(self) -> None:
-        pass
-
-    def _new_axes(self) -> None:
-        """Remove the stored axes to plot on a new one."""
-        self.axes = None
+    def _get_populations_to_plot(self) -> tuple[bool, list[ImplementedPop]]:
+        """Read input to determine the populations to plot."""
+        success = True
+        populations = [
+            IMPLEMENTED_POP[i]
+            for i, checked in enumerate(self.population_checkboxes)
+            if checked.isChecked()
+        ]
+        if len(populations) == 0:
+            print("Please provide at least one population to plot.")
+            success = False
+        return success, populations
 
 
 def main():
