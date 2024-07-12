@@ -63,8 +63,6 @@ def setup_dropdown(
 
     return classes, layout, dropdown, buttons
 
-    # window.main_layout.addLayout(layout)
-
 
 def setup_linspace_entries(
     label: str,
