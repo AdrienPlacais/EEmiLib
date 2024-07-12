@@ -66,6 +66,7 @@ class DataMatrix:
         emission_data_type: ImplementedEmissionData,
     ) -> tuple[int, int]:
         """Give the desired indexes."""
+        print(f"{population_type = }")
         return (
             pop_to_row[population_type],
             emission_data_type_to_col[emission_data_type],
@@ -380,12 +381,21 @@ class DataMatrix:
     ](
         self,
         plotter: Plotter,
-        population: ImplementedPop,
+        population: ImplementedPop | Collection[ImplementedPop],
         emission_data_type: ImplementedEmissionData,
         axes: T | None = None,
         **kwargs,
     ) -> (T | None):
         """Plot desired measured data."""
+        if isinstance(population, Collection) and not isinstance(
+            population, str
+        ):
+            for pop in population:
+                axes = self.plot(
+                    plotter, pop, emission_data_type, axes=axes, **kwargs
+                )
+            return axes
+
         to_plot = self.get_data(
             population=population, emission_data_type=emission_data_type
         )  # type: ignore
