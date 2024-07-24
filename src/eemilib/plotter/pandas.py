@@ -2,13 +2,19 @@
 
 import matplotlib.pyplot as plt
 import pandas as pd
-from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import EY_col_energy
 from matplotlib.axes import Axes
+
+from eemilib.plotter.plotter import Plotter
 
 
 class PandasPlotter(Plotter):
     """A :class:`.Plotter` using pandas lib."""
+
+    def __init__(self, *args, **kwargs) -> None:
+        """Instantiate object, activate interactive plotting."""
+        plt.ion()
+        return super().__init__(*args, **kwargs)
 
     def plot_emission_yield(
         self,
@@ -27,7 +33,6 @@ class PandasPlotter(Plotter):
             **kwargs,
         )
         assert isinstance(axes, Axes)
-        plt.show()
         return axes
 
     def plot_emission_energy_distribution(

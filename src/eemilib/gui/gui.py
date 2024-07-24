@@ -320,6 +320,7 @@ class MainWindow(QMainWindow):
         success_angle, angles = self._gen_linspace("angle")
         if not (success_ene and success_angle):
             return
+
         self.axes = self.model.plot(
             plotter,
             population=populations,

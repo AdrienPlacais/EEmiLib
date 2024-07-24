@@ -14,8 +14,9 @@ import pandas as pd
 from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.model.model_config import ModelConfig
 from eemilib.model.parameter import Parameter
-from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import ImplementedEmissionData, ImplementedPop
+
+from eemilib.plotter.plotter import Plotter
 
 
 class Model(ABC):
@@ -100,7 +101,6 @@ class Model(ABC):
             emission_yield, axes=axes, ls="--", grid=grid, **kwargs
         )
         assert axes is not None
-        plt.show()
         return axes
 
 
