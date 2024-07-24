@@ -98,3 +98,21 @@ def setup_linspace_entries(
     points.setValidator(points_validator)
     layout.addWidget(points)
     return layout, first, last, points
+
+
+# Associate Parameters attributes with their column position
+# Note that "name" is the key in the Model.parameters dict rather than the
+# Parameter.name attribute (which is not consistent)
+PARAMETER_ATTR_TO_POS = {
+    "name": 0,
+    "unit": 1,
+    "value": 2,
+    "lower_bound": 3,
+    "upper_bound": 4,
+    "description": 5,
+    "lock": 6,
+}
+
+PARAMETER_POS_TO_ATTR = {
+    val: key for key, val in PARAMETER_ATTR_TO_POS.items()
+}

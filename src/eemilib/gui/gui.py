@@ -9,7 +9,12 @@ from typing import Literal
 
 import numpy as np
 from eemilib.emission_data.data_matrix import DataMatrix
-from eemilib.gui.helper import setup_dropdown, setup_linspace_entries
+from eemilib.gui.helper import (
+    PARAMETER_ATTR_TO_POS,
+    PARAMETER_POS_TO_ATTR,
+    setup_dropdown,
+    setup_linspace_entries,
+)
 from eemilib.util.constants import (
     IMPLEMENTED_EMISSION_DATA,
     IMPLEMENTED_POP,
@@ -139,15 +144,7 @@ class MainWindow(QMainWindow):
 
         self.model_table = QTableWidget(0, 7)
         self.model_table.setHorizontalHeaderLabels(
-            [
-                "Parameter",
-                "Unit",
-                "Value",
-                "Lower Bound",
-                "Upper Bound",
-                "Description",
-                "Lock",
-            ]
+            list(PARAMETER_ATTR_TO_POS.keys())
         )
         self.model_table.setMaximumHeight(1000)
         self.model_table.setMinimumHeight(200)
@@ -280,26 +277,26 @@ class MainWindow(QMainWindow):
 
     def _setup_model(self) -> None:
         """Instantiate model when it is selected in dropdown menu."""
-        print("called")
         self.model = self._dropdown_to_class("model")()
         self._populate_parameters_table_constants()
+        self.model_table.itemChanged.connect(
+            self._update_parameter_value_from_table
+        )
 
     def _populate_parameters_table_constants(self) -> None:
         """Print out the model parameters in dedicated table."""
         self._clear_parameters_table()
 
-        for i, param in enumerate(self.model.parameters.values()):
-            self.model_table.insertRow(i)
+        for row, (name, param) in enumerate(self.model.parameters.items()):
+            self.model_table.insertRow(row)
 
-            self.model_table.setItem(i, 0, QTableWidgetItem(param.markdown))
-            self.model_table.setItem(i, 1, QTableWidgetItem(param.unit))
-            self.model_table.setItem(
-                i, 3, QTableWidgetItem(str(param.lower_bound))
-            )
-            self.model_table.setItem(
-                i, 4, QTableWidgetItem(str(param.upper_bound))
-            )
-            self.model_table.setItem(i, 5, QTableWidgetItem(param.description))
+            self.model_table.setItem(row, 0, QTableWidgetItem(name))
+            for attr in ("unit", "lower_bound", "upper_bound", "description"):
+                col = PARAMETER_ATTR_TO_POS[attr]
+                attr_value = getattr(param, attr, None)
+                self.model_table.setItem(
+                    row, col, QTableWidgetItem(str(attr_value))
+                )
 
     def fit_model(self) -> None:
         """Perform the fit on the loaded data."""
@@ -311,8 +308,39 @@ class MainWindow(QMainWindow):
 
     def _populate_parameters_table_values(self) -> None:
         """Print out the values of the model parameters in dedicated table."""
+        for row, param in enumerate(self.model.parameters.values()):
+            for attr in ("value",):
+                col = PARAMETER_ATTR_TO_POS[attr]
+                attr_value = getattr(param, attr, None)
+                self.model_table.setItem(
+                    row, col, QTableWidgetItem(str(attr_value))
+                )
+
         for i, param in enumerate(self.model.parameters.values()):
             self.model_table.setItem(i, 2, QTableWidgetItem(str(param.value)))
+
+    def _update_parameter_value_from_table(
+        self, item: QTableWidgetItem
+    ) -> None:
+        """Update :class:`.Parameter` value based on user input in table."""
+        row, col = item.row(), item.column()
+        updatable_attr = ("value", "lower_bound", "upper_bound")
+        attr = PARAMETER_POS_TO_ATTR[col]
+        if attr not in updatable_attr:
+            print("This column cannot be updated.")
+            return
+
+        name = self.model_table.item(row, 0).text()
+        parameter = self.model.parameters.get(name)
+
+        if parameter:
+            try:
+                new_value = float(item.text())
+                setattr(parameter, attr, new_value)
+
+            except ValueError:
+                print(f"Invalid value entered for {name}")
+                item.setText(str(parameter.value))
 
     def plot_measured(self) -> None:
         """Plot the desired data, as imported."""
