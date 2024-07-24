@@ -163,16 +163,22 @@ class MainWindow(QMainWindow):
         layout, first, last, points = setup_linspace_entries("Energy [eV]")
         self.energy_angle_layout.addLayout(layout)
         self.energy_first = first
+        self.energy_first.setText(str(0.0))
         self.energy_last = last
+        self.energy_last.setText(str(500.0))
         self.energy_points = points
+        self.energy_points.setText(str(501))
 
         layout, first, last, points = setup_linspace_entries(
             "Angle [deg]", max_value=90.0
         )
         self.energy_angle_layout.addLayout(layout)
         self.angle_first = first
+        self.angle_first.setText(str(0.0))
         self.angle_last = last
+        self.angle_last.setText(str(60.0))
         self.angle_points = points
+        self.angle_points.setText(str(4))
 
         self.energy_angle_group.setLayout(self.energy_angle_layout)
         self.main_layout.addWidget(self.energy_angle_group)
