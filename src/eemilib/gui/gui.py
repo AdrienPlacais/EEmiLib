@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Define a GUI."""
+"""Define a GUI.
+
+.. todo::
+    Grey out the files, model data not supported by data under study.
+
+"""
 import importlib
 import sys
 from abc import ABCMeta
