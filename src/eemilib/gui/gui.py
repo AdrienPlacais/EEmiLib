@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Define a GUI."""
 import importlib
+import pprint
 import sys
 from abc import ABCMeta
 from types import ModuleType
@@ -9,9 +10,6 @@ from typing import Literal
 import numpy as np
 from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.gui.helper import setup_dropdown, setup_linspace_entries
-from eemilib.loader.loader import Loader
-from eemilib.model.model import Model
-from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
     IMPLEMENTED_EMISSION_DATA,
     IMPLEMENTED_POP,
@@ -36,6 +34,10 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+from eemilib.loader.loader import Loader
+from eemilib.model.model import Model
+from eemilib.plotter.plotter import Plotter
 
 
 class MainWindow(QMainWindow):
@@ -272,7 +274,7 @@ class MainWindow(QMainWindow):
         self.model = self._dropdown_to_class("model")()
         self.model.find_optimal_parameters(self.data_matrix)
         optimal_parameters = self.model.parameters
-        print(optimal_parameters)
+        pprint.pprint(optimal_parameters)
 
         # Read parameters from the GUI and set them in the model
         # params = {}
