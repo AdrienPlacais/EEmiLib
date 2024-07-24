@@ -3,14 +3,18 @@
 from abc import ABCMeta
 from typing import Any
 
+from eemilib.model.parameter import Parameter
 from eemilib.util.helper import get_classes
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QDoubleValidator, QIntValidator
 from PyQt5.QtWidgets import (
+    QCheckBox,
     QComboBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
+    QWidget,
 )
 
 
@@ -98,6 +102,32 @@ def setup_linspace_entries(
     points.setValidator(points_validator)
     layout.addWidget(points)
     return layout, first, last, points
+
+
+def setup_lock_checkbox(
+    parameter: Parameter,
+) -> QWidget:
+    """Create the checkbox for the Lock button."""
+    checkbox = QCheckBox()
+    checkbox.setChecked(parameter.is_locked)
+    checkbox.stateChanged.connect(
+        lambda state, param=parameter: _toggle_lock(state, param)
+    )
+
+    checkbox_widget = QWidget()
+    layout = QHBoxLayout(checkbox_widget)
+    layout.addWidget(checkbox)
+    layout.setAlignment(Qt.AlignCenter)
+    layout.setContentsMargins(0, 0, 0, 0)
+    checkbox_widget.setLayout(layout)
+    return checkbox_widget
+
+
+def _toggle_lock(state: Any, parameter: Parameter) -> None:
+    """Activate/deactivate lock."""
+    if state == Qt.Checked:
+        parameter.lock()
+    parameter.unlock()
 
 
 # Associate Parameters attributes with their column position

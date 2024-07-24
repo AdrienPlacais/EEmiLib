@@ -13,6 +13,7 @@ from eemilib.gui.helper import (
     PARAMETER_POS_TO_ATTR,
     setup_dropdown,
     setup_linspace_entries,
+    setup_lock_checkbox,
 )
 from eemilib.util.constants import (
     IMPLEMENTED_EMISSION_DATA,
@@ -296,6 +297,9 @@ class MainWindow(QMainWindow):
                 self.model_table.setItem(
                     row, col, QTableWidgetItem(str(attr_value))
                 )
+            col_lock = PARAMETER_ATTR_TO_POS["lock"]
+            checkbox_widget = setup_lock_checkbox(param)
+            self.model_table.setCellWidget(row, col_lock, checkbox_widget)
 
     def fit_model(self) -> None:
         """Perform the fit on the loaded data."""
