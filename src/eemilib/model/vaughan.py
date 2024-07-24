@@ -12,12 +12,12 @@ import math
 
 import numpy as np
 import pandas as pd
-
 from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.emission_data.emission_yield import EmissionYield
-from eemilib.model.model import Model
 from eemilib.model.model_config import ModelConfig
 from eemilib.model.parameter import Parameter
+
+from eemilib.model.model import Model
 
 
 class Vaughan(Model):
@@ -45,7 +45,7 @@ class Vaughan(Model):
                 r"E_0", "eV", 12.5, description="Threshold energy."
             ),
             "E_0p": Parameter(
-                r"E_0", "eV", 11.5, description="To smoothen transition."
+                r"E_0_p", "eV", 11.5, description="To smoothen transition."
             ),
             "E_max": Parameter(r"E_{max}", "eV", 0.0, lower_bound=0.0),
             "teey_low": Parameter(

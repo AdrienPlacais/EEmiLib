@@ -31,6 +31,7 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QRadioButton,
     QTableWidget,
+    QTableWidgetItem,
     QVBoxLayout,
     QWidget,
 )
@@ -65,6 +66,7 @@ class MainWindow(QMainWindow):
         self.setup_loader_dropdown()
         self.setup_model_dropdown()
         self.setup_model_configuration()
+        self._setup_model()
         self.setup_energy_angle_inputs()
         self.setup_plotter_dropdown()
 
@@ -123,15 +125,19 @@ class MainWindow(QMainWindow):
         )
         self.model_classes = classes
         self.main_layout.addLayout(layout)
+
+        dropdown.currentIndexChanged.connect(self._setup_model)
         self.model_dropdown = dropdown
+
         self.fit_button = buttons[0]
 
-    def setup_model_configuration(self):
+    def setup_model_configuration(self) -> None:
+        """Set the interface related to the model specific parameters."""
         # Model configuration group
         self.model_config_group = QGroupBox("Model configuration")
         self.model_config_layout = QVBoxLayout()
 
-        self.model_table = QTableWidget(0, 6)
+        self.model_table = QTableWidget(0, 7)
         self.model_table.setHorizontalHeaderLabels(
             [
                 "Parameter",
@@ -139,9 +145,12 @@ class MainWindow(QMainWindow):
                 "Value",
                 "Lower Bound",
                 "Upper Bound",
+                "Description",
                 "Lock",
             ]
         )
+        self.model_table.setMaximumHeight(1000)
+        self.model_table.setMinimumHeight(200)
         self.model_config_layout.addWidget(self.model_table)
 
         self.model_config_group.setLayout(self.model_config_layout)
@@ -269,24 +278,41 @@ class MainWindow(QMainWindow):
         self.data_matrix.load_data(loader)
         print("Data loaded!")
 
+    def _setup_model(self) -> None:
+        """Instantiate model when it is selected in dropdown menu."""
+        print("called")
+        self.model = self._dropdown_to_class("model")()
+        self._populate_parameters_table_constants()
+
+    def _populate_parameters_table_constants(self) -> None:
+        """Print out the model parameters in dedicated table."""
+        self._clear_parameters_table()
+
+        for i, param in enumerate(self.model.parameters.values()):
+            self.model_table.insertRow(i)
+
+            self.model_table.setItem(i, 0, QTableWidgetItem(param.markdown))
+            self.model_table.setItem(i, 1, QTableWidgetItem(param.unit))
+            self.model_table.setItem(
+                i, 3, QTableWidgetItem(str(param.lower_bound))
+            )
+            self.model_table.setItem(
+                i, 4, QTableWidgetItem(str(param.upper_bound))
+            )
+            self.model_table.setItem(i, 5, QTableWidgetItem(param.description))
+
     def fit_model(self) -> None:
         """Perform the fit on the loaded data."""
-        self.model = self._dropdown_to_class("model")()
+        if not hasattr(self, "model") or not self.model:
+            print("Please select a model before fitting.")
+            return
         self.model.find_optimal_parameters(self.data_matrix)
-        optimal_parameters = self.model.parameters
-        pprint.pprint(optimal_parameters)
+        self._populate_parameters_table_values()
 
-        # Read parameters from the GUI and set them in the model
-        # params = {}
-        # for row in range(self.model_table.rowCount()):
-        #     param_name = self.model_table.item(row, 0).text()
-        #     param_value = float(self.model_table.item(row, 2).text())
-        #     params[param_name] = param_value
-        #
-        # model.set_parameters(params)
-        #
-        # # Fit the model
-        # model.fit()
+    def _populate_parameters_table_values(self) -> None:
+        """Print out the values of the model parameters in dedicated table."""
+        for i, param in enumerate(self.model.parameters.values()):
+            self.model_table.setItem(i, 2, QTableWidgetItem(str(param.value)))
 
     def plot_measured(self) -> None:
         """Plot the desired data, as imported."""
@@ -333,6 +359,10 @@ class MainWindow(QMainWindow):
     def _new_axes(self) -> None:
         """Remove the stored axes to plot on a new one."""
         self.axes = None
+
+    def _clear_parameters_table(self) -> None:
+        """Remove entries of the parameters table but not headers."""
+        self.model_table.setRowCount(0)
 
     def _get_emission_data_type_to_plot(
         self,
