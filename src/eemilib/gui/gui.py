@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Define a GUI."""
 import importlib
-import pprint
 import sys
 from abc import ABCMeta
 from types import ModuleType
