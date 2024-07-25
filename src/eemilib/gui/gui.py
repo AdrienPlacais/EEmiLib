@@ -29,6 +29,7 @@ from eemilib.gui.helper import (
     PARAMETER_ATTR_TO_POS,
     PARAMETER_POS_TO_ATTR,
     setup_dropdown,
+    setup_file_selection_widget,
     setup_linspace_entries,
     setup_lock_checkbox,
 )
@@ -112,16 +113,14 @@ class MainWindow(QMainWindow):
         for i in range(n_rows):
             for j in range(n_cols):
                 cell_layout = QHBoxLayout()
-                button = QPushButton("📂")
-                button.setFont(QFont("Segoe UI Emoji", 10))
-                button.clicked.connect(
+                button, file_list = setup_file_selection_widget(
                     lambda _, x=i, y=j: self.select_files(x, y)
                 )
                 cell_layout.addWidget(button)
-                file_list = QListWidget()
                 cell_layout.addWidget(file_list)
-                self.file_matrix_layout.addLayout(cell_layout, i + 1, j + 1)
                 self.file_lists[i][j] = file_list
+
+                self.file_matrix_layout.addLayout(cell_layout, i + 1, j + 1)
 
         self.file_matrix_group.setLayout(self.file_matrix_layout)
         self.main_layout.addWidget(self.file_matrix_group)
@@ -155,7 +154,6 @@ class MainWindow(QMainWindow):
 
     def setup_model_configuration(self) -> None:
         """Set the interface related to the model specific parameters."""
-        # Model configuration group
         self.model_config_group = QGroupBox("Model configuration")
         self.model_config_layout = QVBoxLayout()
 
