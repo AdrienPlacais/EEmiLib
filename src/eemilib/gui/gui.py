@@ -32,6 +32,7 @@ from eemilib.gui.helper import (
     setup_file_selection_widget,
     setup_linspace_entries,
     setup_lock_checkbox,
+    to_plot_checkboxes,
 )
 from eemilib.util.constants import (
     IMPLEMENTED_EMISSION_DATA,
@@ -199,25 +200,23 @@ class MainWindow(QMainWindow):
 
     def _set_up_data_to_plot_checkboxes(self) -> None:
         """Add checkbox to select which data should be plotted."""
-        data_plot_layout = QHBoxLayout()
-        data_plot_layout.addWidget(QLabel("Data to plot:"))
-        self.data_checkboxes = []
-        for data in IMPLEMENTED_EMISSION_DATA:
-            checkbox = QRadioButton(data)
-            self.data_checkboxes.append(checkbox)
-            data_plot_layout.addWidget(checkbox)
-        self.main_layout.addLayout(data_plot_layout)
+        layout, checkboxes = to_plot_checkboxes(
+            "Data to plot:",
+            IMPLEMENTED_EMISSION_DATA,
+            several_can_be_checked=False,
+        )
+        self.main_layout.addLayout(layout)
+        self.data_checkboxes = checkboxes
 
     def _set_up_population_to_plot_checkboxes(self) -> None:
         """Add checkbox to select which population should be plotted."""
-        population_plot_layout = QHBoxLayout()
-        population_plot_layout.addWidget(QLabel("Population to plot:"))
-        self.population_checkboxes: list[QCheckBox] = []
-        for pop in IMPLEMENTED_POP:
-            checkbox = QCheckBox(pop)
-            self.population_checkboxes.append(checkbox)
-            population_plot_layout.addWidget(checkbox)
-        self.main_layout.addLayout(population_plot_layout)
+        layout, checkboxes = to_plot_checkboxes(
+            "Population to plot:",
+            IMPLEMENTED_POP,
+            several_can_be_checked=True,
+        )
+        self.main_layout.addLayout(layout)
+        self.population_checkboxes = checkboxes
 
     def setup_plotter_dropdown(self) -> None:
         """Set the :class:`.Plotter` related interface."""

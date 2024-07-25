@@ -1,8 +1,8 @@
 """Define functions to be as DRY as possible."""
 
 from abc import ABCMeta
-from collections.abc import Callable
-from typing import Any
+from collections.abc import Callable, Collection
+from typing import Any, Literal, overload
 
 from eemilib.model.parameter import Parameter
 from eemilib.util.helper import get_classes
@@ -16,6 +16,7 @@ from PyQt5.QtWidgets import (
     QLineEdit,
     QListWidget,
     QPushButton,
+    QRadioButton,
     QWidget,
 )
 
@@ -147,6 +148,44 @@ def _toggle_lock(state: Any, parameter: Parameter) -> None:
     if state == Qt.Checked:
         parameter.lock()
     parameter.unlock()
+
+
+@overload
+def to_plot_checkboxes(
+    label: str,
+    boxes_labels: Collection[str],
+    *,
+    several_can_be_checked: Literal[False],
+) -> tuple[QHBoxLayout, list[QRadioButton]]: ...
+
+
+@overload
+def to_plot_checkboxes(
+    label: str,
+    boxes_labels: Collection[str],
+    *,
+    several_can_be_checked: Literal[True],
+) -> tuple[QHBoxLayout, list[QCheckBox]]: ...
+
+
+def to_plot_checkboxes(
+    label: str,
+    boxes_labels: Collection[str],
+    *,
+    several_can_be_checked: bool = False,
+) -> tuple[QHBoxLayout, list[QRadioButton] | list[QCheckBox]]:
+    """Create several check boxes next to each other."""
+    checkbox_constructor = QCheckBox
+    if not several_can_be_checked:
+        checkbox_constructor = QRadioButton
+    checkboxes = [checkbox_constructor(x) for x in boxes_labels]
+
+    layout = QHBoxLayout()
+    layout.addWidget(QLabel(label))
+    for checkbox in checkboxes:
+        layout.addWidget(checkbox)
+
+    return layout, checkboxes
 
 
 # Associate Parameters attributes with their column position
