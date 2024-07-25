@@ -4,6 +4,18 @@
 .. todo::
     Grey out the files, model data not supported by data under study.
 
+.. todo::
+    Export/Import settings
+
+.. todo::
+    logging module
+
+.. todo::
+    Add measurables at bottom
+
+.. todo::
+    Help buttons
+
 """
 import importlib
 import sys
