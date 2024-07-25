@@ -168,32 +168,31 @@ class MainWindow(QMainWindow):
         self.model_config_group.setLayout(self.model_config_layout)
         self.main_layout.addWidget(self.model_config_group)
 
-    def setup_energy_angle_inputs(self):
-        # Energy and Angle input fields
+    def setup_energy_angle_inputs(self) -> None:
+        """Set the energy and angle inputs for the model plot."""
         self.energy_angle_group = QGroupBox(
             "PEs energy and angle range (model plot)"
         )
         self.energy_angle_layout = QVBoxLayout()
 
-        layout, first, last, points = setup_linspace_entries("Energy [eV]")
-        self.energy_angle_layout.addLayout(layout)
-        self.energy_first = first
-        self.energy_first.setText(str(0.0))
-        self.energy_last = last
-        self.energy_last.setText(str(500.0))
-        self.energy_points = points
-        self.energy_points.setText(str(501))
+        quantities = ("energy", "angle")
+        labels = ("Energy [eV]", "Angle [deg]")
+        initial_values = ((0.0, 500.0, 501), (0.0, 60.0, 4))
+        max_values = (None, 90.0)
+        for qty, label, initial, max_val in zip(
+            quantities, labels, initial_values, max_values
+        ):
+            layout, first, last, points = setup_linspace_entries(
+                label,
+                initial_values=initial,
+                max_value=max_val,
+            )
+            self.energy_angle_layout.addLayout(layout)
 
-        layout, first, last, points = setup_linspace_entries(
-            "Angle [deg]", max_value=90.0
-        )
-        self.energy_angle_layout.addLayout(layout)
-        self.angle_first = first
-        self.angle_first.setText(str(0.0))
-        self.angle_last = last
-        self.angle_last.setText(str(60.0))
-        self.angle_points = points
-        self.angle_points.setText(str(4))
+            for attr, attr_name in zip(
+                (first, last, points), ("first", "last", "points")
+            ):
+                setattr(self, "_".join((qty, attr_name)), attr)
 
         self.energy_angle_group.setLayout(self.energy_angle_layout)
         self.main_layout.addWidget(self.energy_angle_group)

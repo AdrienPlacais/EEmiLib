@@ -84,6 +84,7 @@ def setup_dropdown(
 
 def setup_linspace_entries(
     label: str,
+    initial_values: tuple[float, float, int],
     max_value: float | None = None,
 ) -> tuple[QHBoxLayout, QLineEdit, QLineEdit, QLineEdit]:
     """Create an input to call np.linspace."""
@@ -98,6 +99,7 @@ def setup_linspace_entries(
     if max_value is not None:
         first_validator.setTop(max_value)
     first.setValidator(first_validator)
+    first.setText(str(initial_values[0]))
     layout.addWidget(first)
 
     layout.addWidget(QLabel("last"))
@@ -107,6 +109,7 @@ def setup_linspace_entries(
     if max_value is not None:
         last_validator.setTop(max_value)
     last.setValidator(last_validator)
+    last.setText(str(initial_values[1]))
     layout.addWidget(last)
 
     layout.addWidget(QLabel("n points"))
@@ -114,7 +117,9 @@ def setup_linspace_entries(
     points_validator = QIntValidator()
     points_validator.setBottom(0)
     points.setValidator(points_validator)
+    points.setText(str(initial_values[2]))
     layout.addWidget(points)
+
     return layout, first, last, points
 
 
