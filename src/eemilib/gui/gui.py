@@ -79,8 +79,7 @@ class MainWindow(QMainWindow):
 
         self.main_layout = QVBoxLayout(self.central_widget)
 
-        self.file_lists: list[list[None | QListWidget]]
-        self.setup_file_selection_matrix()
+        self.file_lists = self.setup_file_selection_matrix()
 
         self.setup_loader_dropdown()
         self.setup_model_dropdown()
@@ -89,10 +88,11 @@ class MainWindow(QMainWindow):
         self.setup_energy_angle_inputs()
         self.setup_plotter_dropdown()
 
-    def setup_file_selection_matrix(self) -> None:
+    def setup_file_selection_matrix(self) -> list[list[None | QListWidget]]:
         """Create the 4 * 3 matrix to select the files to load."""
-        file_matrix_group, self.file_lists = file_selection_matrix(self)
+        file_matrix_group, file_lists = file_selection_matrix(self)
         self.main_layout.addWidget(file_matrix_group)
+        return file_lists
 
     def setup_loader_dropdown(self) -> None:
         """Set the :class:`.Loader` related interface."""
