@@ -2,9 +2,6 @@
 """Define a GUI.
 
 .. todo::
-    Grey out the files, model data not supported by data under study.
-
-.. todo::
     Export/Import settings
 
 .. todo::
