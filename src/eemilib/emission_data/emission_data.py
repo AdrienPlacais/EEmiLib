@@ -11,10 +11,11 @@ from pathlib import Path
 from typing import Self
 
 import pandas as pd
+from eemilib.util.constants import ImplementedPop
+from eemilib.util.helper import documentation_url
 
 from eemilib.loader.loader import Loader
 from eemilib.plotter.plotter import Plotter
-from eemilib.util.constants import ImplementedPop
 
 
 class EmissionData(ABC):
@@ -36,6 +37,7 @@ class EmissionData(ABC):
             follow specications (see subclasses documentation).
 
         """
+        self.doc_url = documentation_url(self)
         self.population = population
         self.data = data
 

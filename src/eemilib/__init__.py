@@ -1,7 +1,7 @@
-"""EEmiLib (Electron EMIssion Library) holds several electron emission models and offers a simple way to fit the on electron emission data."""
+"""
+EEmiLib (Electron EMIssion Library) holds several electron emission models and
+offers a simple way to fit the on electron emission data.
 
-# from .emission_data.data_matrix import DataMatrix
-# from .main import main
-# from .model.vaughan import Vaughan
-# from .util.constants import IMPLEMENTED_EMISSION_DATA, IMPLEMENTED_POP
-# from .util.helper import get_classes
+"""
+
+DOC_URL = "https://electron-emission-fitter-electron-emission-83105ebd6cd34bd4e7a3.pages.in2p3.fr/html"

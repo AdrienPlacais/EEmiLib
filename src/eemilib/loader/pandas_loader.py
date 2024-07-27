@@ -23,6 +23,7 @@ class PandasLoader(Loader):
         not for now.
 
         """
+        return super().__init__()
 
     def load_emission_yield(self, *filepath: str | Path) -> pd.DataFrame:
         """Load and format the given emission yield files.

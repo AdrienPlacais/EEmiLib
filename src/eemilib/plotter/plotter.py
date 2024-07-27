@@ -3,10 +3,15 @@
 from abc import ABC, abstractmethod
 
 import pandas as pd
+from eemilib.util.helper import documentation_url
 
 
 class Plotter(ABC):
     """A generic object to plot distributions, emission yields, etc."""
+
+    def __init__(self) -> None:
+        """Instantiate the object."""
+        self.doc_url = documentation_url(self)
 
     @abstractmethod
     def plot_emission_yield[

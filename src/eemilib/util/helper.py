@@ -3,6 +3,9 @@
 import inspect
 import pkgutil
 from abc import ABCMeta
+from typing import Any
+
+from eemilib import DOC_URL
 
 
 def get_classes(module_name: str, base_class: ABCMeta) -> dict[str, str]:
@@ -35,3 +38,11 @@ def get_classes(module_name: str, base_class: ABCMeta) -> dict[str, str]:
             if issubclass(cls, base_class) and cls is not base_class:
                 classes[name] = module.__name__
     return classes
+
+
+def documentation_url(obj: Any) -> str:
+    """Infer the link to the documentation from object path."""
+    module = obj.__class__.__module__
+    package = module.split(".")[0]
+    parts = (DOC_URL, package, module)
+    return "/".join(parts) + ".html"

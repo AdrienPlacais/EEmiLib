@@ -26,6 +26,7 @@ from eemilib.gui.file_selection import file_selection_matrix
 from eemilib.gui.helper import (
     PARAMETER_ATTR_TO_POS,
     PARAMETER_POS_TO_ATTR,
+    set_help_button_action,
     setup_dropdown,
     setup_linspace_entries,
     setup_lock_checkbox,
@@ -42,14 +43,11 @@ from eemilib.util.constants import (
 from PyQt5.QtWidgets import (
     QApplication,
     QComboBox,
-    QFileDialog,
-    QGridLayout,
     QGroupBox,
-    QHBoxLayout,
-    QLabel,
     QLineEdit,
     QListWidget,
     QMainWindow,
+    QPushButton,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -68,6 +66,7 @@ class MainWindow(QMainWindow):
         """Create the GUI."""
         # EEmiLib attributes
         self.data_matrix = DataMatrix()
+        self.loader: Loader
         self.model: Model
         self.axes = None
 
@@ -81,12 +80,14 @@ class MainWindow(QMainWindow):
 
         self.file_lists = self.setup_file_selection_matrix()
 
-        self.loader_classes, self.loader_dropdown = (
-            self.setup_loader_dropdown()
-        )
+        self.loader_classes: dict[str, str]
+        self.loader_dropdown: QComboBox
+        self.loader_help_button: QPushButton
+        self.setup_loader_dropdown()
 
         self.model_classes: dict[str, str]
         self.model_dropdown: QComboBox
+        self.model_help_button: QPushButton
         self.setup_model_dropdown()
 
         self.model_table = self.setup_model_configuration()
@@ -96,6 +97,7 @@ class MainWindow(QMainWindow):
         # Call the methods called by the model_dropdown index change
         self._setup_model()
         self._deactivate_unnecessary_file_widgets()
+        self._setup_loader()
 
     # =========================================================================
     # File selection
@@ -108,7 +110,6 @@ class MainWindow(QMainWindow):
 
     def _deactivate_unnecessary_file_widgets(self) -> None:
         """Grey out the files not needed by current model."""
-        print("deactivating")
         model = self._dropdown_to_class("model")()
         if not isinstance(model, Model):
             return
@@ -129,24 +130,31 @@ class MainWindow(QMainWindow):
     # =========================================================================
     # Load files
     # =========================================================================
-    def setup_loader_dropdown(self) -> tuple[
-        dict[str, str],
-        QComboBox,
-    ]:
+    def setup_loader_dropdown(self) -> None:
         """Set the :class:`.Loader` related interface."""
-        classes, layout, dropdown, _ = setup_dropdown(
+        classes, layout, dropdown, buttons = setup_dropdown(
             module_name="eemilib.loader",
             base_class=Loader,
-            buttons_args={"Load data": self.load_data},
+            buttons_args={
+                "Help": lambda _: print("Help not set."),
+                "Load data": self.load_data,
+            },
         )
+        self.loader_classes = classes
+        dropdown.currentIndexChanged.connect(self._setup_loader)
+        self.loader_dropdown = dropdown
+        self.loader_help_button = buttons[0]
         # self.load_button = buttons[0]
         self.main_layout.addLayout(layout)
-        return classes, dropdown
+        return
+
+    def _setup_loader(self) -> None:
+        """Setup new loader whenever the dropdown menu is changed."""
+        self.loader = self._dropdown_to_class("loader")()
+        set_help_button_action(self.loader_help_button, self.loader)
 
     def load_data(self) -> None:
         """Load all the files set in GUI."""
-        loader = self._dropdown_to_class("loader")()
-
         for i in range(len(IMPLEMENTED_POP)):
             for j in range(len(IMPLEMENTED_EMISSION_DATA)):
                 file_list_widget = self.file_lists[i][j]
@@ -157,8 +165,7 @@ class MainWindow(QMainWindow):
                     ]
                     self.data_matrix.set_files(file_names, row=i, col=j)
 
-        self.data_matrix.load_data(loader)
-        print("Data loaded!")
+        self.data_matrix.load_data(self.loader)
 
     # =========================================================================
     # Model
@@ -169,10 +176,13 @@ class MainWindow(QMainWindow):
         Assign the :attr:`model_classes` and :attr:`model_dropdown`.
 
         """
-        classes, layout, dropdown, _ = setup_dropdown(
+        classes, layout, dropdown, buttons = setup_dropdown(
             module_name="eemilib.model",
             base_class=Model,
-            buttons_args={"Fit!": self.fit_model},
+            buttons_args={
+                "Help": lambda _: print("Help not set"),
+                "Fit!": self.fit_model,
+            },
         )
         self.model_classes = classes
         self.model_dropdown = dropdown
@@ -181,6 +191,7 @@ class MainWindow(QMainWindow):
             self._deactivate_unnecessary_file_widgets
         )
         # self.fit_button = buttons[0]
+        self.model_help_button = buttons[0]
         self.main_layout.addLayout(layout)
         return
 
@@ -193,8 +204,10 @@ class MainWindow(QMainWindow):
 
     def _setup_model(self) -> None:
         """Instantiate :class:`.Model` when it is selected in dropdown menu."""
-        print("setup model")
         self.model = self._dropdown_to_class("model")()
+
+        set_help_button_action(self.model_help_button, self.model)
+
         self._populate_parameters_table_constants()
         self.model_table.itemChanged.connect(
             self._update_parameter_value_from_table
