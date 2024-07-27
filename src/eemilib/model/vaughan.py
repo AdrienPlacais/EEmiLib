@@ -5,7 +5,7 @@ This is the most basic Vaughan model, as defined in original Vaughan paper
 angle of PEs into account.
 
 Definitions
------------
+===========
 The TEEY is given by:
 
 .. math::
@@ -49,7 +49,7 @@ The factor :math:`k` is given by:
       &= 0.25 \mathrm{\quad if~} 1< \xi \leq 3.6 \\
 
 Configuration
--------------
+=============
 You must provide measured TEEY at normal incidence.
 TEEY at non-normal incidence will not be taken into account into the fit
 (FIXME).
@@ -57,6 +57,12 @@ TEEY at non-normal incidence will not be taken into account into the fit
 Future updates:
     - unlock :math:`E_0` to fit :math:`E_{c,\,1}`
     - unlock :math:`k_s`, :math:`k_{se}` to have better overall fit?
+
+CST Microwave Studio
+    Instructions to match CST Vaughan.
+
+SPARK3D
+    Instructions to match SPARK3D Vaughan.
 
 
 .. bibliography::
