@@ -20,13 +20,14 @@ dependencies = [
    "pytest==8.2.2",
    "setuptools==70.2.0",
    "sphinx-rtd-theme==2.0.0",
+   "sphinxcontrib-bibtex==2.6.2",
 ]
 description = "Fit various Electron EMIssion models on experimental data."
 keywords = ["electron emission", "multipactor"]
 name = "EEmiLib"
 readme = "README.md"
 requires-python = ">=3.12"
-version = "0.0.1"
+version = "0.0.2"
 
 [project.scripts]
 eemilib-gui = "eemilib.gui.gui:main"

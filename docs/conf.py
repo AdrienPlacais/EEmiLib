@@ -17,7 +17,7 @@ sys.path.insert(
 project = "EEmiLib"
 copyright = "2024, Adrien Plaçais"
 author = "Adrien Plaçais"
-release = "0.0.1"
+release = "0.0.2"
 
 # See https://protips.readthedocs.io/git-tag-version.html
 # The full version, including alpha/beta/rc tags.
@@ -29,6 +29,7 @@ version = release
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
+    "sphinxcontrib.bibtex",
     "sphinx.ext.napoleon",  # handle numpy style
     "sphinx.ext.autodoc",
     "sphinx_rtd_theme",  # ReadTheDocs theme
@@ -37,6 +38,7 @@ extensions = [
     # "sphinx.ext.viewcode",
     "nbsphinx",
 ]
+bibtex_bibfiles = ["references.bib"]
 
 autodoc_default_options = {
     "members": True,
@@ -50,7 +52,6 @@ default_role = "literal"
 todo_include_todos = True
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
-
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
