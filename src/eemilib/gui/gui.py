@@ -92,12 +92,18 @@ class MainWindow(QMainWindow):
         self.setup_energy_angle_inputs()
         self.setup_plotter_dropdown()
 
+    # =========================================================================
+    # File selection
+    # =========================================================================
     def setup_file_selection_matrix(self) -> list[list[None | QListWidget]]:
         """Create the 4 * 3 matrix to select the files to load."""
         file_matrix_group, file_lists = file_selection_matrix(self)
         self.main_layout.addWidget(file_matrix_group)
         return file_lists
 
+    # =========================================================================
+    # Load files
+    # =========================================================================
     def setup_loader_dropdown(self) -> tuple[
         dict[str, str],
         QComboBox,
@@ -112,6 +118,26 @@ class MainWindow(QMainWindow):
         self.main_layout.addLayout(layout)
         return classes, dropdown
 
+    def load_data(self) -> None:
+        """Load all the files set in GUI."""
+        loader = self._dropdown_to_class("loader")()
+
+        for i in range(len(IMPLEMENTED_POP)):
+            for j in range(len(IMPLEMENTED_EMISSION_DATA)):
+                file_list_widget = self.file_lists[i][j]
+                if file_list_widget is not None:
+                    file_names = [
+                        file_list_widget.item(k).text()
+                        for k in range(file_list_widget.count())
+                    ]
+                    self.data_matrix.set_files(file_names, row=i, col=j)
+
+        self.data_matrix.load_data(loader)
+        print("Data loaded!")
+
+    # =========================================================================
+    # Model
+    # =========================================================================
     def setup_model_dropdown(self) -> tuple[
         dict[str, str],
         QComboBox,
@@ -133,6 +159,79 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(group)
         return model_table
 
+    def _setup_model(self) -> None:
+        """Instantiate model when it is selected in dropdown menu."""
+        self.model = self._dropdown_to_class("model")()
+        self._populate_parameters_table_constants()
+        self.model_table.itemChanged.connect(
+            self._update_parameter_value_from_table
+        )
+
+    def _populate_parameters_table_constants(self) -> None:
+        """Print out the model parameters in dedicated table."""
+        self.model_table.setRowCount(0)
+
+        for row, (name, param) in enumerate(self.model.parameters.items()):
+            self.model_table.insertRow(row)
+
+            self.model_table.setItem(row, 0, QTableWidgetItem(name))
+            for attr in ("unit", "lower_bound", "upper_bound", "description"):
+                col = PARAMETER_ATTR_TO_POS[attr]
+                attr_value = getattr(param, attr, None)
+                self.model_table.setItem(
+                    row, col, QTableWidgetItem(str(attr_value))
+                )
+            col_lock = PARAMETER_ATTR_TO_POS["lock"]
+            checkbox_widget = setup_lock_checkbox(param)
+            self.model_table.setCellWidget(row, col_lock, checkbox_widget)
+
+    def fit_model(self) -> None:
+        """Perform the fit on the loaded data."""
+        if not hasattr(self, "model") or not self.model:
+            print("Please select a model before fitting.")
+            return
+        self.model.find_optimal_parameters(self.data_matrix)
+        self._populate_parameters_table_values()
+
+    def _populate_parameters_table_values(self) -> None:
+        """Print out the values of the model parameters in dedicated table."""
+        for row, param in enumerate(self.model.parameters.values()):
+            for attr in ("value",):
+                col = PARAMETER_ATTR_TO_POS[attr]
+                attr_value = getattr(param, attr, None)
+                self.model_table.setItem(
+                    row, col, QTableWidgetItem(str(attr_value))
+                )
+
+        for i, param in enumerate(self.model.parameters.values()):
+            self.model_table.setItem(i, 2, QTableWidgetItem(str(param.value)))
+
+    def _update_parameter_value_from_table(
+        self, item: QTableWidgetItem
+    ) -> None:
+        """Update :class:`.Parameter` value based on user input in table."""
+        row, col = item.row(), item.column()
+        updatable_attr = ("value", "lower_bound", "upper_bound")
+        attr = PARAMETER_POS_TO_ATTR[col]
+        if attr not in updatable_attr:
+            print("This column cannot be updated.")
+            return
+
+        name = self.model_table.item(row, 0).text()
+        parameter = self.model.parameters.get(name)
+
+        if parameter:
+            try:
+                new_value = float(item.text())
+                setattr(parameter, attr, new_value)
+
+            except ValueError:
+                print(f"Invalid value entered for {name}")
+                item.setText(str(parameter.value))
+
+    # =========================================================================
+    # Plot
+    # =========================================================================
     def setup_energy_angle_inputs(self) -> None:
         """Set the energy and angle inputs for the model plot."""
         self.energy_angle_group = QGroupBox(
@@ -193,7 +292,7 @@ class MainWindow(QMainWindow):
             buttons_args={
                 "Plot file": self.plot_measured,
                 "Plot model": self.plot_model,
-                "New figure": self._new_axes,
+                "New figure": lambda _: setattr(self, "axes", None),
             },
         )
         self.plotter_classes = classes
@@ -201,116 +300,6 @@ class MainWindow(QMainWindow):
         self.plotter_dropdown = dropdown
         self.plot_measured_button = buttons[0]
         self.plot_model_button = buttons[1]
-
-    def _dropdown_to_class(
-        self, attribute: Literal["loader", "plotter", "model"]
-    ) -> ABCMeta:
-        """Convert dropdown entry to class."""
-        dropdown_name = "_".join((attribute, "dropdown"))
-        dropdown = getattr(self, dropdown_name, None)
-        assert (
-            dropdown is not None
-        ), f" The dropdown attribute {dropdown_name} is not defined."
-
-        module_names_to_paths = "_".join((attribute, "classes"))
-        module_name_to_path = getattr(self, module_names_to_paths, None)
-        assert module_name_to_path is not None, (
-            f"The dictionary {module_names_to_paths}, linking every module"
-            " name to its path, is not defined."
-        )
-
-        selected: str = dropdown.currentText()
-        module_path: str = module_name_to_path[selected]
-        module: ModuleType = importlib.import_module(module_path)
-        my_class = getattr(module, selected)
-        return my_class
-
-    def load_data(self) -> None:
-        """Load all the files set in GUI."""
-        loader = self._dropdown_to_class("loader")()
-
-        for i in range(len(IMPLEMENTED_POP)):
-            for j in range(len(IMPLEMENTED_EMISSION_DATA)):
-                file_list_widget = self.file_lists[i][j]
-                if file_list_widget is not None:
-                    file_names = [
-                        file_list_widget.item(k).text()
-                        for k in range(file_list_widget.count())
-                    ]
-                    self.data_matrix.set_files(file_names, row=i, col=j)
-
-        self.data_matrix.load_data(loader)
-        print("Data loaded!")
-
-    def _setup_model(self) -> None:
-        """Instantiate model when it is selected in dropdown menu."""
-        self.model = self._dropdown_to_class("model")()
-        self._populate_parameters_table_constants()
-        self.model_table.itemChanged.connect(
-            self._update_parameter_value_from_table
-        )
-
-    def _populate_parameters_table_constants(self) -> None:
-        """Print out the model parameters in dedicated table."""
-        self._clear_parameters_table()
-
-        for row, (name, param) in enumerate(self.model.parameters.items()):
-            self.model_table.insertRow(row)
-
-            self.model_table.setItem(row, 0, QTableWidgetItem(name))
-            for attr in ("unit", "lower_bound", "upper_bound", "description"):
-                col = PARAMETER_ATTR_TO_POS[attr]
-                attr_value = getattr(param, attr, None)
-                self.model_table.setItem(
-                    row, col, QTableWidgetItem(str(attr_value))
-                )
-            col_lock = PARAMETER_ATTR_TO_POS["lock"]
-            checkbox_widget = setup_lock_checkbox(param)
-            self.model_table.setCellWidget(row, col_lock, checkbox_widget)
-
-    def fit_model(self) -> None:
-        """Perform the fit on the loaded data."""
-        if not hasattr(self, "model") or not self.model:
-            print("Please select a model before fitting.")
-            return
-        self.model.find_optimal_parameters(self.data_matrix)
-        self._populate_parameters_table_values()
-
-    def _populate_parameters_table_values(self) -> None:
-        """Print out the values of the model parameters in dedicated table."""
-        for row, param in enumerate(self.model.parameters.values()):
-            for attr in ("value",):
-                col = PARAMETER_ATTR_TO_POS[attr]
-                attr_value = getattr(param, attr, None)
-                self.model_table.setItem(
-                    row, col, QTableWidgetItem(str(attr_value))
-                )
-
-        for i, param in enumerate(self.model.parameters.values()):
-            self.model_table.setItem(i, 2, QTableWidgetItem(str(param.value)))
-
-    def _update_parameter_value_from_table(
-        self, item: QTableWidgetItem
-    ) -> None:
-        """Update :class:`.Parameter` value based on user input in table."""
-        row, col = item.row(), item.column()
-        updatable_attr = ("value", "lower_bound", "upper_bound")
-        attr = PARAMETER_POS_TO_ATTR[col]
-        if attr not in updatable_attr:
-            print("This column cannot be updated.")
-            return
-
-        name = self.model_table.item(row, 0).text()
-        parameter = self.model.parameters.get(name)
-
-        if parameter:
-            try:
-                new_value = float(item.text())
-                setattr(parameter, attr, new_value)
-
-            except ValueError:
-                print(f"Invalid value entered for {name}")
-                item.setText(str(parameter.value))
 
     def plot_measured(self) -> None:
         """Plot the desired data, as imported."""
@@ -353,14 +342,6 @@ class MainWindow(QMainWindow):
             angles=angles,
             axes=self.axes,
         )
-
-    def _new_axes(self) -> None:
-        """Remove the stored axes to plot on a new one."""
-        self.axes = None
-
-    def _clear_parameters_table(self) -> None:
-        """Remove entries of the parameters table but not headers."""
-        self.model_table.setRowCount(0)
 
     def _get_emission_data_type_to_plot(
         self,
@@ -420,6 +401,32 @@ class MainWindow(QMainWindow):
             float(linspace_args[1]),
             int(linspace_args[2]),
         )
+
+    # =========================================================================
+    # Helper
+    # =========================================================================
+    def _dropdown_to_class(
+        self, attribute: Literal["loader", "plotter", "model"]
+    ) -> ABCMeta:
+        """Convert dropdown entry to class."""
+        dropdown_name = "_".join((attribute, "dropdown"))
+        dropdown = getattr(self, dropdown_name, None)
+        assert (
+            dropdown is not None
+        ), f" The dropdown attribute {dropdown_name} is not defined."
+
+        module_names_to_paths = "_".join((attribute, "classes"))
+        module_name_to_path = getattr(self, module_names_to_paths, None)
+        assert module_name_to_path is not None, (
+            f"The dictionary {module_names_to_paths}, linking every module"
+            " name to its path, is not defined."
+        )
+
+        selected: str = dropdown.currentText()
+        module_path: str = module_name_to_path[selected]
+        module: ModuleType = importlib.import_module(module_path)
+        my_class = getattr(module, selected)
+        return my_class
 
 
 def main():
