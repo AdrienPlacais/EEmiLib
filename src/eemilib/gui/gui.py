@@ -25,11 +25,11 @@ from typing import Literal
 
 import numpy as np
 from eemilib.emission_data.data_matrix import DataMatrix
+from eemilib.gui.file_selection import file_selection_matrix
 from eemilib.gui.helper import (
     PARAMETER_ATTR_TO_POS,
     PARAMETER_POS_TO_ATTR,
     setup_dropdown,
-    setup_file_selection_widget,
     setup_linspace_entries,
     setup_lock_checkbox,
     to_plot_checkboxes,
@@ -74,15 +74,14 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("EEmiLib GUI")
 
-        # GUI attributes
-        self.file_lists: list[list[None | QListWidget]]
-
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
 
         self.main_layout = QVBoxLayout(self.central_widget)
 
+        self.file_lists: list[list[None | QListWidget]]
         self.setup_file_selection_matrix()
+
         self.setup_loader_dropdown()
         self.setup_model_dropdown()
         self.setup_model_configuration()
@@ -92,35 +91,8 @@ class MainWindow(QMainWindow):
 
     def setup_file_selection_matrix(self) -> None:
         """Create the 4 * 3 matrix to select the files to load."""
-        self.file_matrix_group = QGroupBox("Files selection matrix")
-        self.file_matrix_layout = QGridLayout()
-
-        row_labels, col_labels = IMPLEMENTED_POP, IMPLEMENTED_EMISSION_DATA
-        n_rows, n_cols = len(row_labels), len(col_labels)
-
-        for i, label in enumerate(row_labels):
-            self.file_matrix_layout.addWidget(QLabel(label), i + 1, 0)
-
-        for j, label in enumerate(col_labels):
-            self.file_matrix_layout.addWidget(QLabel(label), 0, j + 1)
-
-        self.file_lists = [
-            [None for _ in range(n_cols)] for _ in range(n_rows)
-        ]
-        for i in range(n_rows):
-            for j in range(n_cols):
-                cell_layout = QHBoxLayout()
-                button, file_list = setup_file_selection_widget(
-                    lambda _, x=i, y=j: self.select_files(x, y)
-                )
-                cell_layout.addWidget(button)
-                cell_layout.addWidget(file_list)
-                self.file_lists[i][j] = file_list
-
-                self.file_matrix_layout.addLayout(cell_layout, i + 1, j + 1)
-
-        self.file_matrix_group.setLayout(self.file_matrix_layout)
-        self.main_layout.addWidget(self.file_matrix_group)
+        file_matrix_group, self.file_lists = file_selection_matrix(self)
+        self.main_layout.addWidget(file_matrix_group)
 
     def setup_loader_dropdown(self) -> None:
         """Set the :class:`.Loader` related interface."""
@@ -233,22 +205,6 @@ class MainWindow(QMainWindow):
         self.plotter_dropdown = dropdown
         self.plot_measured_button = buttons[0]
         self.plot_model_button = buttons[1]
-
-    def select_files(self, row: int, col: int) -> None:
-        options = QFileDialog.Options()
-        file_names, _ = QFileDialog.getOpenFileNames(
-            self,
-            "Select Files",
-            "",
-            "All Files (*);;CSV Files (*.csv)",
-            options=options,
-        )
-        if file_names:
-            current_file_lists = self.file_lists[row][col]
-            assert current_file_lists is not None
-            current_file_lists.clear()
-            current_file_lists.addItems(file_names)
-            # self.data_matrix.set_files(file_names, row=row, col=col)
 
     def _dropdown_to_class(
         self, attribute: Literal["loader", "plotter", "model"]

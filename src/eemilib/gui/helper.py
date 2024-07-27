@@ -1,36 +1,23 @@
 """Define functions to be as DRY as possible."""
 
 from abc import ABCMeta
-from collections.abc import Callable, Collection
+from collections.abc import Collection
 from typing import Any, Literal, overload
 
 from eemilib.model.parameter import Parameter
 from eemilib.util.helper import get_classes
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QDoubleValidator, QFont, QIntValidator
+from PyQt5.QtGui import QDoubleValidator, QIntValidator
 from PyQt5.QtWidgets import (
     QCheckBox,
     QComboBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QListWidget,
     QPushButton,
     QRadioButton,
     QWidget,
 )
-
-
-def setup_file_selection_widget(
-    select_file_func: Callable,
-) -> tuple[QPushButton, QListWidget]:
-    """Set the button to load and the list of selected files."""
-    button = QPushButton("📂")
-    button.setFont(QFont("Segoe UI Emoji", 10))
-    button.clicked.connect(select_file_func)
-
-    file_list = QListWidget()
-    return button, file_list
 
 
 def setup_dropdown(
