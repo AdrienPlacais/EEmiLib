@@ -108,7 +108,6 @@ class MainWindow(QMainWindow):
 
     def _deactivate_unnecessary_file_widgets(self) -> None:
         """Grey out the files not needed by current model."""
-        print("deactivating")
         model = self._dropdown_to_class("model")()
         if not isinstance(model, Model):
             return
@@ -158,7 +157,6 @@ class MainWindow(QMainWindow):
                     self.data_matrix.set_files(file_names, row=i, col=j)
 
         self.data_matrix.load_data(loader)
-        print("Data loaded!")
 
     # =========================================================================
     # Model
@@ -193,7 +191,6 @@ class MainWindow(QMainWindow):
 
     def _setup_model(self) -> None:
         """Instantiate :class:`.Model` when it is selected in dropdown menu."""
-        print("setup model")
         self.model = self._dropdown_to_class("model")()
         self._populate_parameters_table_constants()
         self.model_table.itemChanged.connect(
