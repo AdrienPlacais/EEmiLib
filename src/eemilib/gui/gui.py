@@ -35,6 +35,7 @@ from eemilib.gui.helper import (
     to_plot_checkboxes,
 )
 from eemilib.gui.model_selection import model_configuration
+from eemilib.model.model_config import ModelConfig
 from eemilib.util.constants import (
     IMPLEMENTED_EMISSION_DATA,
     IMPLEMENTED_POP,
@@ -86,11 +87,18 @@ class MainWindow(QMainWindow):
         self.loader_classes, self.loader_dropdown = (
             self.setup_loader_dropdown()
         )
-        self.model_classes, self.model_dropdown = self.setup_model_dropdown()
+
+        self.model_classes: dict[str, str]
+        self.model_dropdown: QComboBox
+        self.setup_model_dropdown()
+
         self.model_table = self.setup_model_configuration()
-        self._setup_model()
         self.setup_energy_angle_inputs()
         self.setup_plotter_dropdown()
+
+        # Call the methods called by the model_dropdown index change
+        self._setup_model()
+        self._deactivate_unnecessary_file_widgets()
 
     # =========================================================================
     # File selection
@@ -100,6 +108,26 @@ class MainWindow(QMainWindow):
         file_matrix_group, file_lists = file_selection_matrix(self)
         self.main_layout.addWidget(file_matrix_group)
         return file_lists
+
+    def _deactivate_unnecessary_file_widgets(self) -> None:
+        """Grey out the files not needed by current model."""
+        print("deactivating")
+        model = self._dropdown_to_class("model")()
+        if not isinstance(model, Model):
+            return
+        config: ModelConfig = model.model_config
+
+        # Get required file types for each population type
+        required_files = {
+            "Emission Yield": config.emission_yield_files,
+            "Emission Energy": config.emission_energy_files,
+            "Emission Angle": config.emission_angle_files,
+        }
+
+        for i, pop in enumerate(IMPLEMENTED_POP):
+            for j, data_type in enumerate(IMPLEMENTED_EMISSION_DATA):
+                is_required = pop in required_files.get(data_type, [])
+                self._set_list_widget_state(self.file_lists[i][j], is_required)
 
     # =========================================================================
     # Load files
@@ -138,29 +166,37 @@ class MainWindow(QMainWindow):
     # =========================================================================
     # Model
     # =========================================================================
-    def setup_model_dropdown(self) -> tuple[
-        dict[str, str],
-        QComboBox,
-    ]:
-        """Set the :class:`.Model` related interface."""
+    def setup_model_dropdown(self) -> None:
+        """Set the :class:`.Model` related interface.
+
+        Assign the :attr:`model_classes` and :attr:`model_dropdown`.
+
+        """
         classes, layout, dropdown, _ = setup_dropdown(
             module_name="eemilib.model",
             base_class=Model,
             buttons_args={"Fit!": self.fit_model},
         )
+        self.model_classes = classes
+        self.model_dropdown = dropdown
         dropdown.currentIndexChanged.connect(self._setup_model)
+        dropdown.currentIndexChanged.connect(
+            self._deactivate_unnecessary_file_widgets
+        )
         # self.fit_button = buttons[0]
         self.main_layout.addLayout(layout)
-        return classes, dropdown
+        return
 
     def setup_model_configuration(self) -> QTableWidget:
         """Set the interface related to the model specific parameters."""
         group, model_table = model_configuration()
         self.main_layout.addWidget(group)
+
         return model_table
 
     def _setup_model(self) -> None:
-        """Instantiate model when it is selected in dropdown menu."""
+        """Instantiate :class:`.Model` when it is selected in dropdown menu."""
+        print("setup model")
         self.model = self._dropdown_to_class("model")()
         self._populate_parameters_table_constants()
         self.model_table.itemChanged.connect(
@@ -185,27 +221,6 @@ class MainWindow(QMainWindow):
             checkbox_widget = setup_lock_checkbox(param)
             self.model_table.setCellWidget(row, col_lock, checkbox_widget)
 
-    def fit_model(self) -> None:
-        """Perform the fit on the loaded data."""
-        if not hasattr(self, "model") or not self.model:
-            print("Please select a model before fitting.")
-            return
-        self.model.find_optimal_parameters(self.data_matrix)
-        self._populate_parameters_table_values()
-
-    def _populate_parameters_table_values(self) -> None:
-        """Print out the values of the model parameters in dedicated table."""
-        for row, param in enumerate(self.model.parameters.values()):
-            for attr in ("value",):
-                col = PARAMETER_ATTR_TO_POS[attr]
-                attr_value = getattr(param, attr, None)
-                self.model_table.setItem(
-                    row, col, QTableWidgetItem(str(attr_value))
-                )
-
-        for i, param in enumerate(self.model.parameters.values()):
-            self.model_table.setItem(i, 2, QTableWidgetItem(str(param.value)))
-
     def _update_parameter_value_from_table(
         self, item: QTableWidgetItem
     ) -> None:
@@ -228,6 +243,27 @@ class MainWindow(QMainWindow):
             except ValueError:
                 print(f"Invalid value entered for {name}")
                 item.setText(str(parameter.value))
+
+    def fit_model(self) -> None:
+        """Perform the fit on the loaded data."""
+        if not hasattr(self, "model") or not self.model:
+            print("Please select a model before fitting.")
+            return
+        self.model.find_optimal_parameters(self.data_matrix)
+        self._populate_parameters_table_values()
+
+    def _populate_parameters_table_values(self) -> None:
+        """Print out the values of the model parameters in dedicated table."""
+        for row, param in enumerate(self.model.parameters.values()):
+            for attr in ("value",):
+                col = PARAMETER_ATTR_TO_POS[attr]
+                attr_value = getattr(param, attr, None)
+                self.model_table.setItem(
+                    row, col, QTableWidgetItem(str(attr_value))
+                )
+
+        for i, param in enumerate(self.model.parameters.values()):
+            self.model_table.setItem(i, 2, QTableWidgetItem(str(param.value)))
 
     # =========================================================================
     # Plot
@@ -427,6 +463,17 @@ class MainWindow(QMainWindow):
         module: ModuleType = importlib.import_module(module_path)
         my_class = getattr(module, selected)
         return my_class
+
+    def _set_list_widget_state(
+        self, widget: QListWidget, enabled: bool
+    ) -> None:
+        """Enable or disable a QListWidget based on ``enabled``."""
+        if enabled:
+            widget.setStyleSheet("background-color: white;")
+            widget.setEnabled(True)
+            return
+        widget.setStyleSheet("background-color: lightgray;")
+        widget.setEnabled(False)
 
 
 def main():
