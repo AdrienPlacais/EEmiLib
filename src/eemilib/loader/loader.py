@@ -5,12 +5,17 @@ from collections.abc import Collection
 from pathlib import Path
 
 import pandas as pd
+from eemilib.util.helper import documentation_url
 
 paths = Path | str
 
 
 class Loader(ABC):
     """Define the base class for loading various electron emission files."""
+
+    def __init__(self) -> None:
+        """Instantiate the object."""
+        self.doc_url = documentation_url(self)
 
     @abstractmethod
     def load_emission_yield(
