@@ -6,9 +6,9 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
+from eemilib.util.constants import EY_col_energy
 
 from eemilib.loader.loader import Loader
-from eemilib.util.constants import EY_col_energy
 
 
 class DeesseLoader(Loader):
@@ -21,6 +21,7 @@ class DeesseLoader(Loader):
         not for now.
 
         """
+        super().__init__()
 
     def load_emission_yield(self, *filepath: str | Path) -> pd.DataFrame:
         """Load and format the given emission yield files.

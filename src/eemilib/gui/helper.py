@@ -2,12 +2,13 @@
 
 from abc import ABCMeta
 from collections.abc import Collection
+from functools import partial
 from typing import Any, Literal, overload
 
 from eemilib.model.parameter import Parameter
 from eemilib.util.helper import get_classes
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QDoubleValidator, QIntValidator
+from PyQt5.QtCore import Qt, QUrl
+from PyQt5.QtGui import QDesktopServices, QDoubleValidator, QIntValidator
 from PyQt5.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -173,6 +174,22 @@ def to_plot_checkboxes(
         layout.addWidget(checkbox)
 
     return layout, checkboxes
+
+
+def set_help_button_action(button: QPushButton, obj: Any) -> None:
+    """Update the link of the provided help button."""
+    button.clicked.disconnect()
+    this_help = partial(_open_help, obj=obj)
+    button.clicked.connect(this_help)
+
+
+def _open_help(obj: Any) -> None:
+    """Open the ``doc_url`` attribute of given object."""
+    url = getattr(obj, "doc_url", None)
+    if not isinstance(url, str):
+        print(f"No valid URL found for {obj = }")
+        return
+    QDesktopServices.openUrl(QUrl(url))
 
 
 # Associate Parameters attributes with their column position
