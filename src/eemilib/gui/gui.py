@@ -42,6 +42,7 @@ from eemilib.util.constants import (
 )
 from PyQt5.QtWidgets import (
     QApplication,
+    QComboBox,
     QFileDialog,
     QGridLayout,
     QGroupBox,
@@ -81,8 +82,10 @@ class MainWindow(QMainWindow):
 
         self.file_lists = self.setup_file_selection_matrix()
 
-        self.setup_loader_dropdown()
-        self.setup_model_dropdown()
+        self.loader_classes, self.loader_dropdown = (
+            self.setup_loader_dropdown()
+        )
+        self.model_classes, self.model_dropdown = self.setup_model_dropdown()
         self.setup_model_configuration()
         self._setup_model()
         self.setup_energy_angle_inputs()
@@ -94,32 +97,34 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(file_matrix_group)
         return file_lists
 
-    def setup_loader_dropdown(self) -> None:
+    def setup_loader_dropdown(self) -> tuple[
+        dict[str, str],
+        QComboBox,
+    ]:
         """Set the :class:`.Loader` related interface."""
-        classes, layout, dropdown, buttons = setup_dropdown(
+        classes, layout, dropdown, _ = setup_dropdown(
             module_name="eemilib.loader",
             base_class=Loader,
             buttons_args={"Load data": self.load_data},
         )
-        self.loader_classes = classes
+        # self.load_button = buttons[0]
         self.main_layout.addLayout(layout)
-        self.loader_dropdown = dropdown
-        self.load_button = buttons[0]
+        return classes, dropdown
 
-    def setup_model_dropdown(self) -> None:
+    def setup_model_dropdown(self) -> tuple[
+        dict[str, str],
+        QComboBox,
+    ]:
         """Set the :class:`.Model` related interface."""
-        classes, layout, dropdown, buttons = setup_dropdown(
+        classes, layout, dropdown, _ = setup_dropdown(
             module_name="eemilib.model",
             base_class=Model,
             buttons_args={"Fit!": self.fit_model},
         )
-        self.model_classes = classes
-        self.main_layout.addLayout(layout)
-
         dropdown.currentIndexChanged.connect(self._setup_model)
-        self.model_dropdown = dropdown
-
-        self.fit_button = buttons[0]
+        # self.fit_button = buttons[0]
+        self.main_layout.addLayout(layout)
+        return classes, dropdown
 
     def setup_model_configuration(self) -> None:
         """Set the interface related to the model specific parameters."""
