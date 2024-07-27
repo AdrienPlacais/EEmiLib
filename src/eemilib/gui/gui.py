@@ -34,6 +34,7 @@ from eemilib.gui.helper import (
     setup_lock_checkbox,
     to_plot_checkboxes,
 )
+from eemilib.gui.model_selection import model_configuration
 from eemilib.util.constants import (
     IMPLEMENTED_EMISSION_DATA,
     IMPLEMENTED_POP,
@@ -86,7 +87,7 @@ class MainWindow(QMainWindow):
             self.setup_loader_dropdown()
         )
         self.model_classes, self.model_dropdown = self.setup_model_dropdown()
-        self.setup_model_configuration()
+        self.model_table = self.setup_model_configuration()
         self._setup_model()
         self.setup_energy_angle_inputs()
         self.setup_plotter_dropdown()
@@ -126,21 +127,11 @@ class MainWindow(QMainWindow):
         self.main_layout.addLayout(layout)
         return classes, dropdown
 
-    def setup_model_configuration(self) -> None:
+    def setup_model_configuration(self) -> QTableWidget:
         """Set the interface related to the model specific parameters."""
-        self.model_config_group = QGroupBox("Model configuration")
-        self.model_config_layout = QVBoxLayout()
-
-        self.model_table = QTableWidget(0, 7)
-        self.model_table.setHorizontalHeaderLabels(
-            list(PARAMETER_ATTR_TO_POS.keys())
-        )
-        self.model_table.setMaximumHeight(1000)
-        self.model_table.setMinimumHeight(200)
-        self.model_config_layout.addWidget(self.model_table)
-
-        self.model_config_group.setLayout(self.model_config_layout)
-        self.main_layout.addWidget(self.model_config_group)
+        group, model_table = model_configuration()
+        self.main_layout.addWidget(group)
+        return model_table
 
     def setup_energy_angle_inputs(self) -> None:
         """Set the energy and angle inputs for the model plot."""
