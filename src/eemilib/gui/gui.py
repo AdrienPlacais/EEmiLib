@@ -42,11 +42,7 @@ from eemilib.util.constants import (
 from PyQt5.QtWidgets import (
     QApplication,
     QComboBox,
-    QFileDialog,
-    QGridLayout,
     QGroupBox,
-    QHBoxLayout,
-    QLabel,
     QLineEdit,
     QListWidget,
     QMainWindow,
