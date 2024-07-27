@@ -40,10 +40,8 @@ from eemilib.util.constants import (
     ImplementedEmissionData,
     ImplementedPop,
 )
-from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
     QApplication,
-    QCheckBox,
     QFileDialog,
     QGridLayout,
     QGroupBox,
@@ -52,8 +50,6 @@ from PyQt5.QtWidgets import (
     QLineEdit,
     QListWidget,
     QMainWindow,
-    QPushButton,
-    QRadioButton,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
