@@ -201,8 +201,7 @@ PARAMETER_ATTR_TO_POS = {
     "value": 2,
     "lower_bound": 3,
     "upper_bound": 4,
-    "description": 5,
-    "lock": 6,
+    "lock": 5,
 }
 
 PARAMETER_POS_TO_ATTR = {

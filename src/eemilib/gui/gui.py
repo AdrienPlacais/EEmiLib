@@ -221,7 +221,7 @@ class MainWindow(QMainWindow):
             self.model_table.insertRow(row)
 
             self.model_table.setItem(row, 0, QTableWidgetItem(name))
-            for attr in ("unit", "lower_bound", "upper_bound", "description"):
+            for attr in ("unit", "lower_bound", "upper_bound"):
                 col = PARAMETER_ATTR_TO_POS[attr]
                 attr_value = getattr(param, attr, None)
                 self.model_table.setItem(

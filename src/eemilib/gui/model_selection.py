@@ -9,12 +9,13 @@ def model_configuration() -> tuple[QGroupBox, QTableWidget]:
     group = QGroupBox("Model configuration")
     layout = QVBoxLayout()
 
-    model_table = QTableWidget(0, 7)
-    model_table.setHorizontalHeaderLabels(list(PARAMETER_ATTR_TO_POS.keys()))
+    headers = list(PARAMETER_ATTR_TO_POS.keys())
+    n_cols = len(headers)
+    model_table = QTableWidget(0, n_cols)
+    model_table.setHorizontalHeaderLabels(headers)
     model_table.setMaximumHeight(1000)
     model_table.setMinimumHeight(200)
     layout.addWidget(model_table)
 
     group.setLayout(layout)
     return group, model_table
-    # main_layout.addWidget(group)
