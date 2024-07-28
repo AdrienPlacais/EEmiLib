@@ -77,7 +77,7 @@ class Model(ABC):
                 f"     - {name}",
                 f"     - {kwargs.get('unit', '')}",
                 f"     - :math:`{kwargs.get('value', '')}`",
-                f"     - {kwargs.get('description', '')}"
+                f"     - {kwargs.get('description', '')}",
             ]
             doc_lines += doc
         return "\n".join(doc_lines)
