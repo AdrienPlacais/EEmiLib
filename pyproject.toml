@@ -38,6 +38,7 @@ Homepage = "https://gitlab.in2p3.fr/electron_emission/eemilib"
 
 [tool.black]
 line-length = 79
+target-version = ["py312"]
 
 [tool.isort]
 profile = "black"
