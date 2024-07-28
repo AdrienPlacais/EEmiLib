@@ -56,14 +56,29 @@ class Model(ABC):
     @classmethod
     def _generate_parameter_docs(cls) -> str:
         """Generate documentation for the :class:`.Parameters`."""
-        docs = []
-        for name, details in cls.initial_parameters.items():
-            doc = (
-                f"\n- **{name}** ({details.get('unit', '')}): {details.get('description', '')} "
-                f"Initial value: {details.get('value', '')}."
-            )
-            docs.append(doc)
-        return "\n".join(docs)
+        doc_lines = [
+            "",
+            "Model parameters",
+            "================",
+            "",
+            ".. list-table::",
+            "   :widths: 15 10 10 60",
+            "   :header-rows: 1",
+            "",
+            "   * - Parameter",
+            "     - Unit",
+            "     - Initial value",
+            "     - Description",
+        ]
+        for name, kwargs in cls.initial_parameters.items():
+            doc = [
+                f"   * - {name}",
+                f"     - {kwargs.get('unit', '')}",
+                f"     - {kwargs.get('value', '')}",
+                f"     - {kwargs.get('description', '')}"
+            ]
+            doc_lines += doc
+        return "\n".join(doc_lines)
 
     def teey(
         self, energy: np.ndarray, theta: np.ndarray, *args, **kwargs

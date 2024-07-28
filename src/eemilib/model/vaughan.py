@@ -192,12 +192,6 @@ class Vaughan(Model):
         self.parameters["teey_max"].value = emission_yield.ey_max
 
 
-# Dynamically add the initial list of parameters to the documentation.
-if Vaughan.__doc__ is None:
-    Vaughan.__doc__ = ""
-Vaughan.__doc__ += "\n" + Vaughan._generate_parameter_docs()
-
-
 def _vaughan_func(
     ene: float,
     the: float,
@@ -229,3 +223,9 @@ def _vaughan_func(
         return mod_teey_max * 1.125 / (xi**0.35)
 
     return mod_teey_max * (xi * np.exp(1.0 - xi)) ** k
+
+
+# Append dynamically generated docs to the module docstring
+if __doc__ is None:
+    __doc__ = ""
+__doc__ += Vaughan._generate_parameter_docs()
