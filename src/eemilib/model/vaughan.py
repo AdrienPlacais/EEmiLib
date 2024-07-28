@@ -100,37 +100,41 @@ class Vaughan(Model):
             "markdown": r"E_0",
             "unit": "eV",
             "value": 12.5,
-            "description": "Threshold energy.",
+            "description": r"Threshold energy. Can be used to fit  "
+            + r":math:`E_{c,\,1}`. By default, locked to "
+            + r":math:`12.5\mathrm{\,eV}`.",
             "is_locked": True,
         },
         "E_max": {
-            "markdown": r"E_{max}",
+            "markdown": r"E_\mathrm{max}",
             "unit": "eV",
             "value": 0.0,
             "lower_bound": 0.0,
             "description": "Energy at maximum TEEY.",
         },
         "delta_E_transition": {
-            "markdown": r"\Delta_E_t_r",
+            "markdown": r"\Delta E_{tr}",
             "unit": "eV",
             "value": 1.0,
-            "description": "Energy over which we switch from 'teey_low' to "
-            + "actual Vaughan TEEY. Useful for smoothing the transition",
+            "description": "Energy over which we switch from"
+            + r" :math:`\sigma_\mathrm{low}` to actual Vaughan TEEY. Useful for"
+            + " smoothing the transition.",
             "is_locked": True,
         },
         "teey_low": {
-            "markdown": r"\sigma_{low}",
+            "markdown": r"\sigma_\mathrm{low}",
             "unit": "1",
             "value": 0.5,
             "lower_bound": 0.0,
-            "description": "TEEY below E_0.",
+            "description": "TEEY below :math:`E_0`.",
             "is_locked": True,
         },
         "teey_max": {
-            "markdown": r"\sigma_{max}",
+            "markdown": r"\sigma_\mathrm{max}",
             "unit": "1",
             "value": 0.0,
             "lower_bound": 0.0,
+            "description": "Maximum TEEY, directly taken from the measurement.",
         },
         "k_s": {
             "markdown": r"k_s",
@@ -138,7 +142,8 @@ class Vaughan(Model):
             "value": 1.0,
             "lower_bound": 0.0,
             "upper_bound": 2.0,
-            "description": "Roughness factor (max TEEY).",
+            "description": r"Roughness factor (:math:`\sigma_\mathrm{max}`). "
+            + " Locked by default, but could be used for more precise fits.",
             "is_locked": True,
         },
         "k_se": {
@@ -147,7 +152,8 @@ class Vaughan(Model):
             "value": 1.0,
             "lower_bound": 0.0,
             "upper_bound": 2.0,
-            "description": r"Roughness factor ($E_\mathrm{max}$).",
+            "description": r"Roughness factor (:math:`E_\mathrm{max}`). "
+            + " Locked by default, but could be used for more precise fits.",
             "is_locked": True,
         },
     }
@@ -157,7 +163,7 @@ class Vaughan(Model):
         super().__init__()
         self.parameters = {
             name: Parameter(**kwargs)  # type: ignore
-            for name, kwargs in self.initial_parameters
+            for name, kwargs in self.initial_parameters.items()
         }
         self._generate_parameter_docs()
 

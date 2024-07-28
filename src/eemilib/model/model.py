@@ -62,19 +62,21 @@ class Model(ABC):
             "================",
             "",
             ".. list-table::",
-            "   :widths: 15 10 10 60",
+            "   :widths: 5 10 5 5 65",
             "   :header-rows: 1",
             "",
             "   * - Parameter",
+            "     - Name",
             "     - Unit",
-            "     - Initial value",
+            "     - Initial",
             "     - Description",
         ]
         for name, kwargs in cls.initial_parameters.items():
             doc = [
-                f"   * - {name}",
+                f"   * - :math:`{kwargs.get('markdown', '')}`",
+                f"     - {name}",
                 f"     - {kwargs.get('unit', '')}",
-                f"     - {kwargs.get('value', '')}",
+                f"     - :math:`{kwargs.get('value', '')}`",
                 f"     - {kwargs.get('description', '')}"
             ]
             doc_lines += doc
