@@ -17,7 +17,6 @@ Subpackages
    eemilib.loader
    eemilib.model
    eemilib.plotter
-   eemilib.ui
    eemilib.util
 
 Submodules

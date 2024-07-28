@@ -48,7 +48,7 @@ class Parameter:
 
     def __repr__(self) -> str:
         """Print out name of parameter and current value."""
-        return f"{self.name}: {self.value}"
+        return f"{self.name} ({self.unit}): {self.value} {self.description}"
 
     @property
     def name(self) -> str:

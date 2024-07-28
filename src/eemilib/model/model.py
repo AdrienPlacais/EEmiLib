@@ -25,25 +25,45 @@ class Model(ABC):
     Attributes
     ----------
     considers_energy : bool
-        Tell if the model has a dependency over PES impact energy.
+        Tell if the model has a dependency over PEs impact energy.
     is_3d : bool
-        Tell if the model has a dependency over PES impact angle.
+        Tell if the model has a dependency over PEs impact angle.
     is_dielectrics_compatible : bool
         Tell if the model can take the surface-trapped charges into account.
+    initial_parameters : dict[str, dict[str, str | float | bool]]
+        List the :class:`.Parameter` kwargs.
     model_config : ModelConfig
         List the files that the model needs to know in order to work.
 
     """
 
+    #: Tell if the model has a dependency over PEs impact energy.
     considers_energy: bool
+    #: Tell if the model has a dependency over PEs impact angle.
     is_3d: bool
+    #: Tell if the model can take the surface-trapped charges into account.
     is_dielectrics_compatible: bool
+    #: List the :class:`.Parameter` kwargs.
+    initial_parameters: dict[str, dict[str, str | float | bool]]
+
     model_config: ModelConfig
 
     def __init__(self) -> None:
         """Instantiate the object."""
         self.doc_url = documentation_url(self)
         self.parameters: dict[str, Parameter]
+
+    @classmethod
+    def _generate_parameter_docs(cls) -> str:
+        """Generate documentation for the :class:`.Parameters`."""
+        docs = []
+        for name, details in cls.initial_parameters.items():
+            doc = (
+                f"\n- **{name}** ({details.get('unit', '')}): {details.get('description', '')} "
+                f"Initial value: {details.get('value', '')}."
+            )
+            docs.append(doc)
+        return "\n".join(docs)
 
     def teey(
         self, energy: np.ndarray, theta: np.ndarray, *args, **kwargs

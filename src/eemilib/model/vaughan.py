@@ -95,49 +95,71 @@ class Vaughan(Model):
         emission_energy_files=(),
         emission_angle_files=(),
     )
+    initial_parameters = {
+        "E_0": {
+            "markdown": r"E_0",
+            "unit": "eV",
+            "value": 12.5,
+            "description": "Threshold energy.",
+            "is_locked": True,
+        },
+        "E_max": {
+            "markdown": r"E_{max}",
+            "unit": "eV",
+            "value": 0.0,
+            "lower_bound": 0.0,
+            "description": "Energy at maximum TEEY.",
+        },
+        "delta_E_transition": {
+            "markdown": r"\Delta_E_t_r",
+            "unit": "eV",
+            "value": 1.0,
+            "description": "Energy over which we switch from 'teey_low' to "
+            + "actual Vaughan TEEY. Useful for smoothing the transition",
+            "is_locked": True,
+        },
+        "teey_low": {
+            "markdown": r"\sigma_{low}",
+            "unit": "1",
+            "value": 0.5,
+            "lower_bound": 0.0,
+            "description": "TEEY below E_0.",
+            "is_locked": True,
+        },
+        "teey_max": {
+            "markdown": r"\sigma_{max}",
+            "unit": "1",
+            "value": 0.0,
+            "lower_bound": 0.0,
+        },
+        "k_s": {
+            "markdown": r"k_s",
+            "unit": "1",
+            "value": 1.0,
+            "lower_bound": 0.0,
+            "upper_bound": 2.0,
+            "description": "Roughness factor (max TEEY).",
+            "is_locked": True,
+        },
+        "k_se": {
+            "markdown": r"k_{se}",
+            "unit": "1",
+            "value": 1.0,
+            "lower_bound": 0.0,
+            "upper_bound": 2.0,
+            "description": r"Roughness factor ($E_\mathrm{max}$).",
+            "is_locked": True,
+        },
+    }
 
     def __init__(self) -> None:
-        """Instantiate the object.
-
-        .. todo::
-            Replace the E_0p by a delta_transition=1eV or something.
-
-        """
+        """Instantiate the object."""
         super().__init__()
         self.parameters = {
-            "E_0": Parameter(
-                r"E_0", "eV", 12.5, description="Threshold energy."
-            ),
-            "E_0p": Parameter(
-                r"E_0_p", "eV", 11.5, description="To smoothen transition."
-            ),
-            "E_max": Parameter(r"E_{max}", "eV", 0.0, lower_bound=0.0),
-            "teey_low": Parameter(
-                r"\sigma_{low}",
-                "1",
-                0.5,
-                lower_bound=0.0,
-                description="TEEY below E_0.",
-                is_locked=True,
-            ),
-            "teey_max": Parameter(r"\sigma_{max}", "1", 0.0, lower_bound=0.0),
-            "k_se": Parameter(
-                r"k_{se}",
-                "1",
-                1.0,
-                lower_bound=0.0,
-                upper_bound=2.0,
-                description="Roughness factor.",
-            ),
-            "k_s": Parameter(
-                r"k_s",
-                "1",
-                1.0,
-                lower_bound=0.0,
-                upper_bound=2.0,
-                description="Roughness factor.",
-            ),
+            name: Parameter(**kwargs)  # type: ignore
+            for name, kwargs in self.initial_parameters
         }
+        self._generate_parameter_docs()
 
     def teey(self, energy: np.ndarray, theta: np.ndarray) -> pd.DataFrame:
         r"""Compute TEEY :math:`\sigma`.
@@ -168,6 +190,12 @@ class Vaughan(Model):
 
         self.parameters["E_max"].value = emission_yield.e_max
         self.parameters["teey_max"].value = emission_yield.ey_max
+
+
+# Dynamically add the initial list of parameters to the documentation.
+if Vaughan.__doc__ is None:
+    Vaughan.__doc__ = ""
+Vaughan.__doc__ += "\n" + Vaughan._generate_parameter_docs()
 
 
 def _vaughan_func(
