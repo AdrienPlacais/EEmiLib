@@ -47,9 +47,9 @@ class Model(ABC):
 
     model_config: ModelConfig
 
-    def __init__(self) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         """Instantiate the object."""
-        self.doc_url = documentation_url(self)
+        self.doc_url = documentation_url(self, **kwargs)
         self.parameters: dict[str, Parameter]
 
     @classmethod
