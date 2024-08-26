@@ -41,7 +41,7 @@ def get_classes(module_name: str, base_class: ABCMeta) -> dict[str, str]:
 
 
 def documentation_url(obj: Any) -> str:
-    """Infer the link to the documentation from object path."""
+    """Infer the link to the API documentation from object path."""
     module = obj.__class__.__module__
     package = module.split(".")[0]
     parts = (DOC_URL, package, module)
