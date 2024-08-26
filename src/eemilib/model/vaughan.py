@@ -30,9 +30,9 @@ set to a unique value (:math:`0.5` by default).
 
 .. math::
 
-    \sigma_\mathrm{max}(\theta) = \sigma_\mathrm{max}(\theta = 0) \times \frac{1}{k_s\theta^2/\pi}
+    \sigma_\mathrm{max}(\theta) = \sigma_\mathrm{max}(\theta = 0^\circ) \times \frac{1}{k_s\theta^2/\pi}
 
-    E_\mathrm{max}(\theta) = E_\mathrm{max}(\theta = 0) \times \frac{1}{k_{se}\theta^2/\pi}
+    E_\mathrm{max}(\theta) = E_\mathrm{max}(\theta = 0^\circ) \times \frac{1}{k_{se}\theta^2/\pi}
 
 The :math:`k_s` and :math:`k_{se}` are both set to unity by default.
 
@@ -78,10 +78,9 @@ import numpy as np
 import pandas as pd
 from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.emission_data.emission_yield import EmissionYield
+from eemilib.model.model import Model
 from eemilib.model.model_config import ModelConfig
 from eemilib.model.parameter import Parameter
-
-from eemilib.model.model import Model
 
 
 class Vaughan(Model):
