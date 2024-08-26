@@ -69,14 +69,10 @@ The factor :math:`k` is given by:
     k &= 0.56 \mathrm{\quad if~} \xi \leq 1 \\
       &= 0.25 \mathrm{\quad if~} 1< \xi \leq 3.6 \\
 
-Output parameters
------------------
+Model parameters
+----------------
 
-The list of parameters with associated units.
-
-Implementation
---------------
-Link to API.
+The list of the parameters is dynamically created in the :py:mod:`Vaughan API documentation<.vaughan>`.
 
 Bibliography
 ------------
