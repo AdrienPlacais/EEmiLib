@@ -40,8 +40,17 @@ def get_classes(module_name: str, base_class: ABCMeta) -> dict[str, str]:
     return classes
 
 
-def documentation_url(obj: Any) -> str:
-    """Infer the link to the API documentation from object path."""
+def documentation_url(
+    obj: Any, *, url_doc_override: str | None = None, **kwargs
+) -> str:
+    """Infer the link to the API documentation from object path.
+
+    If ``doc_override`` is provided, will return the URL corresponding to this
+    path instead.
+
+    """
+    if url_doc_override is not None:
+        return "/".join((DOC_URL, url_doc_override)) + ".html"
     module = obj.__class__.__module__
     package = module.split(".")[0]
     parts = (DOC_URL, package, module)
