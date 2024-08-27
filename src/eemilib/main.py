@@ -3,24 +3,16 @@
 from pathlib import Path
 
 import numpy as np
-
 from eemilib.emission_data.data_matrix import DataMatrix
-from eemilib.loader.deesse_loader import DeesseLoader
+from eemilib.loader.pandas_loader import PandasLoader
 from eemilib.model.vaughan import Vaughan
 from eemilib.plotter.pandas import PandasPlotter
 
 
 def main() -> None:
     """Define the simple basic workflow to adapt as GUI."""
-    base_folder = Path(
-        "/home/placais/Documents/Simulation/python/eemilib/data/deesse/"
-    )
-    filepaths = (
-        base_folder / "cleanAg0_TEEY_29_05_2018_18h02m35s.csv",
-        base_folder / "cleanAg20_TEEY_30_05_2018_10h18m05s.csv",
-        base_folder / "cleanAg40_TEEY_30_05_2018_11h05m48s.csv",
-        base_folder / "cleanAg60_TEEY_30_05_2018_11h54m09s.csv",
-    )
+    filepath = Path("../../data/example_copper/measured_TEEY_Cu_1_eroded.txt")
+    filepaths = (filepath,)
 
     # =========================================================================
     # Horizontal screen portion 1 of 3
@@ -30,7 +22,6 @@ def main() -> None:
     # A matrix with 4 rows, 3 cols. You click on a cell, a window opens and you
     # select the file(s) to open.
     data_matrix.set_files(
-        # filepaths, population="all", emission_data_type="Emission Yield"
         filepaths,
         row=3,
         col=0,
@@ -38,7 +29,7 @@ def main() -> None:
 
     # Dropdown menu. Possible values are modules in eemilib.loader, deriving
     # from Loader
-    loader = DeesseLoader()
+    loader = PandasLoader()
 
     # "Load" button
     data_matrix.load_data(loader)
