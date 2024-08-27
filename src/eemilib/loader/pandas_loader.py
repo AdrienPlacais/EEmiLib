@@ -1,16 +1,15 @@
 """Define a generic files loader.
 
-.. todo::
-    I would need to set once and for all the imposed format. Without this I
-    cannot do anything.
+See the example TEEY in ``data/example_copper/`` for the expected file format.
 
 """
 
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
-
 from eemilib.loader.loader import Loader
+from eemilib.util.constants import EY_col_energy
 
 
 class PandasLoader(Loader):
@@ -25,23 +24,51 @@ class PandasLoader(Loader):
         """
         return super().__init__()
 
-    def load_emission_yield(self, *filepath: str | Path) -> pd.DataFrame:
+    def load_emission_yield(
+        self,
+        filepath: str | Path,
+        sep: str = "\t",
+        comment: str = "#",
+    ) -> pd.DataFrame:
         """Load and format the given emission yield files.
 
         Parameters
         ----------
         filepath : str | Path
-            Path(s) to file holding data under study.
+            Path to file holding data under study.
 
         Returns
         -------
         data : pd.DataFrame
-            Structure holding the data. Must have a ``Energy (eV)`` column
+            Structure holding the data. Has a ``Energy [eV]`` column
             holding PEs energy. And one or several columns ``theta [deg]``,
             where `theta` is the value of the incidence angle and content is
             corresponding emission yield.
 
         """
-        data = [pd.read_csv(path) for path in filepath]
-        data = pd.concat(data)
-        return data
+        headers = []
+        i = 0
+        with open(filepath, "r") as file:
+            for i, line in enumerate(file):
+                if not line.startswith(comment):
+                    headers = line.strip().split(sep)
+                    break
+        if not headers:
+            raise IOError(
+                "Error reading the given file. It seems there is no"
+                f" uncommented line? Comment character is {comment}."
+            )
+
+        headers[0] = EY_col_energy
+        headers[1:] = [f"{float(h)} [deg]" for h in headers[1:]]
+
+        df = pd.read_csv(
+            filepath, comment=comment, sep=sep, names=headers, skiprows=i + 1
+        )
+        return df
+
+    def load_emission_angle_distribution(self, *args) -> Any:
+        raise NotImplementedError
+
+    def load_emission_energy_distribution(self, *args) -> Any:
+        raise NotImplementedError

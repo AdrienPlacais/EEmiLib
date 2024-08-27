@@ -6,9 +6,8 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
-from eemilib.util.constants import EY_col_energy
-
 from eemilib.loader.loader import Loader
+from eemilib.util.constants import EY_col_energy
 
 
 class DeesseLoader(Loader):
@@ -34,7 +33,7 @@ class DeesseLoader(Loader):
         Returns
         -------
         data : pd.DataFrame
-            Structure holding the data. Must have a ``Energy [eV]`` column
+            Structure holding the data. Has a ``Energy [eV]`` column
             holding PEs energy. And one or several columns ``theta [deg]``,
             where `theta` is the value of the incidence angle and content is
             corresponding emission yield.
