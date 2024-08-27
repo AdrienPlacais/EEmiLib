@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>eemilib.model.model module &mdash; EEmiLib 0.0.2-3-ga95a023 documentation</title>
+  <title>eemilib.model.model module &mdash; EEmiLib 0.0.3-5-g96defe6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
@@ -15,7 +15,7 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=a48da53a"></script>
+        <script src="../_static/documentation_options.js?v=ab40c7f4"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -40,7 +40,7 @@
             EEmiLib
           </a>
               <div class="version">
-                0.0.2-3-ga95a023
+                0.0.3-5-g96defe6
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -68,7 +68,6 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="eemilib.plotter.html">eemilib.plotter package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="eemilib.ui.html">eemilib.ui package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eemilib.util.html">eemilib.util package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eemilib.main.html">eemilib.main module</a></li>
 </ul>
@@ -113,13 +112,13 @@
 </div>
 <dl class="py class">
 <dt class="sig sig-object py" id="eemilib.model.model.Model">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Model</span></span><a class="headerlink" href="#eemilib.model.model.Model" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#eemilib.model.model.Model" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
 <p>Define the base electron emission model.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="eemilib.model.model.Model.considers_energy">
 <span class="sig-name descname"><span class="pre">considers_energy</span></span><a class="headerlink" href="#eemilib.model.model.Model.considers_energy" title="Link to this definition"></a></dt>
-<dd><p>Tell if the model has a dependency over PES impact energy.</p>
+<dd><p>Tell if the model has a dependency over PEs impact energy.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
@@ -130,7 +129,7 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="eemilib.model.model.Model.is_3d">
 <span class="sig-name descname"><span class="pre">is_3d</span></span><a class="headerlink" href="#eemilib.model.model.Model.is_3d" title="Link to this definition"></a></dt>
-<dd><p>Tell if the model has a dependency over PES impact angle.</p>
+<dd><p>Tell if the model has a dependency over PEs impact angle.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
@@ -150,6 +149,17 @@
 </dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="eemilib.model.model.Model.initial_parameters">
+<span class="sig-name descname"><span class="pre">initial_parameters</span></span><a class="headerlink" href="#eemilib.model.model.Model.initial_parameters" title="Link to this definition"></a></dt>
+<dd><p>List the <a class="reference internal" href="eemilib.model.parameter.html#eemilib.model.parameter.Parameter" title="eemilib.model.parameter.Parameter"><code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code></a> kwargs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict[str, dict[str, str | float | bool]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="eemilib.model.model.Model.model_config">
 <span class="sig-name descname"><span class="pre">model_config</span></span><a class="headerlink" href="#eemilib.model.model.Model.model_config" title="Link to this definition"></a></dt>
 <dd><p>List the files that the model needs to know in order to work.</p>
@@ -162,7 +172,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="eemilib.model.model.Model.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#eemilib.model.model.Model.__init__" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#eemilib.model.model.Model.__init__" title="Link to this definition"></a></dt>
 <dd><p>Instantiate the object.</p>
 </dd></dl>
 
@@ -171,10 +181,17 @@
 <span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc._abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#eemilib.model.model.Model._abc_impl" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.model.model.Model._generate_parameter_docs">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_generate_parameter_docs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#eemilib.model.model.Model._generate_parameter_docs" title="Link to this definition"></a></dt>
+<dd><p>Generate documentation for the <code class="xref py py-class docutils literal notranslate"><span class="pre">Parameters</span></code>.</p>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="id0">
 <span class="sig-name descname"><span class="pre">considers_energy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Tell if the model has a dependency over PEs impact energy.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="eemilib.model.model.Model.find_optimal_parameters">
@@ -184,17 +201,25 @@
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="id2">
-<span class="sig-name descname"><span class="pre">is_3d</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">initial_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
+<dd><p>List the <a class="reference internal" href="eemilib.model.parameter.html#eemilib.model.parameter.Parameter" title="eemilib.model.parameter.Parameter"><code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code></a> kwargs.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="id3">
-<span class="sig-name descname"><span class="pre">is_dielectrics_compatible</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">is_3d</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>
+<dd><p>Tell if the model has a dependency over PEs impact angle.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="id4">
-<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="eemilib.model.model_config.html#eemilib.model.model_config.ModelConfig" title="eemilib.model.model_config.ModelConfig"><span class="pre">ModelConfig</span></a></em><a class="headerlink" href="#id4" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">is_dielectrics_compatible</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#id4" title="Link to this definition"></a></dt>
+<dd><p>Tell if the model can take the surface-trapped charges into account.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="eemilib.model.model_config.html#eemilib.model.model_config.ModelConfig" title="eemilib.model.model_config.ModelConfig"><span class="pre">ModelConfig</span></a></em><a class="headerlink" href="#id5" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">

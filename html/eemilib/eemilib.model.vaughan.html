@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>eemilib.model.vaughan module &mdash; EEmiLib 0.0.2-3-ga95a023 documentation</title>
+  <title>eemilib.model.vaughan module &mdash; EEmiLib 0.0.3-5-g96defe6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
@@ -15,7 +15,7 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=a48da53a"></script>
+        <script src="../_static/documentation_options.js?v=ab40c7f4"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -40,7 +40,7 @@
             EEmiLib
           </a>
               <div class="version">
-                0.0.2-3-ga95a023
+                0.0.3-5-g96defe6
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -68,7 +68,6 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="eemilib.plotter.html">eemilib.plotter package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="eemilib.ui.html">eemilib.ui package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eemilib.util.html">eemilib.util package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="eemilib.main.html">eemilib.main module</a></li>
 </ul>
@@ -107,73 +106,75 @@
   <section id="module-eemilib.model.vaughan">
 <span id="eemilib-model-vaughan-module"></span><h1>eemilib.model.vaughan module<a class="headerlink" href="#module-eemilib.model.vaughan" title="Link to this heading"></a></h1>
 <p>Create the Vaughan model, to compute TEEY.</p>
-<p>This is the most basic Vaughan model, as defined in original Vaughan paper
-<span id="id1">[<a class="reference internal" href="#id6" title="J.R.M. Vaughan. A new formula for secondary emission yield. IEEE Transactions on Electron Devices, 36:1963-1967, 1989. URL: https://doi.org/10.1109/16.34278 http://ieeexplore.ieee.org/document/34278/, doi:10.1109/16.34278.">Vau89</a>, <a class="reference internal" href="#id7" title="J.R.M. Vaughan. Secondary emission formulas. IEEE Transactions on Electron Devices, 40:830, 4 1993. URL: https://doi.org/10.1109/16.202798, doi:10.1109/16.202798.">Vau93</a>]</span>. It gives the TEEY, and takes the incidence
-angle of PEs into account.</p>
-<section id="definitions">
-<h2>Definitions<a class="headerlink" href="#definitions" title="Link to this heading"></a></h2>
-<p>The TEEY is given by:</p>
-<div class="math notranslate nohighlight">
-\[\begin{split}\sigma(E, \theta) &amp;= \sigma_\mathrm{max}(\theta) \times (\xi \mathrm{e}^{1-\xi} )^k \mathrm{\quad if~} \xi \leq 3.6 \\
-                  &amp;= \sigma_\mathrm{max}(\theta) \times \frac{1.125}{\xi^{0.35}} \mathrm{\quad if~} \xi &gt; 3.6\end{split}\]</div>
-<div class="admonition-todo admonition" id="id2">
-<p class="admonition-title">Todo</p>
-<p>Should take <span class="math notranslate nohighlight">\(E_\mathrm{max}\)</span> <span class="math notranslate nohighlight">\(\theta\)</span> dependency into account!</p>
-</div>
-<p><span class="math notranslate nohighlight">\(\xi\)</span> is defined by:</p>
-<div class="math notranslate nohighlight">
-\[\xi = \frac{E - E_0}{E_\mathrm{max} - E_0}\]</div>
-<p>Under the limit <span class="math notranslate nohighlight">\(E_0\)</span> (<span class="math notranslate nohighlight">\(12.5\mathrm{\,eV}\)</span> by default), the TEEY is
-set to a unique value (<span class="math notranslate nohighlight">\(0.5\)</span> by default).</p>
-<div class="admonition-todo admonition" id="id3">
-<p class="admonition-title">Todo</p>
-<p>Releasing <span class="math notranslate nohighlight">\(E_0\)</span> constraint to fit <span class="math notranslate nohighlight">\(E_{c,\,1}\)</span>.</p>
-</div>
-<div class="math notranslate nohighlight">
-\[ \begin{align}\begin{aligned}\sigma_\mathrm{max}(\theta) = \sigma_\mathrm{max}(\theta = 0) \times \frac{1}{k_s\theta^2/\pi}\\E_\mathrm{max}(\theta) = E_\mathrm{max}(\theta = 0) \times \frac{1}{k_{se}\theta^2/\pi}\end{aligned}\end{align} \]</div>
-<p>The <span class="math notranslate nohighlight">\(k_s\)</span> and <span class="math notranslate nohighlight">\(k_{se}\)</span> are both set to unity by default.</p>
-<div class="admonition-todo admonition" id="id4">
-<p class="admonition-title">Todo</p>
-<p>Should be locked by default, but possibility to release their constraints
-to allow fit?</p>
-</div>
-<p>The factor <span class="math notranslate nohighlight">\(k\)</span> is given by:</p>
-<div class="math notranslate nohighlight">
-\[\begin{split}k &amp;= 0.56 \mathrm{\quad if~} \xi \leq 1 \\
-  &amp;= 0.25 \mathrm{\quad if~} 1&lt; \xi \leq 3.6 \\\end{split}\]</div>
-</section>
-<section id="configuration">
-<h2>Configuration<a class="headerlink" href="#configuration" title="Link to this heading"></a></h2>
-<p>You must provide measured TEEY at normal incidence.
-TEEY at non-normal incidence will not be taken into account into the fit
+<p>TEEY at non-normal incidence will not be taken into account into the fit
 (FIXME).</p>
-<dl class="simple">
-<dt>Future updates:</dt><dd><ul class="simple">
-<li><p>unlock <span class="math notranslate nohighlight">\(E_0\)</span> to fit <span class="math notranslate nohighlight">\(E_{c,\,1}\)</span></p></li>
-<li><p>unlock <span class="math notranslate nohighlight">\(k_s\)</span>, <span class="math notranslate nohighlight">\(k_{se}\)</span> to have better overall fit?</p></li>
-</ul>
-</dd>
-<dt>CST Microwave Studio</dt><dd><p>Instructions to match CST Vaughan.</p>
-</dd>
-<dt>SPARK3D</dt><dd><p>Instructions to match SPARK3D Vaughan.</p>
-</dd>
-</dl>
-<div class="docutils container" id="id5">
-<div role="list" class="citation-list">
-<div class="citation" id="id6" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">Vau89</a><span class="fn-bracket">]</span></span>
-<p>J.R.M. Vaughan. A new formula for secondary emission yield. <em>IEEE Transactions on Electron Devices</em>, 36:1963–1967, 1989. URL: <a class="reference external" href="https://doi.org/10.1109/16.34278 http://ieeexplore.ieee.org/document/34278/">https://doi.org/10.1109/16.34278 http://ieeexplore.ieee.org/document/34278/</a>, <a class="reference external" href="https://doi.org/10.1109/16.34278">doi:10.1109/16.34278</a>.</p>
-</div>
-<div class="citation" id="id7" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">Vau93</a><span class="fn-bracket">]</span></span>
-<p>J.R.M. Vaughan. Secondary emission formulas. <em>IEEE Transactions on Electron Devices</em>, 40:830, 4 1993. URL: <a class="reference external" href="https://doi.org/10.1109/16.202798">https://doi.org/10.1109/16.202798</a>, <a class="reference external" href="https://doi.org/10.1109/16.202798">doi:10.1109/16.202798</a>.</p>
-</div>
-</div>
-</div>
-<div class="admonition-todo admonition" id="id8">
+<div class="admonition-todo admonition" id="id1">
 <p class="admonition-title">Todo</p>
 <p>Make this more robust. Especially the _vaughan_func.</p>
 </div>
+<section id="model-parameters">
+<h2>Model parameters<a class="headerlink" href="#model-parameters" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 5.6%" />
+<col style="width: 11.1%" />
+<col style="width: 5.6%" />
+<col style="width: 5.6%" />
+<col style="width: 72.2%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Name</p></th>
+<th class="head"><p>Unit</p></th>
+<th class="head"><p>Initial</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(E_0\)</span></p></td>
+<td><p>E_0</p></td>
+<td><p>eV</p></td>
+<td><p><span class="math notranslate nohighlight">\(12.5\)</span></p></td>
+<td><p>Threshold energy. Can be used to fit  <span class="math notranslate nohighlight">\(E_{c,\,1}\)</span>. By default, locked to <span class="math notranslate nohighlight">\(12.5\mathrm{\,eV}\)</span>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(E_\mathrm{max}\)</span></p></td>
+<td><p>E_max</p></td>
+<td><p>eV</p></td>
+<td><p><span class="math notranslate nohighlight">\(0.0\)</span></p></td>
+<td><p>Energy at maximum TEEY.</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(\Delta E_{tr}\)</span></p></td>
+<td><p>delta_E_transition</p></td>
+<td><p>eV</p></td>
+<td><p><span class="math notranslate nohighlight">\(1.0\)</span></p></td>
+<td><p>Energy over which we switch from <span class="math notranslate nohighlight">\(\sigma_\mathrm{low}\)</span> to actual Vaughan TEEY. Useful for smoothing the transition.</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(\sigma_\mathrm{low}\)</span></p></td>
+<td><p>teey_low</p></td>
+<td><p>1</p></td>
+<td><p><span class="math notranslate nohighlight">\(0.5\)</span></p></td>
+<td><p>TEEY below <span class="math notranslate nohighlight">\(E_0\)</span>.</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(\sigma_\mathrm{max}\)</span></p></td>
+<td><p>teey_max</p></td>
+<td><p>1</p></td>
+<td><p><span class="math notranslate nohighlight">\(0.0\)</span></p></td>
+<td><p>Maximum TEEY, directly taken from the measurement.</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(k_s\)</span></p></td>
+<td><p>k_s</p></td>
+<td><p>1</p></td>
+<td><p><span class="math notranslate nohighlight">\(1.0\)</span></p></td>
+<td><p>Roughness factor (<span class="math notranslate nohighlight">\(\sigma_\mathrm{max}\)</span>).  Locked by default, but could be used for more precise fits.</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(k_{se}\)</span></p></td>
+<td><p>k_se</p></td>
+<td><p>1</p></td>
+<td><p><span class="math notranslate nohighlight">\(1.0\)</span></p></td>
+<td><p>Roughness factor (<span class="math notranslate nohighlight">\(E_\mathrm{max}\)</span>).  Locked by default, but could be used for more precise fits.</p></td>
+</tr>
+</tbody>
+</table>
 </section>
 <dl class="py class">
 <dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan">
@@ -184,10 +185,6 @@ TEEY at non-normal incidence will not be taken into account into the fit
 <dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#eemilib.model.vaughan.Vaughan.__init__" title="Link to this definition"></a></dt>
 <dd><p>Instantiate the object.</p>
-<div class="admonition-todo admonition" id="id9">
-<p class="admonition-title">Todo</p>
-<p>Replace the E_0p by a delta_transition=1eV or something.</p>
-</div>
 </dd></dl>
 
 <dl class="py attribute">
@@ -198,7 +195,8 @@ TEEY at non-normal incidence will not be taken into account into the fit
 <dl class="py attribute">
 <dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.considers_energy">
 <span class="sig-name descname"><span class="pre">considers_energy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#eemilib.model.vaughan.Vaughan.considers_energy" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Tell if the model has a dependency over PEs impact energy.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.find_optimal_parameters">
@@ -207,14 +205,22 @@ TEEY at non-normal incidence will not be taken into account into the fit
 </dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.initial_parameters">
+<span class="sig-name descname"><span class="pre">initial_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'E_0':</span> <span class="pre">{'description':</span> <span class="pre">'Threshold</span> <span class="pre">energy.</span> <span class="pre">Can</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">to</span> <span class="pre">fit</span>&#160; <span class="pre">:math:`E_{c,\\,1}`.</span> <span class="pre">By</span> <span class="pre">default,</span> <span class="pre">locked</span> <span class="pre">to</span> <span class="pre">:math:`12.5\\mathrm{\\,eV}`.',</span> <span class="pre">'is_locked':</span> <span class="pre">True,</span> <span class="pre">'markdown':</span> <span class="pre">'E_0',</span> <span class="pre">'unit':</span> <span class="pre">'eV',</span> <span class="pre">'value':</span> <span class="pre">12.5},</span> <span class="pre">'E_max':</span> <span class="pre">{'description':</span> <span class="pre">'Energy</span> <span class="pre">at</span> <span class="pre">maximum</span> <span class="pre">TEEY.',</span> <span class="pre">'lower_bound':</span> <span class="pre">0.0,</span> <span class="pre">'markdown':</span> <span class="pre">'E_\\mathrm{max}',</span> <span class="pre">'unit':</span> <span class="pre">'eV',</span> <span class="pre">'value':</span> <span class="pre">0.0},</span> <span class="pre">'delta_E_transition':</span> <span class="pre">{'description':</span> <span class="pre">'Energy</span> <span class="pre">over</span> <span class="pre">which</span> <span class="pre">we</span> <span class="pre">switch</span> <span class="pre">from</span> <span class="pre">:math:`\\sigma_\\mathrm{low}`</span> <span class="pre">to</span> <span class="pre">actual</span> <span class="pre">Vaughan</span> <span class="pre">TEEY.</span> <span class="pre">Useful</span> <span class="pre">for</span> <span class="pre">smoothing</span> <span class="pre">the</span> <span class="pre">transition.',</span> <span class="pre">'is_locked':</span> <span class="pre">True,</span> <span class="pre">'markdown':</span> <span class="pre">'\\Delta</span> <span class="pre">E_{tr}',</span> <span class="pre">'unit':</span> <span class="pre">'eV',</span> <span class="pre">'value':</span> <span class="pre">1.0},</span> <span class="pre">'k_s':</span> <span class="pre">{'description':</span> <span class="pre">'Roughness</span> <span class="pre">factor</span> <span class="pre">(:math:`\\sigma_\\mathrm{max}`).</span>&#160; <span class="pre">Locked</span> <span class="pre">by</span> <span class="pre">default,</span> <span class="pre">but</span> <span class="pre">could</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">for</span> <span class="pre">more</span> <span class="pre">precise</span> <span class="pre">fits.',</span> <span class="pre">'is_locked':</span> <span class="pre">True,</span> <span class="pre">'lower_bound':</span> <span class="pre">0.0,</span> <span class="pre">'markdown':</span> <span class="pre">'k_s',</span> <span class="pre">'unit':</span> <span class="pre">'1',</span> <span class="pre">'upper_bound':</span> <span class="pre">2.0,</span> <span class="pre">'value':</span> <span class="pre">1.0},</span> <span class="pre">'k_se':</span> <span class="pre">{'description':</span> <span class="pre">'Roughness</span> <span class="pre">factor</span> <span class="pre">(:math:`E_\\mathrm{max}`).</span>&#160; <span class="pre">Locked</span> <span class="pre">by</span> <span class="pre">default,</span> <span class="pre">but</span> <span class="pre">could</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">for</span> <span class="pre">more</span> <span class="pre">precise</span> <span class="pre">fits.',</span> <span class="pre">'is_locked':</span> <span class="pre">True,</span> <span class="pre">'lower_bound':</span> <span class="pre">0.0,</span> <span class="pre">'markdown':</span> <span class="pre">'k_{se}',</span> <span class="pre">'unit':</span> <span class="pre">'1',</span> <span class="pre">'upper_bound':</span> <span class="pre">2.0,</span> <span class="pre">'value':</span> <span class="pre">1.0},</span> <span class="pre">'teey_low':</span> <span class="pre">{'description':</span> <span class="pre">'TEEY</span> <span class="pre">below</span> <span class="pre">:math:`E_0`.',</span> <span class="pre">'is_locked':</span> <span class="pre">True,</span> <span class="pre">'lower_bound':</span> <span class="pre">0.0,</span> <span class="pre">'markdown':</span> <span class="pre">'\\sigma_\\mathrm{low}',</span> <span class="pre">'unit':</span> <span class="pre">'1',</span> <span class="pre">'value':</span> <span class="pre">0.5},</span> <span class="pre">'teey_max':</span> <span class="pre">{'description':</span> <span class="pre">'Maximum</span> <span class="pre">TEEY,</span> <span class="pre">directly</span> <span class="pre">taken</span> <span class="pre">from</span> <span class="pre">the</span> <span class="pre">measurement.',</span> <span class="pre">'lower_bound':</span> <span class="pre">0.0,</span> <span class="pre">'markdown':</span> <span class="pre">'\\sigma_\\mathrm{max}',</span> <span class="pre">'unit':</span> <span class="pre">'1',</span> <span class="pre">'value':</span> <span class="pre">0.0}}</span></em><a class="headerlink" href="#eemilib.model.vaughan.Vaughan.initial_parameters" title="Link to this definition"></a></dt>
+<dd><p>List the <a class="reference internal" href="eemilib.model.parameter.html#eemilib.model.parameter.Parameter" title="eemilib.model.parameter.Parameter"><code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code></a> kwargs.</p>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.is_3d">
 <span class="sig-name descname"><span class="pre">is_3d</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#eemilib.model.vaughan.Vaughan.is_3d" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Tell if the model has a dependency over PEs impact angle.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.is_dielectrics_compatible">
 <span class="sig-name descname"><span class="pre">is_dielectrics_compatible</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#eemilib.model.vaughan.Vaughan.is_dielectrics_compatible" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Tell if the model can take the surface-trapped charges into account.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.model_config">
@@ -225,7 +231,7 @@ TEEY at non-normal incidence will not be taken into account into the fit
 <dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.teey">
 <span class="sig-name descname"><span class="pre">teey</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#eemilib.model.vaughan.Vaughan.teey" title="Link to this definition"></a></dt>
 <dd><p>Compute TEEY <span class="math notranslate nohighlight">\(\sigma\)</span>.</p>
-<div class="admonition-todo admonition" id="id10">
+<div class="admonition-todo admonition" id="id2">
 <p class="admonition-title">Todo</p>
 <p>This method could be so much simpler and efficient.</p>
 </div>
