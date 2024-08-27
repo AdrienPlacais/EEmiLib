@@ -10,9 +10,6 @@
 .. todo::
     Add measurables at bottom
 
-.. todo::
-    Help buttons
-
 """
 import importlib
 import sys
@@ -33,7 +30,10 @@ from eemilib.gui.helper import (
     to_plot_checkboxes,
 )
 from eemilib.gui.model_selection import model_configuration
+from eemilib.loader.loader import Loader
+from eemilib.model.model import Model
 from eemilib.model.model_config import ModelConfig
+from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
     IMPLEMENTED_EMISSION_DATA,
     IMPLEMENTED_POP,
@@ -53,10 +53,6 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-
-from eemilib.loader.loader import Loader
-from eemilib.model.model import Model
-from eemilib.plotter.plotter import Plotter
 
 
 class MainWindow(QMainWindow):
