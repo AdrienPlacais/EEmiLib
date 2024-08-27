@@ -15,6 +15,7 @@ Welcome to EEmiLib's documentation!
    :glob:
 
    manual/requirements_note
+   manual/quick_start
    manual/models
    manual/roadmap
    API reference <eemilib/modules>

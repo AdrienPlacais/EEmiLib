@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>eemilib.loader.pandas_loader module &mdash; EEmiLib 0.0.4 documentation</title>
+  <title>eemilib.loader.pandas_loader module &mdash; EEmiLib 0.0.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
@@ -15,7 +15,7 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=8c5712d9"></script>
+        <script src="../_static/documentation_options.js?v=282f96c0"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -38,7 +38,7 @@
             EEmiLib
           </a>
               <div class="version">
-                0.0.4
+                0.0.5
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -51,6 +51,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../manual/requirements_note.html">Requirements note</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../manual/quick_start.html">Quick start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../manual/models.html">Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../manual/roadmap.html">Roadmap</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">API reference</a><ul class="current">
@@ -103,11 +104,7 @@
   <section id="module-eemilib.loader.pandas_loader">
 <span id="eemilib-loader-pandas-loader-module"></span><h1>eemilib.loader.pandas_loader module<a class="headerlink" href="#module-eemilib.loader.pandas_loader" title="Link to this heading"></a></h1>
 <p>Define a generic files loader.</p>
-<div class="admonition-todo admonition" id="id1">
-<p class="admonition-title">Todo</p>
-<p>I would need to set once and for all the imposed format. Without this I
-cannot do anything.</p>
-</div>
+<p>See the example TEEY in <code class="docutils literal notranslate"><span class="pre">data/example_copper/</span></code> for the expected file format.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="eemilib.loader.pandas_loader.PandasLoader">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PandasLoader</span></span><a class="headerlink" href="#eemilib.loader.pandas_loader.PandasLoader" title="Link to this definition"></a></dt>
@@ -127,15 +124,27 @@ not for now.</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="eemilib.loader.pandas_loader.PandasLoader.load_emission_angle_distribution">
+<span class="sig-name descname"><span class="pre">load_emission_angle_distribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#eemilib.loader.pandas_loader.PandasLoader.load_emission_angle_distribution" title="Link to this definition"></a></dt>
+<dd><p>Load the given electron emission angle distribution file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.loader.pandas_loader.PandasLoader.load_emission_energy_distribution">
+<span class="sig-name descname"><span class="pre">load_emission_energy_distribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#eemilib.loader.pandas_loader.PandasLoader.load_emission_energy_distribution" title="Link to this definition"></a></dt>
+<dd><p>Load the given electron emission energy distribution file.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="eemilib.loader.pandas_loader.PandasLoader.load_emission_yield">
-<span class="sig-name descname"><span class="pre">load_emission_yield</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#eemilib.loader.pandas_loader.PandasLoader.load_emission_yield" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">load_emission_yield</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'\t'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'#'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#eemilib.loader.pandas_loader.PandasLoader.load_emission_yield" title="Link to this definition"></a></dt>
 <dd><p>Load and format the given emission yield files.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>filepath</strong> (<em>str</em><em> | </em><em>Path</em>) – Path(s) to file holding data under study.</p>
+<dd class="field-odd"><p><strong>filepath</strong> (<em>str</em><em> | </em><em>Path</em>) – Path to file holding data under study.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>data</strong> – Structure holding the data. Must have a <code class="docutils literal notranslate"><span class="pre">Energy</span> <span class="pre">(eV)</span></code> column
+<dd class="field-even"><p><strong>data</strong> – Structure holding the data. Has a <code class="docutils literal notranslate"><span class="pre">Energy</span> <span class="pre">[eV]</span></code> column
 holding PEs energy. And one or several columns <code class="docutils literal notranslate"><span class="pre">theta</span> <span class="pre">[deg]</span></code>,
 where <code class="docutils literal notranslate"><span class="pre">theta</span></code> is the value of the incidence angle and content is
 corresponding emission yield.</p>
