@@ -16,7 +16,7 @@ A 4\*3 matrix:
 
 The different models will need different files (see examples in :ref:`models-link`).
 You click on the 📁 to open the File Explorer, but you can also manually type the path.
-The magic keyword `%dummy` is allowed.
+*The magic keyword `%dummy` is allowed.*
 
 
 .. note::
@@ -25,7 +25,7 @@ The magic keyword `%dummy` is allowed.
    **However**, if you want to plot/tabulate a model when you already know the model parameters:
 
    #. Feed in dummy electron emission files.
-   #. Enter the desired values for the different parameters with very tight lower/upper boundaries.
+   #. Enter the desired values for the different parameters with very tight lower/upper boundaries. Lock their values with the 🔒 icon.
    #. Click on `Fit!`.
 
    This is not really a fit, but you will plot the model with the desired parameters values.
@@ -57,8 +57,8 @@ Paths to emission energy distribution
 +----------------------+--------------+---------------+
 
 - Several columns:
-  - For several impact energies?
-  - Or for several impact angles?
+  - *For several impact energies?*
+  - *Or for several impact angles?*
 - There is a `Plot` button to show the data understood by the code.
 
 Paths to emission angle distribution
@@ -71,7 +71,6 @@ Paths to emission angle distribution
 +----------------------+--------------+---------------+
 
 - Several columns:
-  - For several impact energies?
-  - Or for several impact angles?
+  - *For several impact energies?*
+  - *Or for several impact angles?*
 - There is a `Plot` button to show the data understood by the code.
-
