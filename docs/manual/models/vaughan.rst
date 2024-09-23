@@ -76,10 +76,6 @@ Model parameters
 
 The list of the parameters is dynamically created in the :py:mod:`Vaughan API documentation<.vaughan>`.
 
-Bibliography
-------------
-.. bibliography::
-
 .. todo::
     - Unlock :math:`E_0` to fit :math:`E_{c,\,1}`.
     - Unlock :math:`k_s`, :math:`k_{se}` to have better overall fit?

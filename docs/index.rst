@@ -18,6 +18,7 @@ Welcome to EEmiLib's documentation!
    manual/quick_start
    manual/models
    manual/roadmap
+   manual/bibliography
    API reference <eemilib/modules>
 
 
