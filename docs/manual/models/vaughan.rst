@@ -14,6 +14,7 @@ It gives the TEEY, and takes the incidence angle of PEs into account.
 
 Input files
 -----------
+
 You must provide measured TEEY at normal incidence.
 
 +-----------------------------+---------------+-----------------------------+---------------------------+
@@ -30,6 +31,7 @@ You must provide measured TEEY at normal incidence.
 
 Definitions
 -----------
+
 The TEEY is given by:
 
 .. math::
