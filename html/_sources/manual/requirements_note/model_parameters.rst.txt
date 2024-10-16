@@ -17,12 +17,8 @@ If relatable, the figure should hold an angle and/or energy box where we can set
 
 `Export tabulated`
 """"""""""""""""""
-Saves tabulated modelled data in `Output folder`.
-Proper format?
+*Saves tabulated modelled data in `Output folder`.*
 
 `Save model parameters`
 """""""""""""""""""""""
-Saves model parameters in `Output folder`.
-Proper format?
-
-
+*Saves model parameters in `Output folder`.*

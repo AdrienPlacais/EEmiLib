@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Interface &mdash; EEmiLib 0.0.5 documentation</title>
+  <title>Interface &mdash; EEmiLib 0.0.5-3-g2a85433 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -15,7 +15,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=282f96c0"></script>
+        <script src="../../_static/documentation_options.js?v=e048ed29"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -38,7 +38,7 @@
             EEmiLib
           </a>
               <div class="version">
-                0.0.5
+                0.0.5-3-g2a85433
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -89,14 +89,16 @@
              
   <section id="interface">
 <h1>Interface<a class="headerlink" href="#interface" title="Link to this heading"></a></h1>
+<p>This document describes the ideal behavior of the code.
+Features in <em>italics</em> are to be implemented (they should also appear in the to-do list).</p>
 <div class="toctree-wrapper compound">
 </div>
 <section id="configuration">
 <h2>Configuration<a class="headerlink" href="#configuration" title="Link to this heading"></a></h2>
-<p>Internally, the configuration will be stored as a dict and saved to a <code class="docutils literal notranslate"><span class="pre">.toml</span></code>.
-The configuration file should allow reproducing results.
-An <code class="docutils literal notranslate"><span class="pre">Import</span></code> button should allow reusing a previous configuration.
-The name of the version and the commit number should appear in the configuration file.</p>
+<p><em>Internally, the configuration will be stored as a dict and saved to a `.toml`.</em>
+<em>The configuration file should allow reproducing results.</em>
+<em>An `Import` button should allow reusing a previous configuration.</em>
+<em>The name of the version and the commit number should appear in the configuration file.</em></p>
 </section>
 <section id="plotter">
 <h2>Plotter<a class="headerlink" href="#plotter" title="Link to this heading"></a></h2>
@@ -105,7 +107,7 @@ At first, only <code class="docutils literal notranslate"><span class="pre">matp
 </section>
 <section id="output-folder">
 <h2>Output folder<a class="headerlink" href="#output-folder" title="Link to this heading"></a></h2>
-<p>Where configuration file, output files, as well as a copy of input files will be saved.</p>
+<p><em>Where configuration file, output files, as well as a copy of input files will be saved.</em></p>
 </section>
 <section id="input-files">
 <h2>Input files<a class="headerlink" href="#input-files" title="Link to this heading"></a></h2>
@@ -143,14 +145,14 @@ At first, only <code class="docutils literal notranslate"><span class="pre">matp
 </table>
 <p>The different models will need different files (see examples in <a class="reference internal" href="../models.html#models-link"><span class="std std-ref">Models</span></a>).
 You click on the 📁 to open the File Explorer, but you can also manually type the path.
-The magic keyword <code class="docutils literal notranslate"><span class="pre">%dummy</span></code> is allowed.</p>
+<em>The magic keyword `%dummy` is allowed.</em></p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>the idea of this software is to fit a model on experimental data.
 <strong>However</strong>, if you want to plot/tabulate a model when you already know the model parameters:</p>
 <ol class="arabic simple">
 <li><p>Feed in dummy electron emission files.</p></li>
-<li><p>Enter the desired values for the different parameters with very tight lower/upper boundaries.</p></li>
+<li><p>Enter the desired values for the different parameters with very tight lower/upper boundaries. Lock their values with the 🔒 icon.</p></li>
 <li><p>Click on <code class="docutils literal notranslate"><span class="pre">Fit!</span></code>.</p></li>
 </ol>
 <p>This is not really a fit, but you will plot the model with the desired parameters values.
@@ -200,8 +202,8 @@ And you can click <code class="docutils literal notranslate"><span class="pre">E
 </table>
 <ul class="simple">
 <li><p>Several columns:
-- For several impact energies?
-- Or for several impact angles?</p></li>
+- <em>For several impact energies?</em>
+- <em>Or for several impact angles?</em></p></li>
 <li><p>There is a <code class="docutils literal notranslate"><span class="pre">Plot</span></code> button to show the data understood by the code.</p></li>
 </ul>
 </section>
@@ -223,8 +225,8 @@ And you can click <code class="docutils literal notranslate"><span class="pre">E
 </table>
 <ul class="simple">
 <li><p>Several columns:
-- For several impact energies?
-- Or for several impact angles?</p></li>
+- <em>For several impact energies?</em>
+- <em>Or for several impact angles?</em></p></li>
 <li><p>There is a <code class="docutils literal notranslate"><span class="pre">Plot</span></code> button to show the data understood by the code.</p></li>
 </ul>
 </section>
@@ -235,8 +237,8 @@ Defined by lower and upper values.</p>
 </section>
 <section id="export-range">
 <h2>Export range<a class="headerlink" href="#export-range" title="Link to this heading"></a></h2>
-<p>Ranges of PE angle and energy on which the data will be exported.
-Defined by lower and upper values as well as number of points.
+<p><em>Ranges of PE angle and energy on which the data will be exported.</em>
+<em>Defined by lower and upper values as well as number of points.</em>
 <strong>Does not concern every output.</strong>
 <strong>Will be in an `output` section.</strong></p>
 </section>
@@ -268,20 +270,25 @@ If relatable, the figure should hold an angle and/or energy box where we can set
 </section>
 <section id="export-tabulated">
 <h2><code class="docutils literal notranslate"><span class="pre">Export</span> <span class="pre">tabulated</span></code><a class="headerlink" href="#export-tabulated" title="Link to this heading"></a></h2>
-<p>Saves tabulated modelled data in <code class="docutils literal notranslate"><span class="pre">Output</span> <span class="pre">folder</span></code>.
-Proper format?</p>
+<p><em>Saves tabulated modelled data in `Output folder`.</em></p>
 </section>
 <section id="save-model-parameters">
 <h2><code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">model</span> <span class="pre">parameters</span></code><a class="headerlink" href="#save-model-parameters" title="Link to this heading"></a></h2>
-<p>Saves model parameters in <code class="docutils literal notranslate"><span class="pre">Output</span> <span class="pre">folder</span></code>.
-Proper format?</p>
+<p><em>Saves model parameters in `Output folder`.</em></p>
 </section>
 <section id="to-do">
 <h2>To do<a class="headerlink" href="#to-do" title="Link to this heading"></a></h2>
+<div class="admonition-todo admonition" id="id1">
+<p class="admonition-title">Todo</p>
 <ul class="simple">
-<li><p>[ ] Format of input text files? Look at <code class="docutils literal notranslate"><span class="pre">.hdf5</span></code>? Or try to accept <code class="docutils literal notranslate"><span class="pre">.csv</span></code>, <code class="docutils literal notranslate"><span class="pre">.xlsx</span></code>, <code class="docutils literal notranslate"><span class="pre">.odt</span></code>, <code class="docutils literal notranslate"><span class="pre">.txt</span></code>…? Look at my ONERA files.</p></li>
-<li><p>[ ] Format of output text files?</p></li>
+<li><p>[ ] Configuration <em>via</em> <code class="docutils literal notranslate"><span class="pre">.toml</span></code>, import.</p></li>
+<li><p>[ ] EEmiLib commit number in the outputs.</p></li>
+<li><p>[ ] Allow for <code class="docutils literal notranslate"><span class="pre">%dummy</span></code> in text files input.</p></li>
+<li><p>[ ] Clarify inputs with emission energy distribution, emission angle distribution.</p></li>
+<li><p>[ ] <code class="docutils literal notranslate"><span class="pre">Export</span> <span class="pre">tabulated</span></code> button.</p></li>
+<li><p>[ ] <code class="docutils literal notranslate"><span class="pre">Save</span> <span class="pre">model</span> <span class="pre">parameters</span></code> button.</p></li>
 </ul>
+</div>
 </section>
 </section>
 
