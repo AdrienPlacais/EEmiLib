@@ -11,30 +11,30 @@ classifiers = [
    "Topic :: Scientific/Engineering :: Physics",
 ]
 dependencies = [
-   "matplotlib==3.9.1",
-   "myst-parser==3.0.1",
-   "nbsphinx==0.9.4",
-   "numpy==2.0.0",
-   "pandas==2.2.2",
-   "PyQt5==5.15.10",
-   "pytest==8.2.2",
-   "setuptools==70.2.0",
-   "sphinx-rtd-theme==2.0.0",
-   "sphinxcontrib-bibtex==2.6.2",
+   "matplotlib>=3.9.1, <4.0.0",
+   "myst-parser>=3.0.1, <4.0.0",
+   "nbsphinx>=0.9.4, <1.0.0",
+   "numpy>=2.0.1, <3.0.0",
+   "pandas>=2.2.2, <3.0.0",
+   "PyQt5>=5.15.10, < 6.0.0",
+   "pytest>=8.3.2, <9.0.0",
+   "setuptools>=72.0.0, <73.0.0",
+   "sphinx-rtd-theme>=2.0.0, <3.0.0",
+   "sphinxcontrib-bibtex>=2.6.0,<3.0.0",
 ]
 description = "Fit various Electron EMIssion models on experimental data."
 keywords = ["electron emission", "multipactor"]
 name = "EEmiLib"
 readme = "README.md"
 requires-python = ">=3.12"
-version = "0.0.2"
+version = "0.0.6"
 
 [project.scripts]
 eemilib-gui = "eemilib.gui.gui:main"
 
 [project.urls]
-Documentation = " https://electron-emission-fitter-electron-emission-83105ebd6cd34bd4e7a3.pages.in2p3.fr/html/index.html"
-Homepage = "https://gitlab.in2p3.fr/electron_emission/eemilib"
+Documentation = "https://adrienplacais.github.io/EEmiLib/html/index.html"
+Homepage = "https://github.com/AdrienPlacais/EEmiLib"
 
 [tool.black]
 line-length = 79
