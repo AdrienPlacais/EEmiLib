@@ -9,6 +9,7 @@ Two types of outputs can be generated:
 - Electron emission models parameters.
 
 This project is still under development.
+I maintain this project on my free time, but I'll do my best to answer to any question you may have.
 
 Scope
 =====
