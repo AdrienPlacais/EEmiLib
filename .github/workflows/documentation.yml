@@ -11,10 +11,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-      - name: Install dependencies
+      - name: Install package
         run: |
           pip install -e .
-      - name: Sphinx build
+      - name: Generate Sphinx source files
+        run: |
+          make -C docs apidoc
+      - name: Build Sphinx documentation
         run: |
           make -C docs nitpicky
       - name: Deploy to GitHub Pages
