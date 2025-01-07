@@ -47,7 +47,11 @@ src_paths = ["./eemilib/"]
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib", "--strict-markers"]
 filterwarnings = ["ignore:.*cKDTree.*:DeprecationWarning"]
-markers = []
+markers = [
+   "implementation: mark tests/functionalities currently under implementation",
+   "slow: mark a test as slow (deselect with '-m \"not slow\"')",
+   "smoke: mark quick and critical tests (select with '-m smoke')",
+]
 minversion = "6.0"
 testpaths = ["tests"]
 
