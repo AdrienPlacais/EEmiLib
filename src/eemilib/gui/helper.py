@@ -32,7 +32,7 @@ def setup_dropdown(
     ----------
     module_name : str
         Where the entries of the dropdown will be searched.
-    base_class : ABCMeta
+    base_class : abc.ABCMeta
         The base class from which dropdown entries should inherit.
     buttons : dict[str, Any]
         Dictionary where the keys are the name of the buttons to add next to

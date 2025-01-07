@@ -18,7 +18,7 @@ def get_classes(module_name: str, base_class: ABCMeta) -> dict[str, str]:
     ----------
     module_name : str
         The name of a module.
-    base_class : ABCMeta
+    base_class : abc.ABCMeta
         The mother object that classes should inherit from.
 
     Returns
