@@ -4,4 +4,7 @@ offers a simple way to fit the on electron emission data.
 
 """
 
-DOC_URL = "https://electron-emission-fitter-electron-emission-83105ebd6cd34bd4e7a3.pages.in2p3.fr/html"
+import importlib.metadata
+
+DOC_URL = "https://adrienplacais.github.io/EEmiLib/"
+__version__ = importlib.metadata.version("eemilib")
