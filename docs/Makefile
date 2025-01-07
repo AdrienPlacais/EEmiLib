@@ -1,20 +1,38 @@
-# Minimal makefile for Sphinx documentation
-#
+# Makefile for Sphinx documentation
 
-# You can set these variables from the command line, and also
-# from the environment for the first two.
 SPHINXOPTS    ?=
 SPHINXBUILD   ?= sphinx-build
+SPHINXAPIDOC ?= sphinx-apidoc
 SOURCEDIR     = .
 BUILDDIR      = ../../eemilib-docs/
+SRC_DIR	      = ../src
+APIDOC_DIR    = eemilib
 
-# Put it first so that "make" without argument is like "make help".
+.PHONY: help clean apidoc html
+.DEFAULT_GOAL := help
+
 help:
-	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	@echo "Usage: make [TARGET]"
+	@echo ""
+	@echo "Available targets:"
+	@echo "  help            Show this help message"
+	@echo "  clean           Clean build artifacts"
+	@echo "  apidoc          Generate API documentation"
+	@echo "  html            Build unversioned HTML documentation"
 
-.PHONY: help Makefile
+clean:
+	@echo "Cleaning build artifacts..."
+	@rm -rf "$(BUILDDIR)"
+	@if [ -d "$(APIDOC_DIR)" ]; then rm -rf "$(APIDOC_DIR)"/*; fi
 
-# Catch-all target: route all unknown targets to Sphinx using the new
-# "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
-%: Makefile
-	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+apidoc:
+	@echo "Generating API documentation..."
+	@$(SPHINXAPIDOC) -o "$(APIDOC_DIR)" -d 5 -f -e -M "$(SRC_DIR)"
+
+html:
+	@echo "Building unversioned HTML documentation..."
+	@$(SPHINXBUILD) -b html "$(SOURCEDIR)" "$(BUILDDIR)/html" $(SPHINXOPTS) $(O)
+
+%:
+	@echo "Unknown target '$@'."
+	@$(MAKE) help
