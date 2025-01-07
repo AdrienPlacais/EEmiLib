@@ -1,7 +1,7 @@
 # Makefile for Sphinx documentation
 
-SPHINXOPTS    ?=
-SPHINXBUILD   ?= sphinx-build
+SPHINXOPTS   ?=
+SPHINXBUILD  ?= sphinx-build
 SPHINXAPIDOC ?= sphinx-apidoc
 SOURCEDIR     = .
 BUILDDIR      = ../../eemilib-docs/
