@@ -19,6 +19,7 @@ help:
 	@echo "  clean           Clean build artifacts"
 	@echo "  apidoc          Generate API documentation"
 	@echo "  html            Build unversioned HTML documentation"
+	@echo "  nitpicky        Build unversioned HTML documentation, treating warnings as errors"
 
 clean:
 	@echo "Cleaning build artifacts..."
@@ -32,6 +33,10 @@ apidoc:
 html:
 	@echo "Building unversioned HTML documentation..."
 	@$(SPHINXBUILD) -b html "$(SOURCEDIR)" "$(BUILDDIR)/html" $(SPHINXOPTS) $(O)
+
+nitpicky:
+	@echo "Building unversioned HTML documentation, treating warnings as errors..."
+	@$(SPHINXBUILD) -W -b html "$(SOURCEDIR)" "$(BUILDDIR)/html" $(SPHINXOPTS) $(O)
 
 %:
 	@echo "Unknown target '$@'."
