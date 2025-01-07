@@ -34,7 +34,7 @@ class EmissionYield(EmissionData):
         ----------
         population : Literal["SE", "EBE", "IBE", "all"]
             The concerned population of electrons.
-        data : pandas.DataFramelalala
+        data : pandas.DataFrame
             Structure holding the data. Must have a ``Energy (eV)`` column
             holding PEs energy. And one or several columns ``theta [deg]``,
             where `theta` is the value of the incidence angle and content is
