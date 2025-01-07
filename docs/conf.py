@@ -1,29 +1,10 @@
-# Configuration file for the Sphinx documentation builder.
-#
-# For the full list of built-in configuration values, see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
+import eemilib
 
-# -- Project information -----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
-
-import os
-import re
-import sys
-
-sys.path.insert(
-    0,
-    os.path.abspath("/home/placais/Documents/Simulation/python/eemilib/src/"),
-)
 project = "EEmiLib"
 copyright = "2024, Adrien Plaçais"
 author = "Adrien Plaçais"
-release = "0.0.2"
-
-# See https://protips.readthedocs.io/git-tag-version.html
-# The full version, including alpha/beta/rc tags.
-release = re.sub("^v", "", os.popen("git describe").read().strip())
-# The short X.Y version.
-version = release
+version = eemilib.__version__
+release = version
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
