@@ -33,7 +33,7 @@ version = "0.0.6"
 eemilib-gui = "eemilib.gui.gui:main"
 
 [project.urls]
-Documentation = "https://adrienplacais.github.io/EEmiLib/html/index.html"
+Documentation = "https://adrienplacais.github.io/EEmiLib/"
 Homepage = "https://github.com/AdrienPlacais/EEmiLib"
 
 [tool.black]
