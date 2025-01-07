@@ -33,6 +33,7 @@ Load the experimental data
 3. Select the file(s) to be loaded in the `Files selection matrix`.
 4. Load the data by clicking `Load data`.
 5. Plot the loaded data to check that it is properly understood.
+
  a. Select emission data type to plot: Emission Yield, Emission Energy Distribution or Emission Angle Distribution.
  b. Select populations to plot: SEs, EBEs, IBEs, or all electrons.
  c. Click `Plot file`.
