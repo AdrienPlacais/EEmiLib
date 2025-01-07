@@ -4,7 +4,7 @@ SPHINXOPTS   ?=
 SPHINXBUILD  ?= sphinx-build
 SPHINXAPIDOC ?= sphinx-apidoc
 SOURCEDIR     = .
-BUILDDIR      = ../../eemilib-docs/
+BUILDDIR      = _build
 SRC_DIR	      = ../src
 APIDOC_DIR    = eemilib
 
