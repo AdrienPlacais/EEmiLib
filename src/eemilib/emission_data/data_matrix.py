@@ -302,7 +302,7 @@ class DataMatrix:
         return self.data_matrix[row][col]
 
     def load_data(self, loader: Loader) -> None:
-        """Load all filepaths in :attr:`files_matrix`.
+        """Load all filepaths in ``files_matrix``.
 
         .. todo::
             Could be more concise.

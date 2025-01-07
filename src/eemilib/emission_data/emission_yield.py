@@ -32,9 +32,9 @@ class EmissionYield(EmissionData):
 
         Parameters
         ----------
-        population : ImplementedPop
+        population : Literal["SE", "EBE", "IBE", "all"]
             The concerned population of electrons.
-        data : pd.DataFrame
+        data : pandas.DataFrame
             Structure holding the data. Must have a ``Energy (eV)`` column
             holding PEs energy. And one or several columns ``theta [deg]``,
             where `theta` is the value of the incidence angle and content is
@@ -66,9 +66,9 @@ class EmissionYield(EmissionData):
         ----------
         loader : Loader
             The object that will load the data.
-        population : ImplementedPop
+        population : Literal["SE", "EBE", "IBE", "all"]
             The concerned population of electrons.
-        *filepath : str | Path
+        *filepath : str | pathlib.Path
             Path(s) to file holding data under study.
 
         """
@@ -102,7 +102,7 @@ class EmissionYield(EmissionData):
 
         Parameters
         ----------
-        normal_ey : pd.DataFrame
+        normal_ey : pandas.DataFrame
             Holds energy of PEs as well as emission yield at nominal incidence.
         tol_energy : float, optional
             If the :math:`E_{max}` is too close to the maximum PE energy, an
@@ -133,7 +133,7 @@ class EmissionYield(EmissionData):
 
         Parameters
         ----------
-        normal_ey : pd.DataFrame
+        normal_ey : pandas.DataFrame
             Holds energy of PEs as well as emission yield at nominal incidence.
         e_max : float
             Energy of maximum emission yield. Used to discriminate

@@ -44,11 +44,11 @@ def setup_dropdown(
     classes : dict[str, str]
         Keys are the name of the objects inheriting from ``base_class`` found
         in ``module_name``. Values are the path leading to them.
-    layout : QHBoxLayout
+    layout : PyQt5.QtWidgets.QHBoxLayout
         Layout holding together ``dropdown`` and ``button``.
-    dropdown : QComboBox
+    dropdown : PyQt5.QtWidgets.QComboBox
         Dropdown menu holding the keys of ``classes``.
-    buttons : list[QPushButton]
+    buttons : list[PyQt5.QtWidgets.QPushButton]
         The buttons next to the dropdown menu.
 
     """

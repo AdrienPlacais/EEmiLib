@@ -2,7 +2,6 @@
 
 import numpy as np
 import pandas as pd
-
 from eemilib.util.constants import EY_col_energy, EY_col_normal
 
 
@@ -15,7 +14,7 @@ def trim(
 
     Parameters
     ----------
-    normal_ey : pd.DataFrame
+    normal_ey : pandas.DataFrame
         Holds normal emission yield. Columns are ``EY_col1`` (energy, stored
         by increasing values) and ``EY_colnorm`` (normal EY).
     min_e : float, optional
@@ -29,7 +28,7 @@ def trim(
 
     Returns
     -------
-    trimed : pd.DataFrame
+    trimed : pandas.DataFrame
         ``normal_ey`` but with energies ranging only from ``min_e`` to
         ``max_e``.
 
@@ -82,7 +81,7 @@ def get_crossover_energies(
 
     Parameters
     ----------
-    normal_ey : pd.DataFrame
+    normal_ey : pandas.DataFrame
         Holds energy of PEs as well as emission yield at nominal incidence.
     e_max : float
         Energy of maximum emission yield. Used to discriminate

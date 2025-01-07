@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Self
 
 import pandas as pd
-
 from eemilib.emission_data.emission_data import EmissionData
 from eemilib.loader.loader import Loader
 from eemilib.util.constants import ImplementedPop
@@ -22,9 +21,9 @@ class EmissionAngleDistribution(EmissionData):
 
         Parameters
         ----------
-        population : ImplementedPop
+        population : Literal["SE", "EBE", "IBE", "all"]
             The concerned population of electrons.
-        data : pd.DataFrame
+        data : pandas.DataFrame
             Structure holding the data. Must have an ``Angle [deg]`` column
             holding PEs angle. And one or several columns ``theta [deg]``,
             where `theta` is the value of the incidence angle and content is
@@ -47,9 +46,9 @@ class EmissionAngleDistribution(EmissionData):
         ----------
         loader : Loader
             The object that will load the data.
-        population : ImplementedPop
+        population : Literal["SE", "EBE", "IBE", "all"]
             The concerned population of electrons.
-        *filepath : str | Path
+        *filepath : str | pathlib.Path
             Path(s) to file holding data under study.
 
         """

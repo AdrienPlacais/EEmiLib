@@ -169,7 +169,7 @@ class MainWindow(QMainWindow):
     def setup_model_dropdown(self) -> None:
         """Set the :class:`.Model` related interface.
 
-        Assign the :attr:`model_classes` and :attr:`model_dropdown`.
+        Assign the `model_classes` and `model_dropdown`.
 
         """
         classes, layout, dropdown, buttons = setup_dropdown(

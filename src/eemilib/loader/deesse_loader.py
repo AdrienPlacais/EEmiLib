@@ -27,12 +27,12 @@ class DeesseLoader(Loader):
 
         Parameters
         ----------
-        filepath : str | Path
+        filepath : str | pathlib.Path
             Path(s) to file holding data under study.
 
         Returns
         -------
-        data : pd.DataFrame
+        data : pandas.DataFrame
             Structure holding the data. Has a ``Energy [eV]`` column
             holding PEs energy. And one or several columns ``theta [deg]``,
             where `theta` is the value of the incidence angle and content is

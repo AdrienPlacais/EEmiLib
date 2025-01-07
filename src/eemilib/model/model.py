@@ -21,7 +21,7 @@ from eemilib.util.helper import documentation_url
 class Model(ABC):
     """Define the base electron emission model.
 
-    Attributes
+    Parameters
     ----------
     considers_energy : bool
         Tell if the model has a dependency over PEs impact energy.
@@ -36,13 +36,9 @@ class Model(ABC):
 
     """
 
-    #: Tell if the model has a dependency over PEs impact energy.
     considers_energy: bool
-    #: Tell if the model has a dependency over PEs impact angle.
     is_3d: bool
-    #: Tell if the model can take the surface-trapped charges into account.
     is_dielectrics_compatible: bool
-    #: List the :class:`.Parameter` kwargs.
     initial_parameters: dict[str, dict[str, str | float | bool]]
 
     model_config: ModelConfig
@@ -54,7 +50,7 @@ class Model(ABC):
 
     @classmethod
     def _generate_parameter_docs(cls) -> str:
-        """Generate documentation for the :class:`.Parameters`."""
+        """Generate documentation for the :class:`.Parameter`."""
         doc_lines = [
             "",
             "Model parameters",
