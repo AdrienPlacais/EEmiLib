@@ -1,5 +1,3 @@
-"""Define unit tests for Vaughan model."""
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -54,50 +52,57 @@ def test_teey_output_shape(vaughan_model: Vaughan) -> None:
     assert result.shape == (5, 4)  # 3 theta columns + 1 energy column
 
 
-def test_find_optimal_parameters_with_different_datasets(
+@pytest.mark.parametrize(
+    "emission_yield,expected",
+    [
+        (
+            MockEmissionYield.cu_eroded_one(),
+            {
+                "E_0": 12.5,
+                "E_max": 550.5505505505506,
+                "delta_E_transition": 1.0,
+                "teey_low": 0.5,
+                "teey_max": 1.525944944944945,
+                "k_s": 1.0,
+                "k_se": 1.0,
+            },
+        ),
+        pytest.param(
+            MockEmissionYield.cu_as_received_two(),
+            {
+                "E_0": 12.5,
+                "E_max": 250.34034034034033,
+                "delta_E_transition": 1.0,
+                "teey_low": 0.5,
+                "teey_max": 2.236948948948949,
+                "k_s": 1.0,
+                "k_se": 1.0,
+            },
+            marks=pytest.mark.smoke,
+        ),
+        (
+            MockEmissionYield.cu_heated_two(),
+            {
+                "E_0": 12.5,
+                "E_max": 389.63963963963965,
+                "delta_E_transition": 1.0,
+                "teey_low": 0.5,
+                "teey_max": 1.695873873873874,
+                "k_s": 1.0,
+                "k_se": 1.0,
+            },
+        ),
+    ],
+)
+def test_find_optimal_parameters(
     vaughan_model: Vaughan,
+    emission_yield: MockEmissionYield,
+    expected: dict[str, float],
 ) -> None:
     """Test on several samples that the fit gives expected results."""
-    expected_parameters = [
-        {  # Cu eroded 1
-            "E_0": 12.5,
-            "E_max": 550.5505505505506,
-            "delta_E_transition": 1.0,
-            "teey_low": 0.5,
-            "teey_max": 1.525944944944945,
-            "k_s": 1.0,
-            "k_se": 1.0,
-        },
-        {  # Cu as-received 2
-            "E_0": 12.5,
-            "E_max": 250.34034034034033,
-            "delta_E_transition": 1.0,
-            "teey_low": 0.5,
-            "teey_max": 2.236948948948949,
-            "k_s": 1.0,
-            "k_se": 1.0,
-        },
-        {  # Cu heated 2
-            "E_0": 12.5,
-            "E_max": 389.63963963963965,
-            "delta_E_transition": 1.0,
-            "teey_low": 0.5,
-            "teey_max": 1.695873873873874,
-            "k_s": 1.0,
-            "k_se": 1.0,
-        },
-    ]
-    for dataset, expected in zip(
-        [
-            MockEmissionYield.cu_eroded_one(),
-            MockEmissionYield.cu_as_received_two(),
-            MockEmissionYield.cu_heated_two(),
-        ],
-        expected_parameters,
-    ):
-        mock_data_matrix = MockDataMatrix(dataset)
-        vaughan_model.find_optimal_parameters(mock_data_matrix)
-        found_parameters = {
-            name: val.value for name, val in vaughan_model.parameters.items()
-        }
-        assert expected == found_parameters
+    mock_data_matrix = MockDataMatrix(emission_yield)
+    vaughan_model.find_optimal_parameters(mock_data_matrix)
+    found_parameters = {
+        name: val.value for name, val in vaughan_model.parameters.items()
+    }
+    assert expected == found_parameters
