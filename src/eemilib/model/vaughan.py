@@ -9,6 +9,7 @@ TEEY at non-normal incidence will not be taken into account into the fit
 """
 
 import math
+from typing import Literal
 
 import numpy as np
 import pandas as pd
@@ -17,6 +18,8 @@ from eemilib.emission_data.emission_yield import EmissionYield
 from eemilib.model.model import Model
 from eemilib.model.model_config import ModelConfig
 from eemilib.model.parameter import Parameter
+
+VaughanImplementation = Literal["original", "CST", "SPARK3D"]
 
 
 class Vaughan(Model):
@@ -93,7 +96,9 @@ class Vaughan(Model):
         },
     }
 
-    def __init__(self) -> None:
+    def __init__(
+        self, implementation: VaughanImplementation = "original"
+    ) -> None:
         """Instantiate the object."""
         super().__init__(url_doc_override="manual/models/vaughan")
         self.parameters = {
@@ -101,6 +106,21 @@ class Vaughan(Model):
             for name, kwargs in self.initial_parameters.items()
         }
         self._generate_parameter_docs()
+        self._preset_flavour(implementation)
+
+    def _preset_flavour(self, implementation: VaughanImplementation) -> None:
+        """Update some parameters to reproduce a specific implementation."""
+        if implementation == "original":
+            return
+        if implementation == "CST":
+            self.parameters["teey_low"].value = 0.0
+            return
+        if implementation == "SPARK3D":
+            print(
+                f"Warning! {implementation = } not implemented yet. Skipping..."
+            )
+            return
+        print(f"Warning! {implementation = } not in {VaughanImplementation}")
 
     def teey(self, energy: np.ndarray, theta: np.ndarray) -> pd.DataFrame:
         r"""Compute TEEY :math:`\sigma`.
