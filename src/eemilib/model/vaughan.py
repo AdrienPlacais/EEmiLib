@@ -103,6 +103,10 @@ class Vaughan(Model):
     ) -> None:
         """Instantiate the object.
 
+        .. note::
+            Parameter values set by ``implementation`` have priority over
+            values given in ``parameters_values``.
+
         Parameters
         ----------
         implementation: Literal["original", "CST", "SPARK3D"], optional
@@ -119,9 +123,9 @@ class Vaughan(Model):
             for name, kwargs in self.initial_parameters.items()
         }
         self._generate_parameter_docs()
-        self._preset_flavour(implementation)
         if parameters_values is not None:
             self.set_parameters_values(parameters_values)
+        self._preset_flavour(implementation)
 
     def _preset_flavour(self, implementation: VaughanImplementation) -> None:
         """Update some parameters to reproduce a specific implementation."""
@@ -131,9 +135,11 @@ class Vaughan(Model):
             self.set_parameter_value("teey_low", 0.0)
             return
         if implementation == "SPARK3D":
-            self.set_parameter_value("teey_low", 0.0)
+            self.set_parameters_values(
+                {"teey_low": 0.0, "delta_E_transition": 2.0}
+            )
             print(
-                f"Warning! {implementation = } not implemented yet. Skipping..."
+                f"Warning! In SPARK3D, you do not provide E_0 but first crossover!"
             )
             return
         print(f"Warning! {implementation = } not in {VaughanImplementation}")
