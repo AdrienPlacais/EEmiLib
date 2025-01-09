@@ -124,9 +124,10 @@ class Vaughan(Model):
         """Match with position of first crossover and maximum."""
         data_matrix.assert_has_all_mandatory_files(self.model_config)
 
-        # Could be more compact
         emission_yield = data_matrix.data_matrix[3][0]
-        assert isinstance(emission_yield, EmissionYield)
+        assert isinstance(
+            emission_yield, EmissionYield
+        ), f"Incorrect type for emission_yield: {type(emission_yield)}"
         assert emission_yield.population == "all"
 
         self.parameters["E_max"].value = emission_yield.e_max
