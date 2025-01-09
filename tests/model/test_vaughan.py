@@ -4,10 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from eemilib.emission_data.data_matrix import DataMatrix
-from eemilib.emission_data.emission_yield import EmissionYield
-from eemilib.model.model_config import ModelConfig
-from eemilib.model.parameter import Parameter
-from eemilib.model.vaughan import Vaughan, _vaughan_func
+from eemilib.model.vaughan import Vaughan
 from tests.model.mocks.mock_emission_yield import MockEmissionYield
 
 
@@ -17,29 +14,21 @@ def vaughan_model() -> Vaughan:
     return Vaughan()
 
 
-@pytest.fixture
-def mock_data_matrix() -> DataMatrix:
-    """Instantiate a fake :class:`.DataMatrix`."""
+class MockDataMatrix(DataMatrix):
+    """Mock a data matrix with only a TEEY."""
 
-    class MockEmissionYield:
-        """Make object corresponding to Cu 2 (as received)."""
+    def __init__(self, emission_data):
+        """Set emission yield for 'all' population."""
+        self.data_matrix = [
+            [None, None, None],
+            [None, None, None],
+            [None, None, None],
+            [emission_data, None, None],
+        ]
 
-        def __init__(self, e_max, ey_max):
-            self.e_max = e_max
-            self.ey_max = ey_max
-            self.population = "all"
-
-    class MockDataMatrix:
-        def __init__(self):
-            self.data_matrix = [
-                [None, None, None, [MockEmissionYield(e_max=20, ey_max=1.5)]]
-            ]
-
-        def assert_has_all_mandatory_files(self, *args, **kwargs) -> None:
-            """Pass the files testing."""
-            pass
-
-    return MockDataMatrix()
+    def assert_has_all_mandatory_files(self, *args, **kwargs) -> None:
+        """Skip this check."""
+        pass
 
 
 def test_initial_parameters(vaughan_model: Vaughan) -> None:
@@ -112,20 +101,3 @@ def test_find_optimal_parameters_with_different_datasets(
             name: val.value for name, val in vaughan_model.parameters.items()
         }
         assert expected == found_parameters
-
-
-class MockDataMatrix:
-    """Mock a data matrix with only a TEEY."""
-
-    def __init__(self, emission_data):
-        """Set emission yield for 'all' population."""
-        self.data_matrix = [
-            [None, None, None],
-            [None, None, None],
-            [None, None, None],
-            [emission_data, None, None],
-        ]
-
-    def assert_has_all_mandatory_files(self, config) -> None:
-        """Skip this check."""
-        pass
