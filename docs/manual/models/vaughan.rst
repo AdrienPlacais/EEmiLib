@@ -74,7 +74,17 @@ The factor :math:`k` is given by:
 Model parameters
 ----------------
 
-The list of the parameters is dynamically created in the :py:mod:`Vaughan API documentation<.vaughan>`.
+The parameters list is dynamically created here: :py:mod:`Vaughan API documentation<.vaughan>`.
+
+Match CST Particle Studio
+-------------------------
+
+In order to define Vaughan is the exact same manner as CST, you shall:
+
+- Lock `teey_low` to `1`.
+
+To do list
+---------
 
 .. todo::
     - Unlock :math:`E_0` to fit :math:`E_{c,\,1}`.
