@@ -7,6 +7,7 @@
 
 from abc import ABC, abstractmethod
 from collections.abc import Collection
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -43,8 +44,18 @@ class Model(ABC):
 
     model_config: ModelConfig
 
-    def __init__(self, *args, **kwargs) -> None:
-        """Instantiate the object."""
+    def __init__(
+        self, *args, parameters_values: dict[str, Any] | None = None, **kwargs
+    ) -> None:
+        """Instantiate the object.
+
+        Parameters
+        ----------
+        parameters_values : dict[str, Any] | None, optional
+            Contains name of parameters and associated value. If provided, will
+            override the default values set in ``initial_parameters``.
+
+        """
         self.doc_url = documentation_url(self, **kwargs)
         self.parameters: dict[str, Parameter]
 
@@ -135,6 +146,20 @@ class Model(ABC):
         )
         assert axes is not None
         return axes
+
+    def set_parameter_value(self, name: str, value: Any) -> None:
+        """Give the parameter named ``name`` the value ``value``."""
+        if name not in self.parameters:
+            print(
+                f"Warning! {name = } is not defined for {self}. Skipping... "
+            )
+            return
+        self.parameters[name].value = value
+
+    def set_parameters_values(self, values: dict[str, Any]) -> None:
+        """Set multiple parameter values."""
+        for name, value in values.items():
+            self.set_parameter_value(name, value)
 
 
 def _default_ey(energy: np.ndarray, theta: np.ndarray) -> pd.DataFrame:

@@ -9,7 +9,7 @@ TEEY at non-normal incidence will not be taken into account into the fit
 """
 
 import math
-from typing import Literal
+from typing import Any, Literal
 
 import numpy as np
 import pandas as pd
@@ -97,9 +97,22 @@ class Vaughan(Model):
     }
 
     def __init__(
-        self, implementation: VaughanImplementation = "original"
+        self,
+        implementation: VaughanImplementation = "original",
+        parameters_values: dict[str, Any] | None = None,
     ) -> None:
-        """Instantiate the object."""
+        """Instantiate the object.
+
+        Parameters
+        ----------
+        implementation: Literal["original", "CST", "SPARK3D"], optional
+            Modifies certain presets to match different interpretations of the
+            model.
+        parameters_values : dict[str, Any] | None, optional
+            Contains name of parameters and associated value. If provided, will
+            override the default values set in ``initial_parameters``.
+
+        """
         super().__init__(url_doc_override="manual/models/vaughan")
         self.parameters = {
             name: Parameter(**kwargs)  # type: ignore
@@ -107,15 +120,18 @@ class Vaughan(Model):
         }
         self._generate_parameter_docs()
         self._preset_flavour(implementation)
+        if parameters_values is not None:
+            self.set_parameters_values(parameters_values)
 
     def _preset_flavour(self, implementation: VaughanImplementation) -> None:
         """Update some parameters to reproduce a specific implementation."""
         if implementation == "original":
             return
         if implementation == "CST":
-            self.parameters["teey_low"].value = 0.0
+            self.set_parameter_value("teey_low", 0.0)
             return
         if implementation == "SPARK3D":
+            self.set_parameter_value("teey_low", 0.0)
             print(
                 f"Warning! {implementation = } not implemented yet. Skipping..."
             )
@@ -150,8 +166,9 @@ class Vaughan(Model):
         ), f"Incorrect type for emission_yield: {type(emission_yield)}"
         assert emission_yield.population == "all"
 
-        self.parameters["E_max"].value = emission_yield.e_max
-        self.parameters["teey_max"].value = emission_yield.ey_max
+        self.set_parameters_values(
+            {"E_max": emission_yield.e_max, "teey_max": emission_yield.ey_max}
+        )
 
 
 def _vaughan_func(
