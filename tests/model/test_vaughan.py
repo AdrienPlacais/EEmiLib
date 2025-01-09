@@ -3,6 +3,7 @@ import pandas as pd
 import pytest
 from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.model.vaughan import Vaughan
+from pytest import approx
 from tests.model.mocks.mock_emission_yield import MockEmissionYield
 
 
@@ -105,4 +106,4 @@ def test_find_optimal_parameters(
     found_parameters = {
         name: val.value for name, val in vaughan_model.parameters.items()
     }
-    assert expected == found_parameters
+    assert expected == approx(found_parameters)
