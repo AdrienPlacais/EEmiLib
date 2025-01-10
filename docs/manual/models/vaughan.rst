@@ -46,7 +46,9 @@ The TEEY is given by:
     \xi = \frac{E - E_0}{E_\mathrm{max} - E_0}
 
 Under the limit :math:`E_0` (:math:`12.5\mathrm{\,eV}` by default), the TEEY is set to a unique value (:math:`0.5` by default).
-When :math:`E_0` is unlocked, a fit over this variable is performed to match :math:`E_{\mathrm{c,\,1}}`.
+
+.. note::
+   You can 
 
 .. math::
 
@@ -59,7 +61,6 @@ The :math:`k_s` and :math:`k_{se}` are both set to unity by default.
 .. todo::
     Should be locked by default, but possibility to release their constraints
     to allow fit?
-
 
 The factor :math:`k` is given by:
 
@@ -88,6 +89,17 @@ Just instantiate your model with:
 
 From the GUI, manually reproduce the steps described in the :meth:`.Vaughan.preset_implementation` method.
 More specific documentation is also listed in :meth:`.Vaughan.preset_implementation`.
+
+Parameter Vaughan with :math:`E_{\mathrm{c,\,1}}` instead of :math:`E_0`
+------------------------------------------------------------------------
+
+When :math:`E_0` is unlocked, a fit over this variable is performed to match :math:`E_{\mathrm{c,\,1}}`.
+You must provide either a TEEY file path, either enter the other Vaughan parameters yourself (see image below), and click `Fit!`.
+
+.. image:: images/gui_fit_e0.png
+   :width: 600
+   :alt: Corresponding figure
+   :align: center
 
 To-do list
 ----------
