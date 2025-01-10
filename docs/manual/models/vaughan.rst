@@ -96,9 +96,10 @@ Parameter Vaughan with :math:`E_{\mathrm{c,\,1}}` instead of :math:`E_0`
 When :math:`E_0` is unlocked, a fit over this variable is performed to match :math:`E_{\mathrm{c,\,1}}`.
 You must provide either a TEEY file path, either enter the other Vaughan parameters yourself (see image below), and click `Fit!`.
 
-.. image:: images/gui_fit_e0.png
+.. image:: /manual/models/images/gui_fit_e0.png
+   :target: vaughan.html
    :width: 600
-   :alt: Corresponding figure
+   :alt: How to fit E_0
    :align: center
 
 To-do list
