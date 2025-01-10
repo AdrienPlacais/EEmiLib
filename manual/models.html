@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Models &mdash; EEmiLib 0.0.6 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=1fd71caa"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Vaughan" href="models/vaughan.html" />
+    <link rel="prev" title="Quick start" href="quick_start.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            EEmiLib
+          </a>
+              <div class="version">
+                0.0.6
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="requirements_note.html">Requirements note</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start.html">Quick start</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="models/vaughan.html">Vaughan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models/chung_everhart.html">Chung and Everhart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models/dionne_3d.html">Dionne 3D</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../eemilib/modules.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">EEmiLib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Models</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/manual/models.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="models">
+<span id="models-link"></span><h1>Models<a class="headerlink" href="#models" title="Link to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<section id="vaughan">
+<h2>Vaughan<a class="headerlink" href="#vaughan" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+</div>
+<section id="presentation">
+<h3>Presentation<a class="headerlink" href="#presentation" title="Link to this heading"></a></h3>
+<p>This is the most basic Vaughan model, as defined in original Vaughan paper <span id="id1">[<a class="reference internal" href="bibliography.html#id2" title="J.R.M. Vaughan. A new formula for secondary emission yield. IEEE Transactions on Electron Devices, 36:1963-1967, 1989. URL: https://doi.org/10.1109/16.34278 http://ieeexplore.ieee.org/document/34278/, doi:10.1109/16.34278.">Vau89</a>, <a class="reference internal" href="bibliography.html#id3" title="J.R.M. Vaughan. Secondary emission formulas. IEEE Transactions on Electron Devices, 40:830, 4 1993. URL: https://doi.org/10.1109/16.202798, doi:10.1109/16.202798.">Vau93</a>]</span>.
+It gives the TEEY, and takes the incidence angle of PEs into account.</p>
+</section>
+<section id="input-files">
+<h3>Input files<a class="headerlink" href="#input-files" title="Link to this heading"></a></h3>
+<p>You must provide measured TEEY at normal incidence.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p>Emission Yield</p></th>
+<th class="head"><p>Emission energy distribution</p></th>
+<th class="head"><p>Emission angle distribution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>“True” secondaries</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+</tr>
+<tr class="row-odd"><td><p>Elastically backscattered</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+</tr>
+<tr class="row-even"><td><p>Inelastically backscattered</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+</tr>
+<tr class="row-odd"><td><p>Total</p></td>
+<td><p>✅</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="definitions">
+<h3>Definitions<a class="headerlink" href="#definitions" title="Link to this heading"></a></h3>
+<p>The TEEY is given by:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\sigma(E, \theta) &amp;= \sigma_\mathrm{max}(\theta) \times (\xi \mathrm{e}^{1-\xi} )^k \mathrm{\quad if~} \xi \leq 3.6 \\
+                  &amp;= \sigma_\mathrm{max}(\theta) \times \frac{1.125}{\xi^{0.35}} \mathrm{\quad if~} \xi &gt; 3.6\end{split}\]</div>
+<p><span class="math notranslate nohighlight">\(\xi\)</span> is defined by:</p>
+<div class="math notranslate nohighlight">
+\[\xi = \frac{E - E_0}{E_\mathrm{max} - E_0}\]</div>
+<p>Under the limit <span class="math notranslate nohighlight">\(E_0\)</span> (<span class="math notranslate nohighlight">\(12.5\mathrm{\,eV}\)</span> by default), the TEEY is set to a unique value (<span class="math notranslate nohighlight">\(0.5\)</span> by default).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can</p>
+</div>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\sigma_\mathrm{max}(\theta) = \sigma_\mathrm{max}(\theta = 0^\circ) \times \frac{1}{k_s\theta^2/\pi}\\E_\mathrm{max}(\theta) = E_\mathrm{max}(\theta = 0^\circ) \times \frac{1}{k_{se}\theta^2/\pi}\end{aligned}\end{align} \]</div>
+<p>The <span class="math notranslate nohighlight">\(k_s\)</span> and <span class="math notranslate nohighlight">\(k_{se}\)</span> are both set to unity by default.</p>
+<div class="admonition-todo admonition" id="id2">
+<p class="admonition-title">Todo</p>
+<p>Should be locked by default, but possibility to release their constraints
+to allow fit?</p>
+</div>
+<p>The factor <span class="math notranslate nohighlight">\(k\)</span> is given by:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}k &amp;= 0.56 \mathrm{\quad if~} \xi \leq 1 \\
+  &amp;= 0.25 \mathrm{\quad if~} 1&lt; \xi \leq 3.6 \\\end{split}\]</div>
+</section>
+<section id="model-parameters">
+<h3>Model parameters<a class="headerlink" href="#model-parameters" title="Link to this heading"></a></h3>
+<p>The parameters list is dynamically created here: <a class="reference internal" href="../eemilib/eemilib.model.vaughan.html#module-eemilib.model.vaughan" title="eemilib.model.vaughan"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Vaughan</span> <span class="pre">API</span> <span class="pre">documentation</span></code></a>.</p>
+</section>
+<section id="implementations">
+<h3>Implementations<a class="headerlink" href="#implementations" title="Link to this heading"></a></h3>
+<p>Two alternative implementations for Vaughan are implemented: <code class="docutils literal notranslate"><span class="pre">CST</span></code> and <code class="docutils literal notranslate"><span class="pre">SPARK3D</span></code>.
+Just instantiate your model with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">Vaughan</span><span class="p">(</span><span class="n">implementation</span><span class="o">=</span><span class="s2">&quot;CST&quot;</span><span class="p">)</span> <span class="c1"># or &quot;SPARK3D&quot;</span>
+<span class="c1"># alternative:</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Vaughan</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">preset_implementation</span><span class="p">(</span><span class="s2">&quot;CST&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>From the GUI, manually reproduce the steps described in the <a class="reference internal" href="../eemilib/eemilib.model.vaughan.html#eemilib.model.vaughan.Vaughan.preset_implementation" title="eemilib.model.vaughan.Vaughan.preset_implementation"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Vaughan.preset_implementation()</span></code></a> method.
+More specific documentation is also listed in <a class="reference internal" href="../eemilib/eemilib.model.vaughan.html#eemilib.model.vaughan.Vaughan.preset_implementation" title="eemilib.model.vaughan.Vaughan.preset_implementation"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Vaughan.preset_implementation()</span></code></a>.</p>
+</section>
+<section id="parameter-vaughan-with-e-mathrm-c-1-instead-of-e-0">
+<h3>Parameter Vaughan with <span class="math notranslate nohighlight">\(E_{\mathrm{c,\,1}}\)</span> instead of <span class="math notranslate nohighlight">\(E_0\)</span><a class="headerlink" href="#parameter-vaughan-with-e-mathrm-c-1-instead-of-e-0" title="Link to this heading"></a></h3>
+<p>When <span class="math notranslate nohighlight">\(E_0\)</span> is unlocked, a fit over this variable is performed to match <span class="math notranslate nohighlight">\(E_{\mathrm{c,\,1}}\)</span>.
+You must provide either a TEEY file path, either enter the other Vaughan parameters yourself (see image below), and click <code class="docutils literal notranslate"><span class="pre">Fit!</span></code>.</p>
+<a class="reference external image-reference" href="vaughan.html"><img alt="How to fit E_0" class="align-center" src="../_images/gui_fit_e0.png" style="width: 600px;" /></a>
+</section>
+<section id="to-do-list">
+<h3>To-do list<a class="headerlink" href="#to-do-list" title="Link to this heading"></a></h3>
+<div class="admonition-todo admonition" id="id3">
+<p class="admonition-title">Todo</p>
+<ul class="simple">
+<li><p>Unlock <span class="math notranslate nohighlight">\(k_s\)</span>, <span class="math notranslate nohighlight">\(k_{se}\)</span> to have better overall fit?</p></li>
+<li><p>Instructions to match CST Vaughan.</p></li>
+<li><p>Instructions to match SPARK3D Vaughan.</p></li>
+</ul>
+</div>
+</section>
+</section>
+<section id="chung-and-everhart">
+<h2>Chung and Everhart<a class="headerlink" href="#chung-and-everhart" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+</div>
+<section id="id4">
+<h3>Presentation<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<p>What the model is for.
+References.
+Model.</p>
+</section>
+<section id="id5">
+<h3>Input files<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p>Emission Yield</p></th>
+<th class="head"><p>Emission energy distribution</p></th>
+<th class="head"><p>Emission angle distribution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>“True” secondaries</p></td>
+<td><p>❌</p></td>
+<td><p>✅</p></td>
+<td><p>❌</p></td>
+</tr>
+<tr class="row-odd"><td><p>Elastically backscattered</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+</tr>
+<tr class="row-even"><td><p>Inelastically backscattered</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+</tr>
+<tr class="row-odd"><td><p>Total</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="output-parameters">
+<h3>Output parameters<a class="headerlink" href="#output-parameters" title="Link to this heading"></a></h3>
+<p>The list of parameters with associated units.</p>
+</section>
+</section>
+<section id="dionne-3d">
+<h2>Dionne 3D<a class="headerlink" href="#dionne-3d" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+</div>
+<section id="id6">
+<h3>Presentation<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<p>What the model is for.
+References.
+Model.</p>
+</section>
+<section id="id7">
+<h3>Input files<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p>Emission Yield</p></th>
+<th class="head"><p>Emission energy distribution</p></th>
+<th class="head"><p>Emission angle distribution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>“True” secondaries</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+</tr>
+<tr class="row-odd"><td><p>Elastically backscattered</p></td>
+<td><p>✅</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+</tr>
+<tr class="row-even"><td><p>Inelastically backscattered</p></td>
+<td><p>✅</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+</tr>
+<tr class="row-odd"><td><p>Total</p></td>
+<td><p>✅</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id8">
+<h3>Output parameters<a class="headerlink" href="#id8" title="Link to this heading"></a></h3>
+<p>The list of parameters with associated units.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="quick_start.html" class="btn btn-neutral float-left" title="Quick start" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="models/vaughan.html" class="btn btn-neutral float-right" title="Vaughan" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Adrien Plaçais.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

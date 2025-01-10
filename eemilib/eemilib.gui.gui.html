@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>eemilib.gui.gui module &mdash; EEmiLib 0.0.6 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=1fd71caa"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="eemilib.gui.helper module" href="eemilib.gui.helper.html" />
+    <link rel="prev" title="eemilib.gui.file_selection module" href="eemilib.gui.file_selection.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            EEmiLib
+          </a>
+              <div class="version">
+                0.0.6
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../manual/requirements_note.html">Requirements note</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../manual/quick_start.html">Quick start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../manual/models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../manual/roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../manual/bibliography.html">Bibliography</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="eemilib.html">eemilib package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="eemilib.emission_data.html">eemilib.emission_data package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="eemilib.gui.html">eemilib.gui package</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="eemilib.gui.file_selection.html">eemilib.gui.file_selection module</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">eemilib.gui.gui module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="eemilib.gui.helper.html">eemilib.gui.helper module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="eemilib.gui.model_selection.html">eemilib.gui.model_selection module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="eemilib.loader.html">eemilib.loader package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eemilib.model.html">eemilib.model package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eemilib.plotter.html">eemilib.plotter package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eemilib.util.html">eemilib.util package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eemilib.main.html">eemilib.main module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">EEmiLib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">src</a></li>
+          <li class="breadcrumb-item"><a href="eemilib.html">eemilib package</a></li>
+          <li class="breadcrumb-item"><a href="eemilib.gui.html">eemilib.gui package</a></li>
+      <li class="breadcrumb-item active">eemilib.gui.gui module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/eemilib/eemilib.gui.gui.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-eemilib.gui.gui">
+<span id="eemilib-gui-gui-module"></span><h1>eemilib.gui.gui module<a class="headerlink" href="#module-eemilib.gui.gui" title="Link to this heading"></a></h1>
+<p>Define a GUI.</p>
+<div class="admonition-todo admonition" id="id1">
+<p class="admonition-title">Todo</p>
+<p>Export/Import settings</p>
+</div>
+<div class="admonition-todo admonition" id="id2">
+<p class="admonition-title">Todo</p>
+<p>logging module</p>
+</div>
+<div class="admonition-todo admonition" id="id3">
+<p class="admonition-title">Todo</p>
+<p>Add measurables at bottom</p>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MainWindow</span></span><a class="headerlink" href="#eemilib.gui.gui.MainWindow" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">QMainWindow</span></code></p>
+<p>This object holds the GUI.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#eemilib.gui.gui.MainWindow.__init__" title="Link to this definition"></a></dt>
+<dd><p>Create the GUI.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow.setup_file_selection_matrix">
+<span class="sig-name descname"><span class="pre">setup_file_selection_matrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">QListWidget</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#eemilib.gui.gui.MainWindow.setup_file_selection_matrix" title="Link to this definition"></a></dt>
+<dd><p>Create the 4 * 3 matrix to select the files to load.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow._deactivate_unnecessary_file_widgets">
+<span class="sig-name descname"><span class="pre">_deactivate_unnecessary_file_widgets</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#eemilib.gui.gui.MainWindow._deactivate_unnecessary_file_widgets" title="Link to this definition"></a></dt>
+<dd><p>Grey out the files not needed by current model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow.setup_loader_dropdown">
+<span class="sig-name descname"><span class="pre">setup_loader_dropdown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#eemilib.gui.gui.MainWindow.setup_loader_dropdown" title="Link to this definition"></a></dt>
+<dd><p>Set the <a class="reference internal" href="eemilib.loader.loader.html#eemilib.loader.loader.Loader" title="eemilib.loader.loader.Loader"><code class="xref py py-class docutils literal notranslate"><span class="pre">Loader</span></code></a> related interface.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow._setup_loader">
+<span class="sig-name descname"><span class="pre">_setup_loader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#eemilib.gui.gui.MainWindow._setup_loader" title="Link to this definition"></a></dt>
+<dd><p>Setup new loader whenever the dropdown menu is changed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow.load_data">
+<span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#eemilib.gui.gui.MainWindow.load_data" title="Link to this definition"></a></dt>
+<dd><p>Load all the files set in GUI.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow.setup_model_dropdown">
+<span class="sig-name descname"><span class="pre">setup_model_dropdown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#eemilib.gui.gui.MainWindow.setup_model_dropdown" title="Link to this definition"></a></dt>
+<dd><p>Set the <a class="reference internal" href="eemilib.model.model.html#eemilib.model.model.Model" title="eemilib.model.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></a> related interface.</p>
+<p>Assign the <code class="docutils literal notranslate"><span class="pre">model_classes</span></code> and <code class="docutils literal notranslate"><span class="pre">model_dropdown</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow.setup_model_configuration">
+<span class="sig-name descname"><span class="pre">setup_model_configuration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">QTableWidget</span></span></span><a class="headerlink" href="#eemilib.gui.gui.MainWindow.setup_model_configuration" title="Link to this definition"></a></dt>
+<dd><p>Set the interface related to the model specific parameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow._setup_model">
+<span class="sig-name descname"><span class="pre">_setup_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#eemilib.gui.gui.MainWindow._setup_model" title="Link to this definition"></a></dt>
+<dd><p>Instantiate <a class="reference internal" href="eemilib.model.model.html#eemilib.model.model.Model" title="eemilib.model.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></a> when it is selected in dropdown menu.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow._populate_parameters_table_constants">
+<span class="sig-name descname"><span class="pre">_populate_parameters_table_constants</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#eemilib.gui.gui.MainWindow._populate_parameters_table_constants" title="Link to this definition"></a></dt>
+<dd><p>Print out the model parameters in dedicated table.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow._update_parameter_value_from_table">
+<span class="sig-name descname"><span class="pre">_update_parameter_value_from_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">QTableWidgetItem</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#eemilib.gui.gui.MainWindow._update_parameter_value_from_table" title="Link to this definition"></a></dt>
+<dd><p>Update <a class="reference internal" href="eemilib.model.parameter.html#eemilib.model.parameter.Parameter" title="eemilib.model.parameter.Parameter"><code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code></a> value based on user input in table.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow.fit_model">
+<span class="sig-name descname"><span class="pre">fit_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#eemilib.gui.gui.MainWindow.fit_model" title="Link to this definition"></a></dt>
+<dd><p>Perform the fit on the loaded data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow._populate_parameters_table_values">
+<span class="sig-name descname"><span class="pre">_populate_parameters_table_values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#eemilib.gui.gui.MainWindow._populate_parameters_table_values" title="Link to this definition"></a></dt>
+<dd><p>Print out the values of the model parameters in dedicated table.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow.setup_energy_angle_inputs">
+<span class="sig-name descname"><span class="pre">setup_energy_angle_inputs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#eemilib.gui.gui.MainWindow.setup_energy_angle_inputs" title="Link to this definition"></a></dt>
+<dd><p>Set the energy and angle inputs for the model plot.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow._set_up_data_to_plot_checkboxes">
+<span class="sig-name descname"><span class="pre">_set_up_data_to_plot_checkboxes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#eemilib.gui.gui.MainWindow._set_up_data_to_plot_checkboxes" title="Link to this definition"></a></dt>
+<dd><p>Add checkbox to select which data should be plotted.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow._set_up_population_to_plot_checkboxes">
+<span class="sig-name descname"><span class="pre">_set_up_population_to_plot_checkboxes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#eemilib.gui.gui.MainWindow._set_up_population_to_plot_checkboxes" title="Link to this definition"></a></dt>
+<dd><p>Add checkbox to select which population should be plotted.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow.setup_plotter_dropdown">
+<span class="sig-name descname"><span class="pre">setup_plotter_dropdown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#eemilib.gui.gui.MainWindow.setup_plotter_dropdown" title="Link to this definition"></a></dt>
+<dd><p>Set the <a class="reference internal" href="eemilib.plotter.plotter.html#eemilib.plotter.plotter.Plotter" title="eemilib.plotter.plotter.Plotter"><code class="xref py py-class docutils literal notranslate"><span class="pre">Plotter</span></code></a> related interface.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow.plot_measured">
+<span class="sig-name descname"><span class="pre">plot_measured</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#eemilib.gui.gui.MainWindow.plot_measured" title="Link to this definition"></a></dt>
+<dd><p>Plot the desired data, as imported.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow.plot_model">
+<span class="sig-name descname"><span class="pre">plot_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#eemilib.gui.gui.MainWindow.plot_model" title="Link to this definition"></a></dt>
+<dd><p>Plot the desired data, as modelled.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow._get_emission_data_type_to_plot">
+<span class="sig-name descname"><span class="pre">_get_emission_data_type_to_plot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.13)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'Emission</span> <span class="pre">Yield'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'Emission</span> <span class="pre">Energy'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'Emission</span> <span class="pre">Angle'</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#eemilib.gui.gui.MainWindow._get_emission_data_type_to_plot" title="Link to this definition"></a></dt>
+<dd><p>Read input to determine the emission data type to plot.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow._get_populations_to_plot">
+<span class="sig-name descname"><span class="pre">_get_populations_to_plot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.13)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'SE'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'EBE'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'IBE'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'all'</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#eemilib.gui.gui.MainWindow._get_populations_to_plot" title="Link to this definition"></a></dt>
+<dd><p>Read input to determine the populations to plot.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow._gen_linspace">
+<span class="sig-name descname"><span class="pre">_gen_linspace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.13)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'energy'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'angle'</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#eemilib.gui.gui.MainWindow._gen_linspace" title="Link to this definition"></a></dt>
+<dd><p>Take the desired input, check validity, create array of values.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow._dropdown_to_class">
+<span class="sig-name descname"><span class="pre">_dropdown_to_class</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribute</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.13)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'loader'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'plotter'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'model'</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABCMeta" title="(in Python v3.13)"><span class="pre">ABCMeta</span></a></span></span><a class="headerlink" href="#eemilib.gui.gui.MainWindow._dropdown_to_class" title="Link to this definition"></a></dt>
+<dd><p>Convert dropdown entry to class.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.gui.gui.MainWindow._set_list_widget_state">
+<span class="sig-name descname"><span class="pre">_set_list_widget_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">widget</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">QListWidget</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#eemilib.gui.gui.MainWindow._set_list_widget_state" title="Link to this definition"></a></dt>
+<dd><p>Enable or disable a QListWidget based on <code class="docutils literal notranslate"><span class="pre">enabled</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="eemilib.gui.gui.main">
+<span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#eemilib.gui.gui.main" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="eemilib.gui.file_selection.html" class="btn btn-neutral float-left" title="eemilib.gui.file_selection module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="eemilib.gui.helper.html" class="btn btn-neutral float-right" title="eemilib.gui.helper module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Adrien Plaçais.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

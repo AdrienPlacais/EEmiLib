@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>eemilib.model.vaughan module &mdash; EEmiLib 0.0.6 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=1fd71caa"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="eemilib.plotter package" href="eemilib.plotter.html" />
+    <link rel="prev" title="eemilib.model.parameter module" href="eemilib.model.parameter.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            EEmiLib
+          </a>
+              <div class="version">
+                0.0.6
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../manual/requirements_note.html">Requirements note</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../manual/quick_start.html">Quick start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../manual/models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../manual/roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../manual/bibliography.html">Bibliography</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="eemilib.html">eemilib package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="eemilib.emission_data.html">eemilib.emission_data package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eemilib.gui.html">eemilib.gui package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eemilib.loader.html">eemilib.loader package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="eemilib.model.html">eemilib.model package</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="eemilib.model.model.html">eemilib.model.model module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="eemilib.model.model_config.html">eemilib.model.model_config module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="eemilib.model.parameter.html">eemilib.model.parameter module</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">eemilib.model.vaughan module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="eemilib.plotter.html">eemilib.plotter package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eemilib.util.html">eemilib.util package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="eemilib.main.html">eemilib.main module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">EEmiLib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">src</a></li>
+          <li class="breadcrumb-item"><a href="eemilib.html">eemilib package</a></li>
+          <li class="breadcrumb-item"><a href="eemilib.model.html">eemilib.model package</a></li>
+      <li class="breadcrumb-item active">eemilib.model.vaughan module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/eemilib/eemilib.model.vaughan.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-eemilib.model.vaughan">
+<span id="eemilib-model-vaughan-module"></span><h1>eemilib.model.vaughan module<a class="headerlink" href="#module-eemilib.model.vaughan" title="Link to this heading"></a></h1>
+<p>Create the Vaughan model, to compute TEEY.</p>
+<p>TEEY at non-normal incidence will not be taken into account into the fit
+(FIXME).</p>
+<div class="admonition-todo admonition" id="id1">
+<p class="admonition-title">Todo</p>
+<p>Make this more robust. Especially the _vaughan_func.</p>
+</div>
+<section id="model-parameters">
+<h2>Model parameters<a class="headerlink" href="#model-parameters" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 5.6%" />
+<col style="width: 11.1%" />
+<col style="width: 5.6%" />
+<col style="width: 5.6%" />
+<col style="width: 72.2%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Name</p></th>
+<th class="head"><p>Unit</p></th>
+<th class="head"><p>Initial</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(E_0\)</span></p></td>
+<td><p>E_0</p></td>
+<td><p>eV</p></td>
+<td><p><span class="math notranslate nohighlight">\(12.5\)</span></p></td>
+<td><p>Threshold energy. By default, locked to <span class="math notranslate nohighlight">\(12.5\mathrm{\,eV}\)</span>. If unlocked, will be fitted to retrieve <span class="math notranslate nohighlight">\(E_{c,\,1}\)</span>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(E_\mathrm{max}\)</span></p></td>
+<td><p>E_max</p></td>
+<td><p>eV</p></td>
+<td><p><span class="math notranslate nohighlight">\(0.0\)</span></p></td>
+<td><p>Energy at maximum TEEY.</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(\Delta E_{tr}\)</span></p></td>
+<td><p>delta_E_transition</p></td>
+<td><p>eV</p></td>
+<td><p><span class="math notranslate nohighlight">\(1.0\)</span></p></td>
+<td><p>Energy over which we switch from <span class="math notranslate nohighlight">\(\sigma_\mathrm{low}\)</span> to actual Vaughan TEEY. Useful for smoothing the transition.</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(\sigma_\mathrm{low}\)</span></p></td>
+<td><p>teey_low</p></td>
+<td><p>1</p></td>
+<td><p><span class="math notranslate nohighlight">\(0.5\)</span></p></td>
+<td><p>TEEY below <span class="math notranslate nohighlight">\(E_0\)</span>.</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(\sigma_\mathrm{max}\)</span></p></td>
+<td><p>teey_max</p></td>
+<td><p>1</p></td>
+<td><p><span class="math notranslate nohighlight">\(0.0\)</span></p></td>
+<td><p>Maximum TEEY, directly taken from the measurement.</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(k_s\)</span></p></td>
+<td><p>k_s</p></td>
+<td><p>1</p></td>
+<td><p><span class="math notranslate nohighlight">\(1.0\)</span></p></td>
+<td><p>Roughness factor (<span class="math notranslate nohighlight">\(\sigma_\mathrm{max}\)</span>).  Locked by default, but could be used for more precise fits.</p></td>
+</tr>
+<tr class="row-even"><td><p><span class="math notranslate nohighlight">\(k_{se}\)</span></p></td>
+<td><p>k_se</p></td>
+<td><p>1</p></td>
+<td><p><span class="math notranslate nohighlight">\(1.0\)</span></p></td>
+<td><p>Roughness factor (<span class="math notranslate nohighlight">\(E_\mathrm{max}\)</span>).  Locked by default, but could be used for more precise fits.</p></td>
+</tr>
+<tr class="row-odd"><td><p><span class="math notranslate nohighlight">\(E_{c,\,1}\)</span></p></td>
+<td><p>E_c1</p></td>
+<td><p>eV</p></td>
+<td><p><span class="math notranslate nohighlight">\(0.0\)</span></p></td>
+<td><p>First crossover energy. Must be provided instead of E_0 for SPARK3D Vaughan.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Vaughan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">implementation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.13)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'original'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'CST'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'SPARK3D'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'original'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#eemilib.model.vaughan.Vaughan" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="eemilib.model.model.html#eemilib.model.model.Model" title="eemilib.model.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></a></p>
+<p>Define the classic Vaughan model.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.considers_energy">
+<span class="sig-name descname"><span class="pre">considers_energy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#eemilib.model.vaughan.Vaughan.considers_energy" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.is_3d">
+<span class="sig-name descname"><span class="pre">is_3d</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#eemilib.model.vaughan.Vaughan.is_3d" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.is_dielectrics_compatible">
+<span class="sig-name descname"><span class="pre">is_dielectrics_compatible</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#eemilib.model.vaughan.Vaughan.is_dielectrics_compatible" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="eemilib.model.model_config.html#eemilib.model.model_config.ModelConfig" title="eemilib.model.model_config.ModelConfig"><span class="pre">ModelConfig</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">ModelConfig(emission_yield_files=('all',),</span> <span class="pre">emission_energy_files=(),</span> <span class="pre">emission_angle_files=())</span></em><a class="headerlink" href="#eemilib.model.vaughan.Vaughan.model_config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.initial_parameters">
+<span class="sig-name descname"><span class="pre">initial_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'E_0':</span> <span class="pre">{'description':</span> <span class="pre">'Threshold</span> <span class="pre">energy.</span> <span class="pre">By</span> <span class="pre">default,</span> <span class="pre">locked</span> <span class="pre">to</span> <span class="pre">:math:`12.5\\mathrm{\\,eV}`.</span> <span class="pre">If</span> <span class="pre">unlocked,</span> <span class="pre">will</span> <span class="pre">be</span> <span class="pre">fitted</span> <span class="pre">to</span> <span class="pre">retrieve</span> <span class="pre">:math:`E_{c,\\,1}`.',</span> <span class="pre">'is_locked':</span> <span class="pre">True,</span> <span class="pre">'markdown':</span> <span class="pre">'E_0',</span> <span class="pre">'unit':</span> <span class="pre">'eV',</span> <span class="pre">'value':</span> <span class="pre">12.5},</span> <span class="pre">'E_c1':</span> <span class="pre">{'description':</span> <span class="pre">'First</span> <span class="pre">crossover</span> <span class="pre">energy.</span> <span class="pre">Must</span> <span class="pre">be</span> <span class="pre">provided</span> <span class="pre">instead</span> <span class="pre">of</span> <span class="pre">E_0</span> <span class="pre">for</span> <span class="pre">SPARK3D</span> <span class="pre">Vaughan.',</span> <span class="pre">'is_locked':</span> <span class="pre">False,</span> <span class="pre">'markdown':</span> <span class="pre">'E_{c,\\,1}',</span> <span class="pre">'unit':</span> <span class="pre">'eV',</span> <span class="pre">'value':</span> <span class="pre">0.0},</span> <span class="pre">'E_max':</span> <span class="pre">{'description':</span> <span class="pre">'Energy</span> <span class="pre">at</span> <span class="pre">maximum</span> <span class="pre">TEEY.',</span> <span class="pre">'lower_bound':</span> <span class="pre">0.0,</span> <span class="pre">'markdown':</span> <span class="pre">'E_\\mathrm{max}',</span> <span class="pre">'unit':</span> <span class="pre">'eV',</span> <span class="pre">'value':</span> <span class="pre">0.0},</span> <span class="pre">'delta_E_transition':</span> <span class="pre">{'description':</span> <span class="pre">'Energy</span> <span class="pre">over</span> <span class="pre">which</span> <span class="pre">we</span> <span class="pre">switch</span> <span class="pre">from</span> <span class="pre">:math:`\\sigma_\\mathrm{low}`</span> <span class="pre">to</span> <span class="pre">actual</span> <span class="pre">Vaughan</span> <span class="pre">TEEY.</span> <span class="pre">Useful</span> <span class="pre">for</span> <span class="pre">smoothing</span> <span class="pre">the</span> <span class="pre">transition.',</span> <span class="pre">'is_locked':</span> <span class="pre">True,</span> <span class="pre">'markdown':</span> <span class="pre">'\\Delta</span> <span class="pre">E_{tr}',</span> <span class="pre">'unit':</span> <span class="pre">'eV',</span> <span class="pre">'value':</span> <span class="pre">1.0},</span> <span class="pre">'k_s':</span> <span class="pre">{'description':</span> <span class="pre">'Roughness</span> <span class="pre">factor</span> <span class="pre">(:math:`\\sigma_\\mathrm{max}`).</span>&#160; <span class="pre">Locked</span> <span class="pre">by</span> <span class="pre">default,</span> <span class="pre">but</span> <span class="pre">could</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">for</span> <span class="pre">more</span> <span class="pre">precise</span> <span class="pre">fits.',</span> <span class="pre">'is_locked':</span> <span class="pre">True,</span> <span class="pre">'lower_bound':</span> <span class="pre">0.0,</span> <span class="pre">'markdown':</span> <span class="pre">'k_s',</span> <span class="pre">'unit':</span> <span class="pre">'1',</span> <span class="pre">'upper_bound':</span> <span class="pre">2.0,</span> <span class="pre">'value':</span> <span class="pre">1.0},</span> <span class="pre">'k_se':</span> <span class="pre">{'description':</span> <span class="pre">'Roughness</span> <span class="pre">factor</span> <span class="pre">(:math:`E_\\mathrm{max}`).</span>&#160; <span class="pre">Locked</span> <span class="pre">by</span> <span class="pre">default,</span> <span class="pre">but</span> <span class="pre">could</span> <span class="pre">be</span> <span class="pre">used</span> <span class="pre">for</span> <span class="pre">more</span> <span class="pre">precise</span> <span class="pre">fits.',</span> <span class="pre">'is_locked':</span> <span class="pre">True,</span> <span class="pre">'lower_bound':</span> <span class="pre">0.0,</span> <span class="pre">'markdown':</span> <span class="pre">'k_{se}',</span> <span class="pre">'unit':</span> <span class="pre">'1',</span> <span class="pre">'upper_bound':</span> <span class="pre">2.0,</span> <span class="pre">'value':</span> <span class="pre">1.0},</span> <span class="pre">'teey_low':</span> <span class="pre">{'description':</span> <span class="pre">'TEEY</span> <span class="pre">below</span> <span class="pre">:math:`E_0`.',</span> <span class="pre">'is_locked':</span> <span class="pre">True,</span> <span class="pre">'lower_bound':</span> <span class="pre">0.0,</span> <span class="pre">'markdown':</span> <span class="pre">'\\sigma_\\mathrm{low}',</span> <span class="pre">'unit':</span> <span class="pre">'1',</span> <span class="pre">'value':</span> <span class="pre">0.5},</span> <span class="pre">'teey_max':</span> <span class="pre">{'description':</span> <span class="pre">'Maximum</span> <span class="pre">TEEY,</span> <span class="pre">directly</span> <span class="pre">taken</span> <span class="pre">from</span> <span class="pre">the</span> <span class="pre">measurement.',</span> <span class="pre">'lower_bound':</span> <span class="pre">0.0,</span> <span class="pre">'markdown':</span> <span class="pre">'\\sigma_\\mathrm{max}',</span> <span class="pre">'unit':</span> <span class="pre">'1',</span> <span class="pre">'value':</span> <span class="pre">0.0}}</span></em><a class="headerlink" href="#eemilib.model.vaughan.Vaughan.initial_parameters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">implementation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.13)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'original'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'CST'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'SPARK3D'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'original'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#eemilib.model.vaughan.Vaughan.__init__" title="Link to this definition"></a></dt>
+<dd><p>Instantiate the object.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Parameter values set by <code class="docutils literal notranslate"><span class="pre">implementation</span></code> have priority over
+values given in <code class="docutils literal notranslate"><span class="pre">parameters_values</span></code>.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>implementation</strong> (<em>Literal</em><em>[</em><em>&quot;original&quot;</em><em>, </em><em>&quot;CST&quot;</em><em>, </em><em>&quot;SPARK3D&quot;</em><em>]</em><em>, </em><em>optional</em>) – Modifies certain presets to match different interpretations of the
+model by calling <a class="reference internal" href="#eemilib.model.vaughan.Vaughan.preset_implementation" title="eemilib.model.vaughan.Vaughan.preset_implementation"><code class="xref py py-meth docutils literal notranslate"><span class="pre">preset_implementation()</span></code></a>. These parameter
+modifications have precedence over the ones set in
+<code class="docutils literal notranslate"><span class="pre">parameters_values</span></code>.</p></li>
+<li><p><strong>parameters_values</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>] </em><em>| </em><em>None</em><em>, </em><em>optional</em>) – Contains name of parameters and associated value. If provided, will
+override the default values set in <code class="docutils literal notranslate"><span class="pre">initial_parameters</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.preset_implementation">
+<span class="sig-name descname"><span class="pre">preset_implementation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">implementation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.13)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'original'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'CST'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'SPARK3D'</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#eemilib.model.vaughan.Vaughan.preset_implementation" title="Link to this definition"></a></dt>
+<dd><p>Update some parameters to reproduce a specific implementation.</p>
+<p>Vaughan CST:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\sigma_\mathrm{low}\)</span> is set to 0.</p></li>
+</ul>
+</div></blockquote>
+<p>Vaughan SPARK3D:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\sigma_\mathrm{low}\)</span> is set to 0.</p></li>
+<li><p><span class="math notranslate nohighlight">\(\Delta E_{tr}\)</span> is set to 2 eV.</p></li>
+<li><p><span class="math notranslate nohighlight">\(E_0\)</span> is unlocked, so that it will be fitted to match
+<span class="math notranslate nohighlight">\(E_{c,\,1}\)</span>.</p></li>
+</ul>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.teey">
+<span class="sig-name descname"><span class="pre">teey</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><span class="pre">ndarray</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v2.2.3)"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#eemilib.model.vaughan.Vaughan.teey" title="Link to this definition"></a></dt>
+<dd><p>Compute TEEY <span class="math notranslate nohighlight">\(\sigma\)</span>.</p>
+<div class="admonition-todo admonition" id="id2">
+<p class="admonition-title">Todo</p>
+<p>This method could be so much simpler and efficient.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.find_optimal_parameters">
+<span class="sig-name descname"><span class="pre">find_optimal_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="eemilib.emission_data.data_matrix.html#eemilib.emission_data.data_matrix.DataMatrix" title="eemilib.emission_data.data_matrix.DataMatrix"><span class="pre">DataMatrix</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#eemilib.model.vaughan.Vaughan.find_optimal_parameters" title="Link to this definition"></a></dt>
+<dd><p>Match with position of first crossover and maximum.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan.find_e_0">
+<span class="sig-name descname"><span class="pre">find_e_0</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#eemilib.model.vaughan.Vaughan.find_e_0" title="Link to this definition"></a></dt>
+<dd><p>Find E_0 with error handling.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan._E_0_matching">
+<span class="sig-name descname"><span class="pre">_E_0_matching</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E_c1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></span><a class="headerlink" href="#eemilib.model.vaughan.Vaughan._E_0_matching" title="Link to this definition"></a></dt>
+<dd><p>Fit E_0 to retrieve E_c1 (SPARK3D)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="eemilib.model.vaughan.Vaughan._abc_impl">
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc._abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#eemilib.model.vaughan.Vaughan._abc_impl" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="eemilib.model.vaughan._vaughan_func">
+<span class="sig-name descname"><span class="pre">_vaughan_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ene</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">the</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">E_0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="eemilib.model.parameter.html#eemilib.model.parameter.Parameter" title="eemilib.model.parameter.Parameter"><span class="pre">Parameter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">E_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="eemilib.model.parameter.html#eemilib.model.parameter.Parameter" title="eemilib.model.parameter.Parameter"><span class="pre">Parameter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">teey_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="eemilib.model.parameter.html#eemilib.model.parameter.Parameter" title="eemilib.model.parameter.Parameter"><span class="pre">Parameter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">teey_low</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="eemilib.model.parameter.html#eemilib.model.parameter.Parameter" title="eemilib.model.parameter.Parameter"><span class="pre">Parameter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_se</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="eemilib.model.parameter.html#eemilib.model.parameter.Parameter" title="eemilib.model.parameter.Parameter"><span class="pre">Parameter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="eemilib.model.parameter.html#eemilib.model.parameter.Parameter" title="eemilib.model.parameter.Parameter"><span class="pre">Parameter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta_E_transition</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="eemilib.model.parameter.html#eemilib.model.parameter.Parameter" title="eemilib.model.parameter.Parameter"><span class="pre">Parameter</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.2)"><span class="pre">ndarray</span></a></span></span><a class="headerlink" href="#eemilib.model.vaughan._vaughan_func" title="Link to this definition"></a></dt>
+<dd><p>Compute the TEEY for incident energy E.</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="eemilib.model.parameter.html" class="btn btn-neutral float-left" title="eemilib.model.parameter module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="eemilib.plotter.html" class="btn btn-neutral float-right" title="eemilib.plotter package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Adrien Plaçais.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

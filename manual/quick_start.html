@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quick start &mdash; EEmiLib 0.0.6 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=1fd71caa"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Models" href="models.html" />
+    <link rel="prev" title="Interface" href="requirements_note/interface.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            EEmiLib
+          </a>
+              <div class="version">
+                0.0.6
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="requirements_note.html">Requirements note</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quick start</a><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="roadmap.html">Roadmap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../eemilib/modules.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">EEmiLib</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Quick start</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/manual/quick_start.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="quick-start">
+<span id="quick-start-link"></span><h1>Quick start<a class="headerlink" href="#quick-start" title="Link to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<p>Run the <code class="docutils literal notranslate"><span class="pre">gui.py</span></code> script located in <code class="docutils literal notranslate"><span class="pre">src/eemilib/gui/</span></code>.
+If you installed EEmiLib using pip, you can also run the following command: <code class="docutils literal notranslate"><span class="pre">eemilib-gui</span></code>.
+The following window should open.</p>
+<a class="reference internal image-reference" href="../_images/gui_example.png"><img alt="GUI screen shot" class="align-center" src="../_images/gui_example.png" style="width: 600px;" /></a>
+<section id="load-the-experimental-data">
+<h2>Load the experimental data<a class="headerlink" href="#load-the-experimental-data" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Select your data <a class="reference internal" href="../eemilib/eemilib.loader.loader.html#eemilib.loader.loader.Loader" title="eemilib.loader.loader.Loader"><code class="xref py py-class docutils literal notranslate"><span class="pre">Loader</span></code></a>.</p></li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li><p>The choice of the loader depends on the format of your data file.
+By default, use <a class="reference internal" href="../eemilib/eemilib.loader.pandas_loader.html#eemilib.loader.pandas_loader.PandasLoader" title="eemilib.loader.pandas_loader.PandasLoader"><code class="xref py py-class docutils literal notranslate"><span class="pre">PandasLoader</span></code></a>.
+It will work with the example data provided in <code class="docutils literal notranslate"><span class="pre">data/example_copper</span></code>.</p></li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li><p>Select your electron emission <a class="reference internal" href="../eemilib/eemilib.model.model.html#eemilib.model.model.Model" title="eemilib.model.model.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></a>.</p></li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li><p>Changing the model updates the <code class="docutils literal notranslate"><span class="pre">Files</span> <span class="pre">selection</span> <span class="pre">matrix</span></code>, according to the experimental files required by the model.</p></li>
+<li><p>Changing the model also updates the list of parameters in <code class="docutils literal notranslate"><span class="pre">Model</span> <span class="pre">configuration</span></code>.</p></li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li><p>Select the file(s) to be loaded in the <code class="docutils literal notranslate"><span class="pre">Files</span> <span class="pre">selection</span> <span class="pre">matrix</span></code>.</p></li>
+<li><p>Load the data by clicking <code class="docutils literal notranslate"><span class="pre">Load</span> <span class="pre">data</span></code>.</p></li>
+<li><p>Plot the loaded data to check that it is properly understood.</p></li>
+</ol>
+<blockquote>
+<div><ol class="loweralpha simple">
+<li><p>Select emission data type to plot: Emission Yield, Emission Energy Distribution or Emission Angle Distribution.</p></li>
+<li><p>Select populations to plot: SEs, EBEs, IBEs, or all electrons.</p></li>
+<li><p>Click <code class="docutils literal notranslate"><span class="pre">Plot</span> <span class="pre">file</span></code>.</p></li>
+</ol>
+</div></blockquote>
+</section>
+<section id="fit-the-model-on-the-data">
+<h2>Fit the model on the data<a class="headerlink" href="#fit-the-model-on-the-data" title="Link to this heading"></a></h2>
+<ol class="arabic simple" start="6">
+<li><p>Click <code class="docutils literal notranslate"><span class="pre">Fit!</span></code> to fit the model on the data.</p></li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li><p>It should update the values of the model parameters in <code class="docutils literal notranslate"><span class="pre">Model</span> <span class="pre">configuration</span></code>.</p></li>
+<li><p>You can manually modify those values.</p></li>
+<li><p>You can <code class="docutils literal notranslate"><span class="pre">lock</span></code> a parameter to a specific value and rerun the <code class="docutils literal notranslate"><span class="pre">Fit!</span></code>.</p></li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="7">
+<li><p>Plot the modelled data with <code class="docutils literal notranslate"><span class="pre">Plot</span> <span class="pre">model</span></code>.</p></li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li><p>You can change the ranges of plotted energies and angles using <code class="docutils literal notranslate"><span class="pre">PEs</span> <span class="pre">energy</span> <span class="pre">and</span> <span class="pre">angle</span> <span class="pre">range</span> <span class="pre">(model</span> <span class="pre">plot)</span></code>.</p></li>
+</ul>
+</div></blockquote>
+<a class="reference internal image-reference" href="../_images/gui_example_results.png"><img alt="Corresponding figure" class="align-center" src="../_images/gui_example_results.png" style="width: 600px;" /></a>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="requirements_note/interface.html" class="btn btn-neutral float-left" title="Interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="models.html" class="btn btn-neutral float-right" title="Models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Adrien Plaçais.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
