@@ -120,7 +120,9 @@ class Vaughan(Model):
         ----------
         implementation: Literal["original", "CST", "SPARK3D"], optional
             Modifies certain presets to match different interpretations of the
-            model.
+            model by calling :meth:`.preset_implementation`. These parameter
+            modifications have precedence over the ones set in
+            `parameters_values`.
         parameters_values : dict[str, Any] | None, optional
             Contains name of parameters and associated value. If provided, will
             override the default values set in ``initial_parameters``.
