@@ -18,6 +18,7 @@ from eemilib.emission_data.emission_yield import EmissionYield
 from eemilib.model.model import Model
 from eemilib.model.model_config import ModelConfig
 from eemilib.model.parameter import Parameter
+from scipy.optimize import least_squares
 
 VaughanImplementation = Literal["original", "CST", "SPARK3D"]
 
@@ -38,9 +39,9 @@ class Vaughan(Model):
             "markdown": r"E_0",
             "unit": "eV",
             "value": 12.5,
-            "description": r"Threshold energy. Can be used to fit  "
-            + r":math:`E_{c,\,1}`. By default, locked to "
-            + r":math:`12.5\mathrm{\,eV}`.",
+            "description": r"Threshold energy. By default, locked to "
+            + r":math:`12.5\mathrm{\,eV}`. If unlocked, will be fitted to "
+            + r"retrieve :math:`E_{c,\,1}`.",
             "is_locked": True,
         },
         "E_max": {
@@ -94,6 +95,14 @@ class Vaughan(Model):
             + " Locked by default, but could be used for more precise fits.",
             "is_locked": True,
         },
+        "E_c1": {
+            "markdown": r"E_{c,\,1}",
+            "unit": "eV",
+            "value": 0.0,
+            "description": r"First crossover energy. Must be provided instead"
+            + " of E_0 for SPARK3D Vaughan.",
+            "is_locked": False,
+        },
     }
 
     def __init__(
@@ -127,7 +136,10 @@ class Vaughan(Model):
             self.set_parameters_values(parameters_values)
         self._preset_flavour(implementation)
 
-    def _preset_flavour(self, implementation: VaughanImplementation) -> None:
+    def _preset_flavour(
+        self,
+        implementation: VaughanImplementation,
+    ) -> None:
         """Update some parameters to reproduce a specific implementation."""
         if implementation == "original":
             return
@@ -138,9 +150,13 @@ class Vaughan(Model):
             self.set_parameters_values(
                 {"teey_low": 0.0, "delta_E_transition": 2.0}
             )
-            print(
-                f"Warning! In SPARK3D, you do not provide E_0 but first crossover!"
-            )
+            self.parameters["E_0"].is_locked = False
+
+            E_0 = self._retrieve_E_0(self.parameters["E_c1"].value)
+            if np.isnan(E_0):
+                return
+            self.set_parameter_value("E_0", E_0)
+
             return
         print(f"Warning! {implementation = } not in {VaughanImplementation}")
 
@@ -173,8 +189,30 @@ class Vaughan(Model):
         assert emission_yield.population == "all"
 
         self.set_parameters_values(
-            {"E_max": emission_yield.e_max, "teey_max": emission_yield.ey_max}
+            {
+                "E_max": emission_yield.e_max,
+                "teey_max": emission_yield.ey_max,
+            }
         )
+        if not self.parameters["E_c1"].is_locked:
+            self.set_parameter_value("E_c1", emission_yield.e_c1)
+        if not self.parameters["E_0"].is_locked:
+            E_0 = self._retrieve_E_0(self.parameters["E_c1"].value)
+            self.set_parameter_value("E_0", E_0)
+
+    def _retrieve_E_0(self, E_c1: float) -> float:
+        """Fit E_0 to retrieve E_c1 (SPARK3D)"""
+        parameters = self.parameters.copy()
+
+        def _to_minimize(E_0: float) -> float:
+            parameters["E_0"].value = E_0
+            teey_at_crossover = _vaughan_func(ene=E_c1, the=0.0, **parameters)
+            if isinstance(teey_at_crossover, np.ndarray):
+                teey_at_crossover = teey_at_crossover[0]
+            return abs(teey_at_crossover - 1.0)
+
+        optimized_E_0 = least_squares(_to_minimize, x0=12.5).x
+        return float(optimized_E_0[0])
 
 
 def _vaughan_func(
@@ -186,6 +224,7 @@ def _vaughan_func(
     teey_low: Parameter,
     k_se: Parameter,
     k_s: Parameter,
+    delta_E_transition: Parameter,
     **parameters,
 ) -> float | np.ndarray:
     """Compute the TEEY for incident energy E."""
