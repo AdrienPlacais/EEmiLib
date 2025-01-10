@@ -5,6 +5,7 @@
 
 """
 
+import logging
 from collections.abc import Collection
 from pathlib import Path
 from typing import Literal, overload
@@ -340,9 +341,7 @@ class DataMatrix:
                         emission_data_type=data_type,
                     )  # type: ignore
 
-    def assert_has_all_mandatory_files(
-        self, model_config: ModelConfig
-    ) -> None:
+    def has_all_mandatory_files(self, model_config: ModelConfig) -> bool:
         """Tell if files defined by :attr:`.Model.model_config` are set."""
         for emission_data_type, corresponding_attribute in zip(
             IMPLEMENTED_EMISSION_DATA,
@@ -357,23 +356,35 @@ class DataMatrix:
             )
 
             for mandatory_population in mandatory_populations:
-                assert mandatory_population in IMPLEMENTED_POP
+                if mandatory_population not in IMPLEMENTED_POP:
+                    logging.error(
+                        f"{mandatory_population = } not in "
+                        f"{IMPLEMENTED_POP = }"
+                    )
+                    return False
+
                 filepath = self.get_files(
                     population=mandatory_population,
                     emission_data_type=emission_data_type,
                 )  # type: ignore
-                assert filepath is not None, (
-                    f"You must define a {emission_data_type} filepath for"
-                    + f" population {mandatory_population}"
-                )
+                if filepath is None:
+                    logging.error(
+                        f"You must define a {emission_data_type} filepath for"
+                        + f" population {mandatory_population}"
+                    )
+                    return False
+
                 data_object = self.get_data(
                     population=mandatory_population,
                     emission_data_type=emission_data_type,
                 )  # type: ignore
-                assert data_object is not None, (
-                    f"You must load {emission_data_type} filepath for "
-                    + f"population {mandatory_population}"
-                )
+                if data_object is None:
+                    logging.error(
+                        f"You must load {emission_data_type} filepath for "
+                        + f"population {mandatory_population}"
+                    )
+                    return False
+        return True
 
     def plot[
         T

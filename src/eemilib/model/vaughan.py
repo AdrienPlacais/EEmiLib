@@ -196,7 +196,13 @@ class Vaughan(Model):
         self, data_matrix: DataMatrix, **kwargs
     ) -> None:
         """Match with position of first crossover and maximum."""
-        data_matrix.assert_has_all_mandatory_files(self.model_config)
+        if not data_matrix.has_all_mandatory_files(self.model_config):
+            logging.info(
+                "Files are not all provided. If Ec1 was given, I will try to "
+                "find the corresponding E_0."
+            )
+            self.find_e_0()
+            return
 
         emission_yield = data_matrix.data_matrix[3][0]
         assert isinstance(
@@ -215,6 +221,19 @@ class Vaughan(Model):
         if not self.parameters["E_0"].is_locked:
             E_0 = self._retrieve_E_0(self.parameters["E_c1"].value)
             self.set_parameter_value("E_0", E_0)
+
+    def find_e_0(self) -> None:
+        """Find E_0 with error handling."""
+        e_0 = self.parameters["E_0"]
+        assert not e_0.is_locked, "Unlock E_0 to allow for a fit."
+
+        for key in ("E_c1", "E_max", "teey_max"):
+            value = self.parameters[key].value
+            assert value is not None, f"You must provide a value for {key}"
+
+        E_0 = self._retrieve_E_0(self.parameters["E_c1"].value)
+        self.set_parameter_value("E_0", E_0)
+        return
 
     def _retrieve_E_0(self, E_c1: float) -> float:
         """Fit E_0 to retrieve E_c1 (SPARK3D)"""
