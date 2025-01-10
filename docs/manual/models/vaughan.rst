@@ -73,15 +73,24 @@ Model parameters
 
 The parameters list is dynamically created here: :py:mod:`Vaughan API documentation<.vaughan>`.
 
-Match CST Particle Studio
--------------------------
+Implementations
+---------------
 
-In order to define Vaughan is the exact same manner as CST, you shall:
+Two alternative implementations for Vaughan are implemented: `CST` and `SPARK3D`.
+Just instantiate your model with:
 
-- Lock `teey_low` to `1`.
+.. code-block:: python
 
-To do list
----------
+   model = Vaughan(implementation="CST") # or "SPARK3D"
+   # alternative:
+   model = Vaughan()
+   model.preset_implementation("CST")
+
+From the GUI, manually reproduce the steps described in the :meth:`.Vaughan.preset_implementation` method.
+More specific documentation is also listed in :meth:`.Vaughan.preset_implementation`.
+
+To-do list
+----------
 
 .. todo::
     - Unlock :math:`k_s`, :math:`k_{se}` to have better overall fit?

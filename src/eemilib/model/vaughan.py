@@ -134,13 +134,26 @@ class Vaughan(Model):
         self._generate_parameter_docs()
         if parameters_values is not None:
             self.set_parameters_values(parameters_values)
-        self._preset_flavour(implementation)
+        self.preset_implementation(implementation)
 
-    def _preset_flavour(
+    def preset_implementation(
         self,
         implementation: VaughanImplementation,
     ) -> None:
-        """Update some parameters to reproduce a specific implementation."""
+        r"""Update some parameters to reproduce a specific implementation.
+
+        Vaughan CST:
+
+            - :math:`\sigma_\mathrm{low}` is set to 0.
+
+        Vaughan SPARK3D:
+
+            - :math:`\sigma_\mathrm{low}` is set to 0.
+            - :math:`\Delta E_{tr}` is set to 2 eV.
+            - :math:`E_0` is unlocked, so that it will be fitted to match
+              :math:`E_{c,\,1}`.
+
+        """
         if implementation == "original":
             return
         if implementation == "CST":
