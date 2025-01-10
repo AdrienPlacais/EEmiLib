@@ -45,11 +45,8 @@ The TEEY is given by:
 
     \xi = \frac{E - E_0}{E_\mathrm{max} - E_0}
 
-Under the limit :math:`E_0` (:math:`12.5\mathrm{\,eV}` by default), the TEEY is
-set to a unique value (:math:`0.5` by default).
-
-.. todo::
-    Releasing :math:`E_0` constraint to fit :math:`E_{c,\,1}`.
+Under the limit :math:`E_0` (:math:`12.5\mathrm{\,eV}` by default), the TEEY is set to a unique value (:math:`0.5` by default).
+When :math:`E_0` is unlocked, a fit over this variable is performed to match :math:`E_{\mathrm{c,\,1}}`.
 
 .. math::
 
@@ -87,7 +84,6 @@ To do list
 ---------
 
 .. todo::
-    - Unlock :math:`E_0` to fit :math:`E_{c,\,1}`.
     - Unlock :math:`k_s`, :math:`k_{se}` to have better overall fit?
     - Instructions to match CST Vaughan.
     - Instructions to match SPARK3D Vaughan.
