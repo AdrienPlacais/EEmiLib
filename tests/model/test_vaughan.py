@@ -25,9 +25,9 @@ class MockDataMatrix(DataMatrix):
             [emission_data, None, None],
         ]
 
-    def assert_has_all_mandatory_files(self, *args, **kwargs) -> None:
+    def has_all_mandatory_files(self, *args, **kwargs) -> bool:
         """Skip this check."""
-        pass
+        return True
 
 
 def test_initial_parameters(vaughan_model: Vaughan) -> None:

@@ -168,7 +168,7 @@ class Vaughan(Model):
             )
             self.parameters["E_0"].is_locked = False
 
-            E_0 = self._retrieve_E_0(self.parameters["E_c1"].value)
+            E_0 = self._E_0_matching(E_c1=self.parameters["E_c1"].value)
             if np.isnan(E_0):
                 return
             self.set_parameter_value("E_0", E_0)
@@ -219,7 +219,7 @@ class Vaughan(Model):
         if not self.parameters["E_c1"].is_locked:
             self.set_parameter_value("E_c1", emission_yield.e_c1)
         if not self.parameters["E_0"].is_locked:
-            E_0 = self._retrieve_E_0(self.parameters["E_c1"].value)
+            E_0 = self._E_0_matching(E_c1=self.parameters["E_c1"].value)
             self.set_parameter_value("E_0", E_0)
 
     def find_e_0(self) -> None:
@@ -231,11 +231,11 @@ class Vaughan(Model):
             value = self.parameters[key].value
             assert value is not None, f"You must provide a value for {key}"
 
-        E_0 = self._retrieve_E_0(self.parameters["E_c1"].value)
+        E_0 = self._E_0_matching(E_c1=self.parameters["E_c1"].value)
         self.set_parameter_value("E_0", E_0)
         return
 
-    def _retrieve_E_0(self, E_c1: float) -> float:
+    def _E_0_matching(self, *, E_c1: float) -> float:
         """Fit E_0 to retrieve E_c1 (SPARK3D)"""
         parameters = self.parameters.copy()
 
