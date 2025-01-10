@@ -1,5 +1,6 @@
 """Define functions to be as DRY as possible."""
 
+import logging
 from abc import ABCMeta
 from collections.abc import Collection
 from functools import partial
@@ -187,7 +188,7 @@ def _open_help(obj: Any) -> None:
     """Open the ``doc_url`` attribute of given object."""
     url = getattr(obj, "doc_url", None)
     if not isinstance(url, str):
-        print(f"No valid URL found for {obj = }")
+        logging.warning(f"No valid URL found for {obj = }")
         return
     QDesktopServices.openUrl(QUrl(url))
 

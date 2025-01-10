@@ -5,6 +5,7 @@
 
 """
 
+import logging
 from abc import ABC, abstractmethod
 from collections.abc import Collection
 from typing import Any
@@ -150,8 +151,8 @@ class Model(ABC):
     def set_parameter_value(self, name: str, value: Any) -> None:
         """Give the parameter named ``name`` the value ``value``."""
         if name not in self.parameters:
-            print(
-                f"Warning! {name = } is not defined for {self}. Skipping... "
+            logging.warning(
+                f"{name = } is not defined for {self}. Skipping... "
             )
             return
         self.parameters[name].value = value

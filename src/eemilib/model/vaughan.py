@@ -8,6 +8,7 @@ TEEY at non-normal incidence will not be taken into account into the fit
 
 """
 
+import logging
 import math
 from typing import Any, Literal
 
@@ -173,7 +174,7 @@ class Vaughan(Model):
             self.set_parameter_value("E_0", E_0)
 
             return
-        print(f"Warning! {implementation = } not in {VaughanImplementation}")
+        logging.error(f"{implementation = } not in {VaughanImplementation}")
 
     def teey(self, energy: np.ndarray, theta: np.ndarray) -> pd.DataFrame:
         r"""Compute TEEY :math:`\sigma`.

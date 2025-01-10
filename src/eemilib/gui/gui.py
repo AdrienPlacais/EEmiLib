@@ -12,6 +12,7 @@
 
 """
 import importlib
+import logging
 import sys
 from abc import ABCMeta
 from types import ModuleType
@@ -132,7 +133,7 @@ class MainWindow(QMainWindow):
             module_name="eemilib.loader",
             base_class=Loader,
             buttons_args={
-                "Help": lambda _: print("Help not set."),
+                "Help": lambda _: logging.info("Help not set."),
                 "Load data": self.load_data,
             },
         )
@@ -176,7 +177,7 @@ class MainWindow(QMainWindow):
             module_name="eemilib.model",
             base_class=Model,
             buttons_args={
-                "Help": lambda _: print("Help not set"),
+                "Help": lambda _: logging.info("Help not set"),
                 "Fit!": self.fit_model,
             },
         )
@@ -235,7 +236,7 @@ class MainWindow(QMainWindow):
         updatable_attr = ("value", "lower_bound", "upper_bound")
         attr = PARAMETER_POS_TO_ATTR[col]
         if attr not in updatable_attr:
-            print("This column cannot be updated.")
+            logging.info("This column cannot be updated.")
             return
 
         name = self.model_table.item(row, 0).text()
@@ -247,13 +248,13 @@ class MainWindow(QMainWindow):
                 setattr(parameter, attr, new_value)
 
             except ValueError:
-                print(f"Invalid value entered for {name}")
+                logging.warning(f"Invalid value entered for {name}")
                 item.setText(str(parameter.value))
 
     def fit_model(self) -> None:
         """Perform the fit on the loaded data."""
         if not hasattr(self, "model") or not self.model:
-            print("Please select a model before fitting.")
+            logging.info("Please select a model before fitting.")
             return
         self.model.find_optimal_parameters(self.data_matrix)
         self._populate_parameters_table_values()
@@ -348,10 +349,12 @@ class MainWindow(QMainWindow):
         plotter = self._dropdown_to_class("plotter")()
 
         success_pop, populations = self._get_populations_to_plot()
+        if not success_pop:
+            return
         success_data, emission_data_type = (
             self._get_emission_data_type_to_plot()
         )
-        if not (success_pop and success_data):
+        if not success_data:
             return
 
         self.axes = self.data_matrix.plot(
@@ -366,14 +369,18 @@ class MainWindow(QMainWindow):
         plotter = self._dropdown_to_class("plotter")()
 
         success_pop, populations = self._get_populations_to_plot()
+        if not success_pop:
+            return
         success_data, emission_data_type = (
             self._get_emission_data_type_to_plot()
         )
-        if not (success_pop and success_data):
+        if not success_data:
             return
         success_ene, energies = self._gen_linspace("energy")
+        if not success_ene:
+            return
         success_angle, angles = self._gen_linspace("angle")
-        if not (success_ene and success_angle):
+        if not success_angle:
             return
 
         self.axes = self.model.plot(
@@ -387,18 +394,17 @@ class MainWindow(QMainWindow):
 
     def _get_emission_data_type_to_plot(
         self,
-    ) -> tuple[bool, ImplementedEmissionData]:
+    ) -> tuple[bool, ImplementedEmissionData | None]:
         """Read input to determine the emission data type to plot."""
-        success = True
         emission_data_type = [
             IMPLEMENTED_EMISSION_DATA[i]
             for i, checked in enumerate(self.data_checkboxes)
             if checked.isChecked()
         ]
         if len(emission_data_type) == 0:
-            print("Please provide a type of data to plot.")
-            success = False
-        return success, emission_data_type[0]
+            logging.error("Please provide a type of data to plot.")
+            return False, None
+        return True, emission_data_type[0]
 
     def _get_populations_to_plot(self) -> tuple[bool, list[ImplementedPop]]:
         """Read input to determine the populations to plot."""
@@ -409,7 +415,7 @@ class MainWindow(QMainWindow):
             if checked.isChecked()
         ]
         if len(populations) == 0:
-            print("Please provide at least one population to plot.")
+            logging.error("Please provide at least one population to plot.")
             success = False
         return success, populations
 
@@ -423,14 +429,14 @@ class MainWindow(QMainWindow):
             line_name = "_".join((variable, box))
             qline_edit = getattr(self, line_name, None)
             if qline_edit is None:
-                print(f"The attribute {line_name} is not defined.")
+                logging.error(f"The attribute {line_name} is not defined.")
                 success = False
                 continue
 
             assert isinstance(qline_edit, QLineEdit)
             value = qline_edit.displayText()
             if not value:
-                print(f"You must give a value in {line_name}.")
+                logging.error(f"You must give a value in {line_name}.")
                 success = False
                 continue
             linspace_args.append(value)
@@ -490,5 +496,4 @@ def main():
 
 
 if __name__ == "__main__":
-    print(f"{IMPLEMENTED_POP = }")
     main()

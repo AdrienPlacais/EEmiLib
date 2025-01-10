@@ -1,5 +1,6 @@
 """Define an object to store an emission yield."""
 
+import logging
 from pathlib import Path
 from typing import Self
 
@@ -116,9 +117,9 @@ class EmissionYield(EmissionData):
         """
         e_max, sigma_max = get_emax_eymax(normal_ey)
         if abs(e_max - self.energies[-1]) < tol_energy:
-            print(
-                "Warning! E_max is very close to the last measured energy. "
-                "Maybe maximum emission yield was not reached?"
+            logging.warning(
+                "E_max is very close to the last measured energy. Maybe "
+                "maximum emission yield was not reached?"
             )
         return e_max, sigma_max
 
@@ -158,16 +159,16 @@ class EmissionYield(EmissionData):
             normal_ey, e_max, min_e
         )
         if abs(ey_ec1 - 1.0) > tol_ey:
-            print(
-                "Warning! The emission yield at first crossover energy is "
-                f"{ey_ec1}, which is far from unity. Keeping it anyway."
+            logging.warning(
+                f"The emission yield at first crossover energy is {ey_ec1}, "
+                "which is far from unity. Keeping it anyway."
             )
 
         if abs(ey_ec2 - 1.0) > tol_ey:
-            print(
-                "Warning! The emission yield at second crossover energy is "
-                f"{ey_ec2}, which is far from unity. Maybe its energy lies "
-                "outside of the measurement range. Returning None instead."
+            logging.info(
+                f"The emission yield at second crossover energy is {ey_ec2}, "
+                "which is far from unity. Maybe its energy lies outside of the"
+                " measurement range. Setting E_c2 = None."
             )
             ec2 = None
 
