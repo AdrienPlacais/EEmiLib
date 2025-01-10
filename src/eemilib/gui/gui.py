@@ -162,7 +162,14 @@ class MainWindow(QMainWindow):
                     ]
                     self.data_matrix.set_files(file_names, row=i, col=j)
 
-        self.data_matrix.load_data(self.loader)
+        try:
+            self.data_matrix.load_data(self.loader)
+        except Exception as e:
+            logging.error(
+                "An error was raised during the loading of the data file. "
+                "Check that the format of the files is consistent with what "
+                f"is expected by the data loader. Error message:\n{e}"
+            )
 
     # =========================================================================
     # Model
