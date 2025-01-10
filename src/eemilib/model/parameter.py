@@ -36,6 +36,9 @@ class Parameter:
         description : str, optional
             A description string for the parameter. The default is an empty
             string.
+        is_locked : bool, optional
+            Forces the parameters to a certain value, which will not be
+            modified by EEmiLib.
 
         """
         self.markdown = markdown
