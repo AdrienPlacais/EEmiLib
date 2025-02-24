@@ -22,8 +22,9 @@ Installation
 
 1. Clone the repository:
 `git clone git@github.com:AdrienPlacais/EEmiLib.git`
-2. Navigate to the `EEmiLib` dir and install it with all dependencies: `pip install -e .`
-3. Test that everything is working with `pytest`
+2. Navigate to the `EEmiLib` dir and install it with all dependencies: `pip install -e .[test]`
+    - Depending on your bash, you may have to enclose `.[test]` with `"`.
+3. Test that everything is working with `pytest -m "not implementation"`
 
 Notes/todo
 ==========
