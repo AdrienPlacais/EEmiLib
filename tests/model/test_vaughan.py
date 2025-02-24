@@ -124,7 +124,6 @@ def test_find_optimal_parameters(
         pytest.param(  # Aluminium (ECSS)
             {
                 "E_c1": 23.3,
-                "E_0": 16,
                 "E_max": 150,
                 "teey_low": 0.5,
                 "teey_max": 2.98,
@@ -138,7 +137,7 @@ def test_find_optimal_parameters(
             marks=pytest.mark.implementation,
         ),
         pytest.param(  # Copper (ECSS)
-            {"E_0": 35.0, "E_max": 165, "teey_low": 0.5, "teey_max": 2.3},
+            {"E_c1": 35.0, "E_max": 165, "teey_low": 0.5, "teey_max": 2.3},
             "SPARK3D",
             np.linspace(0, 1000, 501),
             np.zeros(1),
@@ -148,7 +147,7 @@ def test_find_optimal_parameters(
             marks=pytest.mark.implementation,
         ),
         pytest.param(  # Silver (ECSS)
-            {"E_0": 30.0, "E_max": 165, "teey_low": 0.5, "teey_max": 2.22},
+            {"E_c1": 30.0, "E_max": 165, "teey_low": 0.5, "teey_max": 2.22},
             "SPARK3D",
             np.linspace(0, 1000, 501),
             np.zeros(1),
