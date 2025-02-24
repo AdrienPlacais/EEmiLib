@@ -19,9 +19,11 @@ from eemilib.emission_data.emission_yield import EmissionYield
 from eemilib.model.model import Model
 from eemilib.model.model_config import ModelConfig
 from eemilib.model.parameter import Parameter
+from numpy.typing import NDArray
 from scipy.optimize import least_squares
 
 VaughanImplementation = Literal["original", "CST", "SPARK3D"]
+E_0_SPARK3D = 10.0
 
 
 class Vaughan(Model):
@@ -137,6 +139,7 @@ class Vaughan(Model):
         self._generate_parameter_docs()
         if parameters_values is not None:
             self.set_parameters_values(parameters_values)
+        self._func = _vaughan_func
         self.preset_implementation(implementation)
 
     def preset_implementation(
@@ -152,9 +155,9 @@ class Vaughan(Model):
         Vaughan SPARK3D:
 
             - :math:`\sigma_\mathrm{low}` is set to 0.
-            - :math:`\Delta E_{tr}` is set to 2 eV.
             - :math:`E_0` is unlocked, so that it will be fitted to match
               :math:`E_{c,\,1}`.
+            - Below :math:`10` :unit:`eV`, TEEY is 0.
 
         """
         if implementation == "original":
@@ -172,11 +175,14 @@ class Vaughan(Model):
             if np.isnan(E_0):
                 return
             self.set_parameter_value("E_0", E_0)
+            self._func = _vaughan_spark3d
 
             return
         logging.error(f"{implementation = } not in {VaughanImplementation}")
 
-    def teey(self, energy: np.ndarray, theta: np.ndarray) -> pd.DataFrame:
+    def teey(
+        self, energy: NDArray[np.float64], theta: NDArray[np.float64]
+    ) -> pd.DataFrame:
         r"""Compute TEEY :math:`\sigma`.
 
         .. todo::
@@ -186,7 +192,7 @@ class Vaughan(Model):
         out = np.zeros((len(energy), len(theta)))
         for i, ene in enumerate(energy):
             for j, the in enumerate(theta):
-                out[i, j] = _vaughan_func(ene, the, **self.parameters)
+                out[i, j] = self._func(ene, the, **self.parameters)
 
         out_dict = {f"{the} [deg]": out[:, j] for j, the in enumerate(theta)}
         out_dict["Energy [eV]"] = energy
@@ -261,7 +267,7 @@ def _vaughan_func(
     k_s: Parameter,
     delta_E_transition: Parameter,
     **parameters,
-) -> float | np.ndarray:
+) -> float | NDArray[np.float64]:
     """Compute the TEEY for incident energy E."""
     mod_e_max = E_max.value * (
         1.0 + k_se.value * math.radians(the) ** 2 / (2.0 * math.pi)
@@ -282,6 +288,41 @@ def _vaughan_func(
         return mod_teey_max * 1.125 / (xi**0.35)
 
     return mod_teey_max * (xi * np.exp(1.0 - xi)) ** k
+
+
+def _vaughan_spark3d(
+    ene: float,
+    the: float,
+    E_0: Parameter,
+    E_max: Parameter,
+    teey_max: Parameter,
+    teey_low: Parameter,
+    k_se: Parameter,
+    k_s: Parameter,
+    delta_E_transition: Parameter,
+    **parameters,
+) -> float | NDArray[np.float64]:
+    r"""Compute TEEY as SPARK3D would.
+
+    This is a classic Vaughan, but TEEY is null for energies below
+    ``E_0_SPARK3D=10.0``. This parameter is different from the classic ``E_0``
+    that appears in the expression of :math:`\xi`.
+
+    """
+    if ene >= E_0_SPARK3D:
+        return _vaughan_func(
+            ene=ene,
+            the=the,
+            E_0=E_0,
+            E_max=E_max,
+            teey_max=teey_max,
+            teey_low=teey_low,
+            k_se=k_se,
+            k_s=k_s,
+            delta_E_transition=delta_E_transition,
+            **parameters,
+        )
+    return teey_low.value
 
 
 # Append dynamically generated docs to the module docstring
