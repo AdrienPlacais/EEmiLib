@@ -2,10 +2,9 @@
 
 import matplotlib.pyplot as plt
 import pandas as pd
+from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import EY_col_energy
 from matplotlib.axes import Axes
-
-from eemilib.plotter.plotter import Plotter
 
 
 class PandasPlotter(Plotter):
