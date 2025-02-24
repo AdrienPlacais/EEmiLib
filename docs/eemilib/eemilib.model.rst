@@ -3,8 +3,8 @@ eemilib.model package
 
 .. automodule:: eemilib.model
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Submodules
 ----------

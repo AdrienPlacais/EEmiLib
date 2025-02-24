@@ -1,12 +1,18 @@
+import os
+import sys
+
 import eemilib
 
 project = "EEmiLib"
-copyright = "2024, Adrien Plaçais"
+copyright = "2025, Adrien Plaçais"
 author = "Adrien Plaçais"
 version = eemilib.__version__
 release = version
 
 # -- General configuration ---------------------------------------------------
+# Add the _ext/ folder so that Sphinx can find it
+sys.path.append(os.path.abspath("./_ext"))
+
 extensions = [
     "myst_parser",
     "nbsphinx",
@@ -16,6 +22,7 @@ extensions = [
     "sphinx.ext.todo",  # allow use of TODO
     "sphinx_rtd_theme",  # ReadTheDocs theme
     "sphinxcontrib.bibtex",
+    "unit_role",
 ]
 
 autodoc_default_options = {
@@ -57,6 +64,7 @@ nitpick_ignore = [
     ("py:class", "PyQt5.QtWidgets.QWidget"),
     ("py:class", "T"),
     ("py:class", "optional"),
+    ("py:class", "numpy.float64"),
 ]
 intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org/stable/", None),

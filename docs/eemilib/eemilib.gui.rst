@@ -3,8 +3,8 @@ eemilib.gui package
 
 .. automodule:: eemilib.gui
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Submodules
 ----------
