@@ -60,7 +60,7 @@ class Vaughan(Model):
             "value": 1.0,
             "description": "Energy over which we switch from"
             + r" :math:`\sigma_\mathrm{low}` to actual Vaughan TEEY. Useful for"
-            + " smoothing the transition.",
+            + " smoothing the transition. Currently not implemented.",
             "is_locked": True,
         },
         "teey_low": {
