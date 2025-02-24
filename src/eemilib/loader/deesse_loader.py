@@ -1,6 +1,4 @@
-"""Define a loader adapted to DEESSE (ONERA, Toulouse) file format.
-
-"""
+"""Define a loader adapted to DEESSE (ONERA, Toulouse) file format."""
 
 from pathlib import Path
 from typing import Any
