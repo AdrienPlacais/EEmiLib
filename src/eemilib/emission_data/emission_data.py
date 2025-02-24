@@ -67,7 +67,7 @@ class EmissionData(ABC):
         """Print markdown info."""
 
     @abstractmethod
-    def plot[
-        T
-    ](self, plotter: Plotter, *args, axes: T | None = None, **kwargs) -> T:
+    def plot[T](
+        self, plotter: Plotter, *args, axes: T | None = None, **kwargs
+    ) -> T:
         """Plot the contained data using plotter."""
