@@ -64,6 +64,7 @@ nitpick_ignore = [
     ("py:class", "PyQt5.QtWidgets.QWidget"),
     ("py:class", "T"),
     ("py:class", "optional"),
+    ("py:class", "numpy.float64"),
 ]
 intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org/stable/", None),
