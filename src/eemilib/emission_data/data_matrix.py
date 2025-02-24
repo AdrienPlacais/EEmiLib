@@ -386,14 +386,16 @@ class DataMatrix:
                     return False
         return True
 
-    def plot[T](
+    def plot[
+        T
+    ](
         self,
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
         emission_data_type: ImplementedEmissionData,
         axes: T | None = None,
         **kwargs,
-    ) -> T | None:
+    ) -> (T | None):
         """Plot desired measured data."""
         if isinstance(population, Collection) and not isinstance(
             population, str

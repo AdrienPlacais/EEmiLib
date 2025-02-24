@@ -174,7 +174,9 @@ class EmissionYield(EmissionData):
 
         return ec1, ec2
 
-    def plot[T](
+    def plot[
+        T
+    ](
         self,
         plotter: Plotter,
         *args,

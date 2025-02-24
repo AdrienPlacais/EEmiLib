@@ -48,13 +48,13 @@ class PandasLoader(Loader):
         """
         headers = []
         i = 0
-        with open(filepath, "r") as file:
+        with open(filepath) as file:
             for i, line in enumerate(file):
                 if not line.startswith(comment):
                     headers = line.strip().split(sep)
                     break
         if not headers:
-            raise IOError(
+            raise OSError(
                 "Error reading the given file. It seems there is no"
                 f" uncommented line? Comment character is {comment}."
             )

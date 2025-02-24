@@ -107,7 +107,9 @@ class Model(ABC):
     ) -> None:
         """Find the best parameters for the current model."""
 
-    def plot[T](
+    def plot[
+        T
+    ](
         self,
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
