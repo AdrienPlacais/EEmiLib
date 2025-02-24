@@ -1,6 +1,7 @@
 """Mock :class:`.EmissionYield` for several materials."""
 
 import pandas as pd
+import pytest
 from eemilib.emission_data.emission_yield import EmissionYield
 from eemilib.util.constants import ImplementedPop
 
@@ -234,3 +235,21 @@ class MockEmissionYield(EmissionYield):
 
         """
         super().__init__(population=population, data=data)
+
+
+@pytest.fixture
+def mock_cu_eroded_one() -> MockEmissionYield:
+    """Mock first Cu sample."""
+    return MockEmissionYield.cu_eroded_one()
+
+
+@pytest.fixture
+def mock_cu_as_received_two() -> MockEmissionYield:
+    """Mock second Cu sample."""
+    return MockEmissionYield.cu_as_received_two()
+
+
+@pytest.fixture
+def mock_cu_heated_two() -> MockEmissionYield:
+    """Mock second Cu sample."""
+    return MockEmissionYield.cu_heated_two()
