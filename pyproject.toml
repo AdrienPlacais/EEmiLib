@@ -18,11 +18,11 @@ dependencies = [
    "scipy>=1.14,<2",
 ]
 description = "Fit various Electron EMIssion models on experimental data."
+dynamic = ["version"]
 keywords = ["electron emission", "multipactor"]
 name = "EEmiLib"
 readme = "README.md"
 requires-python = ">=3.12"
-version = "0.0.6"
 
 [project.optional-dependencies]
 docs = [
@@ -67,4 +67,4 @@ find = { where = ["src"] }
 
 [build-system]
 build-backend = "setuptools.build_meta"
-requires = ["setuptools>=64", "wheel"]
+requires = ["setuptools>=64", "wheel", "setuptools-scm>=8, <9"]
