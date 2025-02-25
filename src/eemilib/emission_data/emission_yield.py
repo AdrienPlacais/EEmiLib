@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 from typing import Self
 
+import numpy as np
 import pandas as pd
 from eemilib.emission_data.emission_data import EmissionData
 from eemilib.emission_data.helper import (
@@ -19,6 +20,7 @@ from eemilib.util.constants import (
     ImplementedPop,
     markdown,
 )
+from numpy.typing import NDArray
 
 
 class EmissionYield(EmissionData):
@@ -39,7 +41,7 @@ class EmissionYield(EmissionData):
 
         """
         super().__init__(population, data)
-        self.energies = data[EY_col_energy].to_numpy()
+        self.energies: NDArray[np.float64] = data[EY_col_energy].to_numpy()
         self.angles = [
             float(col.split()[0])
             for col in data.columns
