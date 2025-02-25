@@ -1,4 +1,4 @@
-eemilib.loader.pandas\_loader module
+pandas\_loader module
 ====================================
 
 .. automodule:: eemilib.loader.pandas_loader

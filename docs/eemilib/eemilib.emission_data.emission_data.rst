@@ -1,4 +1,4 @@
-eemilib.emission\_data.emission\_data module
+emission\_data module
 ============================================
 
 .. automodule:: eemilib.emission_data.emission_data

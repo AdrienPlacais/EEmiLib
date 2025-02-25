@@ -1,4 +1,4 @@
-eemilib.model.model module
+model module
 ==========================
 
 .. automodule:: eemilib.model.model

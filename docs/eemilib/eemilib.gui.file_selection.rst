@@ -1,4 +1,4 @@
-eemilib.gui.file\_selection module
+file\_selection module
 ==================================
 
 .. automodule:: eemilib.gui.file_selection

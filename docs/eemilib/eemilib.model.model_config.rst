@@ -1,4 +1,4 @@
-eemilib.model.model\_config module
+model\_config module
 ==================================
 
 .. automodule:: eemilib.model.model_config

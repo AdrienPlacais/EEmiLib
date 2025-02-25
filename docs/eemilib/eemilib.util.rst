@@ -1,4 +1,4 @@
-eemilib.util package
+util package
 ====================
 
 .. automodule:: eemilib.util

@@ -1,4 +1,4 @@
-eemilib.emission\_data package
+emission\_data package
 ==============================
 
 .. automodule:: eemilib.emission_data

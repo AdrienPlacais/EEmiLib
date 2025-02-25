@@ -1,4 +1,4 @@
-eemilib.model package
+model package
 =====================
 
 .. automodule:: eemilib.model

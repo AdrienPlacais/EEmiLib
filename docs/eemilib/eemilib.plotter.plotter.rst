@@ -1,4 +1,4 @@
-eemilib.plotter.plotter module
+plotter module
 ==============================
 
 .. automodule:: eemilib.plotter.plotter

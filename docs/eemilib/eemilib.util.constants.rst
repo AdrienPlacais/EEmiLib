@@ -1,4 +1,4 @@
-eemilib.util.constants module
+constants module
 =============================
 
 .. automodule:: eemilib.util.constants

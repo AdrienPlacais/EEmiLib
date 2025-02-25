@@ -1,4 +1,4 @@
-eemilib.plotter package
+plotter package
 =======================
 
 .. automodule:: eemilib.plotter

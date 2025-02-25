@@ -1,4 +1,4 @@
-eemilib.emission\_data.emission\_energy\_distribution module
+emission\_energy\_distribution module
 ============================================================
 
 .. automodule:: eemilib.emission_data.emission_energy_distribution

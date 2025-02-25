@@ -1,4 +1,4 @@
-eemilib.main module
+main module
 ===================
 
 .. automodule:: eemilib.main

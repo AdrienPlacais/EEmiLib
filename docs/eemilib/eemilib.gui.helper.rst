@@ -1,4 +1,4 @@
-eemilib.gui.helper module
+helper module
 =========================
 
 .. automodule:: eemilib.gui.helper

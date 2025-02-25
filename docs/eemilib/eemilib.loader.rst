@@ -1,4 +1,4 @@
-eemilib.loader package
+loader package
 ======================
 
 .. automodule:: eemilib.loader

@@ -1,4 +1,4 @@
-eemilib.model.parameter module
+parameter module
 ==============================
 
 .. automodule:: eemilib.model.parameter

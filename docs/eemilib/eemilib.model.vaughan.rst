@@ -1,4 +1,4 @@
-eemilib.model.vaughan module
+vaughan module
 ============================
 
 .. automodule:: eemilib.model.vaughan

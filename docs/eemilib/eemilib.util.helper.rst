@@ -1,4 +1,4 @@
-eemilib.util.helper module
+helper module
 ==========================
 
 .. automodule:: eemilib.util.helper
