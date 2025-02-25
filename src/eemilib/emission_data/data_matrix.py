@@ -370,7 +370,7 @@ class DataMatrix:
                 if filepath is None:
                     logging.error(
                         f"You must define a {emission_data_type} filepath for"
-                        + f" population {mandatory_population}"
+                        f" population {mandatory_population}"
                     )
                     return False
 
@@ -381,7 +381,7 @@ class DataMatrix:
                 if data_object is None:
                     logging.error(
                         f"You must load {emission_data_type} filepath for "
-                        + f"population {mandatory_population}"
+                        f"population {mandatory_population}"
                     )
                     return False
         return True
