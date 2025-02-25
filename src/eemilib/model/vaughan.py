@@ -270,49 +270,7 @@ class Vaughan(Model):
         Fil criterions :cite:`Fil2016a,Fil2020` are adapted to TEEY models.
 
         """
-        emission_yield = data_matrix.teey
-        errors = {
-            r"Relative error over $E_{c1}$ [%]": self._error_ec1(
-                emission_yield
-            ),
-            r"$\sigma$ deviation between $E_{c1}$ and $E_{max}$ [%]": self._error_teey(
-                emission_yield
-            ),
-        }
-        return errors
-
-    def _error_ec1(self, emission_yield: EmissionYield) -> float:
-        """Compute relative error over first crossover energy in :unit:`%`."""
-        energy = np.linspace(
-            0, self.parameters["E_max"].value, 10001, dtype=np.float64
-        )
-        theta = np.array([0.0])
-        teey = self.teey(energy, theta)
-        idx_ec1 = np.argmin(np.abs(teey - 1.0))
-        model_ec1 = energy[idx_ec1]
-        measured_ec1 = emission_yield.e_c1
-        std = math.sqrt((measured_ec1 - model_ec1) ** 2)
-        error = 100.0 * std / measured_ec1
-        return float(error)
-
-    def _error_teey(self, emission_yield: EmissionYield) -> float:
-        """Compute TEEY relative error between E_c1 and E_max in :unit:`%`."""
-        min_energy = emission_yield.e_c1
-        max_energy = emission_yield.e_max
-        df = emission_yield.data
-        mask = (df[EY_col_energy] >= min_energy) & (
-            df[EY_col_energy] <= max_energy
-        )
-
-        measured_teey = df.loc[mask, EY_col_normal].to_numpy()
-        measured_energy = df.loc[mask, EY_col_energy].to_numpy()
-        angles = np.array([0.0])
-        modelled_teey = self.teey(measured_energy, angles)[
-            EY_col_normal
-        ].to_numpy()
-        abs_std = np.std(measured_teey - modelled_teey)
-        error = 100 * abs_std / np.mean(modelled_teey)
-        return float(error)
+        return self._evaluate_for_teey_models(data_matrix)
 
 
 def _vaughan_func(
