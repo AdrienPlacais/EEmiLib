@@ -210,10 +210,7 @@ class Vaughan(Model):
             self.find_e_0()
             return
 
-        emission_yield = data_matrix.data_matrix[3][0]
-        assert isinstance(
-            emission_yield, EmissionYield
-        ), f"Incorrect type for emission_yield: {type(emission_yield)}"
+        emission_yield = data_matrix.teey
         assert emission_yield.population == "all"
 
         self.set_parameters_values(
