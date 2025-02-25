@@ -24,3 +24,5 @@ Utility
 Docs
 ====
 - Remove complete module path in API.
+
+.. versionadded:: 0.0.7
