@@ -24,11 +24,7 @@ from eemilib.util.constants import (
 class EmissionYield(EmissionData):
     """An emission yield."""
 
-    def __init__(
-        self,
-        population: ImplementedPop,
-        data: pd.DataFrame,
-    ) -> None:
+    def __init__(self, population: ImplementedPop, data: pd.DataFrame) -> None:
         """Instantiate the data.
 
         Parameters
@@ -49,6 +45,10 @@ class EmissionYield(EmissionData):
             for col in data.columns
             if col != EY_col_energy
         ]
+        self.e_max: float
+        self.ey_max: float
+        self.e_c1: float
+        self.e_c2: float | None
         if self.population in ("SE", "all"):
             self.e_max, self.ey_max, self.e_c1, self.e_c2 = self._parameters(
                 n_resample=1000
