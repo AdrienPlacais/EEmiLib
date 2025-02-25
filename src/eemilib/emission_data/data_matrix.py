@@ -419,3 +419,13 @@ class DataMatrix:
         for sub_to_plot in to_plot:
             axes = sub_to_plot.plot(plotter, axes=axes, **kwargs)
         return axes
+
+    @property
+    def teey(self) -> EmissionYield:
+        """Return the TEEY directly."""
+        emission_yield = self.data_matrix[3][0]
+        assert isinstance(
+            emission_yield, EmissionYield
+        ), f"Incorrect type for emission_yield: {type(emission_yield)}"
+        assert emission_yield.population == "all"
+        return emission_yield
