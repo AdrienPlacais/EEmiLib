@@ -291,7 +291,8 @@ class Vaughan(Model):
         idx_ec1 = np.argmin(np.abs(teey - 1.0))
         model_ec1 = energy[idx_ec1]
         measured_ec1 = emission_yield.e_c1
-        error = 100.0 * (measured_ec1 - model_ec1) / measured_ec1
+        std = math.sqrt((measured_ec1 - model_ec1) ** 2)
+        error = 100.0 * std / measured_ec1
         return float(error)
 
     def _error_teey(self, emission_yield: EmissionYield) -> float:
@@ -309,9 +310,8 @@ class Vaughan(Model):
         modelled_teey = self.teey(measured_energy, angles)[
             EY_col_normal
         ].to_numpy()
-        error = 100.0 * np.linalg.norm(
-            (measured_teey - modelled_teey) / measured_teey
-        )
+        abs_std = np.std(measured_teey - modelled_teey)
+        error = 100 * abs_std / np.mean(modelled_teey)
         return float(error)
 
 
