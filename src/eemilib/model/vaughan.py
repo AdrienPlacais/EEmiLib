@@ -10,7 +10,7 @@ TEEY at non-normal incidence will not be taken into account into the fit
 
 import logging
 import math
-from typing import Any, Literal
+from typing import Any, Literal, TypedDict
 
 import numpy as np
 import pandas as pd
@@ -19,11 +19,23 @@ from eemilib.emission_data.emission_yield import EmissionYield
 from eemilib.model.model import Model
 from eemilib.model.model_config import ModelConfig
 from eemilib.model.parameter import Parameter
+from eemilib.util.constants import EY_col_energy, EY_col_normal
 from numpy.typing import NDArray
 from scipy.optimize import least_squares
 
 VaughanImplementation = Literal["original", "CST", "SPARK3D"]
 E_0_SPARK3D = 10.0
+
+
+class VaughanParameters(TypedDict):
+    E_0: Parameter
+    E_max: Parameter
+    delta_E_transition: Parameter
+    teey_low: Parameter
+    teey_max: Parameter
+    k_s: Parameter
+    k_se: Parameter
+    E_c1: Parameter
 
 
 class Vaughan(Model):
@@ -132,7 +144,7 @@ class Vaughan(Model):
 
         """
         super().__init__(url_doc_override="manual/models/vaughan")
-        self.parameters = {
+        self.parameters: VaughanParameters = {  # type: ignore
             name: Parameter(**kwargs)  # type: ignore
             for name, kwargs in self.initial_parameters.items()
         }
@@ -251,6 +263,56 @@ class Vaughan(Model):
 
         optimized_E_0 = least_squares(_to_minimize, x0=12.5).x
         return float(optimized_E_0[0])
+
+    def evaluate(self, data_matrix: DataMatrix) -> dict[str, float]:
+        """Evaluate the quality of the model using Fil criterions.
+
+        Fil criterions :cite:`Fil2016a,Fil2020` are adapted to TEEY models.
+
+        """
+        emission_yield = data_matrix.teey
+        errors = {
+            r"Relative error over $E_{c1}$ [%]": self._error_ec1(
+                emission_yield
+            ),
+            r"$\sigma$ deviation between $E_{c1}$ and $E_{max}$ [%]": self._error_teey(
+                emission_yield
+            ),
+        }
+        return errors
+
+    def _error_ec1(self, emission_yield: EmissionYield) -> float:
+        """Compute relative error over first crossover energy in :unit:`%`."""
+        energy = np.linspace(
+            0, self.parameters["E_max"].value, 10001, dtype=np.float64
+        )
+        theta = np.array([0.0])
+        teey = self.teey(energy, theta)
+        idx_ec1 = np.argmin(np.abs(teey - 1.0))
+        model_ec1 = energy[idx_ec1]
+        measured_ec1 = emission_yield.e_c1
+        error = 100.0 * (measured_ec1 - model_ec1) / measured_ec1
+        return float(error)
+
+    def _error_teey(self, emission_yield: EmissionYield) -> float:
+        """Compute TEEY relative error between E_c1 and E_max in :unit:`%`."""
+        min_energy = emission_yield.e_c1
+        max_energy = emission_yield.e_max
+        df = emission_yield.data
+        mask = (df[EY_col_energy] >= min_energy) & (
+            df[EY_col_energy] <= max_energy
+        )
+
+        measured_teey = df.loc[mask, EY_col_normal].to_numpy()
+        measured_energy = df.loc[mask, EY_col_energy].to_numpy()
+        angles = np.array([0.0])
+        modelled_teey = self.teey(measured_energy, angles)[
+            EY_col_normal
+        ].to_numpy()
+        error = 100.0 * np.linalg.norm(
+            (measured_teey - modelled_teey) / measured_teey
+        )
+        return float(error)
 
 
 def _vaughan_func(

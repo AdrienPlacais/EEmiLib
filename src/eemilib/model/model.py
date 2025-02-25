@@ -18,6 +18,7 @@ from eemilib.model.parameter import Parameter
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import ImplementedEmissionData, ImplementedPop
 from eemilib.util.helper import documentation_url
+from numpy.typing import NDArray
 
 
 class Model(ABC):
@@ -90,13 +91,21 @@ class Model(ABC):
         return "\n".join(doc_lines)
 
     def teey(
-        self, energy: np.ndarray, theta: np.ndarray, *args, **kwargs
+        self,
+        energy: NDArray[np.float64],
+        theta: NDArray[np.float64],
+        *args,
+        **kwargs,
     ) -> pd.DataFrame:
         r"""Compute TEEY :math:`\sigma`."""
         return _default_ey(energy, theta)
 
     def seey(
-        self, energy: np.ndarray, theta: np.ndarray, *args, **kwargs
+        self,
+        energy: NDArray[np.float64],
+        theta: NDArray[np.float64],
+        *args,
+        **kwargs,
     ) -> pd.DataFrame:
         r"""Compute SEEY :math:`\delta`."""
         return _default_ey(energy, theta)
@@ -114,8 +123,8 @@ class Model(ABC):
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
         emission_data_type: ImplementedEmissionData,
-        energies: np.ndarray,
-        angles: np.ndarray,
+        energies: NDArray[np.float64],
+        angles: NDArray[np.float64],
         axes: T | None = None,
         grid: bool = True,
         **kwargs,
@@ -162,8 +171,17 @@ class Model(ABC):
         for name, value in values.items():
             self.set_parameter_value(name, value)
 
+    @abstractmethod
+    def evaluate(
+        self, data_matrix: DataMatrix, *args, **kwargs
+    ) -> dict[str, float]:
+        """Evaluate the precision of the model w.r.t. given data."""
+        raise NotImplementedError
 
-def _default_ey(energy: np.ndarray, theta: np.ndarray) -> pd.DataFrame:
+
+def _default_ey(
+    energy: NDArray[np.float64], theta: NDArray[np.float64]
+) -> pd.DataFrame:
     """Return a null array with proper shape."""
     n_energy = len(energy)
     n_theta = len(theta)
