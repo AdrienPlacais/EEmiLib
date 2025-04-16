@@ -38,7 +38,7 @@ class Sombrin(Model):
         "E_max": {
             "markdown": r"E_\mathrm{max}",
             "unit": "eV",
-            "value": 0.0,
+            "value": 1.0,
             "lower_bound": 0.0,
             "description": "Energy at maximum TEEY.",
         },
