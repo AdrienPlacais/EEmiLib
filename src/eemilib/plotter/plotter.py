@@ -14,17 +14,13 @@ class Plotter(ABC):
         self.doc_url = documentation_url(self)
 
     @abstractmethod
-    def plot_emission_yield[
-        T
-    ](
+    def plot_emission_yield[T](
         self, emission_yield: pd.DataFrame, axes: T | None = None, **kwargs
     ) -> T:
         """Plot emission yield data."""
 
     @abstractmethod
-    def plot_emission_energy_distribution[
-        T
-    ](
+    def plot_emission_energy_distribution[T](
         self,
         emission_energy: pd.DataFrame,
         axes: T | None = None,
@@ -33,9 +29,7 @@ class Plotter(ABC):
         """Plot the given emission energy distribution, return Axes object."""
 
     @abstractmethod
-    def plot_emission_angle_distribution[
-        T
-    ](
+    def plot_emission_angle_distribution[T](
         self,
         emission_angles: pd.DataFrame,
         axes: T | None = None,
