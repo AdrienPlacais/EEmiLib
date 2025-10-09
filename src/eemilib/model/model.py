@@ -6,6 +6,7 @@
 """
 
 import logging
+import math
 from abc import ABC, abstractmethod
 from collections.abc import Collection
 from typing import Any
@@ -13,11 +14,18 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from eemilib.emission_data.data_matrix import DataMatrix
+from eemilib.emission_data.emission_yield import EmissionYield
 from eemilib.model.model_config import ModelConfig
 from eemilib.model.parameter import Parameter
 from eemilib.plotter.plotter import Plotter
-from eemilib.util.constants import ImplementedEmissionData, ImplementedPop
+from eemilib.util.constants import (
+    EY_col_energy,
+    EY_col_normal,
+    ImplementedEmissionData,
+    ImplementedPop,
+)
 from eemilib.util.helper import documentation_url
+from numpy.typing import NDArray
 
 
 class Model(ABC):
@@ -90,13 +98,21 @@ class Model(ABC):
         return "\n".join(doc_lines)
 
     def teey(
-        self, energy: np.ndarray, theta: np.ndarray, *args, **kwargs
+        self,
+        energy: NDArray[np.float64],
+        theta: NDArray[np.float64],
+        *args,
+        **kwargs,
     ) -> pd.DataFrame:
         r"""Compute TEEY :math:`\sigma`."""
         return _default_ey(energy, theta)
 
     def seey(
-        self, energy: np.ndarray, theta: np.ndarray, *args, **kwargs
+        self,
+        energy: NDArray[np.float64],
+        theta: NDArray[np.float64],
+        *args,
+        **kwargs,
     ) -> pd.DataFrame:
         r"""Compute SEEY :math:`\delta`."""
         return _default_ey(energy, theta)
@@ -112,8 +128,8 @@ class Model(ABC):
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
         emission_data_type: ImplementedEmissionData,
-        energies: np.ndarray,
-        angles: np.ndarray,
+        energies: NDArray[np.float64],
+        angles: NDArray[np.float64],
         axes: T | None = None,
         grid: bool = True,
         **kwargs,
@@ -160,8 +176,69 @@ class Model(ABC):
         for name, value in values.items():
             self.set_parameter_value(name, value)
 
+    @abstractmethod
+    def evaluate(
+        self, data_matrix: DataMatrix, *args, **kwargs
+    ) -> dict[str, float]:
+        """Evaluate the precision of the model w.r.t. given data."""
+        raise NotImplementedError
 
-def _default_ey(energy: np.ndarray, theta: np.ndarray) -> pd.DataFrame:
+    def _evaluate_for_teey_models(
+        self, data_matrix: DataMatrix
+    ) -> dict[str, float]:
+        """Evaluate a TEEY model with N. Fil criterions.
+
+        Ref: :cite:`Fil2016a,Fil2020`
+
+        """
+        emission_yield = data_matrix.teey
+        errors = {
+            r"Relative error over $E_{c1}$ [%]": self._error_ec1(
+                emission_yield
+            ),
+            r"$\sigma$ deviation between $E_{c1}$ and $E_{max}$ [%]": self._error_teey(
+                emission_yield
+            ),
+        }
+        return errors
+
+    def _error_ec1(self, emission_yield: EmissionYield) -> float:
+        """Compute relative error over first crossover energy in :unit:`%`."""
+        energy = np.linspace(
+            0, self.parameters["E_max"].value, 10001, dtype=np.float64
+        )
+        theta = np.array([0.0])
+        teey = self.teey(energy, theta)
+        idx_ec1 = np.argmin(np.abs(teey - 1.0))
+        model_ec1 = energy[idx_ec1]
+        measured_ec1 = emission_yield.e_c1
+        std = math.sqrt((measured_ec1 - model_ec1) ** 2)
+        error = 100.0 * std / measured_ec1
+        return float(error)
+
+    def _error_teey(self, emission_yield: EmissionYield) -> float:
+        """Compute TEEY relative error between E_c1 and E_max in :unit:`%`."""
+        min_energy = emission_yield.e_c1
+        max_energy = emission_yield.e_max
+        df = emission_yield.data
+        mask = (df[EY_col_energy] >= min_energy) & (
+            df[EY_col_energy] <= max_energy
+        )
+
+        measured_teey = df.loc[mask, EY_col_normal].to_numpy()
+        measured_energy = df.loc[mask, EY_col_energy].to_numpy()
+        angles = np.array([0.0])
+        modelled_teey = self.teey(measured_energy, angles)[
+            EY_col_normal
+        ].to_numpy()
+        abs_std = np.std(measured_teey - modelled_teey)
+        error = 100 * abs_std / np.mean(modelled_teey)
+        return float(error)
+
+
+def _default_ey(
+    energy: NDArray[np.float64], theta: NDArray[np.float64]
+) -> pd.DataFrame:
     """Return a null array with proper shape."""
     n_energy = len(energy)
     n_theta = len(theta)

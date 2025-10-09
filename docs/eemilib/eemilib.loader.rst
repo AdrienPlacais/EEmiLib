@@ -3,8 +3,8 @@ loader package
 
 .. automodule:: eemilib.loader
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 Submodules
 ----------

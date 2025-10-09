@@ -4,6 +4,7 @@ import logging
 from pathlib import Path
 from typing import Self
 
+import numpy as np
 import pandas as pd
 from eemilib.emission_data.emission_data import EmissionData
 from eemilib.emission_data.helper import (
@@ -19,16 +20,13 @@ from eemilib.util.constants import (
     ImplementedPop,
     markdown,
 )
+from numpy.typing import NDArray
 
 
 class EmissionYield(EmissionData):
     """An emission yield."""
 
-    def __init__(
-        self,
-        population: ImplementedPop,
-        data: pd.DataFrame,
-    ) -> None:
+    def __init__(self, population: ImplementedPop, data: pd.DataFrame) -> None:
         """Instantiate the data.
 
         Parameters
@@ -43,12 +41,16 @@ class EmissionYield(EmissionData):
 
         """
         super().__init__(population, data)
-        self.energies = data[EY_col_energy].to_numpy()
+        self.energies: NDArray[np.float64] = data[EY_col_energy].to_numpy()
         self.angles = [
             float(col.split()[0])
             for col in data.columns
             if col != EY_col_energy
         ]
+        self.e_max: float
+        self.ey_max: float
+        self.e_c1: float
+        self.e_c2: float | None
         if self.population in ("SE", "all"):
             self.e_max, self.ey_max, self.e_c1, self.e_c2 = self._parameters(
                 n_resample=1000

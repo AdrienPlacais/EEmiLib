@@ -3,8 +3,8 @@ plotter package
 
 .. automodule:: eemilib.plotter
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 Submodules
 ----------

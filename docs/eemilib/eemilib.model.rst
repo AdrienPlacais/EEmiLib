@@ -3,8 +3,8 @@ model package
 
 .. automodule:: eemilib.model
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 Submodules
 ----------
@@ -15,4 +15,5 @@ Submodules
    eemilib.model.model
    eemilib.model.model_config
    eemilib.model.parameter
+   eemilib.model.sombrin
    eemilib.model.vaughan

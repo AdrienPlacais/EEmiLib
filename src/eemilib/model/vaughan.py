@@ -10,7 +10,7 @@ TEEY at non-normal incidence will not be taken into account into the fit
 
 import logging
 import math
-from typing import Any, Literal
+from typing import Any, Literal, TypedDict
 
 import numpy as np
 import pandas as pd
@@ -19,11 +19,23 @@ from eemilib.emission_data.emission_yield import EmissionYield
 from eemilib.model.model import Model
 from eemilib.model.model_config import ModelConfig
 from eemilib.model.parameter import Parameter
+from eemilib.util.constants import EY_col_energy, EY_col_normal
 from numpy.typing import NDArray
 from scipy.optimize import least_squares
 
 VaughanImplementation = Literal["original", "CST", "SPARK3D"]
 E_0_SPARK3D = 10.0
+
+
+class VaughanParameters(TypedDict):
+    E_0: Parameter
+    E_max: Parameter
+    delta_E_transition: Parameter
+    teey_low: Parameter
+    teey_max: Parameter
+    k_s: Parameter
+    k_se: Parameter
+    E_c1: Parameter
 
 
 class Vaughan(Model):
@@ -132,7 +144,7 @@ class Vaughan(Model):
 
         """
         super().__init__(url_doc_override="manual/models/vaughan")
-        self.parameters = {
+        self.parameters: VaughanParameters = {  # type: ignore
             name: Parameter(**kwargs)  # type: ignore
             for name, kwargs in self.initial_parameters.items()
         }
@@ -210,10 +222,7 @@ class Vaughan(Model):
             self.find_e_0()
             return
 
-        emission_yield = data_matrix.data_matrix[3][0]
-        assert isinstance(
-            emission_yield, EmissionYield
-        ), f"Incorrect type for emission_yield: {type(emission_yield)}"
+        emission_yield = data_matrix.teey
         assert emission_yield.population == "all"
 
         self.set_parameters_values(
@@ -254,6 +263,14 @@ class Vaughan(Model):
 
         optimized_E_0 = least_squares(_to_minimize, x0=12.5).x
         return float(optimized_E_0[0])
+
+    def evaluate(self, data_matrix: DataMatrix) -> dict[str, float]:
+        """Evaluate the quality of the model using Fil criterions.
+
+        Fil criterions :cite:`Fil2016a,Fil2020` are adapted to TEEY models.
+
+        """
+        return self._evaluate_for_teey_models(data_matrix)
 
 
 def _vaughan_func(

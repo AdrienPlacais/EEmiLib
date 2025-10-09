@@ -3,8 +3,8 @@ util package
 
 .. automodule:: eemilib.util
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
 
 Submodules
 ----------

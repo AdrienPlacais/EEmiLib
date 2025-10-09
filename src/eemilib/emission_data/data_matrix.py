@@ -370,7 +370,7 @@ class DataMatrix:
                 if filepath is None:
                     logging.error(
                         f"You must define a {emission_data_type} filepath for"
-                        + f" population {mandatory_population}"
+                        f" population {mandatory_population}"
                     )
                     return False
 
@@ -381,7 +381,7 @@ class DataMatrix:
                 if data_object is None:
                     logging.error(
                         f"You must load {emission_data_type} filepath for "
-                        + f"population {mandatory_population}"
+                        f"population {mandatory_population}"
                     )
                     return False
         return True
@@ -417,3 +417,13 @@ class DataMatrix:
         for sub_to_plot in to_plot:
             axes = sub_to_plot.plot(plotter, axes=axes, **kwargs)
         return axes
+
+    @property
+    def teey(self) -> EmissionYield:
+        """Return the TEEY directly."""
+        emission_yield = self.data_matrix[3][0]
+        assert isinstance(
+            emission_yield, EmissionYield
+        ), f"Incorrect type for emission_yield: {type(emission_yield)}"
+        assert emission_yield.population == "all"
+        return emission_yield
