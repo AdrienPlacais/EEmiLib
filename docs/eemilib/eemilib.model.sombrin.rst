@@ -1,7 +1,7 @@
-vaughan module
+sombrin module
 ============================
 
-.. automodule:: eemilib.model.vaughan
+.. automodule:: eemilib.model.sombrin
    :members:
    :undoc-members:
    :show-inheritance:
