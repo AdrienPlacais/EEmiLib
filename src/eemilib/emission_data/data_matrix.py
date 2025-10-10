@@ -427,3 +427,23 @@ class DataMatrix:
         ), f"Incorrect type for emission_yield: {type(emission_yield)}"
         assert emission_yield.population == "all"
         return emission_yield
+
+    @property
+    def se_energy_distribution(self) -> EmissionEnergyDistribution:
+        """Return the energy distribution of SEs."""
+        distrib = self.data_matrix[0][1]
+        assert isinstance(
+            distrib, EmissionEnergyDistribution
+        ), f"Incorrect type for energy distribution: {type(distrib)}"
+        assert distrib.population == "SE"
+        return distrib
+
+    @property
+    def all_energy_distribution(self) -> EmissionEnergyDistribution:
+        """Return the energy distribution of all emitted electrons."""
+        distrib = self.data_matrix[3][1]
+        assert isinstance(
+            distrib, EmissionEnergyDistribution
+        ), f"Incorrect type for energy distribution: {type(distrib)}"
+        assert distrib.population == "all"
+        return distrib

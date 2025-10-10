@@ -176,7 +176,6 @@ class Model(ABC):
         for name, value in values.items():
             self.set_parameter_value(name, value)
 
-    @abstractmethod
     def evaluate(
         self, data_matrix: DataMatrix, *args, **kwargs
     ) -> dict[str, float]:

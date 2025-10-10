@@ -17,9 +17,15 @@ IMPLEMENTED_POP = ("SE", "EBE", "IBE", "all")
 col_energy = "Energy [eV]"
 col_normal = "0.0 [deg]"
 
-markdown = {
+md_ey = {
     "SE": r"SEEY $\delta$",
     "EBE": r"EBEEY $\eta_e$",
     "IBE": r"IBEEY $\eta_i$",
     "all": r"TEEY $\sigma$",
+}
+md_energy_distrib = {
+    "SE": r"$f_\mathrm{SE} [\mathrm{eV}^{-1}]$",
+    "EBE": r"$f_\mathrm{EBE} [\mathrm{eV}^{-1}]$",
+    "IBE": r"$f_\mathrm{IBE} [\mathrm{eV}^{-1}]$",
+    "all": r"$f_\mathrm{all} [\mathrm{eV}^{-1}]$",
 }

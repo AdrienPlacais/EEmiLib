@@ -18,7 +18,7 @@ from eemilib.util.constants import (
     ImplementedPop,
     col_energy,
     col_normal,
-    markdown,
+    md_ey,
 )
 from numpy.typing import NDArray
 
@@ -36,7 +36,7 @@ class EmissionYield(EmissionData):
         data :
             Structure holding the data. Must have a ``Energy (eV)`` column
             holding PEs energy. And one or several columns ``theta [deg]``,
-            where `theta` is the value of the incidence angle and content is
+            where ``theta`` is the value of the incidence angle and content is
             corresponding emission yield.
 
         """
@@ -79,7 +79,7 @@ class EmissionYield(EmissionData):
     @property
     def label(self) -> str:
         """Print nature of data (markdown)."""
-        return markdown[self.population]
+        return md_ey[self.population]
 
     def _parameters(
         self,

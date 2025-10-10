@@ -3,10 +3,17 @@
 from pathlib import Path
 from typing import Self
 
+import numpy as np
 import pandas as pd
 from eemilib.emission_data.emission_data import EmissionData
 from eemilib.loader.loader import Loader
-from eemilib.util.constants import ImplementedPop
+from eemilib.plotter.plotter import Plotter
+from eemilib.util.constants import (
+    ImplementedPop,
+    col_energy,
+    md_energy_distrib,
+)
+from numpy.typing import NDArray
 
 
 class EmissionEnergyDistribution(EmissionData):
@@ -21,17 +28,20 @@ class EmissionEnergyDistribution(EmissionData):
 
         Parameters
         ----------
-        population : Literal["SE", "EBE", "IBE", "all"]
+        population :
             The concerned population of electrons.
-        data : pandas.DataFrame
+        data :
             Structure holding the data. Must have a ``Energy (eV)`` column
-            holding PEs energy. And one or several columns ``theta [deg]``,
-            where `theta` is the value of the incidence angle and content is
-            corresponding emission energy.
+            holding ``population`` energy. And one or several columns
+            ``theta [deg]``, where ``theta`` is the value of the incidence
+            angle and content is corresponding emission energy.
 
         """
         super().__init__(population, data)
-        raise NotImplementedError
+        self.energies: NDArray[np.float64] = data[col_energy].to_numpy()
+        self.angles = [
+            float(col.split()[0]) for col in data.columns if col != col_energy
+        ]
 
     @classmethod
     def from_filepath(
@@ -44,11 +54,11 @@ class EmissionEnergyDistribution(EmissionData):
 
         Parameters
         ----------
-        loader : Loader
+        loader :
             The object that will load the data.
-        population : Literal["SE", "EBE", "IBE", "all"]
+        population :
             The concerned population of electrons.
-        *filepath : str | pathlib.Path
+        *filepath :
             Path(s) to file holding data under study.
 
         """
@@ -58,4 +68,26 @@ class EmissionEnergyDistribution(EmissionData):
     @property
     def label(self) -> str:
         """Print nature of data (markdown)."""
-        raise NotImplementedError
+        return md_energy_distrib[self.population]
+
+    def plot[T](
+        self,
+        plotter: Plotter,
+        *args,
+        lw: float | None = 0.0,
+        marker: str | None = "+",
+        axes: T | None = None,
+        grid: bool = True,
+        **kwargs,
+    ) -> T:
+        """Plot the contained data using plotter."""
+        return plotter.plot_emission_energy_distribution(
+            emission_energy=self.data,
+            *args,
+            axes=axes,
+            lw=lw,
+            marker=marker,
+            grid=grid,
+            label=self.label,
+            **kwargs,
+        )

@@ -16,12 +16,7 @@ class PandasLoader(Loader):
     """Define the pandas loader."""
 
     def __init__(self) -> None:
-        """Raise an error for now.
-
-        Ideally, this loader should detect correct input and columns. But it is
-        not for now.
-
-        """
+        """Init object."""
         return super().__init__()
 
     def load_emission_yield(

@@ -42,7 +42,16 @@ class PandasPlotter(Plotter):
         **kwargs,
     ) -> Axes:
         """Plot the given emission energy distribution, return Axes object."""
-        raise NotImplementedError
+        if axes is not None:
+            axes.set_prop_cycle(None)
+        axes = emission_energy.plot(
+            *args,
+            x=col_energy,
+            ax=axes,
+            **kwargs,
+        )
+        assert isinstance(axes, Axes)
+        return axes
 
     def plot_emission_angle_distribution(
         self,
