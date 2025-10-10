@@ -14,7 +14,7 @@ from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.model.model import Model
 from eemilib.model.model_config import ModelConfig
 from eemilib.model.parameter import Parameter
-from eemilib.util.constants import EY_col_energy, EY_col_normal
+from eemilib.util.constants import EY_col_energy, col_normal
 from numpy.typing import NDArray
 
 
@@ -114,7 +114,7 @@ class Sombrin(Model):
                 E_param=self.E,
             )
 
-        out_dict = {EY_col_normal: out, EY_col_energy: energy}
+        out_dict = {col_normal: out, EY_col_energy: energy}
         return pd.DataFrame(out_dict)
 
     def set_parameter_value(self, name: str, value: Any) -> None:

@@ -3,7 +3,7 @@
 import numpy as np
 import pandas as pd
 from eemilib.emission_data.helper import resample, trim
-from eemilib.util.constants import EY_col_energy, EY_col_normal
+from eemilib.util.constants import EY_col_energy, col_normal
 
 
 class TestTrim:
@@ -12,7 +12,7 @@ class TestTrim:
     normal_ey = pd.DataFrame(
         {
             EY_col_energy: np.linspace(0.0, 100.0, 11),
-            EY_col_normal: np.random.rand(11),
+            col_normal: np.random.rand(11),
         }
     )
 
@@ -51,7 +51,7 @@ class TestResample:
         fake_ey = pd.DataFrame(
             {
                 EY_col_energy: np.linspace(0, 200, n_points),
-                EY_col_normal: np.hstack(
+                col_normal: np.hstack(
                     (
                         np.linspace(0.5, 2.5, half),
                         np.linspace(2.5, 0.5, half)[1:],

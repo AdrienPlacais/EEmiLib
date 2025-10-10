@@ -2,7 +2,7 @@
 
 import numpy as np
 import pandas as pd
-from eemilib.util.constants import EY_col_energy, EY_col_normal
+from eemilib.util.constants import EY_col_energy, col_normal
 
 
 def trim(
@@ -68,9 +68,9 @@ def resample(ey: pd.DataFrame, n_interp: int = -1) -> pd.DataFrame:
 
 def get_emax_eymax(normal_ey: pd.DataFrame) -> tuple[float, float]:
     """Get energy and max emission yields."""
-    ser_max = normal_ey.loc[normal_ey[EY_col_normal].idxmax()]
+    ser_max = normal_ey.loc[normal_ey[col_normal].idxmax()]
     e_max = ser_max[EY_col_energy]
-    ey_max = ser_max[EY_col_normal]
+    ey_max = ser_max[col_normal]
     return e_max, ey_max
 
 
@@ -101,16 +101,14 @@ def get_crossover_energies(
 
     """
     first_half = trim(normal_ey, min_e=min_e, max_e=e_max)
-    ser_ec1 = first_half.loc[(first_half[EY_col_normal] - 1.0).abs().idxmin()]
+    ser_ec1 = first_half.loc[(first_half[col_normal] - 1.0).abs().idxmin()]
     ec1 = ser_ec1[EY_col_energy]
-    ey_ec1 = ser_ec1[EY_col_normal]
+    ey_ec1 = ser_ec1[col_normal]
 
     second_half = trim(normal_ey, min_e=e_max)
-    ser_ec2 = second_half.loc[
-        (second_half[EY_col_normal] - 1.0).abs().idxmin()
-    ]
+    ser_ec2 = second_half.loc[(second_half[col_normal] - 1.0).abs().idxmin()]
     ec2 = ser_ec2[EY_col_energy]
-    ey_ec2 = ser_ec2[EY_col_normal]
+    ey_ec2 = ser_ec2[col_normal]
 
     return (ec1, ey_ec1), (ec2, ey_ec2)
 

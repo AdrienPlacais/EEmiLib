@@ -15,7 +15,7 @@ ImplementedPop = Literal["SE", "EBE", "IBE", "all"]
 IMPLEMENTED_POP = ("SE", "EBE", "IBE", "all")
 
 EY_col_energy = "Energy [eV]"
-EY_col_normal = "0.0 [deg]"
+col_normal = "0.0 [deg]"
 
 markdown = {
     "SE": r"SEEY $\delta$",

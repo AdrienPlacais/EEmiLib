@@ -16,8 +16,8 @@ from eemilib.loader.loader import Loader
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
     EY_col_energy,
-    EY_col_normal,
     ImplementedPop,
+    col_normal,
     markdown,
 )
 from numpy.typing import NDArray
@@ -90,7 +90,7 @@ class EmissionYield(EmissionData):
         """Compute the characteristics of the emission yield."""
         assert 0.0 in self.angles, "Need the normal incidence measurements."
 
-        normal_ey = self.data[[EY_col_energy, EY_col_normal]]
+        normal_ey = self.data[[EY_col_energy, col_normal]]
         assert isinstance(normal_ey, pd.DataFrame)
         normal_ey = resample(normal_ey, n_resample)
 

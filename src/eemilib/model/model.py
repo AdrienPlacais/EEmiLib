@@ -20,9 +20,9 @@ from eemilib.model.parameter import Parameter
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
     EY_col_energy,
-    EY_col_normal,
     ImplementedEmissionData,
     ImplementedPop,
+    col_normal,
 )
 from eemilib.util.helper import documentation_url
 from numpy.typing import NDArray
@@ -225,11 +225,11 @@ class Model(ABC):
             df[EY_col_energy] <= max_energy
         )
 
-        measured_teey = df.loc[mask, EY_col_normal].to_numpy()
+        measured_teey = df.loc[mask, col_normal].to_numpy()
         measured_energy = df.loc[mask, EY_col_energy].to_numpy()
         angles = np.array([0.0])
         modelled_teey = self.teey(measured_energy, angles)[
-            EY_col_normal
+            col_normal
         ].to_numpy()
         abs_std = np.std(measured_teey - modelled_teey)
         error = 100 * abs_std / np.mean(modelled_teey)
