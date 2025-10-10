@@ -3,7 +3,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 from eemilib.plotter.plotter import Plotter
-from eemilib.util.constants import EY_col_energy
+from eemilib.util.constants import col_energy
 from matplotlib.axes import Axes
 
 
@@ -27,7 +27,7 @@ class PandasPlotter(Plotter):
             axes.set_prop_cycle(None)
         axes = emission_yield.plot(
             *args,
-            x=EY_col_energy,
+            x=col_energy,
             ax=axes,
             **kwargs,
         )

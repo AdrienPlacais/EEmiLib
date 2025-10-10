@@ -2,7 +2,7 @@
 
 import numpy as np
 import pandas as pd
-from eemilib.util.constants import EY_col_energy, col_normal
+from eemilib.util.constants import col_energy, col_normal
 
 
 def trim(
@@ -34,11 +34,11 @@ def trim(
 
     """
     if min_e >= 0:
-        trimed = normal_ey[normal_ey[EY_col_energy] >= min_e]
+        trimed = normal_ey[normal_ey[col_energy] >= min_e]
         assert isinstance(trimed, pd.DataFrame)
         normal_ey = trimed
     if max_e >= 0:
-        trimed = normal_ey[normal_ey[EY_col_energy] <= max_e]
+        trimed = normal_ey[normal_ey[col_energy] <= max_e]
         assert isinstance(trimed, pd.DataFrame)
         normal_ey = trimed
 
@@ -50,16 +50,16 @@ def resample(ey: pd.DataFrame, n_interp: int = -1) -> pd.DataFrame:
     if n_interp < 0:
         return ey
     new_ey = {
-        EY_col_energy: np.linspace(
-            ey[EY_col_energy].min(), ey[EY_col_energy].max(), n_interp
+        col_energy: np.linspace(
+            ey[col_energy].min(), ey[col_energy].max(), n_interp
         )
     }
     for col_name in ey.columns:
-        if col_name == EY_col_energy:
+        if col_name == col_energy:
             continue
         new_ey[col_name] = np.interp(
-            x=new_ey[EY_col_energy],
-            xp=ey[EY_col_energy],
+            x=new_ey[col_energy],
+            xp=ey[col_energy],
             fp=ey[col_name],
         )
 
@@ -69,7 +69,7 @@ def resample(ey: pd.DataFrame, n_interp: int = -1) -> pd.DataFrame:
 def get_emax_eymax(normal_ey: pd.DataFrame) -> tuple[float, float]:
     """Get energy and max emission yields."""
     ser_max = normal_ey.loc[normal_ey[col_normal].idxmax()]
-    e_max = ser_max[EY_col_energy]
+    e_max = ser_max[col_energy]
     ey_max = ser_max[col_normal]
     return e_max, ey_max
 
@@ -102,12 +102,12 @@ def get_crossover_energies(
     """
     first_half = trim(normal_ey, min_e=min_e, max_e=e_max)
     ser_ec1 = first_half.loc[(first_half[col_normal] - 1.0).abs().idxmin()]
-    ec1 = ser_ec1[EY_col_energy]
+    ec1 = ser_ec1[col_energy]
     ey_ec1 = ser_ec1[col_normal]
 
     second_half = trim(normal_ey, min_e=e_max)
     ser_ec2 = second_half.loc[(second_half[col_normal] - 1.0).abs().idxmin()]
-    ec2 = ser_ec2[EY_col_energy]
+    ec2 = ser_ec2[col_energy]
     ey_ec2 = ser_ec2[col_normal]
 
     return (ec1, ey_ec1), (ec2, ey_ec2)

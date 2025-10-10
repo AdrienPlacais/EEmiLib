@@ -9,7 +9,7 @@ from typing import Any
 
 import pandas as pd
 from eemilib.loader.loader import Loader
-from eemilib.util.constants import EY_col_energy
+from eemilib.util.constants import col_energy
 
 
 class PandasLoader(Loader):
@@ -59,7 +59,7 @@ class PandasLoader(Loader):
                 f" uncommented line? Comment character is {comment}."
             )
 
-        headers[0] = EY_col_energy
+        headers[0] = col_energy
         headers[1:] = [f"{float(h)} [deg]" for h in headers[1:]]
 
         df = pd.read_csv(

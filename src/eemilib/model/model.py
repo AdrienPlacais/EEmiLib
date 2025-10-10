@@ -19,9 +19,9 @@ from eemilib.model.model_config import ModelConfig
 from eemilib.model.parameter import Parameter
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
-    EY_col_energy,
     ImplementedEmissionData,
     ImplementedPop,
+    col_energy,
     col_normal,
 )
 from eemilib.util.helper import documentation_url
@@ -221,12 +221,10 @@ class Model(ABC):
         min_energy = emission_yield.e_c1
         max_energy = emission_yield.e_max
         df = emission_yield.data
-        mask = (df[EY_col_energy] >= min_energy) & (
-            df[EY_col_energy] <= max_energy
-        )
+        mask = (df[col_energy] >= min_energy) & (df[col_energy] <= max_energy)
 
         measured_teey = df.loc[mask, col_normal].to_numpy()
-        measured_energy = df.loc[mask, EY_col_energy].to_numpy()
+        measured_energy = df.loc[mask, col_energy].to_numpy()
         angles = np.array([0.0])
         modelled_teey = self.teey(measured_energy, angles)[
             col_normal

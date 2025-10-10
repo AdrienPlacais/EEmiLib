@@ -14,7 +14,7 @@ IMPLEMENTED_EMISSION_DATA = (
 ImplementedPop = Literal["SE", "EBE", "IBE", "all"]
 IMPLEMENTED_POP = ("SE", "EBE", "IBE", "all")
 
-EY_col_energy = "Energy [eV]"
+col_energy = "Energy [eV]"
 col_normal = "0.0 [deg]"
 
 markdown = {

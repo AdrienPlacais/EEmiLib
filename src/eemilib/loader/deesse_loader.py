@@ -5,7 +5,7 @@ from typing import Any
 
 import pandas as pd
 from eemilib.loader.loader import Loader
-from eemilib.util.constants import EY_col_energy
+from eemilib.util.constants import col_energy
 
 
 class DeesseLoader(Loader):
@@ -49,9 +49,9 @@ class DeesseLoader(Loader):
             full_df = pd.read_csv(file, **kwargs)
             incidence_angle = self._extract_incidence_angle(full_df)
             of_interest_df = full_df[[col1, col2]].rename(
-                columns={col1: EY_col_energy, col2: f"{incidence_angle} [deg]"}
+                columns={col1: col_energy, col2: f"{incidence_angle} [deg]"}
             )
-            all_df.append(of_interest_df.set_index(EY_col_energy))
+            all_df.append(of_interest_df.set_index(col_energy))
 
         concatenated = pd.concat(all_df, axis=1)
         return concatenated.reset_index()

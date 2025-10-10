@@ -15,8 +15,8 @@ from eemilib.emission_data.helper import (
 from eemilib.loader.loader import Loader
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
-    EY_col_energy,
     ImplementedPop,
+    col_energy,
     col_normal,
     markdown,
 )
@@ -41,11 +41,9 @@ class EmissionYield(EmissionData):
 
         """
         super().__init__(population, data)
-        self.energies: NDArray[np.float64] = data[EY_col_energy].to_numpy()
+        self.energies: NDArray[np.float64] = data[col_energy].to_numpy()
         self.angles = [
-            float(col.split()[0])
-            for col in data.columns
-            if col != EY_col_energy
+            float(col.split()[0]) for col in data.columns if col != col_energy
         ]
         self.e_max: float
         self.ey_max: float
@@ -90,7 +88,7 @@ class EmissionYield(EmissionData):
         """Compute the characteristics of the emission yield."""
         assert 0.0 in self.angles, "Need the normal incidence measurements."
 
-        normal_ey = self.data[[EY_col_energy, col_normal]]
+        normal_ey = self.data[[col_energy, col_normal]]
         assert isinstance(normal_ey, pd.DataFrame)
         normal_ey = resample(normal_ey, n_resample)
 
