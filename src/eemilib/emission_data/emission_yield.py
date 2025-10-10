@@ -31,9 +31,9 @@ class EmissionYield(EmissionData):
 
         Parameters
         ----------
-        population : Literal["SE", "EBE", "IBE", "all"]
+        population :
             The concerned population of electrons.
-        data : pandas.DataFrame
+        data :
             Structure holding the data. Must have a ``Energy (eV)`` column
             holding PEs energy. And one or several columns ``theta [deg]``,
             where `theta` is the value of the incidence angle and content is
@@ -65,11 +65,11 @@ class EmissionYield(EmissionData):
 
         Parameters
         ----------
-        loader : Loader
+        loader :
             The object that will load the data.
-        population : Literal["SE", "EBE", "IBE", "all"]
+        population :
             The concerned population of electrons.
-        *filepath : str | pathlib.Path
+        *filepath :
             Path(s) to file holding data under study.
 
         """
@@ -103,16 +103,15 @@ class EmissionYield(EmissionData):
 
         Parameters
         ----------
-        normal_ey : pandas.DataFrame
+        normal_ey :
             Holds energy of PEs as well as emission yield at nominal incidence.
-        tol_energy : float, optional
+        tol_energy :
             If the :math:`E_{max}` is too close to the maximum PE energy, an
             warning is raised; tolerance is ``tol_energy``. The default value
             is 10 eV.
 
         Returns
         -------
-        tuple[float, float]
             :math:`E_{max}` and :math:`\sigma_{max}`.
         """
         e_max, sigma_max = get_emax_eymax(normal_ey)
@@ -134,24 +133,23 @@ class EmissionYield(EmissionData):
 
         Parameters
         ----------
-        normal_ey : pandas.DataFrame
+        normal_ey :
             Holds energy of PEs as well as emission yield at nominal incidence.
-        e_max : float
+        e_max :
             Energy of maximum emission yield. Used to discriminate
             :math:`E_{c1}` from :math:`E_{c2}`.
-        min_e : float, optional
+        min_e :
             Energy under which :math:`E_{c1}` is not searched. It is useful if
             emission yield data comes from a model which sets the emission
             yield to unity at very low energies (eg some implementations of
             Vaughan). The default value is 10 eV.
-        tol_ey : float, optional
+        tol_ey :
             It the emission yield is too far from unity at crossover energy, a
             warning is raised. Tolerance is ``tol_ey``. The default value is
             ``0.01``.
 
         Returns
         -------
-        tuple[float, float | None]
             First and second crossover energies.
 
         """
