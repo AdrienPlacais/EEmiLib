@@ -47,9 +47,6 @@ The TEEY is given by:
 
 Under the limit :math:`E_0` (:math:`12.5\mathrm{\,eV}` by default), the TEEY is set to a unique value (:math:`0.5` by default).
 
-.. note::
-   You can 
-
 .. math::
 
     \sigma_\mathrm{max}(\theta) = \sigma_\mathrm{max}(\theta = 0^\circ) \times \frac{1}{k_s\theta^2/\pi}
@@ -57,10 +54,6 @@ Under the limit :math:`E_0` (:math:`12.5\mathrm{\,eV}` by default), the TEEY is 
     E_\mathrm{max}(\theta) = E_\mathrm{max}(\theta = 0^\circ) \times \frac{1}{k_{se}\theta^2/\pi}
 
 The :math:`k_s` and :math:`k_{se}` are both set to unity by default.
-
-.. todo::
-    Should be locked by default, but possibility to release their constraints
-    to allow fit?
 
 The factor :math:`k` is given by:
 
@@ -107,5 +100,6 @@ To-do list
 
 .. todo::
     - Unlock :math:`k_s`, :math:`k_{se}` to have better overall fit?
+      In particular: if several incidence angles are provided.
     - Instructions to match CST Vaughan.
     - Instructions to match SPARK3D Vaughan.
