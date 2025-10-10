@@ -15,11 +15,9 @@ from typing import Any, Literal, TypedDict
 import numpy as np
 import pandas as pd
 from eemilib.emission_data.data_matrix import DataMatrix
-from eemilib.emission_data.emission_yield import EmissionYield
 from eemilib.model.model import Model
 from eemilib.model.model_config import ModelConfig
 from eemilib.model.parameter import Parameter
-from eemilib.util.constants import EY_col_energy, EY_col_normal
 from numpy.typing import NDArray
 from scipy.optimize import least_squares
 
@@ -52,7 +50,7 @@ class Vaughan(Model):
     initial_parameters = {
         "E_0": {
             "markdown": r"E_0",
-            "unit": "eV",
+            "unit": ":unit:`eV`",
             "value": 12.5,
             "description": r"Threshold energy. By default, locked to "
             + r":math:`12.5\mathrm{\,eV}`. If unlocked, will be fitted to "
@@ -61,14 +59,14 @@ class Vaughan(Model):
         },
         "E_max": {
             "markdown": r"E_\mathrm{max}",
-            "unit": "eV",
+            "unit": ":unit:`eV`",
             "value": 0.0,
             "lower_bound": 0.0,
             "description": "Energy at maximum TEEY.",
         },
         "delta_E_transition": {
             "markdown": r"\Delta E_{tr}",
-            "unit": "eV",
+            "unit": ":unit:`eV`",
             "value": 1.0,
             "description": "Energy over which we switch from"
             + r" :math:`\sigma_\mathrm{low}` to actual Vaughan TEEY. Useful for"
@@ -77,7 +75,7 @@ class Vaughan(Model):
         },
         "teey_low": {
             "markdown": r"\sigma_\mathrm{low}",
-            "unit": "1",
+            "unit": ":unit:`1`",
             "value": 0.5,
             "lower_bound": 0.0,
             "description": "TEEY below :math:`E_0`.",
@@ -85,14 +83,14 @@ class Vaughan(Model):
         },
         "teey_max": {
             "markdown": r"\sigma_\mathrm{max}",
-            "unit": "1",
+            "unit": ":unit:`1`",
             "value": 0.0,
             "lower_bound": 0.0,
             "description": "Maximum TEEY, directly taken from the measurement.",
         },
         "k_s": {
             "markdown": r"k_s",
-            "unit": "1",
+            "unit": ":unit:`1`",
             "value": 1.0,
             "lower_bound": 0.0,
             "upper_bound": 2.0,
@@ -102,7 +100,7 @@ class Vaughan(Model):
         },
         "k_se": {
             "markdown": r"k_{se}",
-            "unit": "1",
+            "unit": ":unit:`1`",
             "value": 1.0,
             "lower_bound": 0.0,
             "upper_bound": 2.0,
@@ -112,7 +110,7 @@ class Vaughan(Model):
         },
         "E_c1": {
             "markdown": r"E_{c,\,1}",
-            "unit": "eV",
+            "unit": ":unit:`eV`",
             "value": 0.0,
             "description": r"First crossover energy. Must be provided instead"
             + " of E_0 for SPARK3D Vaughan.",
@@ -133,12 +131,12 @@ class Vaughan(Model):
 
         Parameters
         ----------
-        implementation: Literal["original", "CST", "SPARK3D"], optional
+        implementation:
             Modifies certain presets to match different interpretations of the
             model by calling :meth:`.preset_implementation`. These parameter
             modifications have precedence over the ones set in
             `parameters_values`.
-        parameters_values : dict[str, Any] | None, optional
+        parameters_values :
             Contains name of parameters and associated value. If provided, will
             override the default values set in ``initial_parameters``.
 

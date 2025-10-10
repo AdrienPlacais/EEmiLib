@@ -42,21 +42,21 @@ class Sombrin(Model):
     initial_parameters = {
         "E_max": {
             "markdown": r"E_\mathrm{max}",
-            "unit": "eV",
+            "unit": ":unit:`eV`",
             "value": 1.0,
             "lower_bound": 0.0,
             "description": "Energy at maximum TEEY.",
         },
         "teey_max": {
             "markdown": r"\sigma_\mathrm{max}",
-            "unit": "1",
+            "unit": ":unit:`1`",
             "value": 0.0,
             "lower_bound": 0.0,
             "description": "Maximum TEEY, directly taken from the measurement.",
         },
         "E_c1": {
             "markdown": r"E_{c,\,1}",
-            "unit": "eV",
+            "unit": ":unit:`eV`",
             "value": 0.0,
             "lower_bound": 0.0,
             "description": (
@@ -73,7 +73,7 @@ class Sombrin(Model):
 
         Parameters
         ----------
-        parameters_values : dict[str, Any] | None, optional
+        parameters_values :
             Contains name of parameters and associated value. If provided, will
             override the default values set in ``initial_parameters``.
 
@@ -111,7 +111,7 @@ class Sombrin(Model):
                 E_max=self.parameters["E_max"],
                 teey_max=self.parameters["teey_max"],
                 E_c1=self.parameters["E_c1"],
-                E=self.E,
+                E_param=self.E,
             )
 
         out_dict = {EY_col_normal: out, EY_col_energy: energy}
@@ -155,14 +155,14 @@ def _sombrin_func(
     E_max: Parameter,
     teey_max: Parameter,
     E_c1: Parameter,
-    E: float | None,
+    E_param: float | None,
     **parameters,
 ) -> float | NDArray[np.float64]:
     """Compute the TEEY for incident energy E."""
-    if E is None:
-        E = _e_parameter(teey_max, E_max, E_c1)
-    num = 2 * teey_max.value * (ene / E_max.value) ** E
-    denom = 1 + (ene / E_max.value) ** (2 * E)
+    if E_param is None:
+        E_param = _e_parameter(teey_max, E_max, E_c1)
+    num = 2 * teey_max.value * (ene / E_max.value) ** E_param
+    denom = 1 + (ene / E_max.value) ** (2 * E_param)
     return num / denom
 
 
@@ -170,10 +170,10 @@ def _e_parameter(
     sigma_max: Parameter, E_max: Parameter, E_c1: Parameter
 ) -> float:
     """Compute parameter ``E`` in Sombrin model."""
-    E = math.log(
+    E_param = math.log(
         sigma_max.value - math.sqrt(sigma_max.value**2 - 1)
     ) / math.log(E_c1.value / E_max.value)
-    return E
+    return E_param
 
 
 # Append dynamically generated docs to the module docstring
