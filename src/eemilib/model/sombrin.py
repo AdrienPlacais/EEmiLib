@@ -1,4 +1,9 @@
-r"""Create the Sombrin model, to compute TEEY."""
+"""Create the Sombrin model, to compute TEEY.
+
+It is very precise on the first crossover energy, but does not take the
+incident angle into account.
+
+"""
 
 import math
 from typing import Any, TypedDict

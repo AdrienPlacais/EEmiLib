@@ -7,10 +7,12 @@ Models
    :maxdepth: 4
    :hidden:
 
-   models/vaughan
    models/chung_everhart
    models/dionne_3d
+   models/sombrin
+   models/vaughan
 
-.. include:: models/vaughan.rst
 .. include:: models/chung_everhart.rst
 .. include:: models/dionne_3d.rst
+.. include:: models/sombrin.rst
+.. include:: models/vaughan.rst
