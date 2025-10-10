@@ -105,7 +105,7 @@ class Model(ABC):
         **kwargs,
     ) -> pd.DataFrame:
         r"""Compute TEEY :math:`\sigma`."""
-        return _default_ey(energy, theta)
+        return _null_array(energy, theta)
 
     def seey(
         self,
@@ -115,7 +115,17 @@ class Model(ABC):
         **kwargs,
     ) -> pd.DataFrame:
         r"""Compute SEEY :math:`\delta`."""
-        return _default_ey(energy, theta)
+        return _null_array(energy, theta)
+
+    def se_energy_distribution(
+        self,
+        energy: NDArray[np.float64],
+        theta: NDArray[np.float64],
+        *args,
+        **kwargs,
+    ) -> pd.DataFrame:
+        r"""Compute SEs emission energy distribution."""
+        return _null_array(energy, theta)
 
     @abstractmethod
     def find_optimal_parameters(
@@ -150,15 +160,19 @@ class Model(ABC):
                     **kwargs,
                 )
             return axes
-        if population != "all":
-            raise NotImplementedError
-        if emission_data_type != "Emission Yield":
-            raise NotImplementedError
 
-        emission_yield = self.teey(energies, angles)
-        axes = plotter.plot_emission_yield(
-            emission_yield, axes=axes, ls="--", grid=grid, **kwargs
-        )
+        if population == "all" and emission_data_type == "Emission Yield":
+            data = self.teey(energies, angles)
+            axes = plotter.plot_emission_yield(
+                data, axes=axes, ls="--", grid=grid, **kwargs
+            )
+        elif population == "SE" and emission_data_type == "Emission Energy":
+            data = self.se_energy_distribution(energies, angles)
+            axes = plotter.plot_emission_energy_distribution(
+                data, axes=axes, ls="--", grid=grid, **kwargs
+            )
+        else:
+            raise NotImplementedError
         assert axes is not None
         return axes
 
@@ -233,7 +247,7 @@ class Model(ABC):
         return float(error)
 
 
-def _default_ey(
+def _null_array(
     energy: NDArray[np.float64], theta: NDArray[np.float64]
 ) -> pd.DataFrame:
     """Return a null array with proper shape."""

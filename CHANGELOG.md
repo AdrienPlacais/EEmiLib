@@ -13,8 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Support for the different flavors of Vaughan: CST, SPARK3D.
   - To recheck!
-- Implemented Sombrin model.
+- Implemented Sombrin TEEY model.
+- Implemented Chung and Everhart SEs emission energy model.
 - N. Fil criteria to evaluate fit quality.
+  - TODO
+
+### Fixed
+
+- Trying to plot non-existent/not implemented data does not raise an Error anymore.
   - TODO
 
 ### Changed

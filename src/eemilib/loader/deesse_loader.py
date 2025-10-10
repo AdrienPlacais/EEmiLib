@@ -1,5 +1,6 @@
 """Define a loader adapted to DEESSE (ONERA, Toulouse) file format."""
 
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -54,6 +55,7 @@ class DeesseLoader(Loader):
             all_df.append(of_interest_df.set_index(col_energy))
 
         concatenated = pd.concat(all_df, axis=1)
+        logging.info(f"Successfully loaded emission yield file(s) {filepath}")
         return concatenated.reset_index()
 
     def _extract_incidence_angle(self, full_data: pd.DataFrame) -> float:
