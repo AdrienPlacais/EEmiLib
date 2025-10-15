@@ -105,7 +105,14 @@ class Model(ABC):
         **kwargs,
     ) -> pd.DataFrame:
         r"""Compute TEEY :math:`\sigma`."""
-        return _null_array(energy, theta)
+        return self.get_modelled(
+            "all",
+            "Emission Yield",
+            energy=energy,
+            theta=theta,
+            *args,
+            **kwargs,
+        )
 
     def seey(
         self,
@@ -115,7 +122,9 @@ class Model(ABC):
         **kwargs,
     ) -> pd.DataFrame:
         r"""Compute SEEY :math:`\delta`."""
-        return _null_array(energy, theta)
+        return self.get_modelled(
+            "SE", "Emission Yield", energy=energy, theta=theta, *args, **kwargs
+        )
 
     def se_energy_distribution(
         self,
@@ -125,7 +134,30 @@ class Model(ABC):
         **kwargs,
     ) -> pd.DataFrame:
         r"""Compute SEs emission energy distribution."""
-        return _null_array(energy, theta)
+        return self.get_modelled(
+            "SE",
+            "Emission Energy",
+            energy=energy,
+            theta=theta,
+            *args,
+            **kwargs,
+        )
+
+    def get_modelled(
+        self,
+        population: ImplementedPop,
+        emission_data_type: ImplementedEmissionData,
+        energy: NDArray[np.float64],
+        theta: NDArray[np.float64],
+        *args,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """Return desired data according to current model."""
+        logging.warning(
+            f"Current model does not model {emission_data_type} of "
+            f"{population}. Returning dummy data."
+        )
+        return _null_array(energy=energy, theta=theta, *args, **kwargs)
 
     @abstractmethod
     def find_optimal_parameters(

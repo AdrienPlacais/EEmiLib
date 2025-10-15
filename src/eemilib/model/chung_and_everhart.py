@@ -19,6 +19,7 @@ from numpy.typing import NDArray
 
 class ChungEverhartParameters(TypedDict):
     W_f: Parameter
+    norm: Parameter
 
 
 class ChungEverhart(Model):
@@ -39,6 +40,13 @@ class ChungEverhart(Model):
             "value": 8.0,
             "lower_bound": 0.0,
             "description": "Material work function.",
+        },
+        "norm": {
+            "markdown": r"k",
+            "unit": ":unit:`1`",
+            "value": 1.0,
+            "lower_bound": 0.0,
+            "description": "Distribution re-normalization constant.",
         },
     }
 
@@ -71,7 +79,9 @@ class ChungEverhart(Model):
         r"""Compute SEs energy distribution."""
         out = np.zeros(len(energy))
         for i, ene in enumerate(energy):
-            out[i] = self._func(ene, W_f=self.parameters["W_f"])
+            out[i] = self._func(
+                ene, W_f=self.parameters["W_f"], norm=self.parameters["norm"]
+            )
 
         out_dict = {col_normal: out, col_energy: energy}
         return pd.DataFrame(out_dict)
@@ -89,14 +99,22 @@ class ChungEverhart(Model):
         logging.error("Setting constant W_f=8eV.")
         self.set_parameters_values({"W_f": 8.0})
 
+        max_distrib = self._func(
+            self.parameters["W_f"].value / 3.0,
+            W_f=self.parameters["W_f"],
+            norm=self.parameters["norm"],
+        )
+        self.set_parameters_values({"norm": 1.0 / max_distrib})
+
 
 def _chung_everhart_func(
     ene: float | NDArray[np.float64],
     W_f: Parameter,
+    norm: Parameter,
     **parameters,
 ) -> float | NDArray[np.float64]:
     """Compute the energy distribution for incident energy E."""
-    return ene / (ene + W_f.value) ** 4
+    return norm.value * ene / (ene + W_f.value) ** 4
 
 
 # Append dynamically generated docs to the module docstring

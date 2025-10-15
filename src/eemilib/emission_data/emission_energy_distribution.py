@@ -1,5 +1,6 @@
 """Define an object to store an emission energy distribution."""
 
+import logging
 from pathlib import Path
 from typing import Self
 
@@ -11,6 +12,7 @@ from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
     ImplementedPop,
     col_energy,
+    col_normal,
     md_energy_distrib,
 )
 from numpy.typing import NDArray
@@ -42,6 +44,7 @@ class EmissionEnergyDistribution(EmissionData):
         self.angles = [
             float(col.split()[0]) for col in data.columns if col != col_energy
         ]
+        self._normalize()
 
     @classmethod
     def from_filepath(
@@ -91,3 +94,23 @@ class EmissionEnergyDistribution(EmissionData):
             label=self.label,
             **kwargs,
         )
+
+    def _normalize(self) -> None:
+        """Normalize the distribution.
+
+        Current implementation will be shite when backscattered peak is higher
+        the SEs.
+
+        """
+        logging.info(
+            "Renormalizing distribution data to have maximum of SEs = 1. "
+            "Detection is not clean at all for now, we consider that SEs peak"
+            "is the maximum among the 80% first percent of the data array."
+        )
+        n_points = len(self.data)
+        SE_points = int(0.8 * n_points)
+
+        factor = self.data[col_normal][:SE_points].max()
+
+        data_columns = [c for c in self.data.columns if c != col_energy]
+        self.data[data_columns] /= factor
