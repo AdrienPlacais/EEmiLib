@@ -45,9 +45,14 @@ class EmissionYield(EmissionData):
         self.angles = [
             float(col.split()[0]) for col in data.columns if col != col_energy
         ]
+        #: Energy at the maximum emission yield in :unit:`eV`. Not defined for
+        #: BEs.
         self.e_max: float
+        #: Maximum emission yield. Not defined for BEs.
         self.ey_max: float
+        #: First cross-over enrergy in :unit:`eV`. Not defined for BEs.
         self.e_c1: float
+        #: Second cross-over enrergy in :unit:`eV`. Not defined for BEs.
         self.e_c2: float | None
         if self.population in ("SE", "all"):
             self.e_max, self.ey_max, self.e_c1, self.e_c2 = self._parameters(
