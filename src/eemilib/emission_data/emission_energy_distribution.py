@@ -1,6 +1,5 @@
 """Define an object to store an emission energy distribution."""
 
-import logging
 from pathlib import Path
 from typing import Self
 
@@ -25,6 +24,7 @@ class EmissionEnergyDistribution(EmissionData):
         self,
         population: ImplementedPop,
         data: pd.DataFrame,
+        e_pe: float | None = None,
     ) -> None:
         """Instantiate the data.
 
@@ -37,6 +37,8 @@ class EmissionEnergyDistribution(EmissionData):
             holding ``population`` energy. And one or several columns
             ``theta [deg]``, where ``theta`` is the value of the incidence
             angle and content is corresponding emission energy.
+        e_pe :
+            Energy of primary electrons in :unit:`eV`.
 
         """
         super().__init__(population, data)
@@ -44,6 +46,25 @@ class EmissionEnergyDistribution(EmissionData):
         self.angles = [
             float(col.split()[0]) for col in data.columns if col != col_energy
         ]
+
+        #: Energy at the maximum of SEs in :unit:`eV`. Defined for SEs and
+        #: distribution of all electrons.
+        self.e_peak_se: float
+        i_peak_se, self.e_peak_se = self._find_SE_peak()
+        #: Energy at the maximum of EBEs in :unit:`eV`. Defined for EBEs and
+        #: distribution of all electrons.
+        self.e_peak_ebe: float
+        _, self.e_peak_ebe = self._find_EBE_peak()
+
+        #: Energy of PEs in :unit:`eV`. If this information is not found in
+        #: the file header, we set it to the value of ``self.e_peak_ebe``.
+        self.e_pe: float
+        if e_pe:
+            self.e_pe = e_pe
+        self.e_pe = e_pe if e_pe else self.e_peak_ebe
+
+        #: Re-normalization factor of distribution.
+        self.norm: float = self.data[col_normal][i_peak_se]
         self._normalize()
 
     @classmethod
@@ -65,8 +86,8 @@ class EmissionEnergyDistribution(EmissionData):
             Path(s) to file holding data under study.
 
         """
-        data = loader.load_emission_energy_distribution(*filepath)
-        return cls(population, data)
+        data, e_pe = loader.load_emission_energy_distribution(*filepath)
+        return cls(population, data, e_pe=e_pe)
 
     @property
     def label(self) -> str:
@@ -102,15 +123,25 @@ class EmissionEnergyDistribution(EmissionData):
         the SEs.
 
         """
-        logging.info(
-            "Renormalizing distribution data to have maximum of SEs = 1. "
-            "Detection is not clean at all for now, we consider that SEs peak"
-            "is the maximum among the 80% first percent of the data array."
-        )
-        n_points = len(self.data)
-        SE_points = int(0.8 * n_points)
-
-        factor = self.data[col_normal][:SE_points].max()
-
         data_columns = [c for c in self.data.columns if c != col_energy]
-        self.data[data_columns] /= factor
+        self.data[data_columns] /= self.norm
+
+    @property
+    def _se_ebe_limit(self) -> int:
+        """Arbitrary index limit between SEs and EBEs."""
+        return int(self._n_points / 4)
+
+    def _find_SE_peak(self) -> tuple[int, float]:
+        """Find the SEs maximum."""
+        i = self.data[: self._se_ebe_limit][col_normal].argmax()
+        e_peak_se = self.data[col_energy][i]
+        return int(i), float(e_peak_se)
+
+    def _find_EBE_peak(self) -> tuple[int, float]:
+        """Find the position of the EBE peak."""
+        i = (
+            self.data[self._se_ebe_limit :][col_normal].argmax()
+            + self._se_ebe_limit
+        )
+        e_peak_ebe = self.data[col_energy][i]
+        return int(i), float(e_peak_ebe)

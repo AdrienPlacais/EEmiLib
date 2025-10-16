@@ -55,3 +55,27 @@ def _format_header(header: list[str]) -> list[str]:
     header[0] = col_energy
     header[1:] = [f"{float(h)} [deg]" for h in header[1:]]
     return header
+
+
+def read_comments(filepath: str | Path, comment: str = "#") -> list[str]:
+    """Read the comments in the file.
+
+    Parameters
+    ----------
+    filepath :
+        Path to file holding data under study.
+    comment :
+        Comment character.
+
+    Returns
+    -------
+        Comments, line by line. Without the comment character.
+
+    """
+    comments: list[str] = []
+    with open(filepath) as file:
+        for line in file:
+            if not line.startswith(comment):
+                return comments
+            comments.append(line[1:])
+    return comments

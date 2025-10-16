@@ -32,8 +32,14 @@ class Loader(ABC):
         filepath: str | Path | Collection[str] | Collection[Path],
         *args,
         **kwargs,
-    ) -> pd.DataFrame:
-        """Load the given electron emission energy distribution file."""
+    ) -> tuple[pd.DataFrame, float | None]:
+        """Load the given electron emission energy distribution file.
+
+        Should also try to load the energy of primary electrons from file
+        metadata. If not possible, :class:`.EmissionEnergyDistribution` will
+        try to infer it from the position of the EBEs peak.
+
+        """
 
     @abstractmethod
     def load_emission_angle_distribution(

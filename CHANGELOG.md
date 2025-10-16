@@ -15,8 +15,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - To recheck!
 - Implemented Sombrin TEEY model.
 - Implemented Chung and Everhart SEs emission energy model.
-- N. Fil criteria to evaluate fit quality.
-  - TODO
 
 ### Fixed
 
@@ -29,16 +27,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Use `pip install -e .[test]` to support testing.
 - Doc on [ReadTheDocs](https://eemilib.readthedocs.io/en/docs-rtd/index.html)
 
-<!-- ## [0.0.0] 1312-01-01 -->
-<!---->
-<!-- ### Added -->
-<!---->
-<!-- ### Changed -->
-<!---->
-<!-- ### Deprecated -->
-<!---->
-<!-- ### Removed -->
-<!---->
-<!-- ### Fixed -->
-<!---->
-<!-- ### Security -->
+## TODO
+
+- N. Fil criteria to evaluate fit quality.
+- Show some characteristics on the plot? To help debug, help user understand
+  what the code understands from his data.
+  - Position of Ec1, Emax, Ec2 for TEEY
+  - Position of peaks for emission energy
+- Data correction for Deesse loader.
+    <!-- ## [0.0.0] 1312-01-01 -->
+    <!---->
+    <!-- ### Added -->
+    <!---->
+    <!-- ### Changed -->
+    <!---->
+    <!-- ### Deprecated -->
+    <!---->
+    <!-- ### Removed -->
+    <!---->
+    <!-- ### Fixed -->
+    <!---->
+    <!-- ### Security -->
