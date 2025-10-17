@@ -26,6 +26,7 @@ from eemilib.util.constants import (
     IMPLEMENTED_POP,
     ImplementedEmissionData,
     ImplementedPop,
+    md_ylabel,
 )
 
 pop_to_row = {pop: i for i, pop in enumerate(IMPLEMENTED_POP)}
@@ -394,7 +395,34 @@ class DataMatrix:
         axes: T | None = None,
         **kwargs,
     ) -> T | None:
-        """Plot desired measured data."""
+        """Plot desired measured data using ``plotter``.
+
+        This method uses :meth:`.DataMatrix.get_data` to get the
+        :class:`.EmissionData` instance matching ``population`` and
+        ``emission_data_type``. Then it calls the :meth:`.EmissionData.plot`
+        method.
+
+        Parameters
+        ----------
+        plotter :
+            Object realizing the plot. We transfer it to the
+            :meth:`.EmissionData.plot` method.
+        population :
+            One or several populations to plot. If several are given, we simply
+            recursively call this method.
+        emission_data_type :
+            Type of data to plot.
+        axes :
+            Axes to re-use if given.
+        kwargs :
+            Other keyword arguments passed to the :meth:`.EmissionData.plot`
+            method.
+
+        Returns
+        -------
+            Created axes object, or ``None`` if no plot was created.
+
+        """
         if isinstance(population, Collection) and not isinstance(
             population, str
         ):
@@ -404,22 +432,27 @@ class DataMatrix:
                 )
             return axes
 
-        to_plot = self.get_data(
+        emission_data = self.get_data(
             population=population, emission_data_type=emission_data_type
-        )  # type: ignore
+        )
 
-        if to_plot is None:
+        if emission_data is None:
             logging.info(
                 f"No measurement found for {population = } and "
                 f"{emission_data_type = }. Skipping this plot."
             )
-            return
+            return axes
 
-        if isinstance(to_plot, EmissionData):
-            return to_plot.plot(plotter, axes=axes, **kwargs)
+        if isinstance(emission_data, EmissionData):
+            emission_data = (emission_data,)
 
-        for sub_to_plot in to_plot:
-            axes = sub_to_plot.plot(plotter, axes=axes, **kwargs)
+        for data in emission_data:
+            axes = data.plot(
+                plotter,
+                axes=axes,
+                ylabel=md_ylabel[emission_data_type],
+                **kwargs,
+            )
         return axes
 
     @property

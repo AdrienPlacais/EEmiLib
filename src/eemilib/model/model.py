@@ -194,7 +194,39 @@ class Model(ABC):
         grid: bool = True,
         **kwargs,
     ) -> T | None:
-        """Plot desired modelled data."""
+        """Plot desired modelled data using ``plotter``.
+
+        This method uses :meth:`.Model.get_data` to compute the modelled data
+        matching ``population`` and ``emission_data_type``. Then it calls the
+        :meth:`.Model.plot` method.
+
+        Parameters
+        ----------
+        plotter :
+            Object realizing the plot. We transfer it to the
+            :meth:`.Model.plot` method.
+        population :
+            One or several populations to plot. If several are given, we simply
+            recursively call this method.
+        emission_data_type :
+            Type of data to plot.
+        energies :
+            Energies in :unit:`eV` for which model should be plotted.
+        angles :
+            Angles in :unit:`deg` for which model should be plotted.
+        axes :
+            Axes to re-use if given.
+        grid :
+            If grid should be plotted.
+        kwargs :
+            Other keyword arguments passed to the :meth:`.Model.plot`
+            method.
+
+        Returns
+        -------
+            Created axes object, or ``None`` if no plot was created.
+
+        """
         if isinstance(population, Collection) and not isinstance(
             population, str
         ):
@@ -222,7 +254,7 @@ class Model(ABC):
                 f"No modelled data found for {population = } and "
                 f"{emission_data_type = }. Skipping this plot."
             )
-            return
+            return axes
 
         if emission_data_type == "Emission Yield":
             return plotter.plot_emission_yield(
