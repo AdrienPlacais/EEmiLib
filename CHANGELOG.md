@@ -25,15 +25,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## TODO
 
 - N. Fil criteria to evaluate fit quality.
-- Show some characteristics on the plot? To help debug, help user understand
+- ? Show some characteristics on the plot. To help debug, help user understand
   what the code understands from his data.
   - Position of Ec1, Emax, Ec2 for TEEY
   - Position of peaks for emission energy
-- Data correction for Deesse loader.
+- ? Data correction for Deesse loader.
 - Trying to plot non-existent/not implemented data does not raise an Error anymore.
 - Allow Chung Everhart fit on several files.
-- Doc Chung Everhart
-- Doc loaders
     <!-- ## [0.0.0] 1312-01-01 -->
     <!---->
     <!-- ### Added -->
