@@ -12,6 +12,7 @@ Submodules
 .. toctree::
    :maxdepth: 5
 
+   eemilib.model.chung_and_everhart
    eemilib.model.model
    eemilib.model.model_config
    eemilib.model.parameter

@@ -4,7 +4,6 @@ You will need to provice emission energy distribution measurements.
 
 """
 
-import logging
 from typing import Any, TypedDict
 
 import numpy as np

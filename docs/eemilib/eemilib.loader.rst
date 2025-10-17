@@ -13,5 +13,6 @@ Submodules
    :maxdepth: 5
 
    eemilib.loader.deesse_loader
+   eemilib.loader.helper
    eemilib.loader.loader
    eemilib.loader.pandas_loader
