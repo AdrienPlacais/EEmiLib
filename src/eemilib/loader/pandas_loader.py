@@ -41,7 +41,7 @@ class PandasLoader(Loader):
         -------
             Structure holding the data. Has a ``Energy [eV]`` column
             holding PEs energy. And one or several columns ``theta [deg]``,
-            where `theta` is the value of the incidence angle and content is
+            where ``theta`` is the value of the incidence angle and content is
             corresponding emission yield.
 
         """
@@ -83,7 +83,7 @@ class PandasLoader(Loader):
             holding emitted electrons energy. And one or several columns
             ``theta [deg]``, where ``theta`` is the value of the incidence
             angle and content is corresponding emission energy distribution.
-        e_pe
+        float
             Energy of Primary Electrons in :unit:`eV`. If not found in the file
             comments, it will be inferred from the position of the EBEs peak.
 
@@ -96,6 +96,12 @@ class PandasLoader(Loader):
             names=header,
             skiprows=n_comments + 1,
         )
+        if len(df.columns) != 2:
+            raise RuntimeError(
+                f"Error loading {filepath}. "
+                f"The file should have two columns, separated by a ``{sep}`` "
+                f"character. File was read as:\n{df}"
+            )
 
         comments = read_comments(filepath, comment=comment)
 

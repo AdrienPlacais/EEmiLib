@@ -15,6 +15,7 @@ from eemilib.model.model_config import ModelConfig
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import col_energy, col_normal
 from numpy.typing import NDArray
+from scipy.optimize import least_squares
 
 
 class ChungEverhartParameters(TypedDict):
@@ -89,32 +90,52 @@ class ChungEverhart(Model):
     def find_optimal_parameters(
         self, data_matrix: DataMatrix, **kwargs
     ) -> None:
-        """Extract main TEEY curve parameters from measure."""
+        """Fit model parameters on measurements."""
         if not data_matrix.has_all_mandatory_files(self.model_config):
             raise ValueError("Files are not all provided.")
 
         distribution = data_matrix.all_energy_distribution
         assert distribution.population == "all"
 
-        logging.error("Setting constant W_f=8eV.")
-        self.set_parameters_values({"W_f": 8.0})
-
-        max_distrib = self._func(
-            self.parameters["W_f"].value / 3.0,
-            W_f=self.parameters["W_f"],
-            norm=self.parameters["norm"],
+        lsq = least_squares(
+            fun=_residue,
+            x0=8.0,
+            bounds=(0, np.inf),
+            args=(
+                distribution.data[col_energy].to_numpy(),
+                distribution.data[col_normal].to_numpy(),
+            ),
         )
-        self.set_parameters_values({"norm": 1.0 / max_distrib})
+        w_f = lsq.x[0]
+        self.set_parameters_values(
+            {"W_f": w_f, "norm": _chung_everhart_norm(w_f)}
+        )
+
+
+def _chung_everhart_norm(w_f: float) -> float:
+    """Return norm value to have distribution maximum to unity."""
+    return 256.0 * w_f**3 / 27.0
 
 
 def _chung_everhart_func(
     ene: float | NDArray[np.float64],
-    W_f: Parameter,
-    norm: Parameter,
+    W_f: Parameter | float,
+    norm: Parameter | None = None,
     **parameters,
 ) -> float | NDArray[np.float64]:
-    """Compute the energy distribution for incident energy E."""
-    return norm.value * ene / (ene + W_f.value) ** 4
+    """Compute the energy distribution."""
+    w_f_value = W_f.value if isinstance(W_f, Parameter) else W_f
+    norm_value = (
+        norm.value if norm is not None else _chung_everhart_norm(w_f_value)
+    )
+    return norm_value * ene / (ene + w_f_value) ** 4
+
+
+def _residue(
+    w_f: float, ene: NDArray[np.float64], measured: NDArray[np.float64]
+) -> NDArray[np.float64]:
+    """Compute array of residues between model and measurements."""
+    return _chung_everhart_func(ene, w_f) - measured
 
 
 # Append dynamically generated docs to the module docstring

@@ -16,11 +16,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implemented Sombrin TEEY model.
 - Implemented Chung and Everhart SEs emission energy model.
 
-### Fixed
-
-- Trying to plot non-existent/not implemented data does not raise an Error anymore.
-  - TODO
-
 ### Changed
 
 - Defined optional dependencies.
@@ -35,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Position of Ec1, Emax, Ec2 for TEEY
   - Position of peaks for emission energy
 - Data correction for Deesse loader.
+- Trying to plot non-existent/not implemented data does not raise an Error anymore.
+- Allow Chung Everhart fit on several files.
     <!-- ## [0.0.0] 1312-01-01 -->
     <!---->
     <!-- ### Added -->

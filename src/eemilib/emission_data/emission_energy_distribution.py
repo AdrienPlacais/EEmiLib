@@ -25,6 +25,7 @@ class EmissionEnergyDistribution(EmissionData):
         population: ImplementedPop,
         data: pd.DataFrame,
         e_pe: float | None = None,
+        norm: float | None = None,
     ) -> None:
         """Instantiate the data.
 
@@ -39,13 +40,13 @@ class EmissionEnergyDistribution(EmissionData):
             angle and content is corresponding emission energy.
         e_pe :
             Energy of primary electrons in :unit:`eV`.
+        norm :
+            To specify re-normalization constant. If not provided, we try to
+            set the maximum of SEs to unity. Provide ``1.0`` to avoid any
+            normalization.
 
         """
         super().__init__(population, data)
-        self.energies: NDArray[np.float64] = data[col_energy].to_numpy()
-        self.angles = [
-            float(col.split()[0]) for col in data.columns if col != col_energy
-        ]
 
         #: Energy at the maximum of SEs in :unit:`eV`. Defined for SEs and
         #: distribution of all electrons.
@@ -54,7 +55,9 @@ class EmissionEnergyDistribution(EmissionData):
         #: Energy at the maximum of EBEs in :unit:`eV`. Defined for EBEs and
         #: distribution of all electrons.
         self.e_peak_ebe: float
-        _, self.e_peak_ebe = self._find_EBE_peak()
+        #: Position of EBE peak.
+        self.i_peak_ebe: int
+        self.i_peak_ebe, self.e_peak_ebe = self._find_EBE_peak()
 
         #: Energy of PEs in :unit:`eV`. If this information is not found in
         #: the file header, we set it to the value of ``self.e_peak_ebe``.
@@ -64,7 +67,9 @@ class EmissionEnergyDistribution(EmissionData):
         self.e_pe = e_pe if e_pe else self.e_peak_ebe
 
         #: Re-normalization factor of distribution.
-        self.norm: float = self.data[col_normal][i_peak_se]
+        self.norm: float = (
+            norm if norm else self.data.at[i_peak_se, col_normal]
+        )
         self._normalize()
 
     @classmethod
@@ -117,12 +122,7 @@ class EmissionEnergyDistribution(EmissionData):
         )
 
     def _normalize(self) -> None:
-        """Normalize the distribution.
-
-        Current implementation will be shite when backscattered peak is higher
-        the SEs.
-
-        """
+        """Normalize the distribution."""
         data_columns = [c for c in self.data.columns if c != col_energy]
         self.data[data_columns] /= self.norm
 
@@ -134,7 +134,7 @@ class EmissionEnergyDistribution(EmissionData):
     def _find_SE_peak(self) -> tuple[int, float]:
         """Find the SEs maximum."""
         i = self.data[: self._se_ebe_limit][col_normal].argmax()
-        e_peak_se = self.data[col_energy][i]
+        e_peak_se = self.data.at[i, col_energy]
         return int(i), float(e_peak_se)
 
     def _find_EBE_peak(self) -> tuple[int, float]:
@@ -143,5 +143,5 @@ class EmissionEnergyDistribution(EmissionData):
             self.data[self._se_ebe_limit :][col_normal].argmax()
             + self._se_ebe_limit
         )
-        e_peak_ebe = self.data[col_energy][i]
+        e_peak_ebe = self.data.at[i, col_energy]
         return int(i), float(e_peak_ebe)

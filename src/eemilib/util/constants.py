@@ -2,6 +2,8 @@
 
 from typing import Literal
 
+q = 1.6e-19
+
 ImplementedEmissionData = Literal[
     "Emission Yield", "Emission Energy", "Emission Angle"
 ]
