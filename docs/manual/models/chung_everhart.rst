@@ -52,3 +52,4 @@ To-do list
 
 .. todo::
    - Allow fitting on several distribution files with different PE energy.
+   - Set up tests.

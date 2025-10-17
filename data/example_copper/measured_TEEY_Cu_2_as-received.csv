@@ -1,0 +1,66 @@
+# The TEEY measurements were performed in Ultra High Vacuum (UHV) facility designed to the study of electron emission.
+# A dry turbo-molecular pump associated with an oil-free primary pump allows the system to be maintained at a vacuum
+# level down to 3e-9 millibar. The sample holder allows the variation of the electron incidence angle from 0° (normal
+# incidence angle) to 80°. An ELG-2022B electron gun from Kimball Instrument was used. The electron beam was pulsed
+# during TEEY measurements to limit the surface conditioning effect. The facility is equipped with a Faraday cup, a
+# hemispherical electron energy analyser and a X-ray Mgkalpha source. The sample holder and the collector can be
+# independently biased to choose the desired potential. The sample holder is ordinarily negatively biased in order to
+# prevent the low energy emitted electron to come back to the sample surface and prevent the generation of tertiary
+# electrons.
+#
+# This file contains the measured TEEY of a copper sample (Cu #2), without any treatment (as received).
+#
+# First line is incidence angle in degrees.
+# First column is incident energy in eV.
+# TEEY is the next columns (excluding the first line).
+0,0,20,40,60
+10,0.696,0.704,0.784,0.744
+30,1.1,1.075,1.086,1.063
+50,1.364,1.357,1.37,1.334
+70,1.605,1.58,1.609,1.597
+90,1.754,1.716,1.777,1.739
+110,1.895,1.876,1.957,1.928
+130,1.979,1.988,2.082,2.169
+150,2.021,2.092,2.141,2.183
+170,2.115,2.17,2.235,2.331
+190,2.153,2.217,2.301,2.375
+210,2.185,2.207,2.328,2.374
+230,2.221,2.274,2.372,2.519
+250,2.237,2.281,2.373,2.519
+270,2.234,2.326,2.386,2.506
+290,2.221,2.3,2.363,2.528
+310,2.208,2.298,2.388,2.558
+330,2.201,2.288,2.402,2.583
+350,2.193,2.281,2.399,2.586
+370,2.17,2.262,2.389,2.616
+390,2.199,2.27,2.378,2.605
+410,2.181,2.271,2.373,2.576
+430,2.182,2.235,2.396,2.56
+450,2.145,2.227,2.404,2.582
+470,2.15,2.199,2.358,2.608
+490,2.121,2.201,2.374,2.606
+510,2.097,2.156,2.383,2.582
+530,2.102,2.188,2.344,2.618
+550,2.077,2.165,2.38,2.585
+570,2.075,2.136,2.334,2.546
+590,2.039,2.107,2.324,2.542
+610,2.047,2.13,2.289,2.534
+630,2.032,2.109,2.274,2.556
+650,2.027,2.114,2.268,2.543
+670,2.007,2.121,2.236,2.53
+690,1.998,2.078,2.263,2.509
+710,2.001,2.044,2.225,2.578
+730,1.982,2.064,2.235,2.488
+750,1.969,2.033,2.228,2.511
+770,1.936,2.022,2.219,2.479
+790,1.94,2.009,2.191,2.475
+810,1.931,2.023,2.179,2.541
+830,1.918,2.018,2.163,2.459
+850,1.921,1.972,2.155,2.46
+870,1.909,1.978,2.149,2.503
+890,1.89,1.994,2.18,2.441
+910,1.884,1.974,2.153,2.478
+930,1.88,1.941,2.13,2.444
+950,1.856,1.951,2.12,2.427
+970,1.875,1.915,2.104,2.433
+990,1.838,1.91,2.099,2.411

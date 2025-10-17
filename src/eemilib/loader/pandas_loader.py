@@ -1,6 +1,8 @@
 """Define a generic files loader.
 
-See the example TEEY in ``data/example_copper/`` for the expected file format.
+Check the documentation of :meth:`.PandasLoader.load_emission_yield` and
+:meth:`.PandasLoader.load_emission_energy_distribution` for expected file
+formats.
 
 """
 
@@ -23,10 +25,29 @@ class PandasLoader(Loader):
     def load_emission_yield(
         self,
         filepath: str | Path,
-        sep: str = "\t",
+        sep: str = ",",
         comment: str = "#",
     ) -> pd.DataFrame:
         """Load and format the given emission yield file.
+
+        ``CSV`` files can have comments at the start of the file, starting with
+        a ``#`` character. Column separator must be ``,``. First non-commented
+        line is incidence angle in degrees. First column is incident energy in
+        :unit:`eV`. EY is the next columns (excluding the first line).
+        Example:
+
+        .. code-block:: csv
+
+            # Cu measurements
+            # Some comments
+            # Energy | 0deg | 20deg | 40deg | 60deg
+            0,0,20,40,60
+            0,0.814,0.781,0.866,0.918
+            10,0.574,0.553,0.637,0.803
+            20,0.632,0.594,0.671,0.817
+
+        Files in the :file:`data/example_copper/` files are taken from
+        :cite:`Placais2020b` and are correctly formatted.
 
         Parameters
         ----------
@@ -62,10 +83,30 @@ class PandasLoader(Loader):
     def load_emission_energy_distribution(
         self,
         filepath: str | Path,
-        sep: str = "\t",
+        sep: str = ",",
         comment: str = "#",
     ) -> tuple[pd.DataFrame, float | None]:
         """Load and format the given emission energy file.
+
+        ``CSV`` files can have comments at the start of the file, starting with
+        a ``#`` character. It is expected that the energy of PEs used for the
+        measurements is on the second commented line, in :unit:`eV`. Column
+        separator must be ``,``. First non-commented line is incidence angle in
+        degrees. First column is emission energy in :unit:`eV`. Distribution is
+        in the next columns (excluding the first line).
+        Example:
+
+        .. code-block::
+
+            # PEs energy in eV
+            # 100
+            0,0
+            1.999999999999975131e-01,7.117578753770542783e-03
+            3.999999999999968026e-01,1.138131444290255145e-02
+            5.999999999999978684e-01,1.510969903349285159e-02
+
+        Files in the :file:`data/example_ag/emission_energy` files are
+        correctly formatted.
 
         Parameters
         ----------
