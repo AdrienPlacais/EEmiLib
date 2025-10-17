@@ -22,16 +22,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Use `pip install -e .[test]` to support testing.
 - Doc on [ReadTheDocs](https://eemilib.readthedocs.io/en/docs-rtd/index.html)
 
+### Fixed
+
+- Trying to plot non-existent/not implemented data does not raise an Error anymore.
+
 ## TODO
 
 - N. Fil criteria to evaluate fit quality.
+- Allow Chung Everhart fit on several files.
+- Fix: trying to plot missing data seems to create a new figure.
 - ? Show some characteristics on the plot. To help debug, help user understand
   what the code understands from his data.
   - Position of Ec1, Emax, Ec2 for TEEY
   - Position of peaks for emission energy
 - ? Data correction for Deesse loader.
-- Trying to plot non-existent/not implemented data does not raise an Error anymore.
-- Allow Chung Everhart fit on several files.
+- Plots:
+  - Fix ylabel
+  - Fix Legend entries
+  - Different colors for different populations
+  - Fix energy/angle box in GUI
+  - Make energy/angle box values adjust to the interval of loaded data
+  - Make data to plot/population to plot follow according to nature of model
     <!-- ## [0.0.0] 1312-01-01 -->
     <!---->
     <!-- ### Added -->

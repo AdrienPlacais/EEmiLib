@@ -3,7 +3,6 @@
 from pathlib import Path
 from typing import Self
 
-import numpy as np
 import pandas as pd
 from eemilib.emission_data.emission_data import EmissionData
 from eemilib.loader.loader import Loader
@@ -14,7 +13,6 @@ from eemilib.util.constants import (
     col_normal,
     md_energy_distrib,
 )
-from numpy.typing import NDArray
 
 
 class EmissionEnergyDistribution(EmissionData):
