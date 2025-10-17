@@ -105,7 +105,7 @@ class Model(ABC):
         **kwargs,
     ) -> pd.DataFrame:
         r"""Compute TEEY :math:`\sigma`."""
-        return self.get_modelled(
+        teey = self.get_data(
             "all",
             "Emission Yield",
             energy=energy,
@@ -113,6 +113,10 @@ class Model(ABC):
             *args,
             **kwargs,
         )
+        if teey is not None:
+            return teey
+        logging.warning("No TEEY data found, returning dummy.")
+        return _dummy_df(energy, theta)
 
     def seey(
         self,
@@ -122,9 +126,13 @@ class Model(ABC):
         **kwargs,
     ) -> pd.DataFrame:
         r"""Compute SEEY :math:`\delta`."""
-        return self.get_modelled(
+        seey = self.get_data(
             "SE", "Emission Yield", energy=energy, theta=theta, *args, **kwargs
         )
+        if seey is not None:
+            return seey
+        logging.warning("No SEEY data found, returning dummy.")
+        return _dummy_df(energy, theta)
 
     def se_energy_distribution(
         self,
@@ -134,7 +142,7 @@ class Model(ABC):
         **kwargs,
     ) -> pd.DataFrame:
         r"""Compute SEs emission energy distribution."""
-        return self.get_modelled(
+        se_distrib = self.get_data(
             "SE",
             "Emission Energy",
             energy=energy,
@@ -142,8 +150,14 @@ class Model(ABC):
             *args,
             **kwargs,
         )
+        if se_distrib is not None:
+            return se_distrib
+        logging.warning(
+            "No SE energy distribution data found, returning dummy."
+        )
+        return _dummy_df(energy, theta)
 
-    def get_modelled(
+    def get_data(
         self,
         population: ImplementedPop,
         emission_data_type: ImplementedEmissionData,
@@ -151,13 +165,17 @@ class Model(ABC):
         theta: NDArray[np.float64],
         *args,
         **kwargs,
-    ) -> pd.DataFrame:
-        """Return desired data according to current model."""
-        logging.warning(
-            f"Current model does not model {emission_data_type} of "
-            f"{population}. Returning dummy data."
-        )
-        return _null_array(energy=energy, theta=theta, *args, **kwargs)
+    ) -> pd.DataFrame | None:
+        """Return desired data according to current model.
+
+        You should override this method for each :class:`.Model` subclass.
+        When desired data is not found, a ``None`` is returned. If you want a
+        dummy dataframe instead, call the specific methods for every quantity:
+        :meth:`.Model.teey`, :meth:`.Model.seey`,
+        :meth:`.Model.se_energy_distribution`.
+
+        """
+        return None
 
     @abstractmethod
     def find_optimal_parameters(
@@ -175,7 +193,7 @@ class Model(ABC):
         axes: T | None = None,
         grid: bool = True,
         **kwargs,
-    ) -> T:
+    ) -> T | None:
         """Plot desired modelled data."""
         if isinstance(population, Collection) and not isinstance(
             population, str
@@ -193,20 +211,28 @@ class Model(ABC):
                 )
             return axes
 
-        if population == "all" and emission_data_type == "Emission Yield":
-            data = self.teey(energies, angles)
-            axes = plotter.plot_emission_yield(
-                data, axes=axes, ls="--", grid=grid, **kwargs
+        to_plot = self.get_data(
+            population=population,
+            emission_data_type=emission_data_type,
+            energy=energies,
+            theta=angles,
+        )
+        if to_plot is None:
+            logging.info(
+                f"No modelled data found for {population = } and "
+                f"{emission_data_type = }. Skipping this plot."
             )
-        elif population == "SE" and emission_data_type == "Emission Energy":
-            data = self.se_energy_distribution(energies, angles)
-            axes = plotter.plot_emission_energy_distribution(
-                data, axes=axes, ls="--", grid=grid, **kwargs
+            return
+
+        if emission_data_type == "Emission Yield":
+            return plotter.plot_emission_yield(
+                to_plot, axes=axes, ls="--", grid=grid, **kwargs
             )
-        else:
-            raise NotImplementedError
-        assert axes is not None
-        return axes
+        if emission_data_type == "Emission Energy":
+            return plotter.plot_emission_energy_distribution(
+                to_plot, axes=axes, ls="--", grid=grid, **kwargs
+            )
+        raise NotImplementedError
 
     def set_parameter_value(self, name: str, value: Any) -> None:
         """Give the parameter named ``name`` the value ``value``."""
@@ -279,7 +305,7 @@ class Model(ABC):
         return float(error)
 
 
-def _null_array(
+def _dummy_df(
     energy: NDArray[np.float64], theta: NDArray[np.float64]
 ) -> pd.DataFrame:
     """Return a null array with proper shape."""

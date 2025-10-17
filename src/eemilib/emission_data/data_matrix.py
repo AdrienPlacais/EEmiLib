@@ -409,6 +409,10 @@ class DataMatrix:
         )  # type: ignore
 
         if to_plot is None:
+            logging.info(
+                f"No measurement found for {population = } and "
+                f"{emission_data_type = }. Skipping this plot."
+            )
             return
 
         if isinstance(to_plot, EmissionData):

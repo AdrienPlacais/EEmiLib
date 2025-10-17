@@ -18,6 +18,7 @@ from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.model.model import Model
 from eemilib.model.model_config import ModelConfig
 from eemilib.model.parameter import Parameter
+from eemilib.util.constants import ImplementedEmissionData, ImplementedPop
 from numpy.typing import NDArray
 from scipy.optimize import least_squares
 
@@ -190,15 +191,32 @@ class Vaughan(Model):
             return
         logging.error(f"{implementation = } not in {VaughanImplementation}")
 
-    def teey(
-        self, energy: NDArray[np.float64], theta: NDArray[np.float64]
-    ) -> pd.DataFrame:
-        r"""Compute TEEY :math:`\sigma`.
+    def get_data(
+        self,
+        population: ImplementedPop,
+        emission_data_type: ImplementedEmissionData,
+        energy: NDArray[np.float64],
+        theta: NDArray[np.float64],
+        *args,
+        **kwargs,
+    ) -> pd.DataFrame | None:
+        """Return desired data according to current model.
+
+        Will return a dataframe only if the TEEY is asked.
 
         .. todo::
             This method could be so much simpler and efficient.
 
         """
+        if population != "all" or emission_data_type != "Emission Yield":
+            return super().get_data(
+                population=population,
+                emission_data_type=emission_data_type,
+                energy=energy,
+                theta=theta,
+                *args,
+                **kwargs,
+            )
         out = np.zeros((len(energy), len(theta)))
         for i, ene in enumerate(energy):
             for j, the in enumerate(theta):

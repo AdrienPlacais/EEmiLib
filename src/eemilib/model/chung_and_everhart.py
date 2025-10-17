@@ -12,7 +12,12 @@ from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.model.model import Model
 from eemilib.model.model_config import ModelConfig
 from eemilib.model.parameter import Parameter
-from eemilib.util.constants import col_energy, col_normal
+from eemilib.util.constants import (
+    ImplementedEmissionData,
+    ImplementedPop,
+    col_energy,
+    col_normal,
+)
 from numpy.typing import NDArray
 from scipy.optimize import least_squares
 
@@ -73,10 +78,29 @@ class ChungEverhart(Model):
 
         self._func = _chung_everhart_func
 
-    def se_energy_distribution(
-        self, energy: NDArray[np.float64], *args
-    ) -> pd.DataFrame:
-        r"""Compute SEs energy distribution."""
+    def get_data(
+        self,
+        population: ImplementedPop,
+        emission_data_type: ImplementedEmissionData,
+        energy: NDArray[np.float64],
+        theta: NDArray[np.float64],
+        *args,
+        **kwargs,
+    ) -> pd.DataFrame | None:
+        """Return desired data according to current model.
+
+        Will return a dataframe only if the SEs energy distribution is asked.
+
+        """
+        if population != "SE" or emission_data_type != "Emission Energy":
+            return super().get_data(
+                population=population,
+                emission_data_type=emission_data_type,
+                energy=energy,
+                theta=theta,
+                *args,
+                **kwargs,
+            )
         out = np.zeros(len(energy))
         for i, ene in enumerate(energy):
             out[i] = self._func(
