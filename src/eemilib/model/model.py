@@ -33,22 +33,24 @@ class Model(ABC):
 
     Parameters
     ----------
-    considers_energy : bool
+    emission_data_types :
+        Types of modelled data.
+    populations :
+        Modelled populations.
+    considers_energy :
         Tell if the model has a dependency over PEs impact energy.
-    is_3d : bool
+    is_3d :
         Tell if the model has a dependency over PEs impact angle.
-    is_dielectrics_compatible : bool
+    is_dielectrics_compatible :
         Tell if the model can take the surface-trapped charges into account.
-    initial_parameters : dict[str, dict[str, str | float | bool]]
+    initial_parameters :
         List the :class:`.Parameter` kwargs.
-    model_config : ModelConfig
+    model_config :
         List the files that the model needs to know in order to work.
 
     """
 
-    #: Types of modelled data.
     emission_data_types: tuple[ImplementedEmissionData]
-    #: Modelled populations.
     populations: tuple[ImplementedPop]
     considers_energy: bool
     is_3d: bool
@@ -64,7 +66,7 @@ class Model(ABC):
 
         Parameters
         ----------
-        parameters_values : dict[str, Any] | None, optional
+        parameters_values :
             Contains name of parameters and associated value. If provided, will
             override the default values set in ``initial_parameters``.
 

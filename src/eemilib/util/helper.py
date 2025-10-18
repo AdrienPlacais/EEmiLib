@@ -16,14 +16,13 @@ def get_classes(module_name: str, base_class: ABCMeta) -> dict[str, str]:
 
     Parameters
     ----------
-    module_name : str
+    module_name :
         The name of a module.
-    base_class : abc.ABCMeta
+    base_class :
         The mother object that classes should inherit from.
 
     Returns
     -------
-    classes : dict[str, str]
         Keys are the name of the objects inheriting from ``base_class`` found
         in ``module_name``. Values are the path leading to them.
 

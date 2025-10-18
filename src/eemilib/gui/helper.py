@@ -26,30 +26,30 @@ def setup_dropdown(
     module_name: str,
     base_class: ABCMeta,
     buttons_args: dict[str, Any],
-):
+) -> tuple[dict[str, str], QHBoxLayout, QComboBox, list[QPushButton]]:
     """Set up interface with a dropdown menu and a button next to it.
 
     Parameters
     ----------
-    module_name : str
+    module_name :
         Where the entries of the dropdown will be searched.
-    base_class : abc.ABCMeta
+    base_class :
         The base class from which dropdown entries should inherit.
-    buttons : dict[str, Any]
+    buttons :
         Dictionary where the keys are the name of the buttons to add next to
         the dropdown menu, and values the callable that will be called when
         clicking the button.
 
     Returns
     -------
-    classes : dict[str, str]
+    dict[str, str]
         Keys are the name of the objects inheriting from ``base_class`` found
         in ``module_name``. Values are the path leading to them.
-    layout : PyQt5.QtWidgets.QHBoxLayout
+    QHBoxLayout
         Layout holding together ``dropdown`` and ``button``.
-    dropdown : PyQt5.QtWidgets.QComboBox
+    QComboBox
         Dropdown menu holding the keys of ``classes``.
-    buttons : list[PyQt5.QtWidgets.QPushButton]
+    list[QPushButton]
         The buttons next to the dropdown menu.
 
     """

@@ -29,9 +29,9 @@ class EmissionData(ABC):
 
         Parameters
         ----------
-        population : Literal["SE", "EBE", "IBE", "all"]
+        population :
             The concerned population of electrons.
-        data : pandas.DataFrame
+        data :
             Structure holding the data. Column headers as well as units must
             follow specications (see subclasses documentation).
 
@@ -53,11 +53,11 @@ class EmissionData(ABC):
 
         Parameters
         ----------
-        loader : Loader
+        loader :
             The object that will load the data.
-        population : Literal["SE", "EBE", "IBE", "all"]
+        population :
             The concerned population of electrons.
-        *filepath : str | pathlib.Path
+        *filepath :
             Path(s) to file holding data under study.
 
         """

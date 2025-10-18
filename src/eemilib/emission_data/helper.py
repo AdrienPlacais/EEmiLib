@@ -14,21 +14,20 @@ def trim(
 
     Parameters
     ----------
-    normal_ey : pandas.DataFrame
+    normal_ey :
         Holds normal emission yield. Columns are ``EY_col1`` (energy, stored
         by increasing values) and ``EY_colnorm`` (normal EY).
-    min_e : float, optional
+    min_e :
         Energy at which the output dataframe should start (if provided). The
         default is a negative value, in which case the output dataframe is not
         bottom-trimed.
-    max_e : float, optional
+    max_e :
         Energy at which the output dataframe should end (if provided). The
         default is a negative value, in which case the output dataframe is not
         top-trimed.
 
     Returns
     -------
-    trimed : pandas.DataFrame
         ``normal_ey`` but with energies ranging only from ``min_e`` to
         ``max_e``.
 
@@ -81,12 +80,12 @@ def get_crossover_energies(
 
     Parameters
     ----------
-    normal_ey : pandas.DataFrame
+    normal_ey :
         Holds energy of PEs as well as emission yield at nominal incidence.
-    e_max : float
+    e_max :
         Energy of maximum emission yield. Used to discriminate
         :math:`E_{c1}` from :math:`E_{c2}`.
-    min_e : float, optional
+    min_e :
         Energy under which :math:`E_{c1}` is not searched. It is useful if
         emission yield data comes from a model which sets the emission
         yield to unity at very low energies (eg some implementations of
