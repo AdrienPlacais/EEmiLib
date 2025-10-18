@@ -75,3 +75,24 @@ intersphinx_mapping = {
     ),
     "scipy": ("https://docs.scipy.org/doc/scipy/", None),
 }
+
+rst_prolog = """
+.. |axplot| replace:: :meth:`matplotlib.axes.Axes.plot`
+.. |dfplot| replace:: :meth:`pandas.DataFrame.plot`
+
+"""
+#
+# -- bug fixes ---------------------------------------------------------------
+# fix following warning:
+# <unknown>:1: warning: py:class reference target not found: pathlib._local.path [ref.class]
+# note that a patch is provided by sphinx 8.2, but nbsphinx 0.9.7 requires
+# sphinx<8.2
+# associated issue:
+# https://github.com/sphinx-doc/sphinx/issues/13178
+if sys.version_info[:2] >= (3, 13) and sphinx.version_info[:2] < (8, 2):  # type: ignore
+    import pathlib
+
+    from sphinx.util.typing import _invalid_builtin_classes
+
+    _invalid_builtin_classes[pathlib.path] = "pathlib.path"  # type: ignore
+    nitpick_ignore.append(("py:class", "pathlib._local.path"))

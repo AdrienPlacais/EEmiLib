@@ -2,8 +2,9 @@
 
 import matplotlib.pyplot as plt
 import pandas as pd
+from eemilib.plotter.helper import explicit_column_names
 from eemilib.plotter.plotter import Plotter
-from eemilib.util.constants import col_energy
+from eemilib.util.constants import ImplementedPop, col_energy, md_ylabel
 from matplotlib.axes import Axes
 
 
@@ -17,18 +18,46 @@ class PandasPlotter(Plotter):
 
     def plot_emission_yield(
         self,
-        emission_yield: pd.DataFrame,
+        df: pd.DataFrame,
         *args,
         axes: Axes | None = None,
+        population: ImplementedPop | None = None,
         **kwargs,
     ) -> Axes:
-        """Plot :class:`.EmissionYield` data."""
+        """Plot :class:`.EmissionYield` data with |dfplot| method.
+
+        Parameters
+        ----------
+        df :
+            Dataframe holding data to plot.
+        *args :
+            Additional arguments passed to the |dfplot| method.
+        axes :
+            Axes to re-use if given.
+        population :
+            Type of population currently plotted. This is used to make the
+            plot legends more precise.
+        kwargs :
+            Additional keyword arguments passed to the |dfplot| method.
+
+        Returns
+        -------
+            Created axes.
+
+        """
         if axes is not None:
             axes.set_prop_cycle(None)
-        axes = emission_yield.plot(
+        explicit = explicit_column_names(
+            df.columns,
+            population=population,
+            emission_data_type="Emission Yield",
+        )
+        df.rename(columns=explicit, inplace=True)
+        axes = df.plot(
             *args,
-            x=col_energy,
+            x=explicit[col_energy],
             ax=axes,
+            ylabel=md_ylabel["Emission Yield"],
             **kwargs,
         )
         assert isinstance(axes, Axes)
@@ -36,18 +65,46 @@ class PandasPlotter(Plotter):
 
     def plot_emission_energy_distribution(
         self,
-        emission_energy: pd.DataFrame,
+        df: pd.DataFrame,
         *args,
         axes: Axes | None = None,
+        population: ImplementedPop | None = None,
         **kwargs,
     ) -> Axes:
-        """Plot the given emission energy distribution, return Axes object."""
+        """Plot :class:`.EmissionDistribution` data with |dfplot| method.
+
+        Parameters
+        ----------
+        df :
+            Dataframe holding data to plot.
+        *args :
+            Additional arguments passed to the |dfplot| method.
+        axes :
+            Axes to re-use if given.
+        population :
+            Type of population currently plotted. This is used to make the
+            plot legends more precise.
+        kwargs :
+            Additional keyword arguments passed to the |dfplot| method.
+
+        Returns
+        -------
+            Created axes.
+
+        """
         if axes is not None:
             axes.set_prop_cycle(None)
-        axes = emission_energy.plot(
+        explicit = explicit_column_names(
+            df.columns,
+            population=population,
+            emission_data_type="Emission Energy",
+        )
+        df.rename(columns=explicit, inplace=True)
+        axes = df.plot(
             *args,
-            x=col_energy,
+            x=explicit[col_energy],
             ax=axes,
+            ylabel=md_ylabel["Emission Energy"],
             **kwargs,
         )
         assert isinstance(axes, Axes)
@@ -55,10 +112,13 @@ class PandasPlotter(Plotter):
 
     def plot_emission_angle_distribution(
         self,
-        emission_angles: pd.DataFrame,
+        df: pd.DataFrame,
         *args,
         axes: Axes | None = None,
+        population: ImplementedPop | None = None,
         **kwargs,
     ) -> Axes:
         """Plot the given emission angles distribution, return Axes object."""
-        raise NotImplementedError
+        raise NotImplementedError(
+            "Plotting emission angle distribution not implemented yet."
+        )

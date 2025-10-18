@@ -46,6 +46,10 @@ class Model(ABC):
 
     """
 
+    #: Types of modelled data.
+    emission_data_types: tuple[ImplementedEmissionData]
+    #: Modelled populations.
+    populations: tuple[ImplementedPop]
     considers_energy: bool
     is_3d: bool
     is_dielectrics_compatible: bool
@@ -258,11 +262,21 @@ class Model(ABC):
 
         if emission_data_type == "Emission Yield":
             return plotter.plot_emission_yield(
-                to_plot, axes=axes, ls="--", grid=grid, **kwargs
+                to_plot,
+                axes=axes,
+                ls="--",
+                grid=grid,
+                population=population,
+                **kwargs,
             )
         if emission_data_type == "Emission Energy":
             return plotter.plot_emission_energy_distribution(
-                to_plot, axes=axes, ls="--", grid=grid, **kwargs
+                to_plot,
+                axes=axes,
+                ls="--",
+                grid=grid,
+                population=population,
+                **kwargs,
             )
         raise NotImplementedError
 

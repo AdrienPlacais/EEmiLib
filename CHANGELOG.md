@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - To recheck!
 - Implemented Sombrin TEEY model.
 - Implemented Chung and Everhart SEs emission energy model.
-- Better plots: correct y-labels.
+- Better plots: correct y-labels, legend entries.
 
 ### Changed
 
@@ -37,11 +37,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Position of peaks for emission energy
 - ? Data correction for Deesse loader.
 - Plots:
-  - Fix Legend entries
   - ? Different colors for different populations
   - Fix energy/angle box in GUI
   - Make energy/angle box values adjust to the interval of loaded data
   - Make data to plot/population to plot follow according to nature of model
+- Fix the `:unit:` that appears in the Parameters list in GUI
     <!-- ## [0.0.0] 1312-01-01 -->
     <!---->
     <!-- ### Added -->

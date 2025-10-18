@@ -105,17 +105,25 @@ class EmissionEnergyDistribution(EmissionData):
         marker: str | None = "+",
         axes: T | None = None,
         grid: bool = True,
+        population: ImplementedPop | None = None,
         **kwargs,
     ) -> T:
-        """Plot the contained data using plotter."""
+        """Plot the contained data using plotter.
+
+        This wrapper simply calls the
+        :meth:`.Plotter.plot_emission_energy_distribution` method.
+        method.
+
+        """
         return plotter.plot_emission_energy_distribution(
-            emission_energy=self.data,
+            df=self.data,
             *args,
             axes=axes,
             lw=lw,
             marker=marker,
             grid=grid,
             label=self.label,
+            population=population,
             **kwargs,
         )
 

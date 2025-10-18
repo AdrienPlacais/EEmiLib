@@ -26,7 +26,6 @@ from eemilib.util.constants import (
     IMPLEMENTED_POP,
     ImplementedEmissionData,
     ImplementedPop,
-    md_ylabel,
 )
 
 pop_to_row = {pop: i for i, pop in enumerate(IMPLEMENTED_POP)}
@@ -450,7 +449,7 @@ class DataMatrix:
             axes = data.plot(
                 plotter,
                 axes=axes,
-                ylabel=md_ylabel[emission_data_type],
+                population=population,
                 **kwargs,
             )
         return axes
