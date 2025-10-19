@@ -43,12 +43,14 @@ from eemilib.util.constants import (
 )
 from PyQt5.QtWidgets import (
     QApplication,
+    QCheckBox,
     QComboBox,
     QGroupBox,
     QLineEdit,
     QListWidget,
     QMainWindow,
     QPushButton,
+    QRadioButton,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -58,6 +60,13 @@ from PyQt5.QtWidgets import (
 
 class MainWindow(QMainWindow):
     """This object holds the GUI."""
+
+    #: If selecting Model in dropdown should automatically fill the appopriate
+    #: data to plot checkbox
+    autofill_data_to_plot = True
+    #: If selecting Model in dropdown should automatically fill the appopriate
+    #: emission data checkbox
+    autofill_nature_to_plot = True
 
     def __init__(self):
         """Create the GUI."""
@@ -88,8 +97,17 @@ class MainWindow(QMainWindow):
         self.setup_model_dropdown()
 
         self.model_table = self.setup_model_configuration()
+        self.energy_angle_group: QGroupBox
+        self.energy_angle_layout: QVBoxLayout
         self.setup_energy_angle_inputs()
-        self.setup_plotter_dropdown()
+
+        self.plotter_classes: dict[str, str]
+        self.plotter_dropdown: QComboBox
+        self.plot_measured_button: QPushButton
+        self.plot_model_button: QPushButton
+        self.data_checkboxes: list[QRadioButton]
+        self.population_checkboxes: list[QCheckBox]
+        self.setup_plotter_dropdowns()
 
         # Call the methods called by the model_dropdown index change
         self._setup_model()
@@ -177,7 +195,7 @@ class MainWindow(QMainWindow):
     def setup_model_dropdown(self) -> None:
         """Set the :class:`.Model` related interface.
 
-        Assign the `model_classes` and `model_dropdown`.
+        Assign the ``model_classes`` and ``model_dropdown``.
 
         """
         classes, layout, dropdown, buttons = setup_dropdown(
@@ -194,7 +212,10 @@ class MainWindow(QMainWindow):
         dropdown.currentIndexChanged.connect(
             self._deactivate_unnecessary_file_widgets
         )
-        # self.fit_button = buttons[0]
+        dropdown.currentIndexChanged.connect(
+            self._fill_plot_nature_and_population
+        )
+
         self.model_help_button = buttons[0]
         self.main_layout.addLayout(layout)
         return
@@ -243,7 +264,6 @@ class MainWindow(QMainWindow):
         updatable_attr = ("value", "lower_bound", "upper_bound")
         attr = PARAMETER_POS_TO_ATTR[col]
         if attr not in updatable_attr:
-            logging.info("This column cannot be updated.")
             return
 
         name = self.model_table.item(row, 0).text()
@@ -279,13 +299,41 @@ class MainWindow(QMainWindow):
         for i, param in enumerate(self.model.parameters.values()):
             self.model_table.setItem(i, 2, QTableWidgetItem(str(param.value)))
 
+    def _fill_plot_nature_and_population(self) -> None:
+        """Check emission data type and population.
+
+        When model is updated, check the ``Data to plot`` and ``Population to
+        plot`` checkboxes in the ``Plot`` section that are concerned by current
+        model.
+
+        """
+        data_type_to_plot = self.model.emission_data_types[0]
+        if self.autofill_data_to_plot:
+            index = IMPLEMENTED_EMISSION_DATA.index(data_type_to_plot)
+            self.data_checkboxes[index].setChecked(True)
+
+        if self.autofill_nature_to_plot:
+            pop_to_plot = set(
+                self.model.model_config.mandatory_populations(
+                    emission_data_type=data_type_to_plot
+                )
+                + list(self.model.populations)
+            )
+            for button, population in zip(
+                self.population_checkboxes, IMPLEMENTED_POP, strict=True
+            ):
+                if population in pop_to_plot:
+                    button.setChecked(True)
+                    continue
+                button.setChecked(False)
+
     # =========================================================================
     # Plot
     # =========================================================================
     def setup_energy_angle_inputs(self) -> None:
         """Set the energy and angle inputs for the model plot."""
         self.energy_angle_group = QGroupBox(
-            "PEs energy and angle range (model plot)"
+            "Energy and angle range (used for model plot)"
         )
         self.energy_angle_layout = QVBoxLayout()
 
@@ -311,6 +359,26 @@ class MainWindow(QMainWindow):
         self.energy_angle_group.setLayout(self.energy_angle_layout)
         self.main_layout.addWidget(self.energy_angle_group)
 
+    def setup_plotter_dropdowns(self) -> None:
+        """Set the :class:`.Plotter` related interface."""
+        self._set_up_data_to_plot_checkboxes()
+        self._set_up_population_to_plot_checkboxes()
+
+        classes, layout, dropdown, buttons = setup_dropdown(
+            module_name="eemilib.plotter",
+            base_class=Plotter,
+            buttons_args={
+                "Plot file": self.plot_measured,
+                "Plot model": self.plot_model,
+                "New figure": lambda _: setattr(self, "axes", None),
+            },
+        )
+        self.plotter_classes = classes
+        self.main_layout.addLayout(layout)
+        self.plotter_dropdown = dropdown
+        self.plot_measured_button = buttons[0]
+        self.plot_model_button = buttons[1]
+
     def _set_up_data_to_plot_checkboxes(self) -> None:
         """Add checkbox to select which data should be plotted."""
         layout, checkboxes = to_plot_checkboxes(
@@ -330,26 +398,6 @@ class MainWindow(QMainWindow):
         )
         self.main_layout.addLayout(layout)
         self.population_checkboxes = checkboxes
-
-    def setup_plotter_dropdown(self) -> None:
-        """Set the :class:`.Plotter` related interface."""
-        self._set_up_data_to_plot_checkboxes()
-        self._set_up_population_to_plot_checkboxes()
-
-        classes, layout, dropdown, buttons = setup_dropdown(
-            module_name="eemilib.plotter",
-            base_class=Plotter,
-            buttons_args={
-                "Plot file": self.plot_measured,
-                "Plot model": self.plot_model,
-                "New figure": lambda _: setattr(self, "axes", None),
-            },
-        )
-        self.plotter_classes = classes
-        self.main_layout.addLayout(layout)
-        self.plotter_dropdown = dropdown
-        self.plot_measured_button = buttons[0]
-        self.plot_model_button = buttons[1]
 
     def plot_measured(self) -> None:
         """Plot the desired data, as imported."""

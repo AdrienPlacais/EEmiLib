@@ -205,6 +205,8 @@ PARAMETER_ATTR_TO_POS = {
     "lock": 5,
 }
 
+#: Maps column position in list of parameters to the corresponding Parameter
+#: attribute
 PARAMETER_POS_TO_ATTR = {
     val: key for key, val in PARAMETER_ATTR_TO_POS.items()
 }
