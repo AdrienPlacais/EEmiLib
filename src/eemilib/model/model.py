@@ -348,8 +348,8 @@ class Model(ABC):
         modelled_teey = self.teey(measured_energy, angles)[
             col_normal
         ].to_numpy()
-        abs_std = np.std(measured_teey - modelled_teey)
-        error = 100 * abs_std / np.mean(modelled_teey)
+
+        error = 100.0 * np.std(measured_teey - modelled_teey, ddof=1.0)
         return float(error)
 
 
