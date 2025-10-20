@@ -1,7 +1,7 @@
 """Define tests for the Sombrin model."""
 
 from typing import Any
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -9,8 +9,6 @@ import pytest
 from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.emission_data.emission_yield import EmissionYield
 from eemilib.model.sombrin import Sombrin
-from numpy.testing import assert_array_almost_equal
-from numpy.typing import NDArray
 from pytest import approx
 
 
