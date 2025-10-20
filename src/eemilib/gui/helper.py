@@ -79,38 +79,37 @@ def setup_linspace_entries(
 ) -> tuple[QHBoxLayout, QLineEdit, QLineEdit, QLineEdit]:
     """Create an input to call np.linspace."""
     layout = QHBoxLayout()
-
     layout.addWidget(QLabel(label))
 
-    layout.addWidget(QLabel("first"))
-    first = QLineEdit()
-    first_validator = QDoubleValidator()
-    first_validator.setBottom(0)
-    if max_value is not None:
-        first_validator.setTop(max_value)
-    first.setValidator(first_validator)
-    first.setText(str(initial_values[0]))
-    layout.addWidget(first)
+    widgets: list[QWidget] = []
+    for label, is_int, x_0, x_max in zip(
+        ("first", "last", "n_points"),
+        (False, False, True),
+        initial_values,
+        (max_value, max_value, None),
+    ):
+        layout.addWidget(QLabel(label))
+        widgets.append(w := _linspace_entry(is_int, x_0=x_0, x_max=x_max))
+        layout.addWidget(w)
 
-    layout.addWidget(QLabel("last"))
-    last = QLineEdit()
-    last_validator = QDoubleValidator()
-    last_validator.setBottom(0)
-    if max_value is not None:
-        last_validator.setTop(max_value)
-    last.setValidator(last_validator)
-    last.setText(str(initial_values[1]))
-    layout.addWidget(last)
+    return layout, widgets[0], widgets[1], widgets[2]
 
-    layout.addWidget(QLabel("n points"))
-    points = QLineEdit()
-    points_validator = QIntValidator()
-    points_validator.setBottom(0)
-    points.setValidator(points_validator)
-    points.setText(str(initial_values[2]))
-    layout.addWidget(points)
 
-    return layout, first, last, points
+def _linspace_entry(
+    is_int: bool, x_0: float, x_min: int = 0, x_max: float | None = None
+) -> QWidget:
+    """Create widget for a single linspace entry."""
+    validator = QDoubleValidator()
+    validator.setBottom(x_min)
+    if is_int:
+        validator = QIntValidator()
+    if x_max is not None:
+        validator.setTop(int(x_max))
+
+    entry = QLineEdit()
+    entry.setValidator(validator)
+    entry.setText(str(x_0))
+    return entry
 
 
 def setup_lock_checkbox(
