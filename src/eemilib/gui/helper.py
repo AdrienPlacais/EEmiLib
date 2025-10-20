@@ -72,6 +72,34 @@ def setup_dropdown(
     return classes, layout, dropdown, buttons
 
 
+def set_dropdown_value(
+    dropdown: QComboBox, value: str | ABCMeta | None
+) -> None:
+    """Set a ``dropdown`` to desired value.
+
+    Parameters
+    ----------
+    dropdown :
+        Dropdown object.
+    value :
+        Name of class or class object you want to select in the dropdown. If
+        unset, we do not do anything.
+    allowed_values :
+        Dict used for the ``dropdown`` creation; links name of class objects
+        to their import path.
+
+    """
+    if value is None:
+        return
+    if isinstance(value, ABCMeta):
+        value = value.__name__
+    index = dropdown.findText(value)
+    if index == -1:
+        logging.info(f"{value = } not found in {dropdown = } items.")
+        return
+    dropdown.setCurrentIndex(index)
+
+
 def setup_linspace_entries(
     label: str,
     initial_values: tuple[float, float, int],

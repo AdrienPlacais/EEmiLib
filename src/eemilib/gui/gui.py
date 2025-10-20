@@ -24,6 +24,7 @@ from eemilib.gui.file_selection import file_selection_matrix
 from eemilib.gui.helper import (
     PARAMETER_ATTR_TO_POS,
     PARAMETER_POS_TO_ATTR,
+    set_dropdown_value,
     set_help_button_action,
     setup_dropdown,
     setup_linspace_entries,
@@ -71,8 +72,18 @@ class MainWindow(QMainWindow):
     #: their maximum values
     autofill_plotting_ranges = True
 
-    def __init__(self):
+    def __init__(
+        self,
+        default_model: str = "Vaughan",
+        default_loader: str = "PandasLoader",
+        default_plotter: str = "PandasPlotter",
+    ) -> None:
         """Create the GUI."""
+        self._defaults = {
+            "Model": default_model,
+            "Loader": default_loader,
+            "Plotter": default_plotter,
+        }
         # EEmiLib attributes
         self.data_matrix = DataMatrix()
         self.loader: Loader
@@ -116,9 +127,7 @@ class MainWindow(QMainWindow):
         self.setup_plotter_dropdowns()
 
         # Call the methods called by the model_dropdown index change
-        self._setup_model()
-        self._deactivate_unnecessary_file_widgets()
-        self._setup_loader()
+        self._set_default_dropdown()
 
     # =========================================================================
     # File selection
@@ -163,6 +172,7 @@ class MainWindow(QMainWindow):
         )
         self.loader_classes = classes
         dropdown.currentIndexChanged.connect(self._setup_loader)
+        dropdown.setCurrentText
         self.loader_dropdown = dropdown
         self.loader_help_button = buttons[0]
         self.main_layout.addLayout(layout)
@@ -343,50 +353,6 @@ class MainWindow(QMainWindow):
                     button.setChecked(True)
                     continue
                 button.setChecked(False)
-
-    def _fill_plotting_ranges(self) -> None:
-        """Fill energy and angle plotting ranges to match data files values."""
-        try:
-            model = self.model
-        except AttributeError as e:
-            logging.debug(
-                "Model is not set, cannot fill energy/angle plotting ranges. "
-                f"\n{e}"
-            )
-            return
-        try:
-            data_matrix = self.data_matrix
-        except AttributeError as e:
-            logging.debug(
-                "DataMatrix is not set, cannot fill energy/angle plotting "
-                f"ranges.\n{e}"
-            )
-            return
-
-        if not self.autofill_plotting_ranges:
-            return
-        data_type_to_plot = model.emission_data_types[0]
-
-        data = data_matrix.get_data(emission_data_type=data_type_to_plot)
-        if len(data) == 0:
-            logging.debug(
-                "No valid data, cannot fill energy/angle plotting ranges."
-            )
-            return
-        data_subset = data[0]
-
-        e_maxi = max(data_subset.energies)
-        if e_maxi is not None and not np.isnan(e_maxi):
-            logging.debug(f"Setting {e_maxi = }")
-            self.last_energy_widget.setText(str(e_maxi))
-
-        theta_maxi = max(data_subset.angles)
-        n_theta = len(data_subset.angles)
-        if theta_maxi is not None and not np.isnan(theta_maxi):
-            logging.debug(f"Setting {theta_maxi = }")
-            self.last_theta_widget.setText(str(theta_maxi))
-            logging.debug(f"Setting {n_theta = }")
-            self.n_theta_widget.setText(str(n_theta))
 
     # =========================================================================
     # Plot
@@ -571,6 +537,54 @@ class MainWindow(QMainWindow):
             int(linspace_args[2]),
         )
 
+    def _fill_plotting_ranges(self) -> None:
+        """Fill energy and angle plotting ranges to match data files values.
+
+        This method is called when the button ``Load`` is pressed.
+
+        """
+        try:
+            model = self.model
+        except AttributeError as e:
+            logging.debug(
+                "Model is not set, cannot fill energy/angle plotting ranges. "
+                f"\n{e}"
+            )
+            return
+        try:
+            data_matrix = self.data_matrix
+        except AttributeError as e:
+            logging.debug(
+                "DataMatrix is not set, cannot fill energy/angle plotting "
+                f"ranges.\n{e}"
+            )
+            return
+
+        if not self.autofill_plotting_ranges:
+            return
+        data_type_to_plot = model.emission_data_types[0]
+
+        data = data_matrix.get_data(emission_data_type=data_type_to_plot)
+        if len(data) == 0:
+            logging.debug(
+                "No valid data, cannot fill energy/angle plotting ranges."
+            )
+            return
+        data_subset = data[0]
+
+        e_maxi = max(data_subset.energies)
+        if e_maxi is not None and not np.isnan(e_maxi):
+            logging.debug(f"Setting {e_maxi = }")
+            self.last_energy_widget.setText(str(e_maxi))
+
+        theta_maxi = max(data_subset.angles)
+        n_theta = len(data_subset.angles)
+        if theta_maxi is not None and not np.isnan(theta_maxi):
+            logging.debug(f"Setting {theta_maxi = }")
+            self.last_theta_widget.setText(str(theta_maxi))
+            logging.debug(f"Setting {n_theta = }")
+            self.n_theta_widget.setText(str(n_theta))
+
     # =========================================================================
     # Helper
     # =========================================================================
@@ -607,6 +621,23 @@ class MainWindow(QMainWindow):
             return
         widget.setStyleSheet("background-color: lightgray;")
         widget.setEnabled(False)
+
+    # =========================================================================
+    # Misc
+    # =========================================================================
+    def _set_default_dropdown(self) -> None:
+        """Set dropdowns to their default values.
+
+        We call this method at the end of the GUI initialization rather than
+        at the creation of the dropdowns to ensure that every side effects
+        is executed.
+
+        """
+        for dropdown, key in zip(
+            (self.loader_dropdown, self.model_dropdown, self.plotter_dropdown),
+            ("Loader", "Model", "Plotter"),
+        ):
+            set_dropdown_value(dropdown, self._defaults[key])
 
 
 def main():
