@@ -30,7 +30,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Trying to plot non-existent/not implemented data does not raise an Error anymore.
+- Trying to plot non-existent/not implemented data does not cause the GUI to
+  crash anymore.
+- Display of `Parameter` units in GUI and doc.
 
 ## TODO
 
@@ -43,7 +45,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ? Data correction for Deesse loader.
 - Plots:
   - ? Different colors for different populations
-- Fix the `:unit:` that appears in the Parameters list in GUI
     <!-- ## [0.0.0] 1312-01-01 -->
     <!---->
     <!-- ### Added -->

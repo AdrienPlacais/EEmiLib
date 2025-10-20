@@ -43,14 +43,14 @@ class ChungEverhart(Model):
     initial_parameters = {
         "W_f": {
             "markdown": r"W_f",
-            "unit": ":unit:`eV`",
+            "unit": "eV",
             "value": 8.0,
             "lower_bound": 0.0,
             "description": "Material work function.",
         },
         "norm": {
             "markdown": r"k",
-            "unit": ":unit:`1`",
+            "unit": "1",
             "value": 1.0,
             "lower_bound": 0.0,
             "description": "Distribution re-normalization constant.",
@@ -66,7 +66,7 @@ class ChungEverhart(Model):
         ----------
         parameters_values :
             Contains name of parameters and associated value. If provided, will
-            override the default values set in ``initial_parameters``.
+            override the default values set in ``initial`_parameters``.
 
         """
         super().__init__(url_doc_override="manual/models/chung_and_everhart")

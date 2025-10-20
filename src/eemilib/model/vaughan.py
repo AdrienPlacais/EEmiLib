@@ -53,7 +53,7 @@ class Vaughan(Model):
     initial_parameters = {
         "E_0": {
             "markdown": r"E_0",
-            "unit": ":unit:`eV`",
+            "unit": "eV",
             "value": 12.5,
             "description": r"Threshold energy. By default, locked to "
             + r":math:`12.5\mathrm{\,eV}`. If unlocked, will be fitted to "
@@ -62,14 +62,14 @@ class Vaughan(Model):
         },
         "E_max": {
             "markdown": r"E_\mathrm{max}",
-            "unit": ":unit:`eV`",
+            "unit": "eV",
             "value": 0.0,
             "lower_bound": 0.0,
             "description": "Energy at maximum TEEY.",
         },
         "delta_E_transition": {
             "markdown": r"\Delta E_{tr}",
-            "unit": ":unit:`eV`",
+            "unit": "eV",
             "value": 1.0,
             "description": "Energy over which we switch from"
             + r" :math:`\sigma_\mathrm{low}` to actual Vaughan TEEY. Useful for"
@@ -78,7 +78,7 @@ class Vaughan(Model):
         },
         "teey_low": {
             "markdown": r"\sigma_\mathrm{low}",
-            "unit": ":unit:`1`",
+            "unit": "1",
             "value": 0.5,
             "lower_bound": 0.0,
             "description": "TEEY below :math:`E_0`.",
@@ -86,14 +86,14 @@ class Vaughan(Model):
         },
         "teey_max": {
             "markdown": r"\sigma_\mathrm{max}",
-            "unit": ":unit:`1`",
+            "unit": "1",
             "value": 0.0,
             "lower_bound": 0.0,
             "description": "Maximum TEEY, directly taken from the measurement.",
         },
         "k_s": {
             "markdown": r"k_s",
-            "unit": ":unit:`1`",
+            "unit": "1",
             "value": 1.0,
             "lower_bound": 0.0,
             "upper_bound": 2.0,
@@ -103,7 +103,7 @@ class Vaughan(Model):
         },
         "k_se": {
             "markdown": r"k_{se}",
-            "unit": ":unit:`1`",
+            "unit": "1",
             "value": 1.0,
             "lower_bound": 0.0,
             "upper_bound": 2.0,
@@ -113,7 +113,7 @@ class Vaughan(Model):
         },
         "E_c1": {
             "markdown": r"E_{c,\,1}",
-            "unit": ":unit:`eV`",
+            "unit": "eV",
             "value": 0.0,
             "description": r"First crossover energy. Must be provided instead"
             + " of E_0 for SPARK3D Vaughan.",

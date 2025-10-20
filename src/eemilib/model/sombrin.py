@@ -49,21 +49,21 @@ class Sombrin(Model):
     initial_parameters = {
         "E_max": {
             "markdown": r"E_\mathrm{max}",
-            "unit": ":unit:`eV`",
+            "unit": "eV",
             "value": 1.0,
             "lower_bound": 0.0,
             "description": "Energy at maximum TEEY.",
         },
         "teey_max": {
             "markdown": r"\sigma_\mathrm{max}",
-            "unit": ":unit:`1`",
+            "unit": "1",
             "value": 0.0,
             "lower_bound": 0.0,
             "description": "Maximum TEEY, directly taken from the measurement.",
         },
         "E_c1": {
             "markdown": r"E_{c,\,1}",
-            "unit": ":unit:`eV`",
+            "unit": "eV",
             "value": 0.0,
             "lower_bound": 0.0,
             "description": (

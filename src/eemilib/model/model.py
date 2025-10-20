@@ -96,7 +96,7 @@ class Model(ABC):
             doc = [
                 f"   * - :math:`{kwargs.get('markdown', '')}`",
                 f"     - {name}",
-                f"     - {kwargs.get('unit', '')}",
+                f"     - :unit:`{kwargs.get('unit', '')}`",
                 f"     - :math:`{kwargs.get('value', '')}`",
                 f"     - {kwargs.get('description', '')}",
             ]
