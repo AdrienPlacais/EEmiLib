@@ -58,6 +58,9 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
+DROPDOWNS = ("Loader", "Model", "Plotter")
+Dropdowns = Literal["Loader", "Model", "Plotter"]
+
 
 class MainWindow(QMainWindow):
     """This object holds the GUI."""
@@ -79,7 +82,7 @@ class MainWindow(QMainWindow):
         default_plotter: str = "PandasPlotter",
     ) -> None:
         """Create the GUI."""
-        self._defaults = {
+        self._defaults: dict[Dropdowns, str] = {
             "Model": default_model,
             "Loader": default_loader,
             "Plotter": default_plotter,
@@ -100,13 +103,13 @@ class MainWindow(QMainWindow):
 
         self.file_lists = self.setup_file_selection_matrix()
 
+        self.dropdowns: dict[str, QComboBox] = {}
+
         self.loader_classes: dict[str, str]
-        self.loader_dropdown: QComboBox
         self.loader_help_button: QPushButton
         self.setup_loader_dropdown()
 
         self.model_classes: dict[str, str]
-        self.model_dropdown: QComboBox
         self.model_help_button: QPushButton
         self.setup_model_dropdown()
 
@@ -119,7 +122,6 @@ class MainWindow(QMainWindow):
         self.setup_energy_angle_inputs()
 
         self.plotter_classes: dict[str, str]
-        self.plotter_dropdown: QComboBox
         self.plot_measured_button: QPushButton
         self.plot_model_button: QPushButton
         self.data_checkboxes: list[QRadioButton]
@@ -140,7 +142,7 @@ class MainWindow(QMainWindow):
 
     def _deactivate_unnecessary_file_widgets(self) -> None:
         """Grey out the files not needed by current model."""
-        model = self._dropdown_to_class("model")()
+        model = self._dropdown_to_class("Model")()
         if not isinstance(model, Model):
             return
         config: ModelConfig = model.model_config
@@ -173,14 +175,14 @@ class MainWindow(QMainWindow):
         self.loader_classes = classes
         dropdown.currentIndexChanged.connect(self._setup_loader)
         dropdown.setCurrentText
-        self.loader_dropdown = dropdown
+        self.dropdowns["Loader"] = dropdown
         self.loader_help_button = buttons[0]
         self.main_layout.addLayout(layout)
         return
 
     def _setup_loader(self) -> None:
         """Setup new loader whenever the dropdown menu is changed."""
-        self.loader = self._dropdown_to_class("loader")()
+        self.loader = self._dropdown_to_class("Loader")()
         set_help_button_action(self.loader_help_button, self.loader)
 
     def load_data(self) -> None:
@@ -225,7 +227,7 @@ class MainWindow(QMainWindow):
             },
         )
         self.model_classes = classes
-        self.model_dropdown = dropdown
+        self.dropdowns["Model"] = dropdown
         dropdown.currentIndexChanged.connect(self._setup_model)
         dropdown.currentIndexChanged.connect(
             self._deactivate_unnecessary_file_widgets
@@ -247,7 +249,7 @@ class MainWindow(QMainWindow):
 
     def _setup_model(self) -> None:
         """Instantiate :class:`.Model` when it is selected in dropdown menu."""
-        self.model = self._dropdown_to_class("model")()
+        self.model = self._dropdown_to_class("Model")()
 
         set_help_button_action(self.model_help_button, self.model)
 
@@ -407,7 +409,7 @@ class MainWindow(QMainWindow):
         )
         self.plotter_classes = classes
         self.main_layout.addLayout(layout)
-        self.plotter_dropdown = dropdown
+        self.dropdowns["Plotter"] = dropdown
         self.plot_measured_button = buttons[0]
         self.plot_model_button = buttons[1]
 
@@ -433,7 +435,7 @@ class MainWindow(QMainWindow):
 
     def plot_measured(self) -> None:
         """Plot the desired data, as imported."""
-        plotter = self._dropdown_to_class("plotter")()
+        plotter = self._dropdown_to_class("Plotter")()
 
         success_pop, populations = self._get_populations_to_plot()
         if not success_pop:
@@ -453,7 +455,7 @@ class MainWindow(QMainWindow):
 
     def plot_model(self) -> None:
         """Plot the desired data, as modelled."""
-        plotter = self._dropdown_to_class("plotter")()
+        plotter = self._dropdown_to_class("Plotter")()
 
         success_pop, populations = self._get_populations_to_plot()
         if not success_pop:
@@ -588,17 +590,12 @@ class MainWindow(QMainWindow):
     # =========================================================================
     # Helper
     # =========================================================================
-    def _dropdown_to_class(
-        self, attribute: Literal["loader", "plotter", "model"]
-    ) -> ABCMeta:
+    def _dropdown_to_class(self, name: Dropdowns) -> ABCMeta:
         """Convert dropdown entry to class."""
-        dropdown_name = "_".join((attribute, "dropdown"))
-        dropdown = getattr(self, dropdown_name, None)
-        assert (
-            dropdown is not None
-        ), f" The dropdown attribute {dropdown_name} is not defined."
+        dropdown = self.dropdowns.get(name, None)
+        assert dropdown is not None, f" The dropdown {name} is not defined."
 
-        module_names_to_paths = "_".join((attribute, "classes"))
+        module_names_to_paths = "_".join((name.lower(), "classes"))
         module_name_to_path = getattr(self, module_names_to_paths, None)
         assert module_name_to_path is not None, (
             f"The dictionary {module_names_to_paths}, linking every module"
@@ -633,11 +630,8 @@ class MainWindow(QMainWindow):
         is executed.
 
         """
-        for dropdown, key in zip(
-            (self.loader_dropdown, self.model_dropdown, self.plotter_dropdown),
-            ("Loader", "Model", "Plotter"),
-        ):
-            set_dropdown_value(dropdown, self._defaults[key])
+        for key in DROPDOWNS:
+            set_dropdown_value(self.dropdowns[key], self._defaults[key])
 
 
 def main():
