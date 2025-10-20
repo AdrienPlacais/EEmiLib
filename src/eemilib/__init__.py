@@ -8,7 +8,7 @@ import importlib.metadata
 
 from eemilib.util.log_manager import set_up_logging
 
-DOC_URL = "https://adrienplacais.github.io/EEmiLib/"
+DOC_URL = "https://eemilib.readthedocs.io/en/latest"
 __version__ = importlib.metadata.version("eemilib")
 
 set_up_logging("EEmiLib")
