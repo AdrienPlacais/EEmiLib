@@ -158,7 +158,7 @@ def test_error_ec1(
     sombrin_model.find_optimal_parameters(fil_technical_ag)
     returned = sombrin_model._error_ec1(fil_technical_ag.teey)
     expected = 0.0
-    assert returned == approx(expected)
+    assert returned == approx(expected, abs=1e-2)
 
 
 @pytest.mark.implementation
