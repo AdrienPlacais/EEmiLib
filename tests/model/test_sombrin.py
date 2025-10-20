@@ -146,7 +146,6 @@ def fil_technical_ag() -> MockDataMatrix:
     return data_matrix
 
 
-@pytest.mark.implementation
 def test_error_ec1(
     sombrin_model: Sombrin, fil_technical_ag: MockDataMatrix
 ) -> None:
@@ -161,7 +160,6 @@ def test_error_ec1(
     assert returned == approx(expected, abs=1e-2)
 
 
-@pytest.mark.implementation
 def test_error_teey(
     sombrin_model: Sombrin, fil_technical_ag: MockDataMatrix
 ) -> None:
