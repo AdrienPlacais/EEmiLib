@@ -45,6 +45,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ? Data correction for Deesse loader.
 - Plots:
   - ? Different colors for different populations
+- Fix all the tests.
+- Package data used for testing.
+- pip release, easier installation instructions.
     <!-- ## [0.0.0] 1312-01-01 -->
     <!---->
     <!-- ### Added -->
