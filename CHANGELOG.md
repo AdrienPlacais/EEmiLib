@@ -48,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix all the tests.
 - Package data used for testing.
 - pip release, easier installation instructions.
+- remove "package" and "module" from API documentation
     <!-- ## [0.0.0] 1312-01-01 -->
     <!---->
     <!-- ### Added -->
