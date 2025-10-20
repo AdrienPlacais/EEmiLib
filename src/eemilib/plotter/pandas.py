@@ -60,8 +60,8 @@ class PandasPlotter(Plotter):
             population=population,
             emission_data_type="Emission Yield",
         )
-        df.rename(columns=explicit, inplace=True)
-        axes = df.plot(
+        updated = df.rename(columns=explicit, inplace=False)
+        axes = updated.plot(
             *args,
             x=explicit[col_energy],
             ax=axes,
