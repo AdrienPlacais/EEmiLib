@@ -27,6 +27,7 @@ from eemilib.util.constants import (
     ImplementedEmissionData,
     ImplementedPop,
 )
+from eemilib.util.helper import flatten
 
 pop_to_row = {pop: i for i, pop in enumerate(IMPLEMENTED_POP)}
 row_to_pop = {val: key for key, val in pop_to_row.items()}
@@ -279,6 +280,32 @@ class DataMatrix:
         | Collection[EmissionAngleDistribution]
     ): ...
 
+    @overload
+    def get_data(
+        self,
+        row: None,
+        col: None,
+        population: None,
+        emission_data_type: None,
+    ) -> Collection[EmissionData]: ...
+
+    @overload
+    def get_data(
+        self,
+        row: None,
+        col: None,
+        population: ImplementedPop,
+        emission_data_type: None,
+    ) -> Collection[EmissionData]: ...
+    @overload
+    def get_data(
+        self,
+        row: None,
+        col: None,
+        population: None,
+        emission_data_type: ImplementedEmissionData,
+    ) -> Collection[EmissionData]: ...
+
     def get_data(
         self,
         row: int | None = None,
@@ -286,12 +313,65 @@ class DataMatrix:
         population: ImplementedPop | None = None,
         emission_data_type: ImplementedEmissionData | None = None,
     ) -> None | EmissionData | Collection[EmissionData]:
-        """Get the file(s) by index or name."""
+        """Get the file(s) by index or name.
+
+        You can provide ``row`` and ``col`` directly.
+
+        Alternatively, provide ``population`` and ``emission_data_type``. If
+        ``population`` is not given, return valid data corresponding to all
+        populations. If ``emission_data_type`` is not given, return valid
+        data corresponding to all emission data.
+
+        Parameters
+        ----------
+        row :
+            Row index in data matrix.
+        col :
+            Column index in data matrix.
+        population :
+            Population type.
+        emission_data_type :
+            Emission data type.
+
+        Returns
+        -------
+            Desired data; if the specified data does not exists, a ``None`` is
+            returned without any error message.
+
+        """
         if population and emission_data_type:
             row, col = self._natures_to_indexes(
                 population_type=population,
                 emission_data_type=emission_data_type,
             )
+
+        if population and emission_data_type is None:
+            single_pop_data = [
+                self.get_data(
+                    population=population, emission_data_type=data_type
+                )
+                for data_type in IMPLEMENTED_EMISSION_DATA
+            ]
+            return [d for d in flatten(single_pop_data) if d is not None]
+
+        if emission_data_type and population is None:
+            emission_data = [
+                self.get_data(
+                    population=pop, emission_data_type=emission_data_type
+                )
+                for pop in IMPLEMENTED_POP
+            ]
+            return [d for d in flatten(emission_data) if d is not None]
+
+        if row is None and col is None:
+            all_data = [
+                [
+                    self.get_data(population=pop, emission_data_type=data_type)
+                    for pop in IMPLEMENTED_POP
+                ]
+                for data_type in IMPLEMENTED_EMISSION_DATA
+            ]
+            return [d for d in flatten(all_data) if d is not None]
 
         if row is None or col is None:
             raise ValueError(

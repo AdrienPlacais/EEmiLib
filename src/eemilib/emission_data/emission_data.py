@@ -10,11 +10,13 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Self
 
+import numpy as np
 import pandas as pd
 from eemilib.loader.loader import Loader
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import ImplementedPop
 from eemilib.util.helper import documentation_url
+from numpy.typing import NDArray
 
 
 class EmissionData(ABC):
@@ -40,6 +42,9 @@ class EmissionData(ABC):
         self.population = population
         self.data = data
         self._n_points = len(self.data)
+
+        self.energies: NDArray[np.float64] | list[float]
+        self.angles: NDArray[np.float64] | list[float]
 
     @classmethod
     @abstractmethod

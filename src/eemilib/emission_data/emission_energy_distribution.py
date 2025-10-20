@@ -45,6 +45,10 @@ class EmissionEnergyDistribution(EmissionData):
 
         """
         super().__init__(population, data)
+        self.energies = data[col_energy].to_numpy()
+        self.angles = [
+            float(col.split()[0]) for col in data.columns if col != col_energy
+        ]
 
         #: Energy at the maximum of SEs in :unit:`eV`. Defined for SEs and
         #: distribution of all electrons.

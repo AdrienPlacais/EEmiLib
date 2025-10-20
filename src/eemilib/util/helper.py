@@ -3,6 +3,7 @@
 import inspect
 import pkgutil
 from abc import ABCMeta
+from collections.abc import Iterable, Iterator
 from typing import Any
 
 from eemilib import DOC_URL
@@ -54,3 +55,12 @@ def documentation_url(
     package = module.split(".")[0]
     parts = (DOC_URL, package, module)
     return "/".join(parts) + ".html"
+
+
+def flatten[T](nest: Iterable[T]) -> Iterator[T]:
+    """Flatten nested list of lists of..."""
+    for _in in nest:
+        if isinstance(_in, Iterable) and not isinstance(_in, (str, bytes)):
+            yield from flatten(_in)
+        else:
+            yield _in

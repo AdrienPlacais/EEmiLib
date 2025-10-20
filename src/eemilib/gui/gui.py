@@ -67,6 +67,9 @@ class MainWindow(QMainWindow):
     #: If selecting Model in dropdown should automatically fill the appopriate
     #: emission data checkbox
     autofill_nature_to_plot = True
+    #: If loading data should automatically fill the energy/angle ranges with
+    #: their maximum values
+    autofill_plotting_ranges = True
 
     def __init__(self):
         """Create the GUI."""
@@ -77,7 +80,7 @@ class MainWindow(QMainWindow):
         self.axes = None
 
         super().__init__()
-        self.setWindowTitle("EEmiLib GUI")
+        self.setWindowTitle("EEmiLib")
 
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
@@ -99,6 +102,9 @@ class MainWindow(QMainWindow):
         self.model_table = self.setup_model_configuration()
         self.energy_angle_group: QGroupBox
         self.energy_angle_layout: QVBoxLayout
+        self.last_energy_widget: QLineEdit
+        self.last_theta_widget: QLineEdit
+        self.n_theta_widget: QLineEdit
         self.setup_energy_angle_inputs()
 
         self.plotter_classes: dict[str, str]
@@ -159,7 +165,6 @@ class MainWindow(QMainWindow):
         dropdown.currentIndexChanged.connect(self._setup_loader)
         self.loader_dropdown = dropdown
         self.loader_help_button = buttons[0]
-        # self.load_button = buttons[0]
         self.main_layout.addLayout(layout)
         return
 
@@ -188,6 +193,9 @@ class MainWindow(QMainWindow):
                 "Check that the format of the files is consistent with what "
                 f"is expected by the data loader. Error message:\n{e}"
             )
+
+        if self.autofill_plotting_ranges:
+            self._fill_plotting_ranges()
 
     # =========================================================================
     # Model
@@ -307,17 +315,26 @@ class MainWindow(QMainWindow):
         model.
 
         """
-        data_type_to_plot = self.model.emission_data_types[0]
+        try:
+            model = self.model
+        except AttributeError as e:
+            logging.debug(
+                "Model is not set, cannot fill plot nature or population "
+                f"checkboxes.\n{e}"
+            )
+            return
+
+        data_type_to_plot = model.emission_data_types[0]
         if self.autofill_data_to_plot:
             index = IMPLEMENTED_EMISSION_DATA.index(data_type_to_plot)
             self.data_checkboxes[index].setChecked(True)
 
         if self.autofill_nature_to_plot:
             pop_to_plot = set(
-                self.model.model_config.mandatory_populations(
+                model.model_config.mandatory_populations(
                     emission_data_type=data_type_to_plot
                 )
-                + list(self.model.populations)
+                + list(model.populations)
             )
             for button, population in zip(
                 self.population_checkboxes, IMPLEMENTED_POP, strict=True
@@ -326,6 +343,50 @@ class MainWindow(QMainWindow):
                     button.setChecked(True)
                     continue
                 button.setChecked(False)
+
+    def _fill_plotting_ranges(self) -> None:
+        """Fill energy and angle plotting ranges to match data files values."""
+        try:
+            model = self.model
+        except AttributeError as e:
+            logging.debug(
+                "Model is not set, cannot fill energy/angle plotting ranges. "
+                f"\n{e}"
+            )
+            return
+        try:
+            data_matrix = self.data_matrix
+        except AttributeError as e:
+            logging.debug(
+                "DataMatrix is not set, cannot fill energy/angle plotting "
+                f"ranges.\n{e}"
+            )
+            return
+
+        if not self.autofill_plotting_ranges:
+            return
+        data_type_to_plot = model.emission_data_types[0]
+
+        data = data_matrix.get_data(emission_data_type=data_type_to_plot)
+        if len(data) == 0:
+            logging.debug(
+                "No valid data, cannot fill energy/angle plotting ranges."
+            )
+            return
+        data_subset = data[0]
+
+        e_maxi = max(data_subset.energies)
+        if e_maxi is not None and not np.isnan(e_maxi):
+            logging.debug(f"Setting {e_maxi = }")
+            self.last_energy_widget.setText(str(e_maxi))
+
+        theta_maxi = max(data_subset.angles)
+        n_theta = len(data_subset.angles)
+        if theta_maxi is not None and not np.isnan(theta_maxi):
+            logging.debug(f"Setting {theta_maxi = }")
+            self.last_theta_widget.setText(str(theta_maxi))
+            logging.debug(f"Setting {n_theta = }")
+            self.n_theta_widget.setText(str(n_theta))
 
     # =========================================================================
     # Plot
@@ -350,6 +411,11 @@ class MainWindow(QMainWindow):
                 max_value=max_val,
             )
             self.energy_angle_layout.addLayout(layout)
+            if qty == ("energy"):
+                self.last_energy_widget = last
+            elif qty == ("angle"):
+                self.last_theta_widget = last
+                self.n_theta_widget = points
 
             for attr, attr_name in zip(
                 (first, last, points), ("first", "last", "points")

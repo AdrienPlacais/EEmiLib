@@ -34,14 +34,14 @@ class EmissionYield(EmissionData):
         population :
             The concerned population of electrons.
         data :
-            Structure holding the data. Must have a ``Energy (eV)`` column
+            Structure holding the data. Must have an ``Energy (eV)`` column
             holding PEs energy. And one or several columns ``theta [deg]``,
             where ``theta`` is the value of the incidence angle and content is
             corresponding emission yield.
 
         """
         super().__init__(population, data)
-        self.energies: NDArray[np.float64] = data[col_energy].to_numpy()
+        self.energies = data[col_energy].to_numpy()
         self.angles = [
             float(col.split()[0]) for col in data.columns if col != col_energy
         ]
