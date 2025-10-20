@@ -323,14 +323,14 @@ class Model(ABC):
 
     def _error_ec1(self, emission_yield: EmissionYield) -> float:
         """Compute relative error over first crossover energy in :unit:`%`."""
-        energy = np.linspace(
-            0, self.parameters["E_max"].value, 10001, dtype=np.float64
-        )
+        measured_ec1 = emission_yield.e_c1
+        energy = np.linspace(0, 1.5 * measured_ec1, 10001, dtype=np.float64)
         theta = np.array([0.0])
         teey = self.teey(energy, theta)
-        idx_ec1 = np.argmin(np.abs(teey - 1.0))
+
+        idx_ec1 = (teey[col_normal] - 1.0).abs().idxmin()
         model_ec1 = energy[idx_ec1]
-        measured_ec1 = emission_yield.e_c1
+
         std = math.sqrt((measured_ec1 - model_ec1) ** 2)
         error = 100.0 * std / measured_ec1
         return float(error)
