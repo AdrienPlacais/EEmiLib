@@ -10,8 +10,15 @@ from eemilib.util.helper import documentation_url
 class Plotter(ABC):
     """A generic object to plot distributions, emission yields, etc."""
 
-    def __init__(self) -> None:
-        """Instantiate the object."""
+    def __init__(self, *args, gui: bool = False, **kwargs) -> None:
+        """Instantiate the object.
+
+        Parameters
+        ----------
+        gui :
+            Can be used if using the GUI, eg to activate interactive mode.
+
+        """
         self.doc_url = documentation_url(self)
 
     @abstractmethod

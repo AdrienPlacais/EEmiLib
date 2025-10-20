@@ -11,10 +11,18 @@ from matplotlib.axes import Axes
 class PandasPlotter(Plotter):
     """A :class:`.Plotter` using pandas lib."""
 
-    def __init__(self, *args, **kwargs) -> None:
-        """Instantiate object, activate interactive plotting."""
-        plt.ion()
-        return super().__init__(*args, **kwargs)
+    def __init__(self, *args, gui: bool = False, **kwargs) -> None:
+        """Instantiate object.
+
+        Parameters
+        ----------
+        gui :
+            Activates interactive plotting if using GUI.
+
+        """
+        if gui:
+            plt.ion()
+        return super().__init__(*args, gui=gui, **kwargs)
 
     def plot_emission_yield(
         self,

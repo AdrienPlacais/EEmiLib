@@ -435,7 +435,7 @@ class MainWindow(QMainWindow):
 
     def plot_measured(self) -> None:
         """Plot the desired data, as imported."""
-        plotter = self._dropdown_to_class("Plotter")()
+        plotter = self._dropdown_to_class("Plotter")(gui=True)
 
         success_pop, populations = self._get_populations_to_plot()
         if not success_pop:
@@ -455,7 +455,7 @@ class MainWindow(QMainWindow):
 
     def plot_model(self) -> None:
         """Plot the desired data, as modelled."""
-        plotter = self._dropdown_to_class("Plotter")()
+        plotter = self._dropdown_to_class("Plotter")(gui=True)
 
         success_pop, populations = self._get_populations_to_plot()
         if not success_pop:
