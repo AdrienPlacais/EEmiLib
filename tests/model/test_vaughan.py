@@ -245,7 +245,6 @@ def fil_technical_ag() -> MockDataMatrix:
     return data_matrix
 
 
-@pytest.mark.implementation
 @pytest.mark.xfail
 def test_error_ec1(
     vaughan_model: Vaughan, fil_technical_ag: MockDataMatrix
@@ -261,7 +260,6 @@ def test_error_ec1(
     assert returned == approx(expected)
 
 
-@pytest.mark.implementation
 @pytest.mark.xfail
 def test_error_teey(
     vaughan_model: Vaughan, fil_technical_ag: MockDataMatrix
