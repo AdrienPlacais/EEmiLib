@@ -32,7 +32,7 @@ docs = [
   "nbsphinx>=0.9.6,<1",
   "sphinx-rtd-theme>=3,<4",
   "sphinxcontrib-bibtex>=2.6,<3",
-  "linkify>=2,<3",
+  "linkify-it-py>=2,<3",
 ]
 test = ["pytest>=8.3.2,<9"]
 
