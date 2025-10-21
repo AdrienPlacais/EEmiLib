@@ -3,5 +3,5 @@ parameter module
 
 .. automodule:: eemilib.model.parameter
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:

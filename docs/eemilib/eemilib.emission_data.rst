@@ -3,8 +3,8 @@ emission\_data package
 
 .. automodule:: eemilib.emission_data
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Submodules
 ----------

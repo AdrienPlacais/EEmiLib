@@ -48,10 +48,6 @@ class PandasPlotter(Plotter):
         kwargs :
             Additional keyword arguments passed to the |dfplot| method.
 
-        Returns
-        -------
-            Created axes.
-
         """
         if axes is not None:
             axes.set_prop_cycle(None)
@@ -79,7 +75,7 @@ class PandasPlotter(Plotter):
         population: ImplementedPop | None = None,
         **kwargs,
     ) -> Axes:
-        """Plot :class:`.EmissionDistribution` data with |dfplot| method.
+        """Plot :class:`.EmissionEnergyDistribution` data with |dfplot| method.
 
         Parameters
         ----------
@@ -94,10 +90,6 @@ class PandasPlotter(Plotter):
             plot legends more precise.
         kwargs :
             Additional keyword arguments passed to the |dfplot| method.
-
-        Returns
-        -------
-            Created axes.
 
         """
         if axes is not None:

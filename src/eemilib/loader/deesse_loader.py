@@ -31,7 +31,7 @@ class DeesseLoader(Loader):
 
         Returns
         -------
-        data :
+        pandas.DataFrame
             Structure holding the data. Has a ``Energy [eV]`` column
             holding PEs energy. And one or several columns ``theta [deg]``,
             where `theta` is the value of the incidence angle and content is
@@ -90,7 +90,7 @@ class DeesseLoader(Loader):
 
         Returns
         -------
-        pd.DataFrame
+        pandas.DataFrame
             Structure holding the data. Has a ``Energy [eV]`` column
             holding emitted electrons energy. And one or several columns
             ``theta [deg]``, where ``theta`` is the value of the incidence

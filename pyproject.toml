@@ -1,22 +1,22 @@
 [project]
 authors = [
-   { name = "Adrien Plaçais", email = "placais@lpsc.in2p3.fr" },
+  { name = "Adrien Plaçais", email = "placais@lpsc.in2p3.fr" },
 ]
 classifiers = [
-   "Development Status :: 3 - Alpha",
-   "Intended Audience :: Science/Research",
-   "License :: OSI Approved :: MIT License",
-   "Operating System :: OS Independent",
-   "Programming Language :: Python :: 3.12",
-   "Topic :: Scientific/Engineering :: Physics",
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Physics",
 ]
 dependencies = [
-   "matplotlib>=3.9.1,<4",
-   "numpy>=2,<3",
-   "pandas>=2.2.2,<3",
-   "pre-commit>=4, <5",
-   "PyQt5>=5.15.10,< 6",
-   "scipy>=1.14,<2",
+  "matplotlib>=3.10.7,<4",
+  "numpy>=2.3.3,<3",
+  "pandas>=2.3.3,<3",
+  "pre-commit>=4, <5",
+  "PyQt5>=5.15.10,< 6",
+  "scipy>=1.14,<2",
 ]
 description = "Fit various Electron EMIssion models on experimental data."
 dynamic = ["version"]
@@ -27,10 +27,11 @@ requires-python = ">=3.12"
 
 [project.optional-dependencies]
 docs = [
-   "myst-parser>=4,<5",
-   "nbsphinx>=0.9.6,<1",
-   "sphinx-rtd-theme>=3,<4",
-   "sphinxcontrib-bibtex>=2.6,<3",
+  "sphinx>=8.2,<9",
+  "myst-parser>=4,<5",
+  "nbsphinx>=0.9.6,<1",
+  "sphinx-rtd-theme>=3,<4",
+  "sphinxcontrib-bibtex>=2.6,<3",
 ]
 test = ["pytest>=8.3.2,<9"]
 
@@ -54,9 +55,9 @@ src_paths = ["./eemilib/"]
 addopts = ["--import-mode=importlib", "--strict-markers"]
 filterwarnings = ["ignore:.*cKDTree.*:DeprecationWarning"]
 markers = [
-   "implementation: mark tests/functionalities currently under implementation",
-   "slow: mark a test as slow (deselect with '-m \"not slow\"')",
-   "smoke: mark quick and critical tests (select with '-m smoke')",
+  "implementation: mark tests/functionalities currently under implementation",
+  "slow: mark a test as slow (deselect with '-m \"not slow\"')",
+  "smoke: mark quick and critical tests (select with '-m smoke')",
 ]
 minversion = "6.0"
 testpaths = ["tests"]

@@ -3,8 +3,8 @@ data package
 
 .. automodule:: eemilib.data
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Subpackages
 -----------

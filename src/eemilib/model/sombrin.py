@@ -36,8 +36,8 @@ class Sombrin(Model):
 
     """
 
-    emission_data_types = ("Emission Yield",)
-    populations = ("all",)
+    emission_data_types = ["Emission Yield"]
+    populations = ["all"]
     considers_energy = True
     is_3d = False
     is_dielectrics_compatible = False

@@ -69,6 +69,7 @@ def read_comments(filepath: str | Path, comment: str = "#") -> list[str]:
 
     Returns
     -------
+    list[str]
         Comments, line by line. Without the comment character.
 
     """

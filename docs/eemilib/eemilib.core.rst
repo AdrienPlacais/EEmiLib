@@ -3,8 +3,8 @@ core package
 
 .. automodule:: eemilib.core
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Submodules
 ----------

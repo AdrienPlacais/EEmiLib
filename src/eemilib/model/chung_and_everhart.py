@@ -30,8 +30,8 @@ class ChungEverhartParameters(TypedDict):
 class ChungEverhart(Model):
     """Define the Chung and Everhart model, defined in :cite:`Chung1974`."""
 
-    emission_data_types = ("Emission Energy",)
-    populations = ("SE",)
+    emission_data_types = ["Emission Energy"]
+    populations = ["SE"]
     considers_energy = True
     is_3d = False
     is_dielectrics_compatible = False

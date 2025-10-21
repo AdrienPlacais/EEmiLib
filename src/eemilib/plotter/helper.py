@@ -32,6 +32,7 @@ def explicit_column_names(
 
     Returns
     -------
+    dict[str, str]
         Mapping to easily rename the data frame.
 
     """

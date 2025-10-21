@@ -4,7 +4,6 @@ import logging
 from pathlib import Path
 from typing import Self
 
-import numpy as np
 import pandas as pd
 from eemilib.emission_data.emission_data import EmissionData
 from eemilib.emission_data.helper import (
@@ -20,7 +19,6 @@ from eemilib.util.constants import (
     col_normal,
     md_ey,
 )
-from numpy.typing import NDArray
 
 
 class EmissionYield(EmissionData):
@@ -155,6 +153,7 @@ class EmissionYield(EmissionData):
 
         Returns
         -------
+        tuple[float, float | None]
             First and second crossover energies.
 
         """

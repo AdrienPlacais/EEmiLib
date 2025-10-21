@@ -3,8 +3,8 @@ ag package
 
 .. automodule:: eemilib.data.ag
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Subpackages
 -----------

@@ -36,7 +36,7 @@ class PandasLoader(Loader):
         :unit:`eV`. EY is the next columns (excluding the first line).
         Example:
 
-        .. code-block:: csv
+        .. code-block::
 
             # Cu measurements
             # Some comments
@@ -60,6 +60,7 @@ class PandasLoader(Loader):
 
         Returns
         -------
+        pandas.DataFrame
             Structure holding the data. Has a ``Energy [eV]`` column
             holding PEs energy. And one or several columns ``theta [deg]``,
             where ``theta`` is the value of the incidence angle and content is
