@@ -12,6 +12,8 @@ Subpackages
 .. toctree::
    :maxdepth: 5
 
+   eemilib.core
+   eemilib.data
    eemilib.emission_data
    eemilib.gui
    eemilib.loader

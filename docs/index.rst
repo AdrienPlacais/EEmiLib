@@ -6,7 +6,8 @@
 Welcome to EEmiLib's documentation!
 ===================================
 
-.. include:: manual/presentation.rst
+.. include:: ../README.md
+   :parser: myst_parser.sphinx
 
 .. toctree::
    :maxdepth: 4
