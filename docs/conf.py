@@ -43,9 +43,14 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 bibtex_bibfiles = ["references.bib"]
 
 # -- Options for HTML output -------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 html_theme = "sphinx_rtd_theme"
-html_theme_options = {}
-# html_static_path = ["_static"]
+html_static_path = ["_static"]
+html_sidebars = {
+    "**": [
+        "versions.html",
+    ],
+}
 
 # -- Check that there is no broken link --------------------------------------
 nitpicky = True
@@ -82,6 +87,12 @@ rst_prolog = """
 .. |dfplot| replace:: :meth:`pandas.DataFrame.plot`
 
 """
+
+# Parameters for sphinx-autodoc-typehints
+always_document_param_types = True
+always_use_bars_union = True
+typehints_defaults = "comma"
+
 #
 # -- bug fixes ---------------------------------------------------------------
 # fix following warning:
