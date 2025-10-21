@@ -97,6 +97,8 @@ always_document_param_types = True
 always_use_bars_union = True
 typehints_defaults = "comma"
 
+# MyST parser to include markdown files
+myst_gfm_only = True  # interpret markdown with github styling
 #
 # -- bug fixes ---------------------------------------------------------------
 # fix following warning:

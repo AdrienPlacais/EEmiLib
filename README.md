@@ -37,7 +37,7 @@ may have.
 To start the GUI:
 `eemilib-gui`
 
-![GUI screenshot](./docs/manual/images/gui_example.png)
+![GUI screenshot](images/gui_example.png)
 
 ### Python API
 
@@ -81,7 +81,7 @@ model.plot(
 )
 ```
 
-![results screenshot](./docs/manual/images/gui_example_results.png)
+![results screenshot](images/gui_example_results.png)
 
 ## Roadmap/To-Do
 

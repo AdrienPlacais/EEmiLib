@@ -10,7 +10,7 @@ Quick start
 From the a Python environment with `EEmiLib`, run the `eemilib-gui` command.
 The following window should open.
 
-.. image:: images/gui_example.png
+.. image:: ../images/gui_example.png
    :width: 600
    :alt: GUI screen shot
    :align: center
@@ -44,7 +44,7 @@ Fit the model on the data
 
 7. Plot the modelled data with `Plot model`.
 
-.. image:: images/gui_example_results.png
+.. image:: ../images/gui_example_results.png
    :width: 600
    :alt: Corresponding figure
    :align: center
