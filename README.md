@@ -85,6 +85,7 @@ model.plot(
 
 ## Roadmap/To-Do
 
+- [ ] Document abbreviations
 - [ ] Handle experimental data with error bars
 - [ ] Add control over interpolation of loaded experimental data
 - [ ] Optional smoothing of measured data
