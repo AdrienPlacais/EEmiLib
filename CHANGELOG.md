@@ -34,18 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   crash anymore.
 - Display of `Parameter` units in GUI and doc.
 
-## TODO
-
-- N. Fil criteria to evaluate fit quality.
-- Allow Chung Everhart fit on several files.
-- ? Show some characteristics on the plot. To help debug, help user understand
-  what the code understands from his data.
-  - Position of Ec1, Emax, Ec2 for TEEY
-  - Position of peaks for emission energy
-- Plots:
-  - ? Different colors for different populations
-- pip release, easier installation instructions.
-- remove "package" and "module" from API documentation
     <!-- ## [0.0.0] 1312-01-01 -->
     <!---->
     <!-- ### Added -->
