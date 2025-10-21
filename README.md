@@ -1,15 +1,15 @@
 # EEmiLib
 
-_EEmiLib_ (Electron EMIssion Library) provides several electron emission models and
+**EEmiLib** (Electron EMIssion Library) provides several electron emission models and
 a simple interface to fit them to experimental data.
 It includes both a _graphical user interface_ (GUI) for ease of use and a
-_Python API_ for advanced users.
+**Python API** for advanced users.
 
 The library focuses on electron emission models relevant to multipactor simulations,
-**i.e.** for impinging energies ranging from a few eV to several hundred eV.
+_i.e._ for impinging energies ranging from a few eV to several hundred eV.
 
 This project is still under active development.
-I maintain it in my free time, but I’ll do my best to answer any questions you
+I maintain it in my free time, but I'll do my best to answer any questions you
 may have.
 
 ## Features
