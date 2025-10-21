@@ -10,6 +10,7 @@ from collections.abc import Collection
 from pathlib import Path
 from typing import Literal, overload
 
+from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data.emission_angle_distribution import (
     EmissionAngleDistribution,
 )
@@ -19,7 +20,6 @@ from eemilib.emission_data.emission_energy_distribution import (
 )
 from eemilib.emission_data.emission_yield import EmissionYield
 from eemilib.loader.loader import Loader
-from eemilib.model.model_config import ModelConfig
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
     IMPLEMENTED_EMISSION_DATA,

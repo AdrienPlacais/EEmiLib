@@ -13,9 +13,9 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.emission_data.emission_yield import EmissionYield
-from eemilib.model.model_config import ModelConfig
 from eemilib.model.parameter import Parameter
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (

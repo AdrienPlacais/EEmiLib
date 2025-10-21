@@ -19,6 +19,7 @@ from types import ModuleType
 from typing import Literal
 
 import numpy as np
+from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.gui.file_selection import file_selection_matrix
 from eemilib.gui.helper import (
@@ -34,7 +35,6 @@ from eemilib.gui.helper import (
 from eemilib.gui.model_selection import model_configuration
 from eemilib.loader.loader import Loader
 from eemilib.model.model import Model
-from eemilib.model.model_config import ModelConfig
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
     IMPLEMENTED_EMISSION_DATA,

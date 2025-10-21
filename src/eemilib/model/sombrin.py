@@ -10,9 +10,9 @@ from typing import Any, TypedDict
 
 import numpy as np
 import pandas as pd
+from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.model.model import Model
-from eemilib.model.model_config import ModelConfig
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
     ImplementedEmissionData,
