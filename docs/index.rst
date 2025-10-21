@@ -13,6 +13,7 @@ Welcome to EEmiLib's documentation!
    :glob:
 
    manual/quick_start
+   manual/notations
    manual/models
    manual/future_updates
    manual/bibliography

@@ -85,11 +85,11 @@ model.plot(
 
 ## Roadmap/To-Do
 
-- [ ] Document abbreviations
+- [x] Document abbreviations
 - [ ] Handle experimental data with error bars
 - [ ] Add control over interpolation of loaded experimental data
 - [ ] Optional smoothing of measured data
-- [ ] Display additional model information:
+- [ ] In GUI, display additional model information:
   - [ ] Quantitative criteria to assess model quality (e.g., Nicolas Fil's criterion)
   - [ ] Derived quantities such as crossover energies, maximum TEEY, etc.
 - Models:
