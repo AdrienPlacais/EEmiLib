@@ -10,11 +10,13 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Self
 
+import numpy as np
 import pandas as pd
 from eemilib.loader.loader import Loader
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import ImplementedPop
 from eemilib.util.helper import documentation_url
+from numpy.typing import NDArray
 
 
 class EmissionData(ABC):
@@ -29,9 +31,9 @@ class EmissionData(ABC):
 
         Parameters
         ----------
-        population : Literal["SE", "EBE", "IBE", "all"]
+        population :
             The concerned population of electrons.
-        data : pandas.DataFrame
+        data :
             Structure holding the data. Column headers as well as units must
             follow specications (see subclasses documentation).
 
@@ -39,6 +41,10 @@ class EmissionData(ABC):
         self.doc_url = documentation_url(self)
         self.population = population
         self.data = data
+        self._n_points = len(self.data)
+
+        self.energies: NDArray[np.float64] | list[float]
+        self.angles: NDArray[np.float64] | list[float]
 
     @classmethod
     @abstractmethod
@@ -52,11 +58,11 @@ class EmissionData(ABC):
 
         Parameters
         ----------
-        loader : Loader
+        loader :
             The object that will load the data.
-        population : Literal["SE", "EBE", "IBE", "all"]
+        population :
             The concerned population of electrons.
-        *filepath : str | pathlib.Path
+        *filepath :
             Path(s) to file holding data under study.
 
         """

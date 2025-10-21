@@ -1,4 +1,4 @@
-eemilib.loader.loader module
+loader module
 ============================
 
 .. automodule:: eemilib.loader.loader

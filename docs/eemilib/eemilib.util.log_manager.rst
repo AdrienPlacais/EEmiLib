@@ -1,4 +1,4 @@
-eemilib.util.log\_manager module
+log\_manager module
 ================================
 
 .. automodule:: eemilib.util.log_manager

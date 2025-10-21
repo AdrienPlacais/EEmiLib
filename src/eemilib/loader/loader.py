@@ -19,18 +19,33 @@ class Loader(ABC):
 
     @abstractmethod
     def load_emission_yield(
-        self, filepath: str | Path | Collection[str] | Collection[Path]
+        self,
+        filepath: str | Path | Collection[str] | Collection[Path],
+        *args,
+        **kwargs,
     ) -> pd.DataFrame:
         """Load the given electron emission yield file."""
 
     @abstractmethod
     def load_emission_energy_distribution(
-        self, filepath: str | Path | Collection[str] | Collection[Path]
-    ) -> pd.DataFrame:
-        """Load the given electron emission energy distribution file."""
+        self,
+        filepath: str | Path | Collection[str] | Collection[Path],
+        *args,
+        **kwargs,
+    ) -> tuple[pd.DataFrame, float | None]:
+        """Load the given electron emission energy distribution file.
+
+        Should also try to load the energy of primary electrons from file
+        metadata. If not possible, :class:`.EmissionEnergyDistribution` will
+        try to infer it from the position of the EBEs peak.
+
+        """
 
     @abstractmethod
     def load_emission_angle_distribution(
-        self, filepath: str | Path | Collection[str] | Collection[Path]
+        self,
+        filepath: str | Path | Collection[str] | Collection[Path],
+        *args,
+        **kwargs,
     ) -> pd.DataFrame:
         """Load the given electron emission angle distribution file."""

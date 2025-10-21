@@ -3,27 +3,40 @@
 from abc import ABC, abstractmethod
 
 import pandas as pd
+from eemilib.util.constants import ImplementedPop
 from eemilib.util.helper import documentation_url
 
 
 class Plotter(ABC):
     """A generic object to plot distributions, emission yields, etc."""
 
-    def __init__(self) -> None:
-        """Instantiate the object."""
+    def __init__(self, *args, gui: bool = False, **kwargs) -> None:
+        """Instantiate the object.
+
+        Parameters
+        ----------
+        gui :
+            Can be used if using the GUI, eg to activate interactive mode.
+
+        """
         self.doc_url = documentation_url(self)
 
     @abstractmethod
     def plot_emission_yield[T](
-        self, emission_yield: pd.DataFrame, axes: T | None = None, **kwargs
+        self,
+        df: pd.DataFrame,
+        axes: T | None = None,
+        population: ImplementedPop | None = None,
+        **kwargs,
     ) -> T:
         """Plot emission yield data."""
 
     @abstractmethod
     def plot_emission_energy_distribution[T](
         self,
-        emission_energy: pd.DataFrame,
+        df: pd.DataFrame,
         axes: T | None = None,
+        population: ImplementedPop | None = None,
         **kwargs,
     ) -> T:
         """Plot the given emission energy distribution, return Axes object."""
@@ -31,8 +44,9 @@ class Plotter(ABC):
     @abstractmethod
     def plot_emission_angle_distribution[T](
         self,
-        emission_angles: pd.DataFrame,
+        df: pd.DataFrame,
         axes: T | None = None,
+        population: ImplementedPop | None = None,
         **kwargs,
     ) -> T:
         """Plot the given emission angles distribution, return Axes object."""

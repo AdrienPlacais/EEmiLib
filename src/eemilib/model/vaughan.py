@@ -10,15 +10,15 @@ TEEY at non-normal incidence will not be taken into account into the fit
 
 import logging
 import math
-from typing import Any, Literal
+from typing import Any, Literal, TypedDict
 
 import numpy as np
 import pandas as pd
+from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data.data_matrix import DataMatrix
-from eemilib.emission_data.emission_yield import EmissionYield
 from eemilib.model.model import Model
-from eemilib.model.model_config import ModelConfig
 from eemilib.model.parameter import Parameter
+from eemilib.util.constants import ImplementedEmissionData, ImplementedPop
 from numpy.typing import NDArray
 from scipy.optimize import least_squares
 
@@ -26,9 +26,22 @@ VaughanImplementation = Literal["original", "CST", "SPARK3D"]
 E_0_SPARK3D = 10.0
 
 
+class VaughanParameters(TypedDict):
+    E_0: Parameter
+    E_max: Parameter
+    delta_E_transition: Parameter
+    teey_low: Parameter
+    teey_max: Parameter
+    k_s: Parameter
+    k_se: Parameter
+    E_c1: Parameter
+
+
 class Vaughan(Model):
     """Define the classic Vaughan model."""
 
+    emission_data_types = ["Emission Yield"]
+    populations = ["all"]
     considers_energy = True
     is_3d = True
     is_dielectrics_compatible = False
@@ -121,18 +134,18 @@ class Vaughan(Model):
 
         Parameters
         ----------
-        implementation: Literal["original", "CST", "SPARK3D"], optional
+        implementation:
             Modifies certain presets to match different interpretations of the
             model by calling :meth:`.preset_implementation`. These parameter
             modifications have precedence over the ones set in
             `parameters_values`.
-        parameters_values : dict[str, Any] | None, optional
+        parameters_values :
             Contains name of parameters and associated value. If provided, will
             override the default values set in ``initial_parameters``.
 
         """
         super().__init__(url_doc_override="manual/models/vaughan")
-        self.parameters = {
+        self.parameters: VaughanParameters = {  # type: ignore
             name: Parameter(**kwargs)  # type: ignore
             for name, kwargs in self.initial_parameters.items()
         }
@@ -180,15 +193,32 @@ class Vaughan(Model):
             return
         logging.error(f"{implementation = } not in {VaughanImplementation}")
 
-    def teey(
-        self, energy: NDArray[np.float64], theta: NDArray[np.float64]
-    ) -> pd.DataFrame:
-        r"""Compute TEEY :math:`\sigma`.
+    def get_data(
+        self,
+        population: ImplementedPop,
+        emission_data_type: ImplementedEmissionData,
+        energy: NDArray[np.float64],
+        theta: NDArray[np.float64],
+        *args,
+        **kwargs,
+    ) -> pd.DataFrame | None:
+        """Return desired data according to current model.
+
+        Will return a dataframe only if the TEEY is asked.
 
         .. todo::
             This method could be so much simpler and efficient.
 
         """
+        if population != "all" or emission_data_type != "Emission Yield":
+            return super().get_data(
+                population=population,
+                emission_data_type=emission_data_type,
+                energy=energy,
+                theta=theta,
+                *args,
+                **kwargs,
+            )
         out = np.zeros((len(energy), len(theta)))
         for i, ene in enumerate(energy):
             for j, the in enumerate(theta):
@@ -210,10 +240,7 @@ class Vaughan(Model):
             self.find_e_0()
             return
 
-        emission_yield = data_matrix.data_matrix[3][0]
-        assert isinstance(
-            emission_yield, EmissionYield
-        ), f"Incorrect type for emission_yield: {type(emission_yield)}"
+        emission_yield = data_matrix.teey
         assert emission_yield.population == "all"
 
         self.set_parameters_values(
@@ -254,6 +281,14 @@ class Vaughan(Model):
 
         optimized_E_0 = least_squares(_to_minimize, x0=12.5).x
         return float(optimized_E_0[0])
+
+    def evaluate(self, data_matrix: DataMatrix) -> dict[str, float]:
+        """Evaluate the quality of the model using Fil criterions.
+
+        Fil criterions :cite:`Fil2016a,Fil2020` are adapted to TEEY models.
+
+        """
+        return self._evaluate_for_teey_models(data_matrix)
 
 
 def _vaughan_func(

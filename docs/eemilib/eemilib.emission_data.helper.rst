@@ -1,4 +1,4 @@
-eemilib.emission\_data.helper module
+helper module
 ====================================
 
 .. automodule:: eemilib.emission_data.helper

@@ -10,6 +10,7 @@ from collections.abc import Collection
 from pathlib import Path
 from typing import Literal, overload
 
+from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data.emission_angle_distribution import (
     EmissionAngleDistribution,
 )
@@ -19,7 +20,6 @@ from eemilib.emission_data.emission_energy_distribution import (
 )
 from eemilib.emission_data.emission_yield import EmissionYield
 from eemilib.loader.loader import Loader
-from eemilib.model.model_config import ModelConfig
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
     IMPLEMENTED_EMISSION_DATA,
@@ -27,6 +27,7 @@ from eemilib.util.constants import (
     ImplementedEmissionData,
     ImplementedPop,
 )
+from eemilib.util.helper import flatten
 
 pop_to_row = {pop: i for i, pop in enumerate(IMPLEMENTED_POP)}
 row_to_pop = {val: key for key, val in pop_to_row.items()}
@@ -279,6 +280,32 @@ class DataMatrix:
         | Collection[EmissionAngleDistribution]
     ): ...
 
+    @overload
+    def get_data(
+        self,
+        row: None,
+        col: None,
+        population: None,
+        emission_data_type: None,
+    ) -> Collection[EmissionData]: ...
+
+    @overload
+    def get_data(
+        self,
+        row: None,
+        col: None,
+        population: ImplementedPop,
+        emission_data_type: None,
+    ) -> Collection[EmissionData]: ...
+    @overload
+    def get_data(
+        self,
+        row: None,
+        col: None,
+        population: None,
+        emission_data_type: ImplementedEmissionData,
+    ) -> Collection[EmissionData]: ...
+
     def get_data(
         self,
         row: int | None = None,
@@ -286,12 +313,65 @@ class DataMatrix:
         population: ImplementedPop | None = None,
         emission_data_type: ImplementedEmissionData | None = None,
     ) -> None | EmissionData | Collection[EmissionData]:
-        """Get the file(s) by index or name."""
+        """Get the file(s) by index or name.
+
+        You can provide ``row`` and ``col`` directly.
+
+        Alternatively, provide ``population`` and ``emission_data_type``. If
+        ``population`` is not given, return valid data corresponding to all
+        populations. If ``emission_data_type`` is not given, return valid
+        data corresponding to all emission data.
+
+        Parameters
+        ----------
+        row :
+            Row index in data matrix.
+        col :
+            Column index in data matrix.
+        population :
+            Population type.
+        emission_data_type :
+            Emission data type.
+
+        Returns
+        -------
+            Desired data; if the specified data does not exists, a ``None`` is
+            returned without any error message.
+
+        """
         if population and emission_data_type:
             row, col = self._natures_to_indexes(
                 population_type=population,
                 emission_data_type=emission_data_type,
             )
+
+        if population and emission_data_type is None:
+            single_pop_data = [
+                self.get_data(
+                    population=population, emission_data_type=data_type
+                )
+                for data_type in IMPLEMENTED_EMISSION_DATA
+            ]
+            return [d for d in flatten(single_pop_data) if d is not None]
+
+        if emission_data_type and population is None:
+            emission_data = [
+                self.get_data(
+                    population=pop, emission_data_type=emission_data_type
+                )
+                for pop in IMPLEMENTED_POP
+            ]
+            return [d for d in flatten(emission_data) if d is not None]
+
+        if row is None and col is None:
+            all_data = [
+                [
+                    self.get_data(population=pop, emission_data_type=data_type)
+                    for pop in IMPLEMENTED_POP
+                ]
+                for data_type in IMPLEMENTED_EMISSION_DATA
+            ]
+            return [d for d in flatten(all_data) if d is not None]
 
         if row is None or col is None:
             raise ValueError(
@@ -370,7 +450,7 @@ class DataMatrix:
                 if filepath is None:
                     logging.error(
                         f"You must define a {emission_data_type} filepath for"
-                        + f" population {mandatory_population}"
+                        f" population {mandatory_population}"
                     )
                     return False
 
@@ -381,7 +461,7 @@ class DataMatrix:
                 if data_object is None:
                     logging.error(
                         f"You must load {emission_data_type} filepath for "
-                        + f"population {mandatory_population}"
+                        f"population {mandatory_population}"
                     )
                     return False
         return True
@@ -394,7 +474,34 @@ class DataMatrix:
         axes: T | None = None,
         **kwargs,
     ) -> T | None:
-        """Plot desired measured data."""
+        """Plot desired measured data using ``plotter``.
+
+        This method uses :meth:`.DataMatrix.get_data` to get the
+        :class:`.EmissionData` instance matching ``population`` and
+        ``emission_data_type``. Then it calls the :meth:`.EmissionData.plot`
+        method.
+
+        Parameters
+        ----------
+        plotter :
+            Object realizing the plot. We transfer it to the
+            :meth:`.EmissionData.plot` method.
+        population :
+            One or several populations to plot. If several are given, we simply
+            recursively call this method.
+        emission_data_type :
+            Type of data to plot.
+        axes :
+            Axes to re-use if given.
+        kwargs :
+            Other keyword arguments passed to the :meth:`.EmissionData.plot`
+            method.
+
+        Returns
+        -------
+            Created axes object, or ``None`` if no plot was created.
+
+        """
         if isinstance(population, Collection) and not isinstance(
             population, str
         ):
@@ -404,16 +511,55 @@ class DataMatrix:
                 )
             return axes
 
-        to_plot = self.get_data(
+        emission_data = self.get_data(
             population=population, emission_data_type=emission_data_type
-        )  # type: ignore
+        )
 
-        if to_plot is None:
-            return
+        if emission_data is None:
+            logging.info(
+                f"No measurement found for {population = } and "
+                f"{emission_data_type = }. Skipping this plot."
+            )
+            return axes
 
-        if isinstance(to_plot, EmissionData):
-            return to_plot.plot(plotter, axes=axes, **kwargs)
+        if isinstance(emission_data, EmissionData):
+            emission_data = (emission_data,)
 
-        for sub_to_plot in to_plot:
-            axes = sub_to_plot.plot(plotter, axes=axes, **kwargs)
+        for data in emission_data:
+            axes = data.plot(
+                plotter,
+                axes=axes,
+                population=population,
+                **kwargs,
+            )
         return axes
+
+    @property
+    def teey(self) -> EmissionYield:
+        """Return the TEEY directly."""
+        emission_yield = self.data_matrix[3][0]
+        assert isinstance(
+            emission_yield, EmissionYield
+        ), f"Incorrect type for emission_yield: {type(emission_yield)}"
+        assert emission_yield.population == "all"
+        return emission_yield
+
+    @property
+    def se_energy_distribution(self) -> EmissionEnergyDistribution:
+        """Return the energy distribution of SEs."""
+        distrib = self.data_matrix[0][1]
+        assert isinstance(
+            distrib, EmissionEnergyDistribution
+        ), f"Incorrect type for energy distribution: {type(distrib)}"
+        assert distrib.population == "SE"
+        return distrib
+
+    @property
+    def all_energy_distribution(self) -> EmissionEnergyDistribution:
+        """Return the energy distribution of all emitted electrons."""
+        distrib = self.data_matrix[3][1]
+        assert isinstance(
+            distrib, EmissionEnergyDistribution
+        ), f"Incorrect type for energy distribution: {type(distrib)}"
+        assert distrib.population == "all"
+        return distrib

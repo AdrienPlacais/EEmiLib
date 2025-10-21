@@ -1,4 +1,4 @@
-eemilib.plotter.pandas module
+pandas module
 =============================
 
 .. automodule:: eemilib.plotter.pandas

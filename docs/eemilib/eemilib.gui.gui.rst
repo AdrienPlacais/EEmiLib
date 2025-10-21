@@ -1,4 +1,4 @@
-eemilib.gui.gui module
+gui module
 ======================
 
 .. automodule:: eemilib.gui.gui

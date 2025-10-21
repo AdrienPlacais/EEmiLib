@@ -26,30 +26,30 @@ def setup_dropdown(
     module_name: str,
     base_class: ABCMeta,
     buttons_args: dict[str, Any],
-):
+) -> tuple[dict[str, str], QHBoxLayout, QComboBox, list[QPushButton]]:
     """Set up interface with a dropdown menu and a button next to it.
 
     Parameters
     ----------
-    module_name : str
+    module_name :
         Where the entries of the dropdown will be searched.
-    base_class : abc.ABCMeta
+    base_class :
         The base class from which dropdown entries should inherit.
-    buttons : dict[str, Any]
+    buttons :
         Dictionary where the keys are the name of the buttons to add next to
         the dropdown menu, and values the callable that will be called when
         clicking the button.
 
     Returns
     -------
-    classes : dict[str, str]
+    dict[str, str]
         Keys are the name of the objects inheriting from ``base_class`` found
         in ``module_name``. Values are the path leading to them.
-    layout : PyQt5.QtWidgets.QHBoxLayout
+    QHBoxLayout
         Layout holding together ``dropdown`` and ``button``.
-    dropdown : PyQt5.QtWidgets.QComboBox
+    QComboBox
         Dropdown menu holding the keys of ``classes``.
-    buttons : list[PyQt5.QtWidgets.QPushButton]
+    list[QPushButton]
         The buttons next to the dropdown menu.
 
     """
@@ -72,6 +72,34 @@ def setup_dropdown(
     return classes, layout, dropdown, buttons
 
 
+def set_dropdown_value(
+    dropdown: QComboBox, value: str | ABCMeta | None
+) -> None:
+    """Set a ``dropdown`` to desired value.
+
+    Parameters
+    ----------
+    dropdown :
+        Dropdown object.
+    value :
+        Name of class or class object you want to select in the dropdown. If
+        unset, we do not do anything.
+    allowed_values :
+        Dict used for the ``dropdown`` creation; links name of class objects
+        to their import path.
+
+    """
+    if value is None:
+        return
+    if isinstance(value, ABCMeta):
+        value = value.__name__
+    index = dropdown.findText(value)
+    if index == -1:
+        logging.info(f"{value = } not found in {dropdown = } items.")
+        return
+    dropdown.setCurrentIndex(index)
+
+
 def setup_linspace_entries(
     label: str,
     initial_values: tuple[float, float, int],
@@ -79,38 +107,37 @@ def setup_linspace_entries(
 ) -> tuple[QHBoxLayout, QLineEdit, QLineEdit, QLineEdit]:
     """Create an input to call np.linspace."""
     layout = QHBoxLayout()
-
     layout.addWidget(QLabel(label))
 
-    layout.addWidget(QLabel("first"))
-    first = QLineEdit()
-    first_validator = QDoubleValidator()
-    first_validator.setBottom(0)
-    if max_value is not None:
-        first_validator.setTop(max_value)
-    first.setValidator(first_validator)
-    first.setText(str(initial_values[0]))
-    layout.addWidget(first)
+    widgets: list[QWidget] = []
+    for label, is_int, x_0, x_max in zip(
+        ("first", "last", "n_points"),
+        (False, False, True),
+        initial_values,
+        (max_value, max_value, None),
+    ):
+        layout.addWidget(QLabel(label))
+        widgets.append(w := _linspace_entry(is_int, x_0=x_0, x_max=x_max))
+        layout.addWidget(w)
 
-    layout.addWidget(QLabel("last"))
-    last = QLineEdit()
-    last_validator = QDoubleValidator()
-    last_validator.setBottom(0)
-    if max_value is not None:
-        last_validator.setTop(max_value)
-    last.setValidator(last_validator)
-    last.setText(str(initial_values[1]))
-    layout.addWidget(last)
+    return layout, widgets[0], widgets[1], widgets[2]
 
-    layout.addWidget(QLabel("n points"))
-    points = QLineEdit()
-    points_validator = QIntValidator()
-    points_validator.setBottom(0)
-    points.setValidator(points_validator)
-    points.setText(str(initial_values[2]))
-    layout.addWidget(points)
 
-    return layout, first, last, points
+def _linspace_entry(
+    is_int: bool, x_0: float, x_min: int = 0, x_max: float | None = None
+) -> QWidget:
+    """Create widget for a single linspace entry."""
+    validator = QDoubleValidator()
+    validator.setBottom(x_min)
+    if is_int:
+        validator = QIntValidator()
+    if x_max is not None:
+        validator.setTop(int(x_max))
+
+    entry = QLineEdit()
+    entry.setValidator(validator)
+    entry.setText(str(x_0))
+    return entry
 
 
 def setup_lock_checkbox(
@@ -205,6 +232,8 @@ PARAMETER_ATTR_TO_POS = {
     "lock": 5,
 }
 
+#: Maps column position in list of parameters to the corresponding Parameter
+#: attribute
 PARAMETER_POS_TO_ATTR = {
     val: key for key, val in PARAMETER_ATTR_TO_POS.items()
 }

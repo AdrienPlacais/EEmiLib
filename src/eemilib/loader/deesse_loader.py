@@ -1,11 +1,12 @@
 """Define a loader adapted to DEESSE (ONERA, Toulouse) file format."""
 
+import logging
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
 from eemilib.loader.loader import Loader
-from eemilib.util.constants import EY_col_energy
+from eemilib.util.constants import col_energy, col_normal
 
 
 class DeesseLoader(Loader):
@@ -25,12 +26,12 @@ class DeesseLoader(Loader):
 
         Parameters
         ----------
-        filepath : str | pathlib.Path
+        filepath :
             Path(s) to file holding data under study.
 
         Returns
         -------
-        data : pandas.DataFrame
+        pandas.DataFrame
             Structure holding the data. Has a ``Energy [eV]`` column
             holding PEs energy. And one or several columns ``theta [deg]``,
             where `theta` is the value of the incidence angle and content is
@@ -49,11 +50,12 @@ class DeesseLoader(Loader):
             full_df = pd.read_csv(file, **kwargs)
             incidence_angle = self._extract_incidence_angle(full_df)
             of_interest_df = full_df[[col1, col2]].rename(
-                columns={col1: EY_col_energy, col2: f"{incidence_angle} [deg]"}
+                columns={col1: col_energy, col2: f"{incidence_angle} [deg]"}
             )
-            all_df.append(of_interest_df.set_index(EY_col_energy))
+            all_df.append(of_interest_df.set_index(col_energy))
 
         concatenated = pd.concat(all_df, axis=1)
+        logging.info(f"Successfully loaded emission yield file(s) {filepath}")
         return concatenated.reset_index()
 
     def _extract_incidence_angle(self, full_data: pd.DataFrame) -> float:
@@ -71,5 +73,43 @@ class DeesseLoader(Loader):
     def load_emission_angle_distribution(self, *args) -> Any:
         raise NotImplementedError
 
-    def load_emission_energy_distribution(self, *args) -> Any:
-        raise NotImplementedError
+    def load_emission_energy_distribution(
+        self,
+        filepath: str | Path,
+        e_pe: float | None = None,
+    ) -> tuple[pd.DataFrame, float | None]:
+        """Load and format an emission energy file from DEESSE.
+
+        Parameters
+        ----------
+        filepath :
+            Path to file holding data under study.
+        e_pe :
+            Energy of PEs in :unit:`eV`. Should be manually provided, as not
+            present in DEESSE files.
+
+        Returns
+        -------
+        pandas.DataFrame
+            Structure holding the data. Has a ``Energy [eV]`` column
+            holding emitted electrons energy. And one or several columns
+            ``theta [deg]``, where ``theta`` is the value of the incidence
+            angle and content is corresponding emission energy distribution.
+        float
+            Energy of Primary Electrons in :unit:`eV`. If not found in the file
+            comments, it will be inferred from the position of the EBEs peak.
+
+        """
+        col1 = "Kinetic Energy [eV]"
+        col2 = "Intensity[cts/s]"
+        extension = Path(filepath).suffix
+        if extension == ".csv":
+            df = pd.read_csv(filepath, sep=";")
+        elif extension == ".xlsx":
+            df = pd.read_excel(filepath)
+        else:
+            raise RuntimeError(f"Filetype of {filepath} is not supported.")
+        df = df[[col1, col2]].rename(
+            columns={col1: col_energy, col2: col_normal}
+        )
+        return df, e_pe

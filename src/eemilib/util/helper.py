@@ -3,6 +3,7 @@
 import inspect
 import pkgutil
 from abc import ABCMeta
+from collections.abc import Iterable, Iterator
 from typing import Any
 
 from eemilib import DOC_URL
@@ -16,14 +17,13 @@ def get_classes(module_name: str, base_class: ABCMeta) -> dict[str, str]:
 
     Parameters
     ----------
-    module_name : str
+    module_name :
         The name of a module.
-    base_class : abc.ABCMeta
+    base_class :
         The mother object that classes should inherit from.
 
     Returns
     -------
-    classes : dict[str, str]
         Keys are the name of the objects inheriting from ``base_class`` found
         in ``module_name``. Values are the path leading to them.
 
@@ -55,3 +55,12 @@ def documentation_url(
     package = module.split(".")[0]
     parts = (DOC_URL, package, module)
     return "/".join(parts) + ".html"
+
+
+def flatten[T](nest: Iterable[T]) -> Iterator[T]:
+    """Flatten nested list of lists of..."""
+    for _in in nest:
+        if isinstance(_in, Iterable) and not isinstance(_in, (str, bytes)):
+            yield from flatten(_in)
+        else:
+            yield _in

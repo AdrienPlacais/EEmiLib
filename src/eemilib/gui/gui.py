@@ -19,11 +19,13 @@ from types import ModuleType
 from typing import Literal
 
 import numpy as np
+from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.gui.file_selection import file_selection_matrix
 from eemilib.gui.helper import (
     PARAMETER_ATTR_TO_POS,
     PARAMETER_POS_TO_ATTR,
+    set_dropdown_value,
     set_help_button_action,
     setup_dropdown,
     setup_linspace_entries,
@@ -33,7 +35,6 @@ from eemilib.gui.helper import (
 from eemilib.gui.model_selection import model_configuration
 from eemilib.loader.loader import Loader
 from eemilib.model.model import Model
-from eemilib.model.model_config import ModelConfig
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
     IMPLEMENTED_EMISSION_DATA,
@@ -43,24 +44,49 @@ from eemilib.util.constants import (
 )
 from PyQt5.QtWidgets import (
     QApplication,
+    QCheckBox,
     QComboBox,
     QGroupBox,
     QLineEdit,
     QListWidget,
     QMainWindow,
     QPushButton,
+    QRadioButton,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
     QWidget,
 )
 
+DROPDOWNS = ("Loader", "Model", "Plotter")
+Dropdowns = Literal["Loader", "Model", "Plotter"]
+
 
 class MainWindow(QMainWindow):
     """This object holds the GUI."""
 
-    def __init__(self):
+    #: If selecting Model in dropdown should automatically fill the appopriate
+    #: data to plot checkbox
+    autofill_data_to_plot = True
+    #: If selecting Model in dropdown should automatically fill the appopriate
+    #: emission data checkbox
+    autofill_nature_to_plot = True
+    #: If loading data should automatically fill the energy/angle ranges with
+    #: their maximum values
+    autofill_plotting_ranges = True
+
+    def __init__(
+        self,
+        default_model: str = "Vaughan",
+        default_loader: str = "PandasLoader",
+        default_plotter: str = "PandasPlotter",
+    ) -> None:
         """Create the GUI."""
+        self._defaults: dict[Dropdowns, str] = {
+            "Model": default_model,
+            "Loader": default_loader,
+            "Plotter": default_plotter,
+        }
         # EEmiLib attributes
         self.data_matrix = DataMatrix()
         self.loader: Loader
@@ -68,7 +94,7 @@ class MainWindow(QMainWindow):
         self.axes = None
 
         super().__init__()
-        self.setWindowTitle("EEmiLib GUI")
+        self.setWindowTitle("EEmiLib")
 
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
@@ -77,24 +103,33 @@ class MainWindow(QMainWindow):
 
         self.file_lists = self.setup_file_selection_matrix()
 
+        self.dropdowns: dict[str, QComboBox] = {}
+
         self.loader_classes: dict[str, str]
-        self.loader_dropdown: QComboBox
         self.loader_help_button: QPushButton
         self.setup_loader_dropdown()
 
         self.model_classes: dict[str, str]
-        self.model_dropdown: QComboBox
         self.model_help_button: QPushButton
         self.setup_model_dropdown()
 
         self.model_table = self.setup_model_configuration()
+        self.energy_angle_group: QGroupBox
+        self.energy_angle_layout: QVBoxLayout
+        self.last_energy_widget: QLineEdit
+        self.last_theta_widget: QLineEdit
+        self.n_theta_widget: QLineEdit
         self.setup_energy_angle_inputs()
-        self.setup_plotter_dropdown()
+
+        self.plotter_classes: dict[str, str]
+        self.plot_measured_button: QPushButton
+        self.plot_model_button: QPushButton
+        self.data_checkboxes: list[QRadioButton]
+        self.population_checkboxes: list[QCheckBox]
+        self.setup_plotter_dropdowns()
 
         # Call the methods called by the model_dropdown index change
-        self._setup_model()
-        self._deactivate_unnecessary_file_widgets()
-        self._setup_loader()
+        self._set_default_dropdown()
 
     # =========================================================================
     # File selection
@@ -107,7 +142,7 @@ class MainWindow(QMainWindow):
 
     def _deactivate_unnecessary_file_widgets(self) -> None:
         """Grey out the files not needed by current model."""
-        model = self._dropdown_to_class("model")()
+        model = self._dropdown_to_class("Model")()
         if not isinstance(model, Model):
             return
         config: ModelConfig = model.model_config
@@ -139,15 +174,15 @@ class MainWindow(QMainWindow):
         )
         self.loader_classes = classes
         dropdown.currentIndexChanged.connect(self._setup_loader)
-        self.loader_dropdown = dropdown
+        dropdown.setCurrentText
+        self.dropdowns["Loader"] = dropdown
         self.loader_help_button = buttons[0]
-        # self.load_button = buttons[0]
         self.main_layout.addLayout(layout)
         return
 
     def _setup_loader(self) -> None:
         """Setup new loader whenever the dropdown menu is changed."""
-        self.loader = self._dropdown_to_class("loader")()
+        self.loader = self._dropdown_to_class("Loader")()
         set_help_button_action(self.loader_help_button, self.loader)
 
     def load_data(self) -> None:
@@ -171,13 +206,16 @@ class MainWindow(QMainWindow):
                 f"is expected by the data loader. Error message:\n{e}"
             )
 
+        if self.autofill_plotting_ranges:
+            self._fill_plotting_ranges()
+
     # =========================================================================
     # Model
     # =========================================================================
     def setup_model_dropdown(self) -> None:
         """Set the :class:`.Model` related interface.
 
-        Assign the `model_classes` and `model_dropdown`.
+        Assign the ``model_classes`` and ``model_dropdown``.
 
         """
         classes, layout, dropdown, buttons = setup_dropdown(
@@ -189,12 +227,15 @@ class MainWindow(QMainWindow):
             },
         )
         self.model_classes = classes
-        self.model_dropdown = dropdown
+        self.dropdowns["Model"] = dropdown
         dropdown.currentIndexChanged.connect(self._setup_model)
         dropdown.currentIndexChanged.connect(
             self._deactivate_unnecessary_file_widgets
         )
-        # self.fit_button = buttons[0]
+        dropdown.currentIndexChanged.connect(
+            self._fill_plot_nature_and_population
+        )
+
         self.model_help_button = buttons[0]
         self.main_layout.addLayout(layout)
         return
@@ -208,7 +249,7 @@ class MainWindow(QMainWindow):
 
     def _setup_model(self) -> None:
         """Instantiate :class:`.Model` when it is selected in dropdown menu."""
-        self.model = self._dropdown_to_class("model")()
+        self.model = self._dropdown_to_class("Model")()
 
         set_help_button_action(self.model_help_button, self.model)
 
@@ -243,7 +284,6 @@ class MainWindow(QMainWindow):
         updatable_attr = ("value", "lower_bound", "upper_bound")
         attr = PARAMETER_POS_TO_ATTR[col]
         if attr not in updatable_attr:
-            logging.info("This column cannot be updated.")
             return
 
         name = self.model_table.item(row, 0).text()
@@ -279,13 +319,50 @@ class MainWindow(QMainWindow):
         for i, param in enumerate(self.model.parameters.values()):
             self.model_table.setItem(i, 2, QTableWidgetItem(str(param.value)))
 
+    def _fill_plot_nature_and_population(self) -> None:
+        """Check emission data type and population.
+
+        When model is updated, check the ``Data to plot`` and ``Population to
+        plot`` checkboxes in the ``Plot`` section that are concerned by current
+        model.
+
+        """
+        try:
+            model = self.model
+        except AttributeError as e:
+            logging.debug(
+                "Model is not set, cannot fill plot nature or population "
+                f"checkboxes.\n{e}"
+            )
+            return
+
+        data_type_to_plot = model.emission_data_types[0]
+        if self.autofill_data_to_plot:
+            index = IMPLEMENTED_EMISSION_DATA.index(data_type_to_plot)
+            self.data_checkboxes[index].setChecked(True)
+
+        if self.autofill_nature_to_plot:
+            pop_to_plot = set(
+                model.model_config.mandatory_populations(
+                    emission_data_type=data_type_to_plot
+                )
+                + list(model.populations)
+            )
+            for button, population in zip(
+                self.population_checkboxes, IMPLEMENTED_POP, strict=True
+            ):
+                if population in pop_to_plot:
+                    button.setChecked(True)
+                    continue
+                button.setChecked(False)
+
     # =========================================================================
     # Plot
     # =========================================================================
     def setup_energy_angle_inputs(self) -> None:
         """Set the energy and angle inputs for the model plot."""
         self.energy_angle_group = QGroupBox(
-            "PEs energy and angle range (model plot)"
+            "Energy and angle range (used for model plot)"
         )
         self.energy_angle_layout = QVBoxLayout()
 
@@ -302,6 +379,11 @@ class MainWindow(QMainWindow):
                 max_value=max_val,
             )
             self.energy_angle_layout.addLayout(layout)
+            if qty == ("energy"):
+                self.last_energy_widget = last
+            elif qty == ("angle"):
+                self.last_theta_widget = last
+                self.n_theta_widget = points
 
             for attr, attr_name in zip(
                 (first, last, points), ("first", "last", "points")
@@ -310,6 +392,26 @@ class MainWindow(QMainWindow):
 
         self.energy_angle_group.setLayout(self.energy_angle_layout)
         self.main_layout.addWidget(self.energy_angle_group)
+
+    def setup_plotter_dropdowns(self) -> None:
+        """Set the :class:`.Plotter` related interface."""
+        self._set_up_data_to_plot_checkboxes()
+        self._set_up_population_to_plot_checkboxes()
+
+        classes, layout, dropdown, buttons = setup_dropdown(
+            module_name="eemilib.plotter",
+            base_class=Plotter,
+            buttons_args={
+                "Plot file": self.plot_measured,
+                "Plot model": self.plot_model,
+                "New figure": lambda _: setattr(self, "axes", None),
+            },
+        )
+        self.plotter_classes = classes
+        self.main_layout.addLayout(layout)
+        self.dropdowns["Plotter"] = dropdown
+        self.plot_measured_button = buttons[0]
+        self.plot_model_button = buttons[1]
 
     def _set_up_data_to_plot_checkboxes(self) -> None:
         """Add checkbox to select which data should be plotted."""
@@ -331,29 +433,9 @@ class MainWindow(QMainWindow):
         self.main_layout.addLayout(layout)
         self.population_checkboxes = checkboxes
 
-    def setup_plotter_dropdown(self) -> None:
-        """Set the :class:`.Plotter` related interface."""
-        self._set_up_data_to_plot_checkboxes()
-        self._set_up_population_to_plot_checkboxes()
-
-        classes, layout, dropdown, buttons = setup_dropdown(
-            module_name="eemilib.plotter",
-            base_class=Plotter,
-            buttons_args={
-                "Plot file": self.plot_measured,
-                "Plot model": self.plot_model,
-                "New figure": lambda _: setattr(self, "axes", None),
-            },
-        )
-        self.plotter_classes = classes
-        self.main_layout.addLayout(layout)
-        self.plotter_dropdown = dropdown
-        self.plot_measured_button = buttons[0]
-        self.plot_model_button = buttons[1]
-
     def plot_measured(self) -> None:
         """Plot the desired data, as imported."""
-        plotter = self._dropdown_to_class("plotter")()
+        plotter = self._dropdown_to_class("Plotter")(gui=True)
 
         success_pop, populations = self._get_populations_to_plot()
         if not success_pop:
@@ -373,7 +455,7 @@ class MainWindow(QMainWindow):
 
     def plot_model(self) -> None:
         """Plot the desired data, as modelled."""
-        plotter = self._dropdown_to_class("plotter")()
+        plotter = self._dropdown_to_class("Plotter")(gui=True)
 
         success_pop, populations = self._get_populations_to_plot()
         if not success_pop:
@@ -457,20 +539,63 @@ class MainWindow(QMainWindow):
             int(linspace_args[2]),
         )
 
+    def _fill_plotting_ranges(self) -> None:
+        """Fill energy and angle plotting ranges to match data files values.
+
+        This method is called when the button ``Load`` is pressed.
+
+        """
+        try:
+            model = self.model
+        except AttributeError as e:
+            logging.debug(
+                "Model is not set, cannot fill energy/angle plotting ranges. "
+                f"\n{e}"
+            )
+            return
+        try:
+            data_matrix = self.data_matrix
+        except AttributeError as e:
+            logging.debug(
+                "DataMatrix is not set, cannot fill energy/angle plotting "
+                f"ranges.\n{e}"
+            )
+            return
+
+        if not self.autofill_plotting_ranges:
+            return
+        data_type_to_plot = model.emission_data_types[0]
+
+        data = data_matrix.get_data(emission_data_type=data_type_to_plot)
+        if len(data) == 0:
+            logging.debug(
+                "No valid data, cannot fill energy/angle plotting ranges."
+            )
+            return
+        data_subset = data[0]
+
+        e_maxi = max(data_subset.energies)
+        if e_maxi is not None and not np.isnan(e_maxi):
+            logging.debug(f"Setting {e_maxi = }")
+            self.last_energy_widget.setText(str(e_maxi))
+
+        theta_maxi = max(data_subset.angles)
+        n_theta = len(data_subset.angles)
+        if theta_maxi is not None and not np.isnan(theta_maxi):
+            logging.debug(f"Setting {theta_maxi = }")
+            self.last_theta_widget.setText(str(theta_maxi))
+            logging.debug(f"Setting {n_theta = }")
+            self.n_theta_widget.setText(str(n_theta))
+
     # =========================================================================
     # Helper
     # =========================================================================
-    def _dropdown_to_class(
-        self, attribute: Literal["loader", "plotter", "model"]
-    ) -> ABCMeta:
+    def _dropdown_to_class(self, name: Dropdowns) -> ABCMeta:
         """Convert dropdown entry to class."""
-        dropdown_name = "_".join((attribute, "dropdown"))
-        dropdown = getattr(self, dropdown_name, None)
-        assert (
-            dropdown is not None
-        ), f" The dropdown attribute {dropdown_name} is not defined."
+        dropdown = self.dropdowns.get(name, None)
+        assert dropdown is not None, f" The dropdown {name} is not defined."
 
-        module_names_to_paths = "_".join((attribute, "classes"))
+        module_names_to_paths = "_".join((name.lower(), "classes"))
         module_name_to_path = getattr(self, module_names_to_paths, None)
         assert module_name_to_path is not None, (
             f"The dictionary {module_names_to_paths}, linking every module"
@@ -493,6 +618,20 @@ class MainWindow(QMainWindow):
             return
         widget.setStyleSheet("background-color: lightgray;")
         widget.setEnabled(False)
+
+    # =========================================================================
+    # Misc
+    # =========================================================================
+    def _set_default_dropdown(self) -> None:
+        """Set dropdowns to their default values.
+
+        We call this method at the end of the GUI initialization rather than
+        at the creation of the dropdowns to ensure that every side effects
+        is executed.
+
+        """
+        for key in DROPDOWNS:
+            set_dropdown_value(self.dropdowns[key], self._defaults[key])
 
 
 def main():

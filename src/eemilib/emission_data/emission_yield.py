@@ -14,41 +14,44 @@ from eemilib.emission_data.helper import (
 from eemilib.loader.loader import Loader
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
-    EY_col_energy,
-    EY_col_normal,
     ImplementedPop,
-    markdown,
+    col_energy,
+    col_normal,
+    md_ey,
 )
 
 
 class EmissionYield(EmissionData):
     """An emission yield."""
 
-    def __init__(
-        self,
-        population: ImplementedPop,
-        data: pd.DataFrame,
-    ) -> None:
+    def __init__(self, population: ImplementedPop, data: pd.DataFrame) -> None:
         """Instantiate the data.
 
         Parameters
         ----------
-        population : Literal["SE", "EBE", "IBE", "all"]
+        population :
             The concerned population of electrons.
-        data : pandas.DataFrame
-            Structure holding the data. Must have a ``Energy (eV)`` column
+        data :
+            Structure holding the data. Must have an ``Energy (eV)`` column
             holding PEs energy. And one or several columns ``theta [deg]``,
-            where `theta` is the value of the incidence angle and content is
+            where ``theta`` is the value of the incidence angle and content is
             corresponding emission yield.
 
         """
         super().__init__(population, data)
-        self.energies = data[EY_col_energy].to_numpy()
+        self.energies = data[col_energy].to_numpy()
         self.angles = [
-            float(col.split()[0])
-            for col in data.columns
-            if col != EY_col_energy
+            float(col.split()[0]) for col in data.columns if col != col_energy
         ]
+        #: Energy at the maximum emission yield in :unit:`eV`. Not defined for
+        #: BEs.
+        self.e_max: float
+        #: Maximum emission yield. Not defined for BEs.
+        self.ey_max: float
+        #: First cross-over enrergy in :unit:`eV`. Not defined for BEs.
+        self.e_c1: float
+        #: Second cross-over enrergy in :unit:`eV`. Not defined for BEs.
+        self.e_c2: float | None
         if self.population in ("SE", "all"):
             self.e_max, self.ey_max, self.e_c1, self.e_c2 = self._parameters(
                 n_resample=1000
@@ -65,11 +68,11 @@ class EmissionYield(EmissionData):
 
         Parameters
         ----------
-        loader : Loader
+        loader :
             The object that will load the data.
-        population : Literal["SE", "EBE", "IBE", "all"]
+        population :
             The concerned population of electrons.
-        *filepath : str | pathlib.Path
+        *filepath :
             Path(s) to file holding data under study.
 
         """
@@ -79,7 +82,7 @@ class EmissionYield(EmissionData):
     @property
     def label(self) -> str:
         """Print nature of data (markdown)."""
-        return markdown[self.population]
+        return md_ey[self.population]
 
     def _parameters(
         self,
@@ -88,7 +91,7 @@ class EmissionYield(EmissionData):
         """Compute the characteristics of the emission yield."""
         assert 0.0 in self.angles, "Need the normal incidence measurements."
 
-        normal_ey = self.data[[EY_col_energy, EY_col_normal]]
+        normal_ey = self.data[[col_energy, col_normal]]
         assert isinstance(normal_ey, pd.DataFrame)
         normal_ey = resample(normal_ey, n_resample)
 
@@ -103,16 +106,15 @@ class EmissionYield(EmissionData):
 
         Parameters
         ----------
-        normal_ey : pandas.DataFrame
+        normal_ey :
             Holds energy of PEs as well as emission yield at nominal incidence.
-        tol_energy : float, optional
+        tol_energy :
             If the :math:`E_{max}` is too close to the maximum PE energy, an
             warning is raised; tolerance is ``tol_energy``. The default value
             is 10 eV.
 
         Returns
         -------
-        tuple[float, float]
             :math:`E_{max}` and :math:`\sigma_{max}`.
         """
         e_max, sigma_max = get_emax_eymax(normal_ey)
@@ -134,17 +136,17 @@ class EmissionYield(EmissionData):
 
         Parameters
         ----------
-        normal_ey : pandas.DataFrame
+        normal_ey :
             Holds energy of PEs as well as emission yield at nominal incidence.
-        e_max : float
+        e_max :
             Energy of maximum emission yield. Used to discriminate
             :math:`E_{c1}` from :math:`E_{c2}`.
-        min_e : float, optional
+        min_e :
             Energy under which :math:`E_{c1}` is not searched. It is useful if
             emission yield data comes from a model which sets the emission
             yield to unity at very low energies (eg some implementations of
             Vaughan). The default value is 10 eV.
-        tol_ey : float, optional
+        tol_ey :
             It the emission yield is too far from unity at crossover energy, a
             warning is raised. Tolerance is ``tol_ey``. The default value is
             ``0.01``.
@@ -182,16 +184,23 @@ class EmissionYield(EmissionData):
         marker: str | None = "+",
         axes: T | None = None,
         grid: bool = True,
+        population: ImplementedPop | None = None,
         **kwargs,
     ) -> T:
-        """Plot the contained data using plotter."""
+        """Plot the contained data using plotter.
+
+        This wrapper simply calls the :meth:`.Plotter.plot_emission_yield`
+        method.
+
+        """
         return plotter.plot_emission_yield(
-            emission_yield=self.data,
+            df=self.data,
             *args,
             axes=axes,
             lw=lw,
             marker=marker,
             grid=grid,
             label=self.label,
+            population=population,
             **kwargs,
         )

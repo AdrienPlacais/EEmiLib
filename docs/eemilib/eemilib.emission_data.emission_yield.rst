@@ -1,4 +1,4 @@
-eemilib.emission\_data.emission\_yield module
+emission\_yield module
 =============================================
 
 .. automodule:: eemilib.emission_data.emission_yield

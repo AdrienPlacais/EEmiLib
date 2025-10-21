@@ -94,6 +94,10 @@ def main() -> None:
         angles=np.linspace(theta_start, theta_end, n_theta),
         axes=axes,
     )
+
+    # Evaluate
+    evaluations = model.evaluate(data_matrix)
+    print(evaluations)
     return
 
 
