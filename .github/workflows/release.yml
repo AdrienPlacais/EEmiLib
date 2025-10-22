@@ -23,7 +23,7 @@ jobs:
         with:
           checkout: true
           checkout-fetch-depth: 0
-          checkout-depth-tags: true
+          checkout-fetch-tags: true
 
   publish-to-testpypi:
     needs: [dist]
