@@ -20,22 +20,45 @@ may have.
 
 ## Installation
 
-1. Clone the repository
-   `git clone git@github.com:AdrienPlacais/EEmiLib.git`
-2. Install in editable mode with dependencies
-   `cd EEmiLib`
-   `pip install -e .[test]`
-   - Depending on your shell, you may need to use quotes:
-     `pip install -e "[.test]"`
-3. Run the tests to ensure everything is working:
-   `pytest -m "not implementation"`
+1. Create a dedicated Python environment.
+2. Run
+
+```bash
+pip install EEmiLib
+```
+
+> [!NOTE]
+> If you are completely new to Python and these instructions are unclear, check [this tutorial](https://python-guide.readthedocs.io/en/latest/).
+> In particular, you will want to:
+>
+> 1. [Install Python](https://python-guide.readthedocs.io/en/latest/starting/installation/) 3.12 or higher.
+> 2. [Learn to use Python environments](https://python-guide.readthedocs.io/en/latest/dev/virtualenvs/), `pipenv` or `virtualenv`.
+> 3. Optionally, [install a Python IDE](https://python-guide.readthedocs.io/en/latest/dev/env/#ides)
+>    such as Spyder or VSCode.
+
+If you want to edit the source code:
+
+1. Clone the repository: `git clone git@github.com:AdrienPlacais/EEmiLib.git`
+   > [!WARNING]
+   > If you `Download ZIP` this repository (which can happen if you don't have access to `git`), installation will fail at step #3.
+   > [A workaround](https://lightwin.readthedocs.io/en/latest/manual/troubles/setuptools_error.html) is proposed here.
+   > This is a different library, but the same method applies.
+2. Create a dedicated Python environment.
+3. From EEmiLib folder: `pip install -e .[test]`
+4. Test that everything is working with `pytest -m "not implementation"`.
 
 ## Usage
 
 ### Graphical User Interface
 
-To start the GUI:
-`eemilib-gui`
+To start the GUI, run following command in a bash:
+
+```bash
+eemilib-gui
+```
+
+A `Module not found error` generally means that the EEmiLib Python environment
+is not activated.
 
 ![GUI screenshot](images/gui_example.png)
 
@@ -104,10 +127,6 @@ model.plot(
   - [ ] Tabulated model data.
   - [ ] Model parameters value (makes sense along with an `Import` button).
 - Fix error when not running from a git repo:
-
-```
-fatal: not a git repository (or any parent up to mount point /)
-Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
-```
-
-- Update installation instructions.
+  `fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).`
+- [x] Update installation instructions.
