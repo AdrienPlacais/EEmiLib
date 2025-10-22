@@ -69,6 +69,8 @@ package-dir = { "" = "src" }
 [tool.setuptools.packages]
 find = { where = ["src"] }
 
+[tool.setuptools_scm]
+
 [build-system]
 build-backend = "setuptools.build_meta"
 requires = ["setuptools>=64", "wheel", "setuptools-scm>=8, <9"]

@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [0.0.x]
 
+## [0.0.10] -- 2025-10-22
+
+### Fixed
+
+- Release workflow works without error.
+
+## [0.0.9]
+
+### Added
+
+- EEmiLib is now available on PyPI. Installation instructions are simpler,
+  simply run
+
+  ```bash
+  pip install EEmiLib
+  ```
+
 ## [0.0.8] -- 2025-10-21
 
 ### Fixed
