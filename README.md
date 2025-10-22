@@ -103,3 +103,11 @@ model.plot(
 - [ ] `Export` buttons
   - [ ] Tabulated model data.
   - [ ] Model parameters value (makes sense along with an `Import` button).
+- Fix error when not running from a git repo:
+
+```
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+```
+
+- Update installation instructions.
