@@ -7,11 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [0.0.x]
 
-## 0.0.10
+## [0.0.10]
 
 ### Fixed
 
-- Release workflow should work without error.
+- Release workflow works without error.
 
 ## [0.0.9]
 
