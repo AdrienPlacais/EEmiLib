@@ -4,12 +4,8 @@ on:
   workflow_dispatch:
   pull_request:
   push:
-    branches:
-      - main
-      - ci/release-pypi
-  release:
-    types:
-      - published
+    tags:
+      - "v*"
 
 jobs:
   dist:
