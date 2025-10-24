@@ -7,12 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [0.0.x]
 
-## 0.0.15
+## [0.0.15]
 
 ### Added
 
 - `Model.display_parameters` method to log current parameters values.
 - Animation in `README` to showcase GUI.
+- New installation instructions adapted to PyPI.
 
 ## [0.0.14] -- 2025-10-22
 
