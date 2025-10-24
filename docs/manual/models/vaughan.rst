@@ -80,8 +80,8 @@ Just instantiate your model with:
    model = Vaughan()
    model.preset_implementation("CST")
 
-From the GUI, manually reproduce the steps described in the :meth:`.Vaughan.preset_implementation` method.
-More specific documentation is also listed in :meth:`.Vaughan.preset_implementation`.
+From the GUI, manually reproduce the steps described in the :meth:`.vaughan.Vaughan.preset_implementation` method.
+More specific documentation is also listed in :meth:`.vaughan.Vaughan.preset_implementation`.
 
 Parameter Vaughan with :math:`E_{\mathrm{c,\,1}}` instead of :math:`E_0`
 ------------------------------------------------------------------------

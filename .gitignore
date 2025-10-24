@@ -165,3 +165,4 @@ pyrightconfig.json
 
 data/*
 scripts/*
+*.mp4

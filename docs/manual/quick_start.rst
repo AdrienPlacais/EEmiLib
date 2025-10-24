@@ -21,7 +21,7 @@ Load experimental data
 1. Select your data :class:`.Loader`.
 
  - The choice of the loader depends on the format of your data file.
-   By default, use :class:`.PandasLoader`.
+   By default, use :class:`.pandas_loader.PandasLoader`.
    It will work with the example data provided in `cu/` and `ag/`.
 
 2. Select your electron emission :class:`.Model`.
