@@ -63,7 +63,7 @@ class Vaughan(Model):
         "E_max": {
             "markdown": r"E_\mathrm{max}",
             "unit": "eV",
-            "value": 0.0,
+            "value": 100.0,
             "lower_bound": 0.0,
             "description": "Energy at maximum TEEY.",
         },
@@ -87,7 +87,7 @@ class Vaughan(Model):
         "teey_max": {
             "markdown": r"\sigma_\mathrm{max}",
             "unit": "1",
-            "value": 0.0,
+            "value": 1.5,
             "lower_bound": 0.0,
             "description": "Maximum TEEY, directly taken from the measurement.",
         },
@@ -114,7 +114,7 @@ class Vaughan(Model):
         "E_c1": {
             "markdown": r"E_{c,\,1}",
             "unit": "eV",
-            "value": 0.0,
+            "value": 25.0,
             "description": r"First crossover energy. Must be provided instead"
             + " of E_0 for SPARK3D Vaughan.",
             "is_locked": False,
