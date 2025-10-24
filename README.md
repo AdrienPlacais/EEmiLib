@@ -39,10 +39,12 @@ pip install EEmiLib
 If you want to edit the source code:
 
 1. Clone the repository: `git clone git@github.com:AdrienPlacais/EEmiLib.git`
+
    > [!WARNING]
    > If you `Download ZIP` this repository (which can happen if you don't have access to `git`), installation will fail at step #3.
    > [A workaround](https://lightwin.readthedocs.io/en/latest/manual/troubles/setuptools_error.html) is proposed here.
    > This is a different library, but the same method applies.
+
 2. Create a dedicated Python environment.
 3. From EEmiLib folder: `pip install -e .[test]`
 4. Test that everything is working with `pytest -m "not implementation"`.
