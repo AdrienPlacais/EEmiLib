@@ -350,7 +350,7 @@ class Model(ABC):
             col_normal
         ].to_numpy()
 
-        error = 100.0 * np.std(measured_teey - modelled_teey, ddof=1.0)
+        error = 100.0 * np.std((measured_teey - modelled_teey), ddof=1.0)
         return float(error)
 
     def display_parameters(self) -> None:
