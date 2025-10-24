@@ -25,6 +25,7 @@ from eemilib.gui.file_selection import file_selection_matrix
 from eemilib.gui.helper import (
     PARAMETER_ATTR_TO_POS,
     PARAMETER_POS_TO_ATTR,
+    format_number,
     set_dropdown_value,
     set_help_button_action,
     setup_dropdown,
@@ -317,7 +318,9 @@ class MainWindow(QMainWindow):
                 )
 
         for i, param in enumerate(self.model.parameters.values()):
-            self.model_table.setItem(i, 2, QTableWidgetItem(str(param.value)))
+            self.model_table.setItem(
+                i, 2, QTableWidgetItem(format_number(param.value))
+            )
 
     def _fill_plot_nature_and_population(self) -> None:
         """Check emission data type and population.
