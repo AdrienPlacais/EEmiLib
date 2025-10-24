@@ -60,7 +60,7 @@ eemilib-gui
 A `Module not found error` generally means that the EEmiLib Python environment
 is not activated.
 
-![GUI screenshot](images/gui_example.png)
+![GUI animation](./docs/_static/animation.gif)
 
 ### Python API
 
@@ -103,8 +103,6 @@ model.plot(
     axes=axes,
 )
 ```
-
-![results screenshot](images/gui_example_results.png)
 
 ## Roadmap/To-Do
 
