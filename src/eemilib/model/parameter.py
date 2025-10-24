@@ -53,6 +53,10 @@ class Parameter:
         """Print out name of parameter and current value."""
         return f"{self.name} ({self.unit}): {self.value} {self.description}"
 
+    def __str__(self) -> str:
+        """Return name of parameter, its value and its unit."""
+        return f"{self.value:.3f} [{self.unit}]"
+
     @property
     def name(self) -> str:
         """Return markdown name of parameter with its unit."""

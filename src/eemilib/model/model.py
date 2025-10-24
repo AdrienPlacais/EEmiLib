@@ -9,6 +9,7 @@ import logging
 import math
 from abc import ABC, abstractmethod
 from collections.abc import Collection
+from pprint import pformat
 from typing import Any
 
 import numpy as np
@@ -351,6 +352,16 @@ class Model(ABC):
 
         error = 100.0 * np.std(measured_teey - modelled_teey, ddof=1.0)
         return float(error)
+
+    def display_parameters(self) -> None:
+        """Display the parameters and their values in a nice looking way."""
+        if not hasattr(self, "parameters"):
+            logging.info("`parameters` attribute was not set.")
+
+        msg = {
+            f"{key:>20}": str(param) for key, param in self.parameters.items()
+        }
+        logging.info("Parameters values:\n" + pformat(msg))
 
 
 def _dummy_df(

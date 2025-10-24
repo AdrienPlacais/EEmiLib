@@ -130,4 +130,4 @@ model.plot(
   `fatal: not a git repository (or any parent up to mount point /)
 Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).`
 - [x] Update installation instructions.
-- [ ] `ModelParameters.__str__` for nice printing API.
+- [x] `Model.display_parameters()` method for nice printing API.
