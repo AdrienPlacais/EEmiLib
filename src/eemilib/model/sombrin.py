@@ -94,7 +94,7 @@ class Sombrin(Model):
         if parameters_values is not None:
             self.set_parameters_values(parameters_values)
 
-        self._func = _sombrin_func
+        self._func = sombrin_func
         self._E: float | None = None
 
     @property
@@ -178,7 +178,7 @@ class Sombrin(Model):
         return self._evaluate_for_teey_models(data_matrix)
 
 
-def _sombrin_func(
+def sombrin_func(
     ene: float | NDArray[np.float64],
     E_max: Parameter,
     teey_max: Parameter,

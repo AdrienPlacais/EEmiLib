@@ -152,7 +152,7 @@ class Vaughan(Model):
         self._generate_parameter_docs()
         if parameters_values is not None:
             self.set_parameters_values(parameters_values)
-        self._func = _vaughan_func
+        self._func = vaughan_func
         self.preset_implementation(implementation)
 
     def preset_implementation(
@@ -188,7 +188,7 @@ class Vaughan(Model):
             if np.isnan(E_0):
                 return
             self.set_parameter_value("E_0", E_0)
-            self._func = _vaughan_spark3d
+            self._func = vaughan_spark3d
 
             return
         logging.error(f"{implementation = } not in {VaughanImplementation}")
@@ -274,7 +274,7 @@ class Vaughan(Model):
 
         def _to_minimize(E_0: float) -> float:
             parameters["E_0"].value = E_0
-            teey_at_crossover = _vaughan_func(ene=E_c1, the=0.0, **parameters)
+            teey_at_crossover = vaughan_func(ene=E_c1, the=0.0, **parameters)
             if isinstance(teey_at_crossover, np.ndarray):
                 teey_at_crossover = teey_at_crossover[0]
             return abs(teey_at_crossover - 1.0)
@@ -291,7 +291,7 @@ class Vaughan(Model):
         return self._evaluate_for_teey_models(data_matrix)
 
 
-def _vaughan_func(
+def vaughan_func(
     ene: float,
     the: float,
     E_0: Parameter,
@@ -325,7 +325,7 @@ def _vaughan_func(
     return mod_teey_max * (xi * np.exp(1.0 - xi)) ** k
 
 
-def _vaughan_spark3d(
+def vaughan_spark3d(
     ene: float,
     the: float,
     E_0: Parameter,
@@ -345,7 +345,7 @@ def _vaughan_spark3d(
 
     """
     if ene >= E_0_SPARK3D:
-        return _vaughan_func(
+        return vaughan_func(
             ene=ene,
             the=the,
             E_0=E_0,

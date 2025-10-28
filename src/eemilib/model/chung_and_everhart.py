@@ -78,7 +78,7 @@ class ChungEverhart(Model):
         if parameters_values is not None:
             self.set_parameters_values(parameters_values)
 
-        self._func = _chung_everhart_func
+        self._func = chung_everhart_func
 
     def get_data(
         self,
@@ -122,10 +122,12 @@ class ChungEverhart(Model):
         distribution = data_matrix.all_energy_distribution
         assert distribution.population == "all"
 
+        param = self.parameters["W_f"]
+
         lsq = least_squares(
             fun=_residue,
-            x0=8.0,
-            bounds=(0, np.inf),
+            x0=param.value,
+            bounds=param.bounds,
             args=(
                 distribution.data[col_energy].to_numpy(),
                 distribution.data[col_normal].to_numpy(),
@@ -142,7 +144,7 @@ def _chung_everhart_norm(w_f: float) -> float:
     return 256.0 * w_f**3 / 27.0
 
 
-def _chung_everhart_func(
+def chung_everhart_func(
     ene: float | NDArray[np.float64],
     W_f: Parameter | float,
     norm: Parameter | None = None,
@@ -160,7 +162,7 @@ def _residue(
     w_f: float, ene: NDArray[np.float64], measured: NDArray[np.float64]
 ) -> NDArray[np.float64]:
     """Compute array of residues between model and measurements."""
-    return _chung_everhart_func(ene, w_f) - measured
+    return chung_everhart_func(ene, w_f) - measured
 
 
 # Append dynamically generated docs to the module docstring
