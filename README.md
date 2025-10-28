@@ -20,6 +20,8 @@ may have.
 
 ## Installation
 
+### For users
+
 1. Create a dedicated Python environment.
 2. Run
 
@@ -35,6 +37,8 @@ pip install EEmiLib
 > 2. [Learn to use Python environments](https://python-guide.readthedocs.io/en/latest/dev/virtualenvs/), `pipenv` or `virtualenv`.
 > 3. Optionally, [install a Python IDE](https://python-guide.readthedocs.io/en/latest/dev/env/#ides)
 >    such as Spyder or VSCode.
+
+### For developers
 
 If you want to edit the source code:
 
