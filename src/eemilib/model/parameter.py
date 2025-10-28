@@ -1,7 +1,6 @@
 """Define a model parameter."""
 
 import numpy as np
-from scipy.optimize import Bounds
 
 
 class Parameter:
@@ -114,8 +113,3 @@ class Parameter:
         bound_1, bound_2 = self.value - self._tol, self.value + self._tol
         self.lower_bound = min(bound_1, bound_2)
         self.upper_bound = max(bound_1, bound_2)
-
-    @property
-    def bounds(self) -> Bounds:
-        """Instantiate a scipy ``Bounds`` object."""
-        return Bounds(lb=self.lower_bound, ub=self.upper_bound)

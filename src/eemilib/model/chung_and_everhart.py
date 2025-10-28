@@ -19,7 +19,7 @@ from eemilib.util.constants import (
     col_normal,
 )
 from numpy.typing import NDArray
-from scipy.optimize import least_squares
+from scipy.optimize import Bounds, least_squares
 
 
 class ChungEverhartParameters(TypedDict):
@@ -127,7 +127,7 @@ class ChungEverhart(Model):
         lsq = least_squares(
             fun=_residue,
             x0=param.value,
-            bounds=param.bounds,
+            bounds=Bounds(param.lower_bound, param.upper_bound),
             args=(
                 distribution.data[col_energy].to_numpy(),
                 distribution.data[col_normal].to_numpy(),
