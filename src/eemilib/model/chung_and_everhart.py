@@ -28,7 +28,7 @@ class ChungEverhartParameters(TypedDict):
 
 
 class ChungEverhart(Model):
-    """Define the Chung and Everhart model, defined in :cite:`Chung1974`."""
+    """Chung and Everhart model, defined in :cite:`Chung1974`."""
 
     emission_data_types = ["Emission Energy"]
     populations = ["SE"]
@@ -66,7 +66,7 @@ class ChungEverhart(Model):
         ----------
         parameters_values :
             Contains name of parameters and associated value. If provided, will
-            override the default values set in ``initial`_parameters``.
+            override the default values set in ``initial_parameters``.
 
         """
         super().__init__(url_doc_override="manual/models/chung_and_everhart")

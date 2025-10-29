@@ -92,11 +92,10 @@ rst_prolog = """
 
 """
 
-autodoc_type_aliases = {
+intersphinx_aliases = {
     "np.float64": "numpy.float64",
     "NDArray": "numpy.typing.NDArray",
 }
-intersphinx_aliases = autodoc_type_aliases
 
 # -- Parameters for sphinx-autodoc-typehints ----------------------------------
 typehints_fully_qualified = False
