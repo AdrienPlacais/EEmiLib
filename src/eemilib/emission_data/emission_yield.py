@@ -110,8 +110,7 @@ class EmissionYield(EmissionData):
             Holds energy of PEs as well as emission yield at nominal incidence.
         tol_energy :
             If the :math:`E_{max}` is too close to the maximum PE energy, an
-            warning is raised; tolerance is ``tol_energy``. The default value
-            is 10 eV.
+            warning is raised; tolerance is ``tol_energy``.
 
         Returns
         -------
@@ -145,11 +144,10 @@ class EmissionYield(EmissionData):
             Energy under which :math:`E_{c1}` is not searched. It is useful if
             emission yield data comes from a model which sets the emission
             yield to unity at very low energies (eg some implementations of
-            Vaughan). The default value is 10 eV.
+            Vaughan).
         tol_ey :
             It the emission yield is too far from unity at crossover energy, a
-            warning is raised. Tolerance is ``tol_ey``. The default value is
-            ``0.01``.
+            warning is raised. Tolerance is ``tol_ey``.
 
         Returns
         -------

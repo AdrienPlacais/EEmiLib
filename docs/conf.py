@@ -2,7 +2,6 @@ import os
 import sys
 
 import eemilib
-import sphinx
 
 project = "EEmiLib"
 copyright = "2025, Adrien Plaçais"
@@ -16,10 +15,10 @@ sys.path.append(os.path.abspath("./_ext"))
 
 extensions = [
     "myst_parser",
-    "nbsphinx",
     "sphinx.ext.autodoc",  # include doc from docstrings
     "sphinx.ext.intersphinx",  # interlink with other docs, such as numpy
     "sphinx.ext.napoleon",  # handle numpy style
+    "sphinx_autodoc_typehints",  # exploit Python typing for doc
     "sphinx.ext.todo",  # allow use of TODO
     "sphinx_rtd_theme",  # ReadTheDocs theme
     "sphinxcontrib.bibtex",
@@ -27,10 +26,11 @@ extensions = [
 ]
 
 autodoc_default_options = {
+    "exclude-members": "_abc_impl",
     "member-order": "bysource",
     "members": True,
     "private-members": True,
-    "special-members": "__init__, __post_init__, __str__",
+    "special-members": "__post_init__, __str__",
     "undoc-members": True,
 }
 
@@ -92,25 +92,39 @@ rst_prolog = """
 
 """
 
-# Parameters for sphinx-autodoc-typehints
-always_document_param_types = True
+autodoc_type_aliases = {
+    "np.float64": "numpy.float64",
+    "NDArray": "numpy.typing.NDArray",
+}
+intersphinx_aliases = autodoc_type_aliases
+
+# -- Parameters for sphinx-autodoc-typehints ----------------------------------
+typehints_fully_qualified = False
+
+# Document parameters without documentation. Set it to True to ensure that all
+# parameters have their type documented
+always_document_param_types = False
+# Integrate the doc of the __init__, and in particular it's Parameters section,
+# to the class documentation (__init__ doc is hidden)
+autoclass_content = "both"
+
 always_use_bars_union = True
+
+typehints_document_rtype = True
+typehints_document_rtype_none = True
+typehints_use_rtype = True
+
 typehints_defaults = "comma"
+simplify_optional_unions = True
+typehints_formatter = None
+
+# If set to True, these ones also show the typing in the function signature in
+# the doc. Like:
+# function(a: float, b: int) -> tuple[float, int]
+# instead of:
+# function(a, b)
+typehints_use_signature = False
+typehints_use_signature_return = False
 
 # MyST parser to include markdown files
 myst_gfm_only = True  # interpret markdown with github styling
-#
-# -- bug fixes ---------------------------------------------------------------
-# fix following warning:
-# <unknown>:1: warning: py:class reference target not found: pathlib._local.path [ref.class]
-# note that a patch is provided by sphinx 8.2, but nbsphinx 0.9.7 requires
-# sphinx<8.2
-# associated issue:
-# https://github.com/sphinx-doc/sphinx/issues/13178
-if sys.version_info[:2] >= (3, 13) and sphinx.version_info[:2] < (8, 2):  # type: ignore
-    import pathlib
-
-    from sphinx.util.typing import _INVALID_BUILTIN_CLASSES
-
-    _INVALID_BUILTIN_CLASSES[pathlib.Path] = "pathlib.Path"  # type: ignore
-    nitpick_ignore.append(("py:class", "pathlib._local.Path"))

@@ -298,7 +298,6 @@ def range_func(
 
     Returns
     -------
-    float | NDArray[np.float64]
         Corresponding ranges in :unit:`nm`.
 
     """
@@ -349,7 +348,6 @@ def generation(
 
     Returns
     -------
-    float | NDArray[np.float64]
         Probabiliy for an electron to generate secondary electrons.
 
     """
@@ -393,7 +391,6 @@ def transport(
 
     Returns
     -------
-    float | NDArray[np.float64]
         Probabiliy for a SE to reach the surface.
 
     """
