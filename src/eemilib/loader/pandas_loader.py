@@ -62,7 +62,7 @@ class PandasLoader(Loader):
         -------
         pandas.DataFrame
             Structure holding the data. Has a ``Energy [eV]`` column
-            holding PEs energy. And one or several columns ``theta [deg]``,
+            holding |PEs| energy. And one or several columns ``theta [deg]``,
             where ``theta`` is the value of the incidence angle and content is
             corresponding emission yield.
 
@@ -90,7 +90,7 @@ class PandasLoader(Loader):
         """Load and format the given emission energy file.
 
         ``CSV`` files can have comments at the start of the file, starting with
-        a ``#`` character. It is expected that the energy of PEs used for the
+        a ``#`` character. It is expected that the energy of |PEs| used for the
         measurements is on the second commented line, in :unit:`eV`. Column
         separator must be ``,``. First non-commented line is incidence angle in
         degrees. First column is emission energy in :unit:`eV`. Distribution is
@@ -127,7 +127,7 @@ class PandasLoader(Loader):
             angle and content is corresponding emission energy distribution.
         float
             Energy of Primary Electrons in :unit:`eV`. If not found in the file
-            comments, it will be inferred from the position of the EBEs peak.
+            comments, it will be inferred from the position of the |EBEs| peak.
 
         """
         header, n_comments = read_header(filepath, sep, comment)

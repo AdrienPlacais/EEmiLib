@@ -19,7 +19,7 @@ ImplementedPop = Literal["SE", "EBE", "IBE", "all"]
 IMPLEMENTED_POP = ("SE", "EBE", "IBE", "all")
 
 #: Typical column where energy is stored in dataframes.
-#: In emission yield data, this is the energy of PEs. In emission energy data,
+#: In emission yield data, this is the energy of |PEs|. In emission energy data,
 #: this is the energy of emitted electrons.
 col_energy = "Energy [eV]"
 #: Typical column where normal incidence data is stored in dataframes.

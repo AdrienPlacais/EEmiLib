@@ -89,6 +89,18 @@ intersphinx_mapping = {
 rst_prolog = """
 .. |axplot| replace:: :meth:`matplotlib.axes.Axes.plot`
 .. |dfplot| replace:: :meth:`pandas.DataFrame.plot`
+.. |SE| replace:: :ref:`SE <SE-link>`
+.. |SEs| replace:: :ref:`SEs <SE-link>`
+.. |SEEY| replace:: :ref:`SEEY <SE-link>`
+.. |IBE| replace:: :ref:`IBE <IBE-link>`
+.. |IBEs| replace:: :ref:`IBEs <IBE-link>`
+.. |IBEEY| replace:: :ref:`IBEEY <IBE-link>`
+.. |EBE| replace:: :ref:`EBE <EBE-link>`
+.. |EBEs| replace:: :ref:`EBEs <EBE-link>`
+.. |EBEEY| replace:: :ref:`EBEEY <EBE-link>`
+.. |PE| replace:: :ref:`PE <notations-link>`
+.. |PEs| replace:: :ref:`PEs <notations-link>`
+.. |TEEY| replace:: :ref:`TEEY <notations-link>`
 
 """
 

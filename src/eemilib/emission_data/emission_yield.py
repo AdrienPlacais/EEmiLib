@@ -33,7 +33,7 @@ class EmissionYield(EmissionData):
             The concerned population of electrons.
         data :
             Structure holding the data. Must have an ``Energy (eV)`` column
-            holding PEs energy. And one or several columns ``theta [deg]``,
+            holding |PEs| energy. And one or several columns ``theta [deg]``,
             where ``theta`` is the value of the incidence angle and content is
             corresponding emission yield.
 
@@ -107,9 +107,9 @@ class EmissionYield(EmissionData):
         Parameters
         ----------
         normal_ey :
-            Holds energy of PEs as well as emission yield at nominal incidence.
+            Holds energy of |PEs| as well as emission yield at nominal incidence.
         tol_energy :
-            If the :math:`E_{max}` is too close to the maximum PE energy, an
+            If the :math:`E_{max}` is too close to the maximum |PE| energy, an
             warning is raised; tolerance is ``tol_energy``.
 
         Returns
@@ -136,7 +136,7 @@ class EmissionYield(EmissionData):
         Parameters
         ----------
         normal_ey :
-            Holds energy of PEs as well as emission yield at nominal incidence.
+            Holds energy of |PEs| as well as emission yield at nominal incidence.
         e_max :
             Energy of maximum emission yield. Used to discriminate
             :math:`E_{c1}` from :math:`E_{c2}`.

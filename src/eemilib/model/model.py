@@ -1,7 +1,7 @@
 """Define the base class for all electron emission models.
 
 .. todo::
-    Define all the properties: EBEEY, emission energy distributions, etc.
+    Define all the properties: |EBEEY|, emission energy distributions, etc.
 
 """
 
@@ -39,9 +39,9 @@ class Model(ABC):
     populations :
         Modelled populations.
     considers_energy :
-        Tell if the model has a dependency over PEs impact energy.
+        Tell if the model has a dependency over |PEs| impact energy.
     is_3d :
-        Tell if the model has a dependency over PEs impact angle.
+        Tell if the model has a dependency over |PEs| impact angle.
     is_dielectrics_compatible :
         Tell if the model can take the surface-trapped charges into account.
     initial_parameters :
@@ -111,7 +111,7 @@ class Model(ABC):
         *args,
         **kwargs,
     ) -> pd.DataFrame:
-        r"""Compute TEEY :math:`\sigma`."""
+        r"""Compute |TEEY| :math:`\sigma`."""
         teey = self.get_data(
             "all",
             "Emission Yield",
@@ -132,7 +132,7 @@ class Model(ABC):
         *args,
         **kwargs,
     ) -> pd.DataFrame:
-        r"""Compute SEEY :math:`\delta`."""
+        r"""Compute |SEEY| :math:`\delta`."""
         seey = self.get_data(
             "SE", "Emission Yield", energy=energy, theta=theta, *args, **kwargs
         )
@@ -148,7 +148,7 @@ class Model(ABC):
         *args,
         **kwargs,
     ) -> pd.DataFrame:
-        r"""Compute SEs emission energy distribution."""
+        r"""Compute |SEs| emission energy distribution."""
         se_distrib = self.get_data(
             "SE",
             "Emission Energy",
@@ -306,7 +306,7 @@ class Model(ABC):
     def _evaluate_for_teey_models(
         self, data_matrix: DataMatrix
     ) -> dict[str, float]:
-        """Evaluate a TEEY model with N. Fil criterions.
+        """Evaluate a |TEEY| model with N. Fil criterions.
 
         Ref: :cite:`Fil2016a,Fil2020`
 
@@ -337,7 +337,11 @@ class Model(ABC):
         return float(error)
 
     def _error_teey(self, emission_yield: EmissionYield) -> float:
-        """Compute TEEY relative error between E_c1 and E_max in :unit:`%`."""
+        """Compute |TEEY| relative error between E_c1 and E_max.
+
+        Returned value is in :unit:`%`.
+
+        """
         min_energy = emission_yield.e_c1
         max_energy = emission_yield.e_max
         df = emission_yield.data

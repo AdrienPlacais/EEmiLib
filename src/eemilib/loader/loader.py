@@ -37,7 +37,7 @@ class Loader(ABC):
 
         Should also try to load the energy of primary electrons from file
         metadata. If not possible, :class:`.EmissionEnergyDistribution` will
-        try to infer it from the position of the EBEs peak.
+        try to infer it from the position of the |EBEs| peak.
 
         """
 

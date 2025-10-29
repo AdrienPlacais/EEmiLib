@@ -33,7 +33,7 @@ class DeesseLoader(Loader):
         -------
         pandas.DataFrame
             Structure holding the data. Has a ``Energy [eV]`` column
-            holding PEs energy. And one or several columns ``theta [deg]``,
+            holding |PEs| energy. And one or several columns ``theta [deg]``,
             where `theta` is the value of the incidence angle and content is
             corresponding emission yield.
 
@@ -85,7 +85,7 @@ class DeesseLoader(Loader):
         filepath :
             Path to file holding data under study.
         e_pe :
-            Energy of PEs in :unit:`eV`. Should be manually provided, as not
+            Energy of |PEs| in :unit:`eV`. Should be manually provided, as not
             present in DEESSE files.
 
         Returns
@@ -97,7 +97,7 @@ class DeesseLoader(Loader):
             angle and content is corresponding emission energy distribution.
         float
             Energy of Primary Electrons in :unit:`eV`. If not found in the file
-            comments, it will be inferred from the position of the EBEs peak.
+            comments, it will be inferred from the position of the |EBEs| peak.
 
         """
         col1 = "Kinetic Energy [eV]"

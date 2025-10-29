@@ -536,7 +536,7 @@ class DataMatrix:
 
     @property
     def teey(self) -> EmissionYield:
-        """Return the TEEY directly."""
+        """Return the |TEEY| directly."""
         emission_yield = self.data_matrix[3][0]
         assert isinstance(
             emission_yield, EmissionYield
@@ -546,7 +546,7 @@ class DataMatrix:
 
     @property
     def seey(self) -> EmissionYield:
-        """Return the SEEY directly."""
+        """Return the |SEEY| directly."""
         emission_yield = self.data_matrix[0][0]
         assert isinstance(
             emission_yield, EmissionYield
@@ -556,7 +556,7 @@ class DataMatrix:
 
     @property
     def se_energy_distribution(self) -> EmissionEnergyDistribution:
-        """Return the energy distribution of SEs."""
+        """Return the energy distribution of |SEs|."""
         distrib = self.data_matrix[0][1]
         assert isinstance(
             distrib, EmissionEnergyDistribution

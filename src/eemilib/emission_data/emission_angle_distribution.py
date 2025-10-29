@@ -21,7 +21,7 @@ class EmissionAngleDistribution(EmissionData):
             The concerned population of electrons.
         data :
             Structure holding the data. Must have an ``Angle [deg]`` column
-            holding PEs angle. And one or several columns ``theta [deg]``,
+            holding |PEs| angle. And one or several columns ``theta [deg]``,
             where `theta` is the value of the incidence angle and content is
             corresponding emission angle.
 

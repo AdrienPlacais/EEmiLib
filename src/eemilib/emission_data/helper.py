@@ -81,7 +81,7 @@ def get_crossover_energies(
     Parameters
     ----------
     normal_ey :
-        Holds energy of PEs as well as emission yield at nominal incidence.
+        Holds energy of |PEs| as well as emission yield at nominal incidence.
     e_max :
         Energy of maximum emission yield. Used to discriminate
         :math:`E_{c1}` from :math:`E_{c2}`.

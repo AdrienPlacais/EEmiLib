@@ -1,4 +1,4 @@
-"""Create the Sombrin model, to compute TEEY.
+"""Create the Sombrin model, to compute |TEEY|.
 
 It is very precise on the first crossover energy, but does not take the
 incident angle into account.
@@ -120,7 +120,7 @@ class Sombrin(Model):
     ) -> pd.DataFrame | None:
         """Return desired data according to current model.
 
-        Will return a dataframe only if the TEEY is asked.
+        Will return a dataframe only if the |TEEY| is asked.
 
         """
         if population != "all" or emission_data_type != "Emission Yield":
@@ -154,7 +154,7 @@ class Sombrin(Model):
     def find_optimal_parameters(
         self, data_matrix: DataMatrix, **kwargs
     ) -> None:
-        """Extract main TEEY curve parameters from measure."""
+        """Extract main |TEEY| curve parameters from measure."""
         if not data_matrix.has_all_mandatory_files(self.model_config):
             raise ValueError("Files are not all provided.")
 
@@ -172,7 +172,7 @@ class Sombrin(Model):
     def evaluate(self, data_matrix: DataMatrix) -> dict[str, float]:
         """Evaluate the quality of the model using Fil criterions.
 
-        Fil criterions :cite:`Fil2016a,Fil2020` are adapted to TEEY models.
+        Fil criterions :cite:`Fil2016a,Fil2020` are adapted to |TEEY| models.
 
         """
         return self._evaluate_for_teey_models(data_matrix)
@@ -186,7 +186,7 @@ def sombrin_func(
     E_param: float | None,
     **parameters,
 ) -> float | NDArray[np.float64]:
-    """Compute the TEEY for incident energy E."""
+    """Compute the |TEEY| for incident energy E."""
     if E_param is None:
         E_param = _e_parameter(teey_max, E_max, E_c1)
     num = 2 * teey_max.value * (ene / E_max.value) ** E_param

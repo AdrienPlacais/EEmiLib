@@ -40,7 +40,7 @@ class EmissionEnergyDistribution(EmissionData):
             Energy of primary electrons in :unit:`eV`.
         norm :
             To specify re-normalization constant. If not provided, we try to
-            set the maximum of SEs to unity. Provide ``1.0`` to avoid any
+            set the maximum of |SEs| to unity. Provide ``1.0`` to avoid any
             normalization.
 
         """
@@ -50,18 +50,18 @@ class EmissionEnergyDistribution(EmissionData):
             float(col.split()[0]) for col in data.columns if col != col_energy
         ]
 
-        #: Energy at the maximum of SEs in :unit:`eV`. Defined for SEs and
+        #: Energy at the maximum of |SEs| in :unit:`eV`. Defined for |SEs| and
         #: distribution of all electrons.
         self.e_peak_se: float
         i_peak_se, self.e_peak_se = self._find_SE_peak()
-        #: Energy at the maximum of EBEs in :unit:`eV`. Defined for EBEs and
+        #: Energy at the maximum of |EBEs| in :unit:`eV`. Defined for |EBEs| and
         #: distribution of all electrons.
         self.e_peak_ebe: float
-        #: Position of EBE peak.
+        #: Position of |EBE| peak.
         self.i_peak_ebe: int
         self.i_peak_ebe, self.e_peak_ebe = self._find_EBE_peak()
 
-        #: Energy of PEs in :unit:`eV`. If this information is not found in
+        #: Energy of |PEs| in :unit:`eV`. If this information is not found in
         #: the file header, we set it to the value of ``self.e_peak_ebe``.
         self.e_pe: float
         if e_pe:
@@ -138,17 +138,17 @@ class EmissionEnergyDistribution(EmissionData):
 
     @property
     def _se_ebe_limit(self) -> int:
-        """Arbitrary index limit between SEs and EBEs."""
+        """Arbitrary index limit between |SEs| and |EBEs|."""
         return int(self._n_points / 4)
 
     def _find_SE_peak(self) -> tuple[int, float]:
-        """Find the SEs maximum."""
+        """Find the |SEs| maximum."""
         i = self.data[: self._se_ebe_limit][col_normal].argmax()
         e_peak_se = self.data.at[i, col_energy]
         return int(i), float(e_peak_se)
 
     def _find_EBE_peak(self) -> tuple[int, float]:
-        """Find the position of the EBE peak."""
+        """Find the position of the |EBE| peak."""
         i = (
             self.data[self._se_ebe_limit :][col_normal].argmax()
             + self._se_ebe_limit

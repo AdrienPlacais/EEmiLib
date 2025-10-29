@@ -1,6 +1,6 @@
-r"""Create the Vaughan model, to compute TEEY.
+r"""Create the Vaughan model, to compute |TEEY|.
 
-TEEY at non-normal incidence will not be taken into account into the fit
+|TEEY| at non-normal incidence will not be taken into account into the fit
 (FIXME).
 
 .. todo::
@@ -170,7 +170,7 @@ class Vaughan(Model):
             - :math:`\sigma_\mathrm{low}` is set to 0.
             - :math:`E_0` is unlocked, so that it will be fitted to match
               :math:`E_{c,\,1}`.
-            - Below :math:`10` :unit:`eV`, TEEY is 0.
+            - Below :math:`10` :unit:`eV`, |TEEY| is 0.
 
         """
         if implementation == "original":
@@ -204,7 +204,7 @@ class Vaughan(Model):
     ) -> pd.DataFrame | None:
         """Return desired data according to current model.
 
-        Will return a dataframe only if the TEEY is asked.
+        Will return a dataframe only if the |TEEY| is asked.
 
         .. todo::
             This method could be so much simpler and efficient.
@@ -285,7 +285,7 @@ class Vaughan(Model):
     def evaluate(self, data_matrix: DataMatrix) -> dict[str, float]:
         """Evaluate the quality of the model using Fil criterions.
 
-        Fil criterions :cite:`Fil2016a,Fil2020` are adapted to TEEY models.
+        Fil criterions :cite:`Fil2016a,Fil2020` are adapted to |TEEY| models.
 
         """
         return self._evaluate_for_teey_models(data_matrix)
@@ -303,7 +303,7 @@ def vaughan_func(
     delta_E_transition: Parameter,
     **parameters,
 ) -> float | NDArray[np.float64]:
-    """Compute the TEEY for incident energy E."""
+    """Compute the |TEEY| for incident energy E."""
     mod_e_max = E_max.value * (
         1.0 + k_se.value * math.radians(the) ** 2 / (2.0 * math.pi)
     )
@@ -337,9 +337,9 @@ def vaughan_spark3d(
     delta_E_transition: Parameter,
     **parameters,
 ) -> float | NDArray[np.float64]:
-    r"""Compute TEEY as SPARK3D would.
+    r"""Compute |TEEY| as SPARK3D would.
 
-    This is a classic Vaughan, but TEEY is null for energies below
+    This is a classic Vaughan, but |TEEY| is null for energies below
     ``E_0_SPARK3D=10.0``. This parameter is different from the classic ``E_0``
     that appears in the expression of :math:`\xi`.
 

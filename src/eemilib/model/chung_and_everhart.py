@@ -1,4 +1,4 @@
-"""Create the Chung and Everhart model, to compute SEs emission distribution.
+"""Create the Chung and Everhart model, to compute |SEs| emission distribution.
 
 You will need to provice emission energy distribution measurements.
 
@@ -91,7 +91,7 @@ class ChungEverhart(Model):
     ) -> pd.DataFrame | None:
         """Return desired data according to current model.
 
-        Will return a dataframe only if the SEs energy distribution is asked.
+        Will return a dataframe only if the |SEs| energy distribution is asked.
 
         """
         if population != "SE" or emission_data_type != "Emission Energy":
