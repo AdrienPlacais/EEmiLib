@@ -1,9 +1,14 @@
+.. _dionne3d-link:
+
 Dionne 3D
 =========
 
 .. toctree::
    :maxdepth: 4
    :hidden:
+
+.. todo::
+   To implement.
 
 Presentation
 ------------
