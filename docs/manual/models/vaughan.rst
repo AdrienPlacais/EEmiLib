@@ -71,17 +71,25 @@ Implementations
 ---------------
 
 Two alternative implementations for Vaughan are implemented: `CST` and `SPARK3D`.
-Just instantiate your model with:
+
+GUI
+***
+
+Select your implementation from the `Parameters` menu.
+
+API
+***
+
+Instantiate your model with:
 
 .. code-block:: python
 
    model = Vaughan(implementation="CST") # or "SPARK3D"
    # alternative:
    model = Vaughan()
-   model.preset_implementation("CST")
+   model.set_implementation("CST")
 
-From the GUI, manually reproduce the steps described in the :meth:`.vaughan.Vaughan.preset_implementation` method.
-More specific documentation is also listed in :meth:`.vaughan.Vaughan.preset_implementation`.
+More specific documentation in :meth:`.vaughan.Vaughan.set_implementation`.
 
 Parameter Vaughan with :math:`E_{\mathrm{c,\,1}}` instead of :math:`E_0`
 ------------------------------------------------------------------------
@@ -101,7 +109,4 @@ To-do list
 .. todo::
     - Unlock :math:`k_s`, :math:`k_{se}` to have better overall fit?
       In particular: if several incidence angles are provided.
-    - Instructions to match CST Vaughan.
-    - Instructions to match SPARK3D Vaughan.
-    - CST and SPARK3D flavors from GUI.
-    - In reality, SPARK3D flavor of Vaughan models |EBEEY| too!
+    - In reality, SPARK3D implementation of Vaughan models |EBEEY| too!

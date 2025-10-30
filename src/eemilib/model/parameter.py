@@ -99,8 +99,12 @@ class Parameter:
 
     def lock(self) -> None:
         """Set the parameter to its current value."""
+        if self.is_locked:
+            return
         self.is_locked = True
 
     def unlock(self) -> None:
         """Allow parameter to be changed again during optimisation."""
+        if not self.is_locked:
+            return
         self.is_locked = False

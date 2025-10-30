@@ -57,8 +57,11 @@ nitpicky = True
 nitpick_ignore = [
     ("py:class", "PyQt5.QtWidgets.QCheckBox"),
     ("py:class", "PyQt5.QtWidgets.QComboBox"),
+    ("py:class", "PyQt5.QtWidgets.QDialog"),
+    ("py:class", "PyQt5.QtWidgets.QDialogButton"),
     ("py:class", "PyQt5.QtWidgets.QGroupBox"),
     ("py:class", "PyQt5.QtWidgets.QHBoxLayout"),
+    ("py:class", "PyQt5.QtWidgets.QLabel"),
     ("py:class", "PyQt5.QtWidgets.QLineEdit"),
     ("py:class", "PyQt5.QtWidgets.QListWidget"),
     ("py:class", "PyQt5.QtWidgets.QMainWindow"),
