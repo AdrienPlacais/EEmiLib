@@ -118,15 +118,6 @@ model.plot(
   - [ ] Display quantitative criteria to assess model quality (e.g., Nicolas
         Fil's criterion)
   - [ ] Display derived quantities such as crossover energies, maximum TEEY, etc.
-- Models:
-  - [ ] Extend Chung–Everhart fitting to multiple data files
-  - [ ] Dionne
-    - [ ] Handle optional files? Dionne could be fitted on "SEEY experimental"
-          or TEEY.
-  - [ ] Dionne 3D
-  - [ ] Dekker
-  - [ ] Furman and Pivi
-  - [ ] DRY method for fitting? Look at ChungEverhart, Dionne.
 - CI:
   - [x] `PyPI` release.
   - [x] Update installation instructions.
@@ -143,6 +134,7 @@ model.plot(
 
 - API:
   - [x] `Model.display_parameters()` method for nice printing.
+  - [ ] Import/export model configuration with a `TOML`.
 - If it proves useful:
   - [ ] Handle experimental data with error bars
   - [ ] Add control over interpolation of loaded experimental data

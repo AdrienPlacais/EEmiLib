@@ -103,3 +103,5 @@ To-do list
       In particular: if several incidence angles are provided.
     - Instructions to match CST Vaughan.
     - Instructions to match SPARK3D Vaughan.
+    - CST and SPARK3D flavors from GUI.
+    - In reality, SPARK3D flavor of Vaughan models |EBEEY| too!

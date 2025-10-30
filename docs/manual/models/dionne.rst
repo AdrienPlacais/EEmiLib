@@ -125,5 +125,5 @@ To-do list
 ----------
 
 .. todo::
-   - Handle of |SEEY| vs |TEEY| files.
+   - Handle |SEEY| vs |TEEY| files.
    - Set up tests.

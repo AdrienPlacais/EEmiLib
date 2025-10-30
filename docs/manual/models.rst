@@ -8,6 +8,20 @@ Models
 
    models/chung_everhart
    models/dionne
-   models/dionne_3d
    models/sombrin
    models/vaughan
+
+Todo Models
+===========
+
+.. toctree::
+   :maxdepth: 1
+
+   models/dekker
+   models/dionne_3d
+   models/furman_pivi
+   models/okgm
+   models/slab
+
+.. todo::
+   DRYer fit, look at Chung Everhart and Dionne in particular.
