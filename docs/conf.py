@@ -56,12 +56,7 @@ html_sidebars = {
 # -- Check that there is no broken link --------------------------------------
 nitpicky = True
 nitpick_ignore = [
-    ("py:class", "T"),
-    ("py:class", "optional"),
     ("py:class", "numpy.float64"),
-    # Dirty fix
-    ("py:class", "ImplementedEmissionData"),
-    ("py:class", "ImplementedPop"),
 ]
 intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org/stable/", None),
