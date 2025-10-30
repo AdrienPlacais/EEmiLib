@@ -17,6 +17,7 @@ extensions = [
     "myst_parser",
     "sphinx.ext.autodoc",  # include doc from docstrings
     "sphinx.ext.intersphinx",  # interlink with other docs, such as numpy
+    "sphinx_qt_documentation",
     "sphinx.ext.napoleon",  # handle numpy style
     "sphinx_autodoc_typehints",  # exploit Python typing for doc
     "sphinx.ext.todo",  # allow use of TODO
@@ -55,22 +56,6 @@ html_sidebars = {
 # -- Check that there is no broken link --------------------------------------
 nitpicky = True
 nitpick_ignore = [
-    ("py:class", "PyQt5.QtWidgets.QCheckBox"),
-    ("py:class", "PyQt5.QtWidgets.QComboBox"),
-    ("py:class", "PyQt5.QtWidgets.QDialog"),
-    ("py:class", "PyQt5.QtWidgets.QDialogButton"),
-    ("py:class", "PyQt5.QtWidgets.QDialogButtonBox"),
-    ("py:class", "PyQt5.QtWidgets.QGroupBox"),
-    ("py:class", "PyQt5.QtWidgets.QHBoxLayout"),
-    ("py:class", "PyQt5.QtWidgets.QLabel"),
-    ("py:class", "PyQt5.QtWidgets.QLineEdit"),
-    ("py:class", "PyQt5.QtWidgets.QListWidget"),
-    ("py:class", "PyQt5.QtWidgets.QMainWindow"),
-    ("py:class", "PyQt5.QtWidgets.QPushButton"),
-    ("py:class", "PyQt5.QtWidgets.QRadioButton"),
-    ("py:class", "PyQt5.QtWidgets.QTableWidget"),
-    ("py:class", "PyQt5.QtWidgets.QTableWidgetItem"),
-    ("py:class", "PyQt5.QtWidgets.QWidget"),
     ("py:class", "T"),
     ("py:class", "optional"),
     ("py:class", "numpy.float64"),
@@ -83,10 +68,10 @@ intersphinx_mapping = {
     "numpy": ("https://numpy.org/doc/stable/", None),
     "pandas": ("https://pandas.pydata.org/docs", None),
     "python": ("https://docs.python.org/3", None),
-    "PyQt5": (
-        "https://www.riverbankcomputing.com/static/Docs/PyQt5/",
-        None,
-    ),
+    # "PyQt5": (  # Handled by sphinx_qt_documentation extension
+    #     "https://www.riverbankcomputing.com/static/Docs/PyQt5/",
+    #     None,
+    # ),
     "scipy": ("https://docs.scipy.org/doc/scipy/", None),
 }
 

@@ -32,6 +32,7 @@ docs = [
   "sphinx-rtd-theme>=3,<4",
   "sphinxcontrib-bibtex>=2.6,<3",
   "sphinx-autodoc-typehints>=3.5,<4",
+  "sphinx-qt-documentation>=0.4,<1",
   "linkify-it-py>=2,<3",
 ]
 test = ["pytest>=8.3.2,<9"]

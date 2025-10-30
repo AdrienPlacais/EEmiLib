@@ -5,9 +5,6 @@
     Export/Import settings
 
 .. todo::
-    logging module
-
-.. todo::
     Add measurables at bottom
 
 """
