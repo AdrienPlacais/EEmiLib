@@ -10,7 +10,7 @@ r"""Create the Vaughan model, to compute |TEEY|.
 
 import logging
 import math
-from typing import Any, Literal, TypedDict
+from typing import Any, Callable, Literal, TypedDict
 
 import numpy as np
 import pandas as pd
@@ -23,6 +23,7 @@ from numpy.typing import NDArray
 from scipy.optimize import least_squares
 
 VaughanImplementation = Literal["original", "CST", "SPARK3D"]
+VAUGHAN_IMPLEMENTATIONS = ("original", "CST", "SPARK3D")
 E_0_SPARK3D = 10.0
 
 
@@ -120,6 +121,7 @@ class Vaughan(Model):
             "is_locked": False,
         },
     }
+    implementations = VAUGHAN_IMPLEMENTATIONS
 
     def __init__(
         self,
@@ -136,7 +138,7 @@ class Vaughan(Model):
         ----------
         implementation:
             Modifies certain presets to match different interpretations of the
-            model by calling :meth:`.preset_implementation`. These parameter
+            model by calling :meth:`.set_implementation`. These parameter
             modifications have precedence over the ones set in
             `parameters_values`.
         parameters_values :
@@ -152,12 +154,13 @@ class Vaughan(Model):
         self._generate_parameter_docs()
         if parameters_values is not None:
             self.set_parameters_values(parameters_values)
-        self._func = vaughan_func
-        self.preset_implementation(implementation)
 
-    def preset_implementation(
-        self,
-        implementation: VaughanImplementation,
+        self._func: Callable
+        self.current_implementation: VaughanImplementation
+        self.set_implementation(implementation)
+
+    def set_implementation(
+        self, implementation: VaughanImplementation
     ) -> None:
         r"""Update some parameters to reproduce a specific implementation.
 
@@ -172,24 +175,55 @@ class Vaughan(Model):
               :math:`E_{c,\,1}`.
             - Below :math:`10` :unit:`eV`, |TEEY| is 0.
 
+        .. note::
+           If the implementation is changed *after* the creation of the object,
+           some parameters will be reset to their *default* value defined in
+           ``initial_parameters``, not to the values defined in the
+           ``parameters_values`` argument of ``__init__`` method.
+
         """
+        current_implementation = getattr(self, "current_implementation", None)
+        if current_implementation == implementation:
+            return
+        implementation_update = current_implementation is not None
+        if implementation_update:
+            logging.info(
+                f"Changing Vaughan implementation: {current_implementation} to"
+                f" {implementation}."
+            )
+
+        self.current_implementation = implementation
         if implementation == "original":
+            self._func = vaughan_func
+
+            if implementation_update:
+                self.reset_parameters_values(
+                    "teey_low", "delta_E_transition", "E_0"
+                )
+            self.parameters["E_0"].lock()
             return
+
         if implementation == "CST":
+            self._func = vaughan_func
+
+            if implementation_update:
+                self.reset_parameters_values("delta_E_transition", "E_0")
             self.set_parameter_value("teey_low", 0.0)
+            self.parameters["E_0"].lock()
             return
+
         if implementation == "SPARK3D":
+            self._func = vaughan_spark3d
+
             self.set_parameters_values(
                 {"teey_low": 0.0, "delta_E_transition": 2.0}
             )
-            self.parameters["E_0"].is_locked = False
+            self.parameters["E_0"].unlock()
 
             E_0 = self._E_0_matching(E_c1=self.parameters["E_c1"].value)
             if np.isnan(E_0):
                 return
             self.set_parameter_value("E_0", E_0)
-            self._func = vaughan_spark3d
-
             return
         logging.error(f"{implementation = } not in {VaughanImplementation}")
 

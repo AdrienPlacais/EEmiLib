@@ -5,9 +5,6 @@
     Export/Import settings
 
 .. todo::
-    logging module
-
-.. todo::
     Add measurables at bottom
 
 """
@@ -16,7 +13,7 @@ import logging
 import sys
 from abc import ABCMeta
 from types import ModuleType
-from typing import Literal
+from typing import Callable, Literal
 
 import numpy as np
 from eemilib.core.model_config import ModelConfig
@@ -33,7 +30,11 @@ from eemilib.gui.helper import (
     setup_lock_checkbox,
     to_plot_checkboxes,
 )
-from eemilib.gui.model_selection import model_configuration
+from eemilib.gui.loader_selection import LoaderSettingsDialog
+from eemilib.gui.model_selection import (
+    ModelSettingsDialog,
+    model_configuration,
+)
 from eemilib.loader.loader import Loader
 from eemilib.model.model import Model
 from eemilib.plotter.plotter import Plotter
@@ -111,6 +112,7 @@ class MainWindow(QMainWindow):
         self.setup_loader_dropdown()
 
         self.model_classes: dict[str, str]
+        self.model_class: ABCMeta
         self.model_help_button: QPushButton
         self.setup_model_dropdown()
 
@@ -165,12 +167,14 @@ class MainWindow(QMainWindow):
     # =========================================================================
     def setup_loader_dropdown(self) -> None:
         """Set the :class:`.Loader` related interface."""
+        settings_label, settings_action = self._setup_loader_settings_dialog()
         classes, layout, dropdown, buttons = setup_dropdown(
             module_name="eemilib.loader",
             base_class=Loader,
             buttons_args={
                 "Help": lambda _: logging.info("Help not set."),
                 "Load data": self.load_data,
+                settings_label: settings_action,
             },
         )
         self.loader_classes = classes
@@ -185,6 +189,16 @@ class MainWindow(QMainWindow):
         """Setup new loader whenever the dropdown menu is changed."""
         self.loader = self._dropdown_to_class("Loader")()
         set_help_button_action(self.loader_help_button, self.loader)
+
+    def _setup_loader_settings_dialog(self) -> tuple[str, Callable]:
+        """Give arguments to setup the loader setttings button."""
+        settings_label = "⚙️ Settings"
+
+        def settings_action() -> int:
+            code = LoaderSettingsDialog(self, self.loader).exec()
+            return code
+
+        return settings_label, settings_action
 
     def load_data(self) -> None:
         """Load all the files set in GUI."""
@@ -219,12 +233,14 @@ class MainWindow(QMainWindow):
         Assign the ``model_classes`` and ``model_dropdown``.
 
         """
+        settings_label, settings_action = self._setup_model_settings_dialog()
         classes, layout, dropdown, buttons = setup_dropdown(
             module_name="eemilib.model",
             base_class=Model,
             buttons_args={
                 "Help": lambda _: logging.info("Help not set"),
                 "Fit!": self.fit_model,
+                settings_label: settings_action,
             },
         )
         self.model_classes = classes
@@ -241,16 +257,28 @@ class MainWindow(QMainWindow):
         self.main_layout.addLayout(layout)
         return
 
+    def _setup_model_settings_dialog(self) -> tuple[str, Callable]:
+        """Give arguments to setup the model setttings button."""
+        settings_label = "⚙️ Settings"
+
+        def settings_action() -> int:
+            code = ModelSettingsDialog(self, self.model).exec()
+            self._populate_parameters_table_values()
+            self._populate_parameters_table_constants()
+            return code
+
+        return settings_label, settings_action
+
     def setup_model_configuration(self) -> QTableWidget:
         """Set the interface related to the model specific parameters."""
         group, model_table = model_configuration()
         self.main_layout.addWidget(group)
-
         return model_table
 
     def _setup_model(self) -> None:
         """Instantiate :class:`.Model` when it is selected in dropdown menu."""
-        self.model = self._dropdown_to_class("Model")()
+        self.model_class = self._dropdown_to_class("Model")
+        self.model = self.model_class()
 
         set_help_button_action(self.model_help_button, self.model)
 

@@ -18,15 +18,17 @@ from eemilib.loader.loader import Loader
 class PandasLoader(Loader):
     """Define the pandas loader."""
 
-    def __init__(self) -> None:
+    def __init__(self, sep: str = ",", comment: str = "#") -> None:
         """Init object."""
-        return super().__init__()
+        super().__init__()
+        self.sep = sep
+        self.comment = comment
 
     def load_emission_yield(
         self,
         filepath: str | Path,
-        sep: str = ",",
-        comment: str = "#",
+        sep: str | None = None,
+        comment: str | None = None,
     ) -> pd.DataFrame:
         """Load and format the given emission yield file.
 
@@ -67,6 +69,10 @@ class PandasLoader(Loader):
             corresponding emission yield.
 
         """
+        if sep is None:
+            sep = self.sep
+        if comment is None:
+            comment = self.comment
         header, n_comments = read_header(filepath, sep, comment)
         df = pd.read_csv(
             filepath,
@@ -84,8 +90,8 @@ class PandasLoader(Loader):
     def load_emission_energy_distribution(
         self,
         filepath: str | Path,
-        sep: str = ",",
-        comment: str = "#",
+        sep: str | None = None,
+        comment: str | None = None,
     ) -> tuple[pd.DataFrame, float | None]:
         """Load and format the given emission energy file.
 
@@ -106,7 +112,7 @@ class PandasLoader(Loader):
             3.999999999999968026e-01,1.138131444290255145e-02
             5.999999999999978684e-01,1.510969903349285159e-02
 
-        Files in the :file:`data/example_ag/emission_energy` files are
+        Files in the :file:`data/example_ag/emission_energy` folder are
         correctly formatted.
 
         Parameters
@@ -130,6 +136,10 @@ class PandasLoader(Loader):
             comments, it will be inferred from the position of the |EBEs| peak.
 
         """
+        if sep is None:
+            sep = self.sep
+        if comment is None:
+            comment = self.comment
         header, n_comments = read_header(filepath, sep, comment)
         df = pd.read_csv(
             filepath,

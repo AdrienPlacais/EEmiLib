@@ -35,7 +35,7 @@ def setup_dropdown(
         Where the entries of the dropdown will be searched.
     base_class :
         The base class from which dropdown entries should inherit.
-    buttons :
+    buttons_args :
         Dictionary where the keys are the name of the buttons to add next to
         the dropdown menu, and values the callable that will be called when
         clicking the button.

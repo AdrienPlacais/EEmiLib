@@ -48,6 +48,9 @@ class Model(ABC):
         List the :class:`.Parameter` kwargs.
     model_config :
         List the files that the model needs to know in order to work.
+    implementations :
+        List of different implementations for the same :class:`.Model`. See
+        for example :class:`.vaughan.Vaughan`.
 
     """
 
@@ -57,8 +60,8 @@ class Model(ABC):
     is_3d: bool
     is_dielectrics_compatible: bool
     initial_parameters: dict[str, dict[str, str | float | bool]]
-
     model_config: ModelConfig
+    implementations: tuple[str, ...] | None = None
 
     def __init__(
         self, *args, parameters_values: dict[str, Any] | None = None, **kwargs
@@ -292,10 +295,34 @@ class Model(ABC):
             return
         self.parameters[name].value = value
 
+    def reset_parameter_value(self, name: str) -> None:
+        """Reset a parameter value to its default.
+
+        Default is defined in ``initial_parameters``.
+
+        """
+        if name not in self.parameters:
+            logging.warning(
+                f"{name = } is not defined for {self}. Skipping... "
+            )
+            return
+        if name not in self.initial_parameters:
+            logging.warning(
+                f"{name = } has not initial value for {self}. Skipping... "
+            )
+            return
+        value = float(self.initial_parameters[name]["value"])
+        self.parameters[name].value = value
+
     def set_parameters_values(self, values: dict[str, Any]) -> None:
         """Set multiple parameter values."""
         for name, value in values.items():
             self.set_parameter_value(name, value)
+
+    def reset_parameters_values(self, *names: str) -> None:
+        """Reset multiple parameter values."""
+        for name in names:
+            self.reset_parameter_value(name)
 
     def evaluate(
         self, data_matrix: DataMatrix, *args, **kwargs

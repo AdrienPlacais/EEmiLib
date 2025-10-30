@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] -- 2025-10-30
+
+### Added
+
+- `Settings` push button in the GUI for `Model` and `Loader`.
+- Possibility to select Vaughan implementation thanks to the `Settings` button
+  in the GUI.
+- Possibility to select `Loader` column separator and comment character thanks
+  to the `Settings` button in the GUI.
+
 ## [0.1.1] -- 2025-10-30
 
 ### Added

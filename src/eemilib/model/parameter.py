@@ -70,13 +70,12 @@ class Parameter:
     def value(self, value: float) -> None:
         """Set the value of the parameter."""
         self._value = value
-        if not self.is_locked:
-            return
-        self._set_tiny_bounds()
 
     @property
     def lower_bound(self) -> float:
         """Give the current lower bound of the parameter."""
+        if self.is_locked:
+            return min(self.value - self._tol, self.value + self._tol)
         return self._lower_bound
 
     @lower_bound.setter
@@ -88,6 +87,8 @@ class Parameter:
     @property
     def upper_bound(self) -> float:
         """Give the current upper bound of the parameter."""
+        if self.is_locked:
+            return max(self.value - self._tol, self.value + self._tol)
         return self._upper_bound
 
     @upper_bound.setter
@@ -98,17 +99,12 @@ class Parameter:
 
     def lock(self) -> None:
         """Set the parameter to its current value."""
+        if self.is_locked:
+            return
         self.is_locked = True
-        self._set_tiny_bounds()
 
     def unlock(self) -> None:
         """Allow parameter to be changed again during optimisation."""
+        if not self.is_locked:
+            return
         self.is_locked = False
-        self.lower_bound = -np.inf
-        self.upper_bound = +np.inf
-
-    def _set_tiny_bounds(self) -> None:
-        """Set tiny bounds around :attr:`value`."""
-        bound_1, bound_2 = self.value - self._tol, self.value + self._tol
-        self.lower_bound = min(bound_1, bound_2)
-        self.upper_bound = max(bound_1, bound_2)
