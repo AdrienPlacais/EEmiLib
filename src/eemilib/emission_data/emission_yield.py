@@ -33,7 +33,7 @@ class EmissionYield(EmissionData):
             The concerned population of electrons.
         data :
             Structure holding the data. Must have an ``Energy (eV)`` column
-            holding PEs energy. And one or several columns ``theta [deg]``,
+            holding |PEs| energy. And one or several columns ``theta [deg]``,
             where ``theta`` is the value of the incidence angle and content is
             corresponding emission yield.
 
@@ -107,11 +107,10 @@ class EmissionYield(EmissionData):
         Parameters
         ----------
         normal_ey :
-            Holds energy of PEs as well as emission yield at nominal incidence.
+            Holds energy of |PEs| as well as emission yield at nominal incidence.
         tol_energy :
-            If the :math:`E_{max}` is too close to the maximum PE energy, an
-            warning is raised; tolerance is ``tol_energy``. The default value
-            is 10 eV.
+            If the :math:`E_{max}` is too close to the maximum |PE| energy, an
+            warning is raised; tolerance is ``tol_energy``.
 
         Returns
         -------
@@ -137,7 +136,7 @@ class EmissionYield(EmissionData):
         Parameters
         ----------
         normal_ey :
-            Holds energy of PEs as well as emission yield at nominal incidence.
+            Holds energy of |PEs| as well as emission yield at nominal incidence.
         e_max :
             Energy of maximum emission yield. Used to discriminate
             :math:`E_{c1}` from :math:`E_{c2}`.
@@ -145,11 +144,10 @@ class EmissionYield(EmissionData):
             Energy under which :math:`E_{c1}` is not searched. It is useful if
             emission yield data comes from a model which sets the emission
             yield to unity at very low energies (eg some implementations of
-            Vaughan). The default value is 10 eV.
+            Vaughan).
         tol_ey :
             It the emission yield is too far from unity at crossover energy, a
-            warning is raised. Tolerance is ``tol_ey``. The default value is
-            ``0.01``.
+            warning is raised. Tolerance is ``tol_ey``.
 
         Returns
         -------

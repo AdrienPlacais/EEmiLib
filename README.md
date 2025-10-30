@@ -20,6 +20,8 @@ may have.
 
 ## Installation
 
+### For users
+
 1. Create a dedicated Python environment.
 2. Run
 
@@ -36,14 +38,16 @@ pip install EEmiLib
 > 3. Optionally, [install a Python IDE](https://python-guide.readthedocs.io/en/latest/dev/env/#ides)
 >    such as Spyder or VSCode.
 
+### For developers
+
 If you want to edit the source code:
 
 1. Clone the repository: `git clone git@github.com:AdrienPlacais/EEmiLib.git`
 
-   > [!WARNING]
-   > If you `Download ZIP` this repository (which can happen if you don't have access to `git`), installation will fail at step #3.
-   > [A workaround](https://lightwin.readthedocs.io/en/latest/manual/troubles/setuptools_error.html) is proposed here.
-   > This is a different library, but the same method applies.
+> [!WARNING]
+> If you `Download ZIP` this repository (which can happen if you don't have access to `git`), installation will fail at step #3.
+> [A workaround](https://lightwin.readthedocs.io/en/latest/manual/troubles/setuptools_error.html) is proposed here.
+> This is a different library, but the same method applies.
 
 2. Create a dedicated Python environment.
 3. From EEmiLib folder: `pip install -e .[test]`
@@ -109,25 +113,30 @@ model.plot(
 ## Roadmap/To-Do
 
 - [x] Document abbreviations
-- [ ] Handle experimental data with error bars
-- [ ] Add control over interpolation of loaded experimental data
-- [ ] Optional smoothing of measured data
-- [ ] In GUI, display additional model information:
-  - [ ] Quantitative criteria to assess model quality (e.g., Nicolas Fil's criterion)
-  - [ ] Derived quantities such as crossover energies, maximum TEEY, etc.
-- Models:
-  - [ ] Extend Chung–Everhart fitting to multiple data files
-  - [ ] Dionne
-  - [ ] Dionne 3D
-  - [ ] Dekker
-  - [ ] Furman and Pivi
-- [x] `PyPI` release.
-- [ ] Different line styles/colors for different populations.
+- GUI:
+  - [ ] Better handling of multiple `Plot data` and `Plot model` buttons push.
+  - [ ] Display quantitative criteria to assess model quality (e.g., Nicolas
+        Fil's criterion)
+  - [ ] Display derived quantities such as crossover energies, maximum TEEY, etc.
+- CI:
+  - [x] `PyPI` release.
+  - [x] Update installation instructions.
+  - ? Allow execution on online Docker, or make executable?
 - [ ] `Export` buttons
   - [ ] Tabulated model data.
   - [ ] Model parameters value (makes sense along with an `Import` button).
 - Fix error when not running from a git repo:
-  `fatal: not a git repository (or any parent up to mount point /)
-Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).`
-- [x] Update installation instructions.
-- [x] `Model.display_parameters()` method for nice printing API.
+
+  ```bash
+  fatal: not a git repository (or any parent up to mount point /)
+  Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).`
+  ```
+
+- API:
+  - [x] `Model.display_parameters()` method for nice printing.
+  - [ ] Import/export model configuration with a `TOML`.
+- If it proves useful:
+  - [ ] Handle experimental data with error bars
+  - [ ] Add control over interpolation of loaded experimental data
+  - [ ] Optional smoothing of measured data
+  - [ ] Different line styles/colors for different populations.

@@ -26,16 +26,15 @@ class Parameter:
         markdown :
             The name of the parameter, in markdown format.
         unit :
-            The unit of the parameter. The default is ``"1"`` (no unit).
+            The unit of the parameter.
         value :
-            A first value for the parameter. The default is ``0.``.
+            A first value for the parameter.
         lower_bound :
-            A first lower bound for the parameter. The default is ``-np.inf``.
+            A first lower bound for the parameter.
         upper_bound :
-            A first upper bound for the parameter. The default is ``np.inf``.
+            A first upper bound for the parameter.
         description :
-            A description string for the parameter. The default is an empty
-            string.
+            A description string for the parameter.
         is_locked :
             Forces the parameters to a certain value, which will not be
             modified by EEmiLib.

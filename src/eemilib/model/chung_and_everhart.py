@@ -1,4 +1,4 @@
-"""Create the Chung and Everhart model, to compute SEs emission distribution.
+"""Create the Chung and Everhart model, to compute |SEs| emission distribution.
 
 You will need to provice emission energy distribution measurements.
 
@@ -19,7 +19,7 @@ from eemilib.util.constants import (
     col_normal,
 )
 from numpy.typing import NDArray
-from scipy.optimize import least_squares
+from scipy.optimize import Bounds, least_squares
 
 
 class ChungEverhartParameters(TypedDict):
@@ -28,7 +28,7 @@ class ChungEverhartParameters(TypedDict):
 
 
 class ChungEverhart(Model):
-    """Define the Chung and Everhart model, defined in :cite:`Chung1974`."""
+    """Chung and Everhart model, defined in :cite:`Chung1974`."""
 
     emission_data_types = ["Emission Energy"]
     populations = ["SE"]
@@ -66,7 +66,7 @@ class ChungEverhart(Model):
         ----------
         parameters_values :
             Contains name of parameters and associated value. If provided, will
-            override the default values set in ``initial`_parameters``.
+            override the default values set in ``initial_parameters``.
 
         """
         super().__init__(url_doc_override="manual/models/chung_and_everhart")
@@ -78,7 +78,7 @@ class ChungEverhart(Model):
         if parameters_values is not None:
             self.set_parameters_values(parameters_values)
 
-        self._func = _chung_everhart_func
+        self._func = chung_everhart_func
 
     def get_data(
         self,
@@ -91,7 +91,7 @@ class ChungEverhart(Model):
     ) -> pd.DataFrame | None:
         """Return desired data according to current model.
 
-        Will return a dataframe only if the SEs energy distribution is asked.
+        Will return a dataframe only if the |SEs| energy distribution is asked.
 
         """
         if population != "SE" or emission_data_type != "Emission Energy":
@@ -122,10 +122,12 @@ class ChungEverhart(Model):
         distribution = data_matrix.all_energy_distribution
         assert distribution.population == "all"
 
+        param = self.parameters["W_f"]
+
         lsq = least_squares(
             fun=_residue,
-            x0=8.0,
-            bounds=(0, np.inf),
+            x0=param.value,
+            bounds=Bounds(param.lower_bound, param.upper_bound),
             args=(
                 distribution.data[col_energy].to_numpy(),
                 distribution.data[col_normal].to_numpy(),
@@ -142,7 +144,7 @@ def _chung_everhart_norm(w_f: float) -> float:
     return 256.0 * w_f**3 / 27.0
 
 
-def _chung_everhart_func(
+def chung_everhart_func(
     ene: float | NDArray[np.float64],
     W_f: Parameter | float,
     norm: Parameter | None = None,
@@ -160,7 +162,7 @@ def _residue(
     w_f: float, ene: NDArray[np.float64], measured: NDArray[np.float64]
 ) -> NDArray[np.float64]:
     """Compute array of residues between model and measurements."""
-    return _chung_everhart_func(ene, w_f) - measured
+    return chung_everhart_func(ene, w_f) - measured
 
 
 # Append dynamically generated docs to the module docstring

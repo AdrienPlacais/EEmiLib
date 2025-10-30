@@ -15,7 +15,6 @@ Welcome to EEmiLib's documentation!
    manual/quick_start
    manual/notations
    manual/models
-   manual/future_updates
    manual/bibliography
    API reference <eemilib/modules>
 

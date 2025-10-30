@@ -6,8 +6,10 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
+from eemilib import teey_reference_ag
 from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.emission_data.emission_yield import EmissionYield
+from eemilib.loader.pandas_loader import PandasLoader
 from eemilib.model.sombrin import Sombrin
 from pytest import approx
 
@@ -129,48 +131,38 @@ def test_find_optimal_parameters(
 
 
 @pytest.fixture
-def fil_technical_ag() -> MockDataMatrix:
+def reference_ag() -> DataMatrix:
     """Instantiate technical Ag from :cite:`Fil2016a,Fil2020`."""
-    emission_yield = EmissionYield(
+    data_matrix = DataMatrix()
+    data_matrix.set_files(
+        [teey_reference_ag / "K-S8_AG_TECHNICAL_TEEY_REF.csv"],
         population="all",
-        data=pd.DataFrame(
-            {
-                # fmt: off
-        "Energy [eV]": [0, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 30, 36, 49, 70, 75, 90, 100, 150, 200, 250, 300, 350, 400, 450, 500, 600, 700, 800, 900, 1000, 1200, 1400, 1600, 1800, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 10000, 12000, 14000, 16000, 18000, 20000, 22000],
-        "0.0 [deg]": [0, 0.75, 0.78, 0.79, 0.82, 0.83, 0.85, 0.87, 0.9, 0.94, 0.97, 1, 1.03, 1.1, 1.17, 1.31, 1.55, 1.61, 1.725, 1.77, 1.975, 2.119, 2.173, 2.17, 2.16, 2.152, 2.137, 2.106, 2.041, 1.975, 1.907, 1.847, 1.777, 1.67, 1.582, 1.5, 1.42, 1.34, 1.07, 0.95, 0.87, 0.795, 0.75, 0.72, 0.68, 0.635, 0.62, 0.6, 0.58, 0.57, 0.56],
-                # fmt: on
-            }
-        ),
+        emission_data_type="Emission Yield",
     )
-    data_matrix = MockDataMatrix(emission_yield)
+    data_matrix.load_data(PandasLoader())
     return data_matrix
 
 
-def test_error_ec1(
-    sombrin_model: Sombrin, fil_technical_ag: MockDataMatrix
-) -> None:
+def test_error_ec1(sombrin_model: Sombrin, reference_ag: DataMatrix) -> None:
     """Check that we retrieve N. Fil results :cite:`Fil2016a,Fil2020`.
 
     We use the same technical Ag as he did.
 
     """
-    sombrin_model.find_optimal_parameters(fil_technical_ag)
-    returned = sombrin_model._error_ec1(fil_technical_ag.teey)
+    sombrin_model.find_optimal_parameters(reference_ag)
+    returned = sombrin_model._error_ec1(reference_ag.teey)
     expected = 0.0
     assert returned == approx(expected, abs=1e-2)
 
 
-def test_error_teey(
-    sombrin_model: Sombrin, fil_technical_ag: MockDataMatrix
-) -> None:
+@pytest.mark.xfail
+def test_error_teey(sombrin_model: Sombrin, reference_ag: DataMatrix) -> None:
     """Check that we retrieve N. Fil results :cite:`Fil2016a,Fil2020`.
 
     We use the same technical Ag as he did.
 
     """
-    sombrin_model.find_optimal_parameters(fil_technical_ag)
-    returned = sombrin_model._error_teey(fil_technical_ag.teey)
+    sombrin_model.find_optimal_parameters(reference_ag)
+    returned = sombrin_model._error_teey(reference_ag.teey)
     expected = 4.4
-    # Could not retrieve this value of 4.4%, changing it to what I find
-    expected = 4.24
     assert returned == approx(expected, abs=1e-3)

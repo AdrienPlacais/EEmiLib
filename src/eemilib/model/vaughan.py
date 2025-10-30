@@ -1,6 +1,6 @@
-r"""Create the Vaughan model, to compute TEEY.
+r"""Create the Vaughan model, to compute |TEEY|.
 
-TEEY at non-normal incidence will not be taken into account into the fit
+|TEEY| at non-normal incidence will not be taken into account into the fit
 (FIXME).
 
 .. todo::
@@ -63,7 +63,7 @@ class Vaughan(Model):
         "E_max": {
             "markdown": r"E_\mathrm{max}",
             "unit": "eV",
-            "value": 0.0,
+            "value": 100.0,
             "lower_bound": 0.0,
             "description": "Energy at maximum TEEY.",
         },
@@ -87,7 +87,7 @@ class Vaughan(Model):
         "teey_max": {
             "markdown": r"\sigma_\mathrm{max}",
             "unit": "1",
-            "value": 0.0,
+            "value": 1.5,
             "lower_bound": 0.0,
             "description": "Maximum TEEY, directly taken from the measurement.",
         },
@@ -114,7 +114,7 @@ class Vaughan(Model):
         "E_c1": {
             "markdown": r"E_{c,\,1}",
             "unit": "eV",
-            "value": 0.0,
+            "value": 25.0,
             "description": r"First crossover energy. Must be provided instead"
             + " of E_0 for SPARK3D Vaughan.",
             "is_locked": False,
@@ -152,7 +152,7 @@ class Vaughan(Model):
         self._generate_parameter_docs()
         if parameters_values is not None:
             self.set_parameters_values(parameters_values)
-        self._func = _vaughan_func
+        self._func = vaughan_func
         self.preset_implementation(implementation)
 
     def preset_implementation(
@@ -170,7 +170,7 @@ class Vaughan(Model):
             - :math:`\sigma_\mathrm{low}` is set to 0.
             - :math:`E_0` is unlocked, so that it will be fitted to match
               :math:`E_{c,\,1}`.
-            - Below :math:`10` :unit:`eV`, TEEY is 0.
+            - Below :math:`10` :unit:`eV`, |TEEY| is 0.
 
         """
         if implementation == "original":
@@ -188,7 +188,7 @@ class Vaughan(Model):
             if np.isnan(E_0):
                 return
             self.set_parameter_value("E_0", E_0)
-            self._func = _vaughan_spark3d
+            self._func = vaughan_spark3d
 
             return
         logging.error(f"{implementation = } not in {VaughanImplementation}")
@@ -204,7 +204,7 @@ class Vaughan(Model):
     ) -> pd.DataFrame | None:
         """Return desired data according to current model.
 
-        Will return a dataframe only if the TEEY is asked.
+        Will return a dataframe only if the |TEEY| is asked.
 
         .. todo::
             This method could be so much simpler and efficient.
@@ -274,7 +274,7 @@ class Vaughan(Model):
 
         def _to_minimize(E_0: float) -> float:
             parameters["E_0"].value = E_0
-            teey_at_crossover = _vaughan_func(ene=E_c1, the=0.0, **parameters)
+            teey_at_crossover = vaughan_func(ene=E_c1, the=0.0, **parameters)
             if isinstance(teey_at_crossover, np.ndarray):
                 teey_at_crossover = teey_at_crossover[0]
             return abs(teey_at_crossover - 1.0)
@@ -285,13 +285,13 @@ class Vaughan(Model):
     def evaluate(self, data_matrix: DataMatrix) -> dict[str, float]:
         """Evaluate the quality of the model using Fil criterions.
 
-        Fil criterions :cite:`Fil2016a,Fil2020` are adapted to TEEY models.
+        Fil criterions :cite:`Fil2016a,Fil2020` are adapted to |TEEY| models.
 
         """
         return self._evaluate_for_teey_models(data_matrix)
 
 
-def _vaughan_func(
+def vaughan_func(
     ene: float,
     the: float,
     E_0: Parameter,
@@ -303,7 +303,7 @@ def _vaughan_func(
     delta_E_transition: Parameter,
     **parameters,
 ) -> float | NDArray[np.float64]:
-    """Compute the TEEY for incident energy E."""
+    """Compute the |TEEY| for incident energy E."""
     mod_e_max = E_max.value * (
         1.0 + k_se.value * math.radians(the) ** 2 / (2.0 * math.pi)
     )
@@ -325,7 +325,7 @@ def _vaughan_func(
     return mod_teey_max * (xi * np.exp(1.0 - xi)) ** k
 
 
-def _vaughan_spark3d(
+def vaughan_spark3d(
     ene: float,
     the: float,
     E_0: Parameter,
@@ -337,15 +337,15 @@ def _vaughan_spark3d(
     delta_E_transition: Parameter,
     **parameters,
 ) -> float | NDArray[np.float64]:
-    r"""Compute TEEY as SPARK3D would.
+    r"""Compute |TEEY| as SPARK3D would.
 
-    This is a classic Vaughan, but TEEY is null for energies below
+    This is a classic Vaughan, but |TEEY| is null for energies below
     ``E_0_SPARK3D=10.0``. This parameter is different from the classic ``E_0``
     that appears in the expression of :math:`\xi`.
 
     """
     if ene >= E_0_SPARK3D:
-        return _vaughan_func(
+        return vaughan_func(
             ene=ene,
             the=the,
             E_0=E_0,

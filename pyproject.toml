@@ -29,9 +29,9 @@ requires-python = ">=3.12"
 docs = [
   "sphinx>=8.2,<9",
   "myst-parser>=4,<5",
-  "nbsphinx>=0.9.6,<1",
   "sphinx-rtd-theme>=3,<4",
   "sphinxcontrib-bibtex>=2.6,<3",
+  "sphinx-autodoc-typehints>=3.5,<4",
   "linkify-it-py>=2,<3",
 ]
 test = ["pytest>=8.3.2,<9"]

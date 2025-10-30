@@ -10,13 +10,13 @@ Presentation
 
 This model was designed to be particularly precise on the first cross-over energy :cite:`Sombrin1993`.
 Implementation is taken from :cite:`Fil2016a,Fil2020`.
-It gives the TEEY, and does not take the incidence angle of PEs into account.
+It gives the |TEEY|, and does not take the incidence angle of |PEs| into account.
 
 
 Input files
 -----------
 
-You must provide measured TEEY at normal incidence.
+You must provide measured |TEEY| at normal incidence.
 
 +-----------------------------+---------------+-----------------------------+---------------------------+
 |                             |Emission Yield |Emission energy distribution |Emission angle distribution|
@@ -33,7 +33,7 @@ You must provide measured TEEY at normal incidence.
 Definitions
 -----------
 
-The TEEY is given by:
+The |TEEY| is given by:
 
 .. math::
 

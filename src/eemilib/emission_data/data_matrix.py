@@ -536,7 +536,7 @@ class DataMatrix:
 
     @property
     def teey(self) -> EmissionYield:
-        """Return the TEEY directly."""
+        """Return the |TEEY| directly."""
         emission_yield = self.data_matrix[3][0]
         assert isinstance(
             emission_yield, EmissionYield
@@ -545,8 +545,18 @@ class DataMatrix:
         return emission_yield
 
     @property
+    def seey(self) -> EmissionYield:
+        """Return the |SEEY| directly."""
+        emission_yield = self.data_matrix[0][0]
+        assert isinstance(
+            emission_yield, EmissionYield
+        ), f"Incorrect type for emission_yield: {type(emission_yield)}"
+        assert emission_yield.population == "SE"
+        return emission_yield
+
+    @property
     def se_energy_distribution(self) -> EmissionEnergyDistribution:
-        """Return the energy distribution of SEs."""
+        """Return the energy distribution of |SEs|."""
         distrib = self.data_matrix[0][1]
         assert isinstance(
             distrib, EmissionEnergyDistribution

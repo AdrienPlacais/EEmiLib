@@ -12,11 +12,7 @@ from eemilib.util.constants import ImplementedPop
 class EmissionAngleDistribution(EmissionData):
     """An emission angle distribution."""
 
-    def __init__(
-        self,
-        population: ImplementedPop,
-        data: pd.DataFrame,
-    ) -> None:
+    def __init__(self, population: ImplementedPop, data: pd.DataFrame) -> None:
         """Instantiate the data.
 
         Parameters
@@ -25,7 +21,7 @@ class EmissionAngleDistribution(EmissionData):
             The concerned population of electrons.
         data :
             Structure holding the data. Must have an ``Angle [deg]`` column
-            holding PEs angle. And one or several columns ``theta [deg]``,
+            holding |PEs| angle. And one or several columns ``theta [deg]``,
             where `theta` is the value of the incidence angle and content is
             corresponding emission angle.
 
@@ -44,10 +40,10 @@ class EmissionAngleDistribution(EmissionData):
 
         Parameters
         ----------
-        loader :
-            The object that will load the data.
         population :
             The concerned population of electrons.
+        loader :
+            The object that will load the data.
         *filepath :
             Path(s) to file holding data under study.
 

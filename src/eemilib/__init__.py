@@ -14,5 +14,6 @@ __version__ = importlib.metadata.version("eemilib")
 
 teey_cu = resources.files("eemilib.data.cu.emission_yield")
 emission_energy_ag = resources.files("eemilib.data.ag.emission_energy")
+teey_reference_ag = resources.files("eemilib.data.reference_ag.emission_yield")
 
 set_up_logging("EEmiLib")

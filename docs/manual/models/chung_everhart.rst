@@ -8,14 +8,14 @@ Chung and Everhart
 Presentation
 ------------
 
-This is a model for emission energy distribution of SEs :cite:`Chung1974`.
-It does not take into account incidence angle of PEs.
+This is a model for emission energy distribution of |SEs| :cite:`Chung1974`.
+It does not take into account incidence angle of |PEs|.
 
 Input files
 -----------
 
 You must provide an emission energy distribution at normal incidence.
-Currently, the fitting on several emission distribution files at different PE energies is not supported.
+Currently, the fitting on several emission distribution files at different |PE| energies is not supported.
 
 +-----------------------------+---------------+-----------------------------+---------------------------+
 |                             |Emission Yield |Emission energy distribution |Emission angle distribution|
@@ -51,5 +51,5 @@ To-do list
 ----------
 
 .. todo::
-   - Allow fitting on several distribution files with different PE energy.
+   - Allow fitting on several distribution files with different |PE| energy.
    - Set up tests.

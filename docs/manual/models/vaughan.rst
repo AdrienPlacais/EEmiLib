@@ -9,13 +9,13 @@ Presentation
 ------------
 
 This is the most basic Vaughan model, as defined in original Vaughan paper :cite:`Vaughan1989,Vaughan1993`.
-It gives the TEEY, and takes the incidence angle of PEs into account.
+It gives the |TEEY|, and takes the incidence angle of |PEs| into account.
 
 
 Input files
 -----------
 
-You must provide measured TEEY at normal incidence.
+You must provide measured |TEEY| at normal incidence.
 
 +-----------------------------+---------------+-----------------------------+---------------------------+
 |                             |Emission Yield |Emission energy distribution |Emission angle distribution|
@@ -32,7 +32,7 @@ You must provide measured TEEY at normal incidence.
 Definitions
 -----------
 
-The TEEY is given by:
+The |TEEY| is given by:
 
 .. math::
 
@@ -45,7 +45,7 @@ The TEEY is given by:
 
     \xi = \frac{E - E_0}{E_\mathrm{max} - E_0}
 
-Under the limit :math:`E_0` (:math:`12.5\mathrm{\,eV}` by default), the TEEY is set to a unique value (:math:`0.5` by default).
+Under the limit :math:`E_0` (:math:`12.5\mathrm{\,eV}` by default), the |TEEY| is set to a unique value (:math:`0.5` by default).
 
 .. math::
 
@@ -87,7 +87,7 @@ Parameter Vaughan with :math:`E_{\mathrm{c,\,1}}` instead of :math:`E_0`
 ------------------------------------------------------------------------
 
 When :math:`E_0` is unlocked, a fit over this variable is performed to match :math:`E_{\mathrm{c,\,1}}`.
-You must provide either a TEEY file path, either enter the other Vaughan parameters yourself (see image below), and click `Fit!`.
+You must provide either a |TEEY| file path, either enter the other Vaughan parameters yourself (see image below), and click `Fit!`.
 
 .. image:: /manual/models/images/gui_fit_e0.png
    :target: vaughan.html
@@ -103,3 +103,5 @@ To-do list
       In particular: if several incidence angles are provided.
     - Instructions to match CST Vaughan.
     - Instructions to match SPARK3D Vaughan.
+    - CST and SPARK3D flavors from GUI.
+    - In reality, SPARK3D flavor of Vaughan models |EBEEY| too!
