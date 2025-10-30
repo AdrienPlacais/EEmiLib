@@ -9,9 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `Settings` push button in the GUI for `Model`.
+- `Settings` push button in the GUI for `Model` and `Loader`.
 - Possibility to select Vaughan implementation thanks to the `Settings` button
   in the GUI.
+- Possibility to select `Loader` column separator and comment character thanks
+  to the `Settings` button in the GUI.
 
 ## [0.1.1] -- 2025-10-30
 

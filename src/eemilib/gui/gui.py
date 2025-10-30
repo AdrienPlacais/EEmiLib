@@ -30,6 +30,7 @@ from eemilib.gui.helper import (
     setup_lock_checkbox,
     to_plot_checkboxes,
 )
+from eemilib.gui.loader_selection import LoaderSettingsDialog
 from eemilib.gui.model_selection import (
     ModelSettingsDialog,
     model_configuration,
@@ -166,12 +167,14 @@ class MainWindow(QMainWindow):
     # =========================================================================
     def setup_loader_dropdown(self) -> None:
         """Set the :class:`.Loader` related interface."""
+        settings_label, settings_action = self._setup_loader_settings_dialog()
         classes, layout, dropdown, buttons = setup_dropdown(
             module_name="eemilib.loader",
             base_class=Loader,
             buttons_args={
                 "Help": lambda _: logging.info("Help not set."),
                 "Load data": self.load_data,
+                settings_label: settings_action,
             },
         )
         self.loader_classes = classes
@@ -186,6 +189,16 @@ class MainWindow(QMainWindow):
         """Setup new loader whenever the dropdown menu is changed."""
         self.loader = self._dropdown_to_class("Loader")()
         set_help_button_action(self.loader_help_button, self.loader)
+
+    def _setup_loader_settings_dialog(self) -> tuple[str, Callable]:
+        """Give arguments to setup the loader setttings button."""
+        settings_label = "⚙️ Settings"
+
+        def settings_action() -> int:
+            code = LoaderSettingsDialog(self, self.loader).exec()
+            return code
+
+        return settings_label, settings_action
 
     def load_data(self) -> None:
         """Load all the files set in GUI."""

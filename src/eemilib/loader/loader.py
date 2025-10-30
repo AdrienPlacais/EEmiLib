@@ -16,6 +16,12 @@ class Loader(ABC):
     def __init__(self) -> None:
         """Instantiate the object."""
         self.doc_url = documentation_url(self)
+        #: Column separator. Not mandatory, but must be called ``sep`` in order
+        #: to be recognized by the Parameters in the GUI.
+        self.sep: str
+        #: Comment character. Not mandatory, but must be called ``comment`` in
+        #: order to be recognized by the Parameters in the GUI.
+        self.comment: str
 
     @abstractmethod
     def load_emission_yield(
