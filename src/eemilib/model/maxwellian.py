@@ -1,10 +1,11 @@
-"""Create the Chung and Everhart model, to compute |SEs| emission distribution.
+"""Create a Maxwellian distribution, to compute |SEs| emission distribution.
 
 You will need to provide emission energy distribution measurements.
 
 """
 
-from typing import Any, TypedDict
+import math
+from typing import Any, TypedDict, overload
 
 import numpy as np
 import pandas as pd
@@ -19,16 +20,17 @@ from eemilib.util.constants import (
     col_normal,
 )
 from numpy.typing import NDArray
+from scipy.constants import pi
 from scipy.optimize import Bounds, least_squares
 
 
-class ChungEverhartParameters(TypedDict):
-    W_f: Parameter
+class MaxwellianParameters(TypedDict):
+    temperature: Parameter
     norm: Parameter
 
 
-class ChungEverhart(Model):
-    """Chung and Everhart model, defined in :cite:`Chung1974`."""
+class Maxwellian(Model):
+    """Maxwellian distribution."""
 
     emission_data_types = ["Emission Energy"]
     populations = ["SE"]
@@ -37,16 +39,16 @@ class ChungEverhart(Model):
     is_dielectrics_compatible = False
     model_config = ModelConfig(
         emission_yield_files=(),
-        emission_energy_files=("all",),
+        emission_energy_files=("SE",),
         emission_angle_files=(),
     )
     initial_parameters = {
-        "W_f": {
-            "markdown": r"W_f",
+        "temperature": {
+            "markdown": "T",
             "unit": "eV",
-            "value": 8.0,
+            "value": 7.5,
             "lower_bound": 0.0,
-            "description": "Material work function.",
+            "description": "Temperature distribution.",
         },
         "norm": {
             "markdown": r"k",
@@ -70,15 +72,17 @@ class ChungEverhart(Model):
 
         """
         super().__init__(url_doc_override="manual/models/chung_and_everhart")
-        self.parameters: ChungEverhartParameters = {  # type: ignore
-            name: Parameter(**kwargs)  # type: ignore
-            for name, kwargs in self.initial_parameters.items()
-        }
+        self.parameters: MaxwellianParameters = MaxwellianParameters(
+            **{
+                name: Parameter(**kwargs)
+                for name, kwargs in self.initial_parameters.items()
+            }
+        )
         self._generate_parameter_docs()
         if parameters_values is not None:
             self.set_parameters_values(parameters_values)
 
-        self._func = chung_everhart_func
+        self._func = maxwellian_pdf
 
     def get_data(
         self,
@@ -106,7 +110,9 @@ class ChungEverhart(Model):
         out = np.zeros(len(energy))
         for i, ene in enumerate(energy):
             out[i] = self._func(
-                ene, W_f=self.parameters["W_f"], norm=self.parameters["norm"]
+                ene,
+                temperature=self.parameters["temperature"],
+                norm=self.parameters["norm"],
             )
 
         out_dict = {col_normal: out, col_energy: energy}
@@ -119,10 +125,10 @@ class ChungEverhart(Model):
         if not data_matrix.has_all_mandatory_files(self.model_config):
             raise ValueError("Files are not all provided.")
 
-        distribution = data_matrix.all_energy_distribution
-        assert distribution.population == "all"
+        distribution = data_matrix.se_energy_distribution
+        assert distribution.population == "SE"
 
-        param = self.parameters["W_f"]
+        param = self.parameters["temperature"]
 
         lsq = least_squares(
             fun=_residue,
@@ -133,39 +139,63 @@ class ChungEverhart(Model):
                 distribution.data[col_normal].to_numpy(),
             ),
         )
-        w_f = lsq.x[0]
+        temp = lsq.x[0]
         self.set_parameters_values(
-            {"W_f": w_f, "norm": _chung_everhart_norm(w_f)}
+            {"temperature": temp, "norm": _maxwellian_norm(temp)}
         )
 
 
-def _chung_everhart_norm(w_f: float) -> float:
-    """Return norm value to have distribution maximum to unity."""
-    return 256.0 * w_f**3 / 27.0
+def _maxwellian_norm(temp: float) -> float:
+    """Return norm value to have distribution maximum to unity.
+
+    Maximum is at :math:`T/2`.
+
+    """
+    return temp * math.sqrt(2 * pi) / (2 * math.exp(-0.5))
 
 
-def chung_everhart_func(
+@overload
+def maxwellian_pdf(
+    ene: float,
+    temperature: Parameter | float,
+    norm: Parameter | None = None,
+    **parameters,
+) -> float: ...
+
+
+@overload
+def maxwellian_pdf(
+    ene: NDArray[np.float64],
+    temperature: Parameter | float,
+    norm: Parameter | None = None,
+    **parameters,
+) -> NDArray[np.float64]: ...
+
+
+def maxwellian_pdf(
     ene: float | NDArray[np.float64],
-    W_f: Parameter | float,
+    temperature: Parameter | float,
     norm: Parameter | None = None,
     **parameters,
 ) -> float | NDArray[np.float64]:
     """Compute the energy distribution."""
-    w_f_value = W_f.value if isinstance(W_f, Parameter) else W_f
-    norm_value = (
-        norm.value if norm is not None else _chung_everhart_norm(w_f_value)
+    temp = (
+        temperature.value
+        if isinstance(temperature, Parameter)
+        else temperature
     )
-    return norm_value * ene / (ene + w_f_value) ** 4
+    norm_value = _maxwellian_norm(temp) if not norm else norm.value
+    return 2 * norm_value * np.sqrt(ene / (pi * temp**3)) * np.exp(-ene / temp)
 
 
 def _residue(
-    w_f: float, ene: NDArray[np.float64], measured: NDArray[np.float64]
+    temp: float, ene: NDArray[np.float64], measured: NDArray[np.float64]
 ) -> NDArray[np.float64]:
     """Compute array of residues between model and measurements."""
-    return chung_everhart_func(ene, w_f) - measured
+    return maxwellian_pdf(ene, temp) - measured
 
 
 # Append dynamically generated docs to the module docstring
 if __doc__ is None:
     __doc__ = ""
-__doc__ += ChungEverhart._generate_parameter_docs()
+__doc__ += Maxwellian._generate_parameter_docs()
