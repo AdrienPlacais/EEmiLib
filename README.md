@@ -125,7 +125,7 @@ model.plot(
 - [ ] `Export` buttons
   - [ ] Tabulated model data.
   - [ ] Model parameters value (makes sense along with an `Import` button).
-- Fix error when not running from a git repo:
+- [ ] Fix error when not running from a git repo:
 
   ```bash
   fatal: not a git repository (or any parent up to mount point /)
