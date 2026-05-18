@@ -25,11 +25,11 @@ repos:
       - id: trailing-whitespace
         types_or: [python, toml]
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.21.0
+    rev: v3.21.2
     hooks:
     -   id: pyupgrade
   - repo: https://github.com/pycqa/isort  # args set in pyproject.toml
-    rev: 7.0.0
+    rev: 9.0.0a3
     hooks:
       - id: isort
         name: isort (python)
@@ -37,6 +37,6 @@ repos:
         name: isort (cython)
         types: [cython]
   - repo: https://github.com/psf/black-pre-commit-mirror  # args set in pyproject.toml
-    rev: 25.9.0
+    rev: 26.5.0
     hooks:
       - id: black
