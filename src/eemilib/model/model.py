@@ -76,7 +76,9 @@ class Model(ABC):
 
         """
         self.doc_url = documentation_url(self, **kwargs)
-        self.parameters: dict[str, Parameter]
+        #: A :class:`.TypedDict` specific to every :class:`.model.Model`. Keys
+        #: are parameters names, values are :class:`.Parameter`.
+        self.parameters: Any
 
     @classmethod
     def _generate_parameter_docs(cls) -> str:

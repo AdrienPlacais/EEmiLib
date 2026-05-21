@@ -54,8 +54,8 @@ class EmissionEnergyDistribution(EmissionData):
         #: distribution of all electrons.
         self.e_peak_se: float
         i_peak_se, self.e_peak_se = self._find_SE_peak()
-        #: Energy at the maximum of |EBEs| in :unit:`eV`. Defined for |EBEs| and
-        #: distribution of all electrons.
+        #: Energy at the maximum of |EBEs| in :unit:`eV`. Defined for |EBEs|
+        #: and distribution of all electrons.
         self.e_peak_ebe: float
         #: Position of |EBE| peak.
         self.i_peak_ebe: int

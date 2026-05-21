@@ -21,34 +21,8 @@ jobs:
           checkout-fetch-depth: 0
           checkout-fetch-tags: true
 
-  publish-to-testpypi:
-    needs: [dist]
-    environment:
-      name: testpypi
-      url: https://test.pypi.org/p/EEmiLib
-    permissions:
-      id-token: write
-      attestations: write
-      contents: read
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/download-artifact@v5
-        with:
-          name: Packages
-          path: dist
-
-      - name: Generate artifact attestation for sdist and wheel
-        uses: actions/attest-build-provenance@v3
-        with:
-          subject-path: "dist/*"
-
-      - uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
-          verbose: true
-
   publish:
+    if: startsWith(github.ref, 'refs/tags/v')
     needs: [dist]
     environment: pypi
     permissions:
@@ -71,3 +45,30 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           verbose: true
+
+  # publish-to-testpypi:
+  #   needs: [dist]
+  #   environment:
+  #     name: testpypi
+  #     url: https://test.pypi.org/p/EEmiLib
+  #   permissions:
+  #     id-token: write
+  #     attestations: write
+  #     contents: read
+  #   runs-on: ubuntu-latest
+  #
+  #   steps:
+  #     - uses: actions/download-artifact@v5
+  #       with:
+  #         name: Packages
+  #         path: dist
+  #
+  #     - name: Generate artifact attestation for sdist and wheel
+  #       uses: actions/attest-build-provenance@v3
+  #       with:
+  #         subject-path: "dist/*"
+  #
+  #     - uses: pypa/gh-action-pypi-publish@release/v1
+  #       with:
+  #         repository-url: https://test.pypi.org/legacy/
+  #         verbose: true

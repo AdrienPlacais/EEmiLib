@@ -8,6 +8,7 @@ Models
 
    models/chung_everhart
    models/dionne
+   models/maxwellian
    models/sombrin
    models/vaughan
 
