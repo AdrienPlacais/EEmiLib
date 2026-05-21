@@ -435,8 +435,8 @@ class MainWindow(QMainWindow):
             base_class=Plotter,
             buttons_args={
                 "Plot file": self.plot_measured,
-                "Plot model": self.plot_model,
-                "New figure": lambda _: setattr(self, "axes", None),
+                "Plot modelled data": self.plot_model,
+                "Create new figure": lambda _: setattr(self, "axes", None),
             },
         )
         self.plotter_classes = classes

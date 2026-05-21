@@ -85,7 +85,7 @@ def main() -> None:
     theta_end = 60
     n_theta = 4
 
-    # The "Plot model" button
+    # The "Plot modelled data" button
     axes = model.plot(
         plotter,
         population=population,
