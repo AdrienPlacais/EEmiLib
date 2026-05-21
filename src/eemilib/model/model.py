@@ -335,7 +335,7 @@ class Model(ABC):
         """Evaluate the precision of the model w.r.t. given data.
 
         For now, the only evaluations are |TEEY| or |SEEY| criterions proposed
-        by Fil et al. :ref:`Fil2016a,Fil2020`.
+        by Fil et al. :cite:`Fil2016a,Fil2020`.
 
         Parameters
         ----------
