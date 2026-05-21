@@ -2,7 +2,7 @@
 
 from collections.abc import Callable
 
-from eemilib.gui.styles import TITLE_STYLE
+from eemilib.gui.styles import FILE_LIST_MAX_HEIGHT, TITLE_STYLE
 from eemilib.util.constants import IMPLEMENTED_EMISSION_DATA, IMPLEMENTED_POP
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
@@ -57,6 +57,7 @@ def file_selection_matrix(
 
 def _setup_file_selection_widget(
     select_file_func: Callable,
+    max_height: int | None = FILE_LIST_MAX_HEIGHT,
 ) -> tuple[QPushButton, QListWidget]:
     """Set the button to load and the list of selected files."""
     button = QPushButton("📂")
@@ -64,6 +65,8 @@ def _setup_file_selection_widget(
     button.clicked.connect(select_file_func)
 
     file_list = QListWidget()
+    if max_height is not None:
+        file_list.setMaximumHeight(max_height)
     return button, file_list
 
 
