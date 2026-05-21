@@ -7,10 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## ??
 
+### Added
+
+- N. Fil criterions for TEEY/SEEY model quality appear in the GUI.
+
 ### Changed
 
 - The logic for plotting is now in a different GUI tab than data loading +
   modelling.
+- Boxes for file selection see their size reduced.
 
 ## 0.1.3
 
