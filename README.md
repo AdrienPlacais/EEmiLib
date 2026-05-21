@@ -30,11 +30,14 @@ pip install EEmiLib
 ```
 
 > [!NOTE]
-> If you are completely new to Python and these instructions are unclear, check [this tutorial](https://python-guide.readthedocs.io/en/latest/).
+> If you are completely new to Python and these instructions are unclear, check
+> [this tutorial](https://python-guide.readthedocs.io/en/latest/).
 > In particular, you will want to:
 >
-> 1. [Install Python](https://python-guide.readthedocs.io/en/latest/starting/installation/) 3.12 or higher.
-> 2. [Learn to use Python environments](https://python-guide.readthedocs.io/en/latest/dev/virtualenvs/), `pipenv` or `virtualenv`.
+> 1. [Install Python](https://python-guide.readthedocs.io/en/latest/starting/installation/)
+>    3.12 or higher.
+> 2. [Learn to use Python environments](https://python-guide.readthedocs.io/en/latest/dev/virtualenvs/)
+>    , `pipenv` or `virtualenv`.
 > 3. Optionally, [install a Python IDE](https://python-guide.readthedocs.io/en/latest/dev/env/#ides)
 >    such as Spyder or VSCode.
 
@@ -43,15 +46,14 @@ pip install EEmiLib
 If you want to edit the source code:
 
 1. Clone the repository: `git clone git@github.com:AdrienPlacais/EEmiLib.git`
-
-> [!WARNING]
-> If you `Download ZIP` this repository (which can happen if you don't have access to `git`), installation will fail at step #3.
-> [A workaround](https://lightwin.readthedocs.io/en/latest/manual/troubles/setuptools_error.html) is proposed here.
-> This is a different library, but the same method applies.
-
 2. Create a dedicated Python environment.
 3. From EEmiLib folder: `pip install -e .[test]`
 4. Test that everything is working with `pytest -m "not implementation"`.
+
+> [!WARNING] If you `Download ZIP` this repository (which can happen if you
+> don't have access to `git`), installation will fail at step #3.
+> [A workaround](https://lightwin.readthedocs.io/en/latest/manual/troubles/setuptools_error.html)
+> is proposed here. This is a different library, but the same method applies.
 
 ## Usage
 
@@ -115,7 +117,7 @@ model.plot(
 - [x] Document abbreviations
 - GUI:
   - [ ] Better handling of multiple `Plot data` and `Plot model` buttons push.
-  - [ ] Display quantitative criteria to assess model quality (e.g., Nicolas
+  - [x] Display quantitative criteria to assess model quality (e.g., Nicolas
         Fil's criterion)
   - [ ] Display derived quantities such as crossover energies, maximum TEEY, etc.
 - CI:
@@ -140,3 +142,4 @@ model.plot(
   - [ ] Add control over interpolation of loaded experimental data
   - [ ] Optional smoothing of measured data
   - [ ] Different line styles/colors for different populations.
+  - [ ] Ready-to-use interface for PIC codes.
