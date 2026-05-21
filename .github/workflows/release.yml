@@ -2,6 +2,10 @@ name: 🚀 Release
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Fake release for testing"
+        required: false
   pull_request:
   push:
     tags:
@@ -11,7 +15,7 @@ jobs:
   dist:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
