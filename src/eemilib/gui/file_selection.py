@@ -2,6 +2,7 @@
 
 from collections.abc import Callable
 
+from eemilib.gui.styles import TITLE_STYLE
 from eemilib.util.constants import IMPLEMENTED_EMISSION_DATA, IMPLEMENTED_POP
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
@@ -20,7 +21,8 @@ def file_selection_matrix(
     main_window: QMainWindow,
 ) -> tuple[QGroupBox, list[list[None | QListWidget]]]:
     """Create the 4 * 3 matrix to select the files to load."""
-    file_matrix_group = QGroupBox("Files selection matrix")
+    file_matrix_group = QGroupBox("Files selection")
+    file_matrix_group.setStyleSheet(TITLE_STYLE)
     file_matrix_layout = QGridLayout()
 
     row_labels, col_labels = IMPLEMENTED_POP, IMPLEMENTED_EMISSION_DATA

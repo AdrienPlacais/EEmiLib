@@ -1,7 +1,5 @@
 """Define interface related to :class:`.Loader` in GUI."""
 
-import logging
-
 from eemilib.loader.loader import Loader
 from PyQt5.QtGui import QWindow
 from PyQt5.QtWidgets import (

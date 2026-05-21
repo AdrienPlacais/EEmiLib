@@ -3,6 +3,7 @@
 import logging
 
 from eemilib.gui.helper import PARAMETER_ATTR_TO_POS
+from eemilib.gui.styles import TITLE_STYLE
 from eemilib.model.model import Model
 from PyQt5.QtGui import QWindow
 from PyQt5.QtWidgets import (
@@ -19,6 +20,7 @@ from PyQt5.QtWidgets import (
 def model_configuration() -> tuple[QGroupBox, QTableWidget]:
     """Set the interface related to the model specific parameters."""
     group = QGroupBox("Model configuration")
+    group.setStyleSheet(TITLE_STYLE)
     layout = QVBoxLayout()
 
     headers = list(PARAMETER_ATTR_TO_POS.keys())

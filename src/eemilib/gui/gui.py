@@ -36,6 +36,7 @@ from eemilib.gui.model_selection import (
     ModelSettingsDialog,
     model_configuration,
 )
+from eemilib.gui.styles import TITLE_STYLE
 from eemilib.loader.loader import Loader
 from eemilib.model.model import Model
 from eemilib.plotter.plotter import Plotter
@@ -112,12 +113,12 @@ class MainWindow(QMainWindow):
         self.loader_help_button: QPushButton
         self.setup_loader_dropdown()
 
+        self.model_table = self.setup_model_configuration()
         self.model_classes: dict[str, str]
         self.model_class: ABCMeta
         self.model_help_button: QPushButton
         self.setup_model_dropdown()
 
-        self.model_table = self.setup_model_configuration()
         self.energy_angle_group: QGroupBox
         self.energy_angle_layout: QVBoxLayout
         self.last_energy_widget: QLineEdit
@@ -393,9 +394,8 @@ class MainWindow(QMainWindow):
     # =========================================================================
     def setup_energy_angle_inputs(self) -> None:
         """Set the energy and angle inputs for the model plot."""
-        self.energy_angle_group = QGroupBox(
-            "Energy and angle range (used for model plot)"
-        )
+        self.energy_angle_group = QGroupBox("Plot configuration")
+        self.energy_angle_group.setStyleSheet(TITLE_STYLE)
         self.energy_angle_layout = QVBoxLayout()
 
         quantities = ("energy", "angle")
