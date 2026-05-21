@@ -38,7 +38,8 @@ def setup_dropdown(
     buttons_args :
         Dictionary where the keys are the name of the buttons to add next to
         the dropdown menu, and values the callable that will be called when
-        clicking the button.
+        clicking the button. Several callables can be provided as a list or
+        tuple.
 
     Returns
     -------
@@ -65,7 +66,10 @@ def setup_dropdown(
     buttons = []
     for name, action in buttons_args.items():
         button = QPushButton(name)
-        button.clicked.connect(action)
+        if not hasattr(action, "__iter__"):
+            action = (action,)
+        for a in action:
+            button.clicked.connect(a)
         layout.addWidget(button)
         buttons.append(button)
 
@@ -220,7 +224,7 @@ def _open_help(obj: Any) -> None:
     QDesktopServices.openUrl(QUrl(url))
 
 
-def format_number(value: int | float) -> str:
+def format_number(value: float) -> str:
     """Format the given number.
 
     Parameters

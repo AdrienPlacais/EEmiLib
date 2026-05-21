@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.4] -- 2026-05-21
+
+### Added
+
+- N. Fil criterions for TEEY/SEEY model quality appear in the GUI.
+
+### Changed
+
+- The logic for plotting is now in a different GUI tab than data loading +
+  modelling.
+- Boxes for file selection see their size reduced.
+
+## 0.1.3
+
+### Added
+
+- `Maxwellian` model for energy distribution of SEs.
+
 ## [0.1.2] -- 2025-10-30
 
 ### Added

@@ -110,3 +110,4 @@ To-do list
     - Unlock :math:`k_s`, :math:`k_{se}` to have better overall fit?
       In particular: if several incidence angles are provided.
     - In reality, SPARK3D implementation of Vaughan models |EBEEY| too!
+    - Threshold energy in CST cannot be negative. 

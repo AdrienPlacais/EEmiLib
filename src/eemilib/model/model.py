@@ -15,9 +15,8 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from eemilib.core.model_config import ModelConfig
-from eemilib.emission_data.data_matrix import DataMatrix
+from eemilib.emission_data.data_matrix import DataMatrix, MissingDataError
 from eemilib.emission_data.emission_yield import EmissionYield
-from eemilib.model.parameter import Parameter
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
     ImplementedEmissionData,
@@ -76,7 +75,9 @@ class Model(ABC):
 
         """
         self.doc_url = documentation_url(self, **kwargs)
-        self.parameters: dict[str, Parameter]
+        #: A :class:`.TypedDict` specific to every :class:`.model.Model`. Keys
+        #: are parameters names, values are :class:`.Parameter`.
+        self.parameters: Any
 
     @classmethod
     def _generate_parameter_docs(cls) -> str:
@@ -325,21 +326,61 @@ class Model(ABC):
             self.reset_parameter_value(name)
 
     def evaluate(
-        self, data_matrix: DataMatrix, *args, **kwargs
+        self,
+        data_matrix: DataMatrix,
+        *args,
+        evaluations: dict[str, float] | None = None,
+        **kwargs,
     ) -> dict[str, float]:
-        """Evaluate the precision of the model w.r.t. given data."""
-        raise NotImplementedError
+        """Evaluate the precision of the model w.r.t. given data.
+
+        For now, the only evaluations are |TEEY| or |SEEY| criterions proposed
+        by Fil et al. :ref:`Fil2016a,Fil2020`.
+
+        Parameters
+        ----------
+        data_matrix :
+            Holds all measured electron emission data.
+        evaluations :
+            Maps names of quality criterions with their actual value. If given,
+            it will be preserved and additional evaluations may be added.
+
+        Returns
+        -------
+        dict[str, float]
+            Maps names of quality criterions with their actual value.
+
+        """
+        if evaluations is None:
+            evaluations = {}
+        if "Emission Yield" in self.emission_data_types and (
+            "all" in self.populations or "SE" in self.populations
+        ):
+            evaluations.update(self._evaluate_for_teey_models(data_matrix))
+
+        if len(evaluations) == 0:
+            logging.info(
+                f"No evaluation was defined for {self.__class__.__name__}"
+            )
+        return evaluations
 
     def _evaluate_for_teey_models(
         self, data_matrix: DataMatrix
     ) -> dict[str, float]:
         """Evaluate a |TEEY| model with N. Fil criterions.
 
-        Ref: :cite:`Fil2016a,Fil2020`
+        Ref: :cite:`Fil2016a,Fil2020`.
 
         """
-        emission_yield = data_matrix.teey
-        errors = {
+        try:
+            emission_yield = data_matrix.teey
+        except MissingDataError:
+            logging.error(
+                "Emission yield mandatory in order to perform evaluations was "
+                "not found."
+            )
+            return {}
+        evaluations = {
             r"Relative error over $E_{c1}$ [%]": self._error_ec1(
                 emission_yield
             ),
@@ -347,7 +388,7 @@ class Model(ABC):
                 emission_yield
             ),
         }
-        return errors
+        return evaluations
 
     def _error_ec1(self, emission_yield: EmissionYield) -> float:
         """Compute relative error over first crossover energy in :unit:`%`."""
@@ -364,7 +405,7 @@ class Model(ABC):
         return float(error)
 
     def _error_teey(self, emission_yield: EmissionYield) -> float:
-        """Compute |TEEY| relative error between E_c1 and E_max.
+        """Compute |TEEY| relative error between $E_{c1}$ and $E_{max}$.
 
         Returned value is in :unit:`%`.
 

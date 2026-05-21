@@ -115,6 +115,10 @@ class PandasLoader(Loader):
         Files in the :file:`data/example_ag/emission_energy` folder are
         correctly formatted.
 
+        .. todo::
+           Find a more robust way to handle energy of PEs. Some distributions
+           do not need it.
+
         Parameters
         ----------
         filepath :

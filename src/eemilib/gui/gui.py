@@ -8,6 +8,7 @@
     Add measurables at bottom
 
 """
+
 import importlib
 import logging
 import sys
@@ -35,6 +36,7 @@ from eemilib.gui.model_selection import (
     ModelSettingsDialog,
     model_configuration,
 )
+from eemilib.gui.styles import TITLE_STYLE
 from eemilib.loader.loader import Loader
 from eemilib.model.model import Model
 from eemilib.plotter.plotter import Plotter
@@ -49,6 +51,7 @@ from PyQt5.QtWidgets import (
     QCheckBox,
     QComboBox,
     QGroupBox,
+    QHeaderView,
     QLineEdit,
     QListWidget,
     QMainWindow,
@@ -56,6 +59,7 @@ from PyQt5.QtWidgets import (
     QRadioButton,
     QTableWidget,
     QTableWidgetItem,
+    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -103,44 +107,63 @@ class MainWindow(QMainWindow):
 
         self.main_layout = QVBoxLayout(self.central_widget)
 
-        self.file_lists = self.setup_file_selection_matrix()
+        self.tab_widget = QTabWidget()
+        self.main_layout.addWidget(self.tab_widget)
+
+        self._data_model_tab = QWidget()
+        self._data_model_layout = QVBoxLayout(self._data_model_tab)
+        self.tab_widget.addTab(self._data_model_tab, "Data && Model")
+
+        self._plot_tab = QWidget()
+        self._plot_layout = QVBoxLayout(self._plot_tab)
+        self.tab_widget.addTab(self._plot_tab, "Plot")
+
+        # Tab 1: Data & Model
+        self.file_lists = self._setup_file_selection_matrix()
 
         self.dropdowns: dict[str, QComboBox] = {}
 
         self.loader_classes: dict[str, str]
         self.loader_help_button: QPushButton
-        self.setup_loader_dropdown()
+        self._setup_loader_dropdown()
 
+        self.model_table = self._setup_model_configuration()
         self.model_classes: dict[str, str]
         self.model_class: ABCMeta
         self.model_help_button: QPushButton
-        self.setup_model_dropdown()
+        self._setup_model_dropdown()
 
-        self.model_table = self.setup_model_configuration()
+        self.evaluations: dict[str, float]
+        self.evaluators_group: QGroupBox
+        self.evaluators_table: QTableWidget
+        self.force_reevaluation_button: QPushButton
+        self._setup_model_evaluation()
+
+        # Tab 2: Plot
         self.energy_angle_group: QGroupBox
         self.energy_angle_layout: QVBoxLayout
         self.last_energy_widget: QLineEdit
         self.last_theta_widget: QLineEdit
         self.n_theta_widget: QLineEdit
-        self.setup_energy_angle_inputs()
+        self._setup_energy_angle_inputs()
 
         self.plotter_classes: dict[str, str]
         self.plot_measured_button: QPushButton
         self.plot_model_button: QPushButton
         self.data_checkboxes: list[QRadioButton]
         self.population_checkboxes: list[QCheckBox]
-        self.setup_plotter_dropdowns()
+        self._setup_plotter_dropdowns()
 
         # Call the methods called by the model_dropdown index change
         self._set_default_dropdown()
 
     # =========================================================================
-    # File selection
+    # Tab 1 - File selection
     # =========================================================================
-    def setup_file_selection_matrix(self) -> list[list[None | QListWidget]]:
+    def _setup_file_selection_matrix(self) -> list[list[None | QListWidget]]:
         """Create the 4 * 3 matrix to select the files to load."""
         file_matrix_group, file_lists = file_selection_matrix(self)
-        self.main_layout.addWidget(file_matrix_group)
+        self._data_model_layout.addWidget(file_matrix_group)
         return file_lists
 
     def _deactivate_unnecessary_file_widgets(self) -> None:
@@ -163,9 +186,9 @@ class MainWindow(QMainWindow):
                 self._set_list_widget_state(self.file_lists[i][j], is_required)
 
     # =========================================================================
-    # Load files
+    # Tab 1 - Load files
     # =========================================================================
-    def setup_loader_dropdown(self) -> None:
+    def _setup_loader_dropdown(self) -> None:
         """Set the :class:`.Loader` related interface."""
         settings_label, settings_action = self._setup_loader_settings_dialog()
         classes, layout, dropdown, buttons = setup_dropdown(
@@ -182,8 +205,7 @@ class MainWindow(QMainWindow):
         dropdown.setCurrentText
         self.dropdowns["Loader"] = dropdown
         self.loader_help_button = buttons[0]
-        self.main_layout.addLayout(layout)
-        return
+        self._data_model_layout.addLayout(layout)
 
     def _setup_loader(self) -> None:
         """Setup new loader whenever the dropdown menu is changed."""
@@ -225,9 +247,9 @@ class MainWindow(QMainWindow):
             self._fill_plotting_ranges()
 
     # =========================================================================
-    # Model
+    # Tab 1 - Model
     # =========================================================================
-    def setup_model_dropdown(self) -> None:
+    def _setup_model_dropdown(self) -> None:
         """Set the :class:`.Model` related interface.
 
         Assign the ``model_classes`` and ``model_dropdown``.
@@ -239,7 +261,7 @@ class MainWindow(QMainWindow):
             base_class=Model,
             buttons_args={
                 "Help": lambda _: logging.info("Help not set"),
-                "Fit!": self.fit_model,
+                "Fit!": (self.fit_model, self._fill_evaluations_display),
                 settings_label: settings_action,
             },
         )
@@ -254,8 +276,7 @@ class MainWindow(QMainWindow):
         )
 
         self.model_help_button = buttons[0]
-        self.main_layout.addLayout(layout)
-        return
+        self._data_model_layout.addLayout(layout)
 
     def _setup_model_settings_dialog(self) -> tuple[str, Callable]:
         """Give arguments to setup the model setttings button."""
@@ -269,10 +290,10 @@ class MainWindow(QMainWindow):
 
         return settings_label, settings_action
 
-    def setup_model_configuration(self) -> QTableWidget:
+    def _setup_model_configuration(self) -> QTableWidget:
         """Set the interface related to the model specific parameters."""
         group, model_table = model_configuration()
-        self.main_layout.addWidget(group)
+        self._data_model_layout.addWidget(group)
         return model_table
 
     def _setup_model(self) -> None:
@@ -354,7 +375,7 @@ class MainWindow(QMainWindow):
         """Check emission data type and population.
 
         When model is updated, check the ``Data to plot`` and ``Population to
-        plot`` checkboxes in the ``Plot`` section that are concerned by current
+        plot`` checkboxes in the ``Plot`` tab that are concerned by current
         model.
 
         """
@@ -388,13 +409,73 @@ class MainWindow(QMainWindow):
                 button.setChecked(False)
 
     # =========================================================================
-    # Plot
+    # Tab 1 - Model evaluation
     # =========================================================================
-    def setup_energy_angle_inputs(self) -> None:
-        """Set the energy and angle inputs for the model plot."""
-        self.energy_angle_group = QGroupBox(
-            "Energy and angle range (used for model plot)"
+    def _setup_model_evaluation(self) -> None:
+        """Setup display of model evaluators."""
+        self.evaluators_group = QGroupBox("Model evaluations")
+        self.evaluators_group.setStyleSheet(TITLE_STYLE)
+        self.evaluators_layout = QVBoxLayout()
+
+        self.evaluators_table = self._create_evaluators_table()
+        self.evaluators_layout.addWidget(self.evaluators_table)
+
+        self.force_reevaluation_button = self._set_reevaluation_button()
+        self.evaluators_layout.addWidget(self.force_reevaluation_button)
+
+        self.evaluators_group.setLayout(self.evaluators_layout)
+        self._data_model_layout.addWidget(self.evaluators_group)
+
+    def _create_evaluators_table(self) -> QTableWidget:
+        """Create the two-column table that displays evaluation results."""
+        table = QTableWidget(0, 2)
+        table.setHorizontalHeaderLabels(["Metric", "Value"])
+        table.horizontalHeader().setSectionResizeMode(
+            0, QHeaderView.ResizeToContents
         )
+        table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+        table.setEditTriggers(QTableWidget.NoEditTriggers)
+        table.setAlternatingRowColors(True)
+        return table
+
+    def _set_reevaluation_button(self) -> QPushButton:
+        """Create and return the 'Re-evaluate' button."""
+        button = QPushButton("Re-evaluate")
+        button.clicked.connect(self._fill_evaluations_display)
+        return button
+
+    def _fill_evaluations_display(self) -> None:
+        """Fill the evaluations display with the last model."""
+        if not hasattr(self, "model") or not self.model:
+            logging.info("Please select a model before evaluating.")
+            return
+        if not hasattr(self, "data_matrix") or not self.data_matrix:
+            logging.info("Please load data before evaluating.")
+            return
+        self._evaluate_model()
+        self._populate_evaluators_table()
+
+    def _evaluate_model(self) -> None:
+        """Evaluate model and save resulting dict in ``self.evaluations``."""
+        self.evaluations = self.model.evaluate(self.data_matrix)
+
+    def _populate_evaluators_table(self) -> None:
+        """Write the contents of ``self.evaluations`` into the table."""
+        self.evaluators_table.setRowCount(0)
+        for row, (key, value) in enumerate(self.evaluations.items()):
+            self.evaluators_table.insertRow(row)
+            self.evaluators_table.setItem(row, 0, QTableWidgetItem(str(key)))
+            self.evaluators_table.setItem(
+                row, 1, QTableWidgetItem(format_number(value))
+            )
+
+    # =========================================================================
+    # Tab 2 - Plot
+    # =========================================================================
+    def _setup_energy_angle_inputs(self) -> None:
+        """Set the energy and angle inputs for the model plot."""
+        self.energy_angle_group = QGroupBox("Plot configuration")
+        self.energy_angle_group.setStyleSheet(TITLE_STYLE)
         self.energy_angle_layout = QVBoxLayout()
 
         quantities = ("energy", "angle")
@@ -422,9 +503,9 @@ class MainWindow(QMainWindow):
                 setattr(self, "_".join((qty, attr_name)), attr)
 
         self.energy_angle_group.setLayout(self.energy_angle_layout)
-        self.main_layout.addWidget(self.energy_angle_group)
+        self._plot_layout.addWidget(self.energy_angle_group)
 
-    def setup_plotter_dropdowns(self) -> None:
+    def _setup_plotter_dropdowns(self) -> None:
         """Set the :class:`.Plotter` related interface."""
         self._set_up_data_to_plot_checkboxes()
         self._set_up_population_to_plot_checkboxes()
@@ -434,12 +515,12 @@ class MainWindow(QMainWindow):
             base_class=Plotter,
             buttons_args={
                 "Plot file": self.plot_measured,
-                "Plot model": self.plot_model,
-                "New figure": lambda _: setattr(self, "axes", None),
+                "Plot modelled data": self.plot_model,
+                "Create new figure": lambda _: setattr(self, "axes", None),
             },
         )
         self.plotter_classes = classes
-        self.main_layout.addLayout(layout)
+        self._plot_layout.addLayout(layout)
         self.dropdowns["Plotter"] = dropdown
         self.plot_measured_button = buttons[0]
         self.plot_model_button = buttons[1]
@@ -451,7 +532,7 @@ class MainWindow(QMainWindow):
             IMPLEMENTED_EMISSION_DATA,
             several_can_be_checked=False,
         )
-        self.main_layout.addLayout(layout)
+        self._plot_layout.addLayout(layout)
         self.data_checkboxes = checkboxes
 
     def _set_up_population_to_plot_checkboxes(self) -> None:
@@ -461,7 +542,7 @@ class MainWindow(QMainWindow):
             IMPLEMENTED_POP,
             several_can_be_checked=True,
         )
-        self.main_layout.addLayout(layout)
+        self._plot_layout.addLayout(layout)
         self.population_checkboxes = checkboxes
 
     def plot_measured(self) -> None:
