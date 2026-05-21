@@ -417,11 +417,11 @@ class MainWindow(QMainWindow):
         self.evaluators_group.setStyleSheet(TITLE_STYLE)
         self.evaluators_layout = QVBoxLayout()
 
-        self.force_reevaluation_button = self._set_reevaluation_button()
-        self.evaluators_layout.addWidget(self.force_reevaluation_button)
-
         self.evaluators_table = self._create_evaluators_table()
         self.evaluators_layout.addWidget(self.evaluators_table)
+
+        self.force_reevaluation_button = self._set_reevaluation_button()
+        self.evaluators_layout.addWidget(self.force_reevaluation_button)
 
         self.evaluators_group.setLayout(self.evaluators_layout)
         self._data_model_layout.addWidget(self.evaluators_group)
@@ -448,6 +448,9 @@ class MainWindow(QMainWindow):
         """Fill the evaluations display with the last model."""
         if not hasattr(self, "model") or not self.model:
             logging.info("Please select a model before evaluating.")
+            return
+        if not hasattr(self, "data_matrix") or not self.data_matrix:
+            logging.info("Please load data before evaluating.")
             return
         self._evaluate_model()
         self._populate_evaluators_table()
