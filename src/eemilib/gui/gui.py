@@ -51,6 +51,7 @@ from PyQt5.QtWidgets import (
     QCheckBox,
     QComboBox,
     QGroupBox,
+    QHeaderView,
     QLineEdit,
     QListWidget,
     QMainWindow,
@@ -117,7 +118,7 @@ class MainWindow(QMainWindow):
         self._plot_layout = QVBoxLayout(self._plot_tab)
         self.tab_widget.addTab(self._plot_tab, "Plot")
 
-        # Setting first tab
+        # Tab 1: Data & Model
         self.file_lists = self._setup_file_selection_matrix()
 
         self.dropdowns: dict[str, QComboBox] = {}
@@ -132,7 +133,13 @@ class MainWindow(QMainWindow):
         self.model_help_button: QPushButton
         self._setup_model_dropdown()
 
-        # Setting second tab
+        self.evaluations: dict[str, float]
+        self.evaluators_group: QGroupBox
+        self.evaluators_table: QTableWidget
+        self.force_reevaluation_button: QPushButton
+        self._setup_model_evaluation()
+
+        # Tab 2: Plot
         self.energy_angle_group: QGroupBox
         self.energy_angle_layout: QVBoxLayout
         self.last_energy_widget: QLineEdit
@@ -254,7 +261,7 @@ class MainWindow(QMainWindow):
             base_class=Model,
             buttons_args={
                 "Help": lambda _: logging.info("Help not set"),
-                "Fit!": self.fit_model,
+                "Fit!": (self.fit_model, self._fill_evaluations_display),
                 settings_label: settings_action,
             },
         )
@@ -400,6 +407,64 @@ class MainWindow(QMainWindow):
                     button.setChecked(True)
                     continue
                 button.setChecked(False)
+
+    # =========================================================================
+    # Tab 1 - Model evaluation
+    # =========================================================================
+    def _setup_model_evaluation(self) -> None:
+        """Setup display of model evaluators."""
+        self.evaluators_group = QGroupBox("Model evaluations")
+        self.evaluators_group.setStyleSheet(TITLE_STYLE)
+        self.evaluators_layout = QVBoxLayout()
+
+        self.force_reevaluation_button = self._set_reevaluation_button()
+        self.evaluators_layout.addWidget(self.force_reevaluation_button)
+
+        self.evaluators_table = self._create_evaluators_table()
+        self.evaluators_layout.addWidget(self.evaluators_table)
+
+        self.evaluators_group.setLayout(self.evaluators_layout)
+        self._data_model_layout.addWidget(self.evaluators_group)
+
+    def _create_evaluators_table(self) -> QTableWidget:
+        """Create the two-column table that displays evaluation results."""
+        table = QTableWidget(0, 2)
+        table.setHorizontalHeaderLabels(["Metric", "Value"])
+        table.horizontalHeader().setSectionResizeMode(
+            0, QHeaderView.ResizeToContents
+        )
+        table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+        table.setEditTriggers(QTableWidget.NoEditTriggers)
+        table.setAlternatingRowColors(True)
+        return table
+
+    def _set_reevaluation_button(self) -> QPushButton:
+        """Create and return the 'Re-evaluate' button."""
+        button = QPushButton("Re-evaluate")
+        button.clicked.connect(self._fill_evaluations_display)
+        return button
+
+    def _fill_evaluations_display(self) -> None:
+        """Fill the evaluations display with the last model."""
+        if not hasattr(self, "model") or not self.model:
+            logging.info("Please select a model before evaluating.")
+            return
+        self._evaluate_model()
+        self._populate_evaluators_table()
+
+    def _evaluate_model(self) -> None:
+        """Evaluate model and save resulting dict in ``self.evaluations``."""
+        self.evaluations = self.model.evaluate(self.data_matrix)
+
+    def _populate_evaluators_table(self) -> None:
+        """Write the contents of ``self.evaluations`` into the table."""
+        self.evaluators_table.setRowCount(0)
+        for row, (key, value) in enumerate(self.evaluations.items()):
+            self.evaluators_table.insertRow(row)
+            self.evaluators_table.setItem(row, 0, QTableWidgetItem(str(key)))
+            self.evaluators_table.setItem(
+                row, 1, QTableWidgetItem(format_number(value))
+            )
 
     # =========================================================================
     # Tab 2 - Plot
