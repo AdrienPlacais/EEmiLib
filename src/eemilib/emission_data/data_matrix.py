@@ -43,6 +43,10 @@ n_rows = len(IMPLEMENTED_POP)
 n_cols = len(IMPLEMENTED_EMISSION_DATA)
 
 
+class MissingDataError(ValueError):
+    """Error raised when data is missing from :class:`.DataMatrix`."""
+
+
 class DataMatrix:
     """Store all the input files and corresp data in a single object."""
 
@@ -297,6 +301,7 @@ class DataMatrix:
         population: ImplementedPop,
         emission_data_type: None,
     ) -> Collection[EmissionData]: ...
+
     @overload
     def get_data(
         self,
@@ -538,6 +543,8 @@ class DataMatrix:
     def teey(self) -> EmissionYield:
         """Return the |TEEY| directly."""
         emission_yield = self.data_matrix[3][0]
+        if emission_yield is None:
+            raise MissingDataError
         assert isinstance(
             emission_yield, EmissionYield
         ), f"Incorrect type for emission_yield: {type(emission_yield)}"
@@ -548,6 +555,8 @@ class DataMatrix:
     def seey(self) -> EmissionYield:
         """Return the |SEEY| directly."""
         emission_yield = self.data_matrix[0][0]
+        if emission_yield is None:
+            raise MissingDataError
         assert isinstance(
             emission_yield, EmissionYield
         ), f"Incorrect type for emission_yield: {type(emission_yield)}"
@@ -558,6 +567,8 @@ class DataMatrix:
     def se_energy_distribution(self) -> EmissionEnergyDistribution:
         """Return the energy distribution of |SEs|."""
         distrib = self.data_matrix[0][1]
+        if distrib is None:
+            raise MissingDataError
         assert isinstance(
             distrib, EmissionEnergyDistribution
         ), f"Incorrect type for energy distribution: {type(distrib)}"
@@ -568,6 +579,8 @@ class DataMatrix:
     def all_energy_distribution(self) -> EmissionEnergyDistribution:
         """Return the energy distribution of all emitted electrons."""
         distrib = self.data_matrix[3][1]
+        if distrib is None:
+            raise MissingDataError
         assert isinstance(
             distrib, EmissionEnergyDistribution
         ), f"Incorrect type for energy distribution: {type(distrib)}"
