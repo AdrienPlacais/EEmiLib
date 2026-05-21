@@ -15,7 +15,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from eemilib.core.model_config import ModelConfig
-from eemilib.emission_data.data_matrix import DataMatrix
+from eemilib.emission_data.data_matrix import DataMatrix, MissingDataError
 from eemilib.emission_data.emission_yield import EmissionYield
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
@@ -372,7 +372,14 @@ class Model(ABC):
         Ref: :cite:`Fil2016a,Fil2020`.
 
         """
-        emission_yield = data_matrix.teey
+        try:
+            emission_yield = data_matrix.teey
+        except MissingDataError:
+            logging.error(
+                "Emission yield mandatory in order to perform evaluations was "
+                "not found."
+            )
+            return {}
         evaluations = {
             r"Relative error over $E_{c1}$ [%]": self._error_ec1(
                 emission_yield
