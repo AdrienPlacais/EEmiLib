@@ -311,12 +311,15 @@ class MainWindow(QMainWindow):
     def _populate_parameters_table_constants(self) -> None:
         """Print out the model parameters in dedicated table."""
         self.model_table.setRowCount(0)
-
-        for row, (name, param) in enumerate(self.model.parameters.items()):
+        for row, param in enumerate(self.model.parameters.values()):
             self.model_table.insertRow(row)
 
-            self.model_table.setItem(row, 0, QTableWidgetItem(name))
-            for attr in ("unit", "lower_bound", "upper_bound"):
+            label, unit = math_text_label_from_key(param.name)
+            label.setObjectName(param.name)  # anchors the name to the widget
+            self.model_table.setCellWidget(row, 0, label)
+            self.model_table.setCellWidget(row, 1, unit)
+
+            for attr in ("lower_bound", "upper_bound"):
                 col = PARAMETER_ATTR_TO_POS[attr]
                 attr_value = getattr(param, attr, None)
                 self.model_table.setItem(
@@ -336,7 +339,7 @@ class MainWindow(QMainWindow):
         if attr not in updatable_attr:
             return
 
-        name = self.model_table.item(row, 0).text()
+        name = self.model_table.cellWidget(row, 0).objectName()
         parameter = self.model.parameters.get(name)
 
         if parameter:
@@ -371,6 +374,75 @@ class MainWindow(QMainWindow):
                 i, 2, QTableWidgetItem(format_number(param.value))
             )
 
+    # =========================================================================
+    # Tab 1 - Model evaluation
+    # =========================================================================
+    def _setup_model_evaluation(self) -> None:
+        """Setup display of model evaluators."""
+        self.evaluators_group = QGroupBox("Model evaluations")
+        self.evaluators_group.setStyleSheet(TITLE_STYLE)
+        self.evaluators_layout = QVBoxLayout()
+
+        self.evaluators_table = self._create_evaluators_table()
+        self.evaluators_layout.addWidget(self.evaluators_table)
+
+        self.force_reevaluation_button = self._set_reevaluation_button()
+        self.evaluators_layout.addWidget(self.force_reevaluation_button)
+
+        self.evaluators_group.setLayout(self.evaluators_layout)
+        self._data_model_layout.addWidget(self.evaluators_group)
+
+    def _create_evaluators_table(self) -> QTableWidget:
+        """Create the two-column table that displays evaluation results."""
+        table = QTableWidget(0, 3)
+        table.setHorizontalHeaderLabels(["Metric", "Unit", "Value"])
+
+        for i in range(3):
+            table.horizontalHeader().setSectionResizeMode(
+                i, QHeaderView.ResizeToContents
+            )
+        table.setEditTriggers(QTableWidget.NoEditTriggers)
+        table.setAlternatingRowColors(True)
+        return table
+
+    def _set_reevaluation_button(self) -> QPushButton:
+        """Create and return the 'Re-evaluate' button."""
+        button = QPushButton("Re-evaluate")
+        button.clicked.connect(self._fill_evaluations_display)
+        return button
+
+    def _fill_evaluations_display(self) -> None:
+        """Fill the evaluations display with the last model."""
+        if not hasattr(self, "model") or not self.model:
+            logging.info("Please select a model before evaluating.")
+            return
+        if not hasattr(self, "data_matrix") or not self.data_matrix:
+            logging.info("Please load data before evaluating.")
+            return
+        self._evaluate_model()
+        self._populate_evaluators_table()
+
+    def _evaluate_model(self) -> None:
+        """Evaluate model and save resulting dict in ``self.evaluations``."""
+        self.evaluations = self.model.evaluate(self.data_matrix)
+
+    def _populate_evaluators_table(self) -> None:
+        """Write the contents of ``self.evaluations`` into the table."""
+        self.evaluators_table.setRowCount(0)
+        for row, (key, value) in enumerate(self.evaluations.items()):
+            self.evaluators_table.insertRow(row)
+
+            label, unit = math_text_label_from_key(key)
+            self.evaluators_table.setCellWidget(row, 0, label)
+            self.evaluators_table.setCellWidget(row, 1, unit)
+
+            self.evaluators_table.setItem(
+                row, 2, QTableWidgetItem(format_number(value))
+            )
+
+    # =========================================================================
+    # Tab 2 - Plot
+    # =========================================================================
     def _fill_plot_nature_and_population(self) -> None:
         """Check emission data type and population.
 
@@ -408,71 +480,6 @@ class MainWindow(QMainWindow):
                     continue
                 button.setChecked(False)
 
-    # =========================================================================
-    # Tab 1 - Model evaluation
-    # =========================================================================
-    def _setup_model_evaluation(self) -> None:
-        """Setup display of model evaluators."""
-        self.evaluators_group = QGroupBox("Model evaluations")
-        self.evaluators_group.setStyleSheet(TITLE_STYLE)
-        self.evaluators_layout = QVBoxLayout()
-
-        self.evaluators_table = self._create_evaluators_table()
-        self.evaluators_layout.addWidget(self.evaluators_table)
-
-        self.force_reevaluation_button = self._set_reevaluation_button()
-        self.evaluators_layout.addWidget(self.force_reevaluation_button)
-
-        self.evaluators_group.setLayout(self.evaluators_layout)
-        self._data_model_layout.addWidget(self.evaluators_group)
-
-    def _create_evaluators_table(self) -> QTableWidget:
-        """Create the two-column table that displays evaluation results."""
-        table = QTableWidget(0, 2)
-        table.setHorizontalHeaderLabels(["Metric", "Value"])
-        table.horizontalHeader().setSectionResizeMode(
-            0, QHeaderView.ResizeToContents
-        )
-        table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
-        table.setEditTriggers(QTableWidget.NoEditTriggers)
-        table.setAlternatingRowColors(True)
-        return table
-
-    def _set_reevaluation_button(self) -> QPushButton:
-        """Create and return the 'Re-evaluate' button."""
-        button = QPushButton("Re-evaluate")
-        button.clicked.connect(self._fill_evaluations_display)
-        return button
-
-    def _fill_evaluations_display(self) -> None:
-        """Fill the evaluations display with the last model."""
-        if not hasattr(self, "model") or not self.model:
-            logging.info("Please select a model before evaluating.")
-            return
-        if not hasattr(self, "data_matrix") or not self.data_matrix:
-            logging.info("Please load data before evaluating.")
-            return
-        self._evaluate_model()
-        self._populate_evaluators_table()
-
-    def _evaluate_model(self) -> None:
-        """Evaluate model and save resulting dict in ``self.evaluations``."""
-        self.evaluations = self.model.evaluate(self.data_matrix)
-
-    def _populate_evaluators_table(self) -> None:
-        """Write the contents of ``self.evaluations`` into the table."""
-        self.evaluators_table.setRowCount(0)
-        for row, (key, value) in enumerate(self.evaluations.items()):
-            self.evaluators_table.insertRow(row)
-            label = math_text_label_from_key(key)
-            self.evaluators_table.setCellWidget(row, 0, label)
-            self.evaluators_table.setItem(
-                row, 1, QTableWidgetItem(format_number(value))
-            )
-
-    # =========================================================================
-    # Tab 2 - Plot
-    # =========================================================================
     def _setup_energy_angle_inputs(self) -> None:
         """Set the energy and angle inputs for the model plot."""
         self.energy_angle_group = QGroupBox("Plot configuration")

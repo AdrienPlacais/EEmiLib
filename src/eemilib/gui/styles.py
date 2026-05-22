@@ -22,6 +22,26 @@ MATH_LABEL_DPI = 150
 MATH_LABEL_FONTSIZE = 6
 
 
+def _normalize_key(key: str) -> str:
+    """Convert all RST ``:math:`...``` spans to ``$...$``.
+
+    This allows keys written in either notation to go through the same
+    rendering pipeline.
+
+    Parameters
+    ----------
+    key :
+        Raw key string, possibly containing ``:math:`...``` spans.
+
+    Returns
+    -------
+    str
+        Key with every ``:math:`...``` replaced by the equivalent ``$...$``.
+
+    """
+    return re.sub(r":math:`([^`]+)`", r"$\1$", key)
+
+
 def _parse_key(key: str) -> tuple[str, str]:
     """Split *key* into ``(text, units)``.
 
@@ -39,6 +59,7 @@ def _parse_key(key: str) -> tuple[str, str]:
         Content between the first ``[...]``, without the brackets.
 
     """
+    key = _normalize_key(key)
     units_match = re.search(r"\[([^\]]+)\]\s*$", key)
     if units_match:
         units = units_match.group(1).strip()
@@ -144,7 +165,7 @@ def math_text_label_from_key(
     key: str,
     fontsize: int = MATH_LABEL_FONTSIZE,
     dpi: int = MATH_LABEL_DPI,
-) -> QLabel:
+) -> tuple[QLabel, QLabel]:
     """Convenience wrapper: parse *key* then render it.
 
     Parameters
@@ -160,7 +181,11 @@ def math_text_label_from_key(
     -------
     QLabel
         Rendered label ready to be passed to ``QTableWidget.setCellWidget``.
+    QLabel
+        Rendered unit ready to be passed to ``QTableWidget.setCellWidget``.
 
     """
     body, units = _parse_key(key)
-    return _math_text_label(body, units, fontsize=fontsize, dpi=dpi)
+    label_body = _math_text_label(body, "", fontsize=fontsize, dpi=dpi)
+    label_unit = _math_text_label("", units, fontsize=fontsize, dpi=dpi)
+    return label_body, label_unit
