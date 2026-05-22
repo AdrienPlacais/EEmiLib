@@ -36,7 +36,7 @@ from eemilib.gui.model_selection import (
     ModelSettingsDialog,
     model_configuration,
 )
-from eemilib.gui.styles import TITLE_STYLE
+from eemilib.gui.styles import TITLE_STYLE, math_text_label_from_key
 from eemilib.loader.loader import Loader
 from eemilib.model.model import Model
 from eemilib.plotter.plotter import Plotter
@@ -464,7 +464,8 @@ class MainWindow(QMainWindow):
         self.evaluators_table.setRowCount(0)
         for row, (key, value) in enumerate(self.evaluations.items()):
             self.evaluators_table.insertRow(row)
-            self.evaluators_table.setItem(row, 0, QTableWidgetItem(str(key)))
+            label = math_text_label_from_key(key)
+            self.evaluators_table.setCellWidget(row, 0, label)
             self.evaluators_table.setItem(
                 row, 1, QTableWidgetItem(format_number(value))
             )

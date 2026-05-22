@@ -386,10 +386,10 @@ class Model(ABC):
 
         evaluations.update(
             {
-                r"Relative error over $E_{c1}$ [%]": self._error_ec1(
+                r"Relative error over $E_{c1}$ [\%]": self._error_ec1(
                     emission_yield
                 ),
-                r"$\sigma$ deviation between $E_{c1}$ and $E_{max}$ [%]": self._error_teey(
+                r"$\sigma$ deviation between $E_{c1}$ and $E_{max}$ [\%]": self._error_teey(
                     emission_yield
                 ),
             }
