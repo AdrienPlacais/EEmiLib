@@ -61,7 +61,7 @@ nitpick_ignore = [
 intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
-    "pandas": ("https://pandas.pydata.org/docs", None),
+    "pandas": ("https://pandas.pydata.org/pandas-docs/version/2.2", None),
     "python": ("https://docs.python.org/3", None),
     # "PyQt5": (  # Handled by sphinx_qt_documentation extension
     #     "https://www.riverbankcomputing.com/static/Docs/PyQt5/",

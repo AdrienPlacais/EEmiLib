@@ -59,7 +59,7 @@ class Parameter:
     @property
     def name(self) -> str:
         """Return markdown name of parameter with its unit."""
-        return f"{self.markdown} [{self.unit}]"
+        return f"${self.markdown}$ [{self.unit}]"
 
     @property
     def value(self) -> float:

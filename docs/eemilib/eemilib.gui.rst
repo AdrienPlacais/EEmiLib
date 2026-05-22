@@ -17,3 +17,4 @@ Submodules
    eemilib.gui.helper
    eemilib.gui.loader_selection
    eemilib.gui.model_selection
+   eemilib.gui.styles

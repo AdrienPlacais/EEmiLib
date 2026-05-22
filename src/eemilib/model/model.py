@@ -17,6 +17,7 @@ import pandas as pd
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data.data_matrix import DataMatrix, MissingDataError
 from eemilib.emission_data.emission_yield import EmissionYield
+from eemilib.emission_data.helper import get_ec1, get_max
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
     ImplementedEmissionData,
@@ -25,6 +26,7 @@ from eemilib.util.constants import (
     col_normal,
 )
 from eemilib.util.helper import documentation_url
+from eemilib.util.markdown import E_MAX, EC_1, SIGMA, SIGMA_MAX, tex_math
 from numpy.typing import NDArray
 
 
@@ -335,7 +337,7 @@ class Model(ABC):
         """Evaluate the precision of the model w.r.t. given data.
 
         For now, the only evaluations are |TEEY| or |SEEY| criterions proposed
-        by Fil et al. :ref:`Fil2016a,Fil2020`.
+        by Fil et al. :cite:`Fil2016a,Fil2020`.
 
         Parameters
         ----------
@@ -372,6 +374,8 @@ class Model(ABC):
         Ref: :cite:`Fil2016a,Fil2020`.
 
         """
+        evaluations = self._main_teey_parameters()
+
         try:
             emission_yield = data_matrix.teey
         except MissingDataError:
@@ -379,16 +383,36 @@ class Model(ABC):
                 "Emission yield mandatory in order to perform evaluations was "
                 "not found."
             )
-            return {}
-        evaluations = {
-            r"Relative error over $E_{c1}$ [%]": self._error_ec1(
-                emission_yield
-            ),
-            r"$\sigma$ deviation between $E_{c1}$ and $E_{max}$ [%]": self._error_teey(
-                emission_yield
-            ),
-        }
+            return evaluations
+
+        evaluations.update(
+            {
+                rf"Relative error over {tex_math(EC_1)} [\%]": self._error_ec1(
+                    emission_yield
+                ),
+                f"{tex_math(SIGMA)} deviation between {tex_math(EC_1)} and "
+                rf"{tex_math(E_MAX)} [\%]": self._error_teey(emission_yield),
+            }
+        )
         return evaluations
+
+    def _main_teey_parameters(self) -> dict[str, float]:
+        r"""Compute main TEEY parameters.
+
+        In particular: $E_{c1}$, $E_{max}$, $\sigma_{max}$.
+
+        """
+        energy = np.linspace(0, 1e3, 10001, dtype=np.float64)
+        theta = np.array([0.0])
+        teey = self.teey(energy, theta)
+
+        e_c1 = get_ec1(teey)
+        e_max, sigma_max = get_max(teey)
+        return {
+            f"Modelled {tex_math(EC_1)} [eV]": e_c1,
+            f"Modelled {tex_math(E_MAX)} [eV]": e_max,
+            f"Modelled {tex_math(SIGMA_MAX)}": sigma_max,
+        }
 
     def _error_ec1(self, emission_yield: EmissionYield) -> float:
         """Compute relative error over first crossover energy in :unit:`%`."""
