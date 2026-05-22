@@ -31,6 +31,13 @@ from eemilib.util.constants import (
     col_energy,
     col_normal,
 )
+from eemilib.util.markdown import (
+    DIFFUSION_LENGTH,
+    ESCAPE_PROBABILITY,
+    EXCITATION_ENERGY,
+    POWER_LAW_EXPONENT,
+    POWER_LAW_SCALE,
+)
 from numpy.typing import NDArray
 from scipy.optimize import Bounds, least_squares
 
@@ -63,7 +70,7 @@ class Dionne(Model):
     )
     initial_parameters = {
         "excitation_energy": {
-            "markdown": r"\xi",
+            "markdown": EXCITATION_ENERGY,
             "unit": "eV",
             "value": 4.6,
             "lower_bound": 0.0,
@@ -74,7 +81,7 @@ class Dionne(Model):
             "is_locked": True,
         },
         "diffusion_length": {
-            "markdown": "d",
+            "markdown": DIFFUSION_LENGTH,
             "unit": "nm",
             "value": 2.0,
             "lower_bound": 0.0,
@@ -84,7 +91,7 @@ class Dionne(Model):
             ),
         },
         "escape_probability": {
-            "markdown": "S",
+            "markdown": ESCAPE_PROBABILITY,
             "unit": "1",
             "value": 0.5,
             "lower_bound": 0.0,
@@ -92,14 +99,14 @@ class Dionne(Model):
             "description": "Probability for the SE to escape the material.",
         },
         "power_law_scale": {
-            "markdown": r"A",
+            "markdown": POWER_LAW_SCALE,
             "unit": "1",
             "value": 1.0,
             "lower_bound": 0.0,
             "description": "Scale factor in the power law energy loss model.",
         },
         "power_law_exponent": {
-            "markdown": r"n",
+            "markdown": POWER_LAW_EXPONENT,
             "unit": "1",
             "value": 1.2,
             "lower_bound": 1.0,

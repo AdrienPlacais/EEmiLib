@@ -18,6 +18,7 @@ from eemilib.util.constants import (
     col_energy,
     col_normal,
 )
+from eemilib.util.markdown import NORM, W_F
 from numpy.typing import NDArray
 from scipy.optimize import Bounds, least_squares
 
@@ -42,14 +43,14 @@ class ChungEverhart(Model):
     )
     initial_parameters = {
         "W_f": {
-            "markdown": r"W_f",
+            "markdown": W_F,
             "unit": "eV",
             "value": 8.0,
             "lower_bound": 0.0,
             "description": "Material work function.",
         },
         "norm": {
-            "markdown": r"k",
+            "markdown": NORM,
             "unit": "1",
             "value": 1.0,
             "lower_bound": 0.0,

@@ -19,6 +19,7 @@ from eemilib.util.constants import (
     col_energy,
     col_normal,
 )
+from eemilib.util.markdown import NORM, TEMPERATURE
 from numpy.typing import NDArray
 from scipy.constants import pi
 from scipy.optimize import Bounds, least_squares
@@ -44,14 +45,14 @@ class Maxwellian(Model):
     )
     initial_parameters = {
         "temperature": {
-            "markdown": "T",
+            "markdown": TEMPERATURE,
             "unit": "eV",
             "value": 7.5,
             "lower_bound": 0.0,
             "description": "Temperature distribution.",
         },
         "norm": {
-            "markdown": r"k",
+            "markdown": NORM,
             "unit": "1",
             "value": 1.0,
             "lower_bound": 0.0,

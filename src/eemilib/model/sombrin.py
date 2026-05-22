@@ -20,6 +20,7 @@ from eemilib.util.constants import (
     col_energy,
     col_normal,
 )
+from eemilib.util.markdown import E_MAX, EC_1, SIGMA_MAX
 from numpy.typing import NDArray
 
 
@@ -48,28 +49,25 @@ class Sombrin(Model):
     )
     initial_parameters = {
         "E_max": {
-            "markdown": r"E_\mathrm{max}",
+            "markdown": E_MAX,
             "unit": "eV",
             "value": 1.0,
             "lower_bound": 0.0,
             "description": "Energy at maximum TEEY.",
         },
         "teey_max": {
-            "markdown": r"\sigma_\mathrm{max}",
+            "markdown": SIGMA_MAX,
             "unit": "1",
             "value": 0.0,
             "lower_bound": 0.0,
             "description": "Maximum TEEY, directly taken from the measurement.",
         },
         "E_c1": {
-            "markdown": r"E_{c,\,1}",
+            "markdown": EC_1,
             "unit": "eV",
             "value": 0.0,
             "lower_bound": 0.0,
-            "description": (
-                "First crossover energy. Must be provided instead of E_0 for "
-                "SPARK3D Vaughan."
-            ),
+            "description": "First crossover energy.",
         },
     }
 

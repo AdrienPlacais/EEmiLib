@@ -26,6 +26,7 @@ from eemilib.util.constants import (
     col_normal,
 )
 from eemilib.util.helper import documentation_url
+from eemilib.util.markdown import E_MAX, EC_1, SIGMA, SIGMA_MAX, tex_math
 from numpy.typing import NDArray
 
 
@@ -386,12 +387,11 @@ class Model(ABC):
 
         evaluations.update(
             {
-                r"Relative error over $E_{c1}$ [\%]": self._error_ec1(
+                rf"Relative error over {tex_math(EC_1)} [\%]": self._error_ec1(
                     emission_yield
                 ),
-                r"$\sigma$ deviation between $E_{c1}$ and $E_{max}$ [\%]": self._error_teey(
-                    emission_yield
-                ),
+                f"{tex_math(SIGMA)} deviation between {tex_math(EC_1)} and "
+                rf"{tex_math(E_MAX)} [\%]": self._error_teey(emission_yield),
             }
         )
         return evaluations
@@ -409,9 +409,9 @@ class Model(ABC):
         e_c1 = get_ec1(teey)
         e_max, sigma_max = get_max(teey)
         return {
-            r"Modelled $E_{c1}$ [eV]": e_c1,
-            r"Modelled $E_{max}$ [eV]": e_max,
-            r"Modelled $\sigma_{max}$": sigma_max,
+            f"Modelled {tex_math(EC_1)} [eV]": e_c1,
+            f"Modelled {tex_math(E_MAX)} [eV]": e_max,
+            f"Modelled {tex_math(SIGMA_MAX)}": sigma_max,
         }
 
     def _error_ec1(self, emission_yield: EmissionYield) -> float:

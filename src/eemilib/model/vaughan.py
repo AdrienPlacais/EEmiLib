@@ -19,6 +19,17 @@ from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import ImplementedEmissionData, ImplementedPop
+from eemilib.util.markdown import (
+    DELTA_E_TR,
+    E_0,
+    E_MAX,
+    EC_1,
+    K_S,
+    K_SE,
+    SIGMA_LOW,
+    SIGMA_MAX,
+    rst_math,
+)
 from numpy.typing import NDArray
 from scipy.optimize import least_squares
 
@@ -53,71 +64,71 @@ class Vaughan(Model):
     )
     initial_parameters = {
         "E_0": {
-            "markdown": r"E_0",
+            "markdown": E_0,
             "unit": "eV",
             "value": 12.5,
             "description": r"Threshold energy. By default, locked to "
             + r":math:`12.5\mathrm{\,eV}`. If unlocked, will be fitted to "
-            + r"retrieve :math:`E_{c,\,1}`.",
+            + f"retrieve {rst_math(EC_1)}.",
             "is_locked": True,
         },
         "E_max": {
-            "markdown": r"E_\mathrm{max}",
+            "markdown": E_MAX,
             "unit": "eV",
             "value": 100.0,
             "lower_bound": 0.0,
             "description": "Energy at maximum TEEY.",
         },
         "delta_E_transition": {
-            "markdown": r"\Delta E_{tr}",
+            "markdown": DELTA_E_TR,
             "unit": "eV",
             "value": 1.0,
             "description": "Energy over which we switch from"
-            + r" :math:`\sigma_\mathrm{low}` to actual Vaughan TEEY. Useful for"
+            + f" {rst_math(SIGMA_LOW)} to actual Vaughan TEEY. Useful for"
             + " smoothing the transition. Currently not implemented.",
             "is_locked": True,
         },
         "teey_low": {
-            "markdown": r"\sigma_\mathrm{low}",
+            "markdown": SIGMA_LOW,
             "unit": "1",
             "value": 0.5,
             "lower_bound": 0.0,
-            "description": "TEEY below :math:`E_0`.",
+            "description": f"TEEY below {rst_math(E_0)}.",
             "is_locked": True,
         },
         "teey_max": {
-            "markdown": r"\sigma_\mathrm{max}",
+            "markdown": SIGMA_MAX,
             "unit": "1",
             "value": 1.5,
             "lower_bound": 0.0,
             "description": "Maximum TEEY, directly taken from the measurement.",
         },
         "k_s": {
-            "markdown": r"k_s",
+            "markdown": K_S,
             "unit": "1",
             "value": 1.0,
             "lower_bound": 0.0,
             "upper_bound": 2.0,
-            "description": r"Roughness factor (:math:`\sigma_\mathrm{max}`). "
+            "description": f"Roughness factor ({rst_math(SIGMA_MAX)}). "
             + " Locked by default, but could be used for more precise fits.",
             "is_locked": True,
         },
         "k_se": {
-            "markdown": r"k_{se}",
+            "markdown": K_SE,
             "unit": "1",
             "value": 1.0,
             "lower_bound": 0.0,
             "upper_bound": 2.0,
-            "description": r"Roughness factor (:math:`E_\mathrm{max}`). "
+            "description": f"Roughness factor ({rst_math(E_MAX)}. "
             + " Locked by default, but could be used for more precise fits.",
             "is_locked": True,
         },
         "E_c1": {
-            "markdown": r"E_{c,\,1}",
+            "markdown": EC_1,
             "unit": "eV",
             "value": 25.0,
             "description": r"First crossover energy. Must be provided instead"
-            + " of E_0 for SPARK3D Vaughan.",
+            + f" of {rst_math(E_0)} for SPARK3D Vaughan.",
             "is_locked": False,
         },
     }
