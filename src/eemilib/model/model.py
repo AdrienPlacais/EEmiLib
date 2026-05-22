@@ -17,6 +17,7 @@ import pandas as pd
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data.data_matrix import DataMatrix, MissingDataError
 from eemilib.emission_data.emission_yield import EmissionYield
+from eemilib.emission_data.helper import get_ec1, get_max
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
     ImplementedEmissionData,
@@ -372,6 +373,8 @@ class Model(ABC):
         Ref: :cite:`Fil2016a,Fil2020`.
 
         """
+        evaluations = self._main_teey_parameters()
+
         try:
             emission_yield = data_matrix.teey
         except MissingDataError:
@@ -379,16 +382,37 @@ class Model(ABC):
                 "Emission yield mandatory in order to perform evaluations was "
                 "not found."
             )
-            return {}
-        evaluations = {
-            r"Relative error over $E_{c1}$ [%]": self._error_ec1(
-                emission_yield
-            ),
-            r"$\sigma$ deviation between $E_{c1}$ and $E_{max}$ [%]": self._error_teey(
-                emission_yield
-            ),
-        }
+            return evaluations
+
+        evaluations.update(
+            {
+                r"Relative error over $E_{c1}$ [%]": self._error_ec1(
+                    emission_yield
+                ),
+                r"$\sigma$ deviation between $E_{c1}$ and $E_{max}$ [%]": self._error_teey(
+                    emission_yield
+                ),
+            }
+        )
         return evaluations
+
+    def _main_teey_parameters(self) -> dict[str, float]:
+        r"""Compute main TEEY parameters.
+
+        In particular: $E_{c1}$, $E_{max}$, $\sigma_{max}$.
+
+        """
+        energy = np.linspace(0, 1e3, 10001, dtype=np.float64)
+        theta = np.array([0.0])
+        teey = self.teey(energy, theta)
+
+        e_c1 = get_ec1(teey)
+        e_max, sigma_max = get_max(teey)
+        return {
+            r"Modelled $E_{c1}$ [eV]": e_c1,
+            r"Modelled $E_{max}$ [eV]": e_max,
+            r"Modelled $\sigma_{max}$": sigma_max,
+        }
 
     def _error_ec1(self, emission_yield: EmissionYield) -> float:
         """Compute relative error over first crossover energy in :unit:`%`."""

@@ -119,7 +119,7 @@ model.plot(
   - [ ] Better handling of multiple `Plot data` and `Plot model` buttons push.
   - [x] Display quantitative criteria to assess model quality (e.g., Nicolas
         Fil's criterion)
-  - [ ] Display derived quantities such as crossover energies, maximum TEEY, etc.
+  - [x] Display derived quantities such as crossover energies, maximum TEEY, etc.
 - CI:
   - [x] `PyPI` release.
   - [x] Update installation instructions.

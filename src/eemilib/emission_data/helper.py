@@ -112,36 +112,18 @@ def get_crossover_energies(
     return (ec1, ey_ec1), (ec2, ey_ec2)
 
 
-def get_ec1(
-    normal_ey: pd.DataFrame,
-    min_e: float = -1.0,
-    max_e: float = -1.0,
-    n_interp: int = -1,
-    **kwargs,
-) -> float:
+def get_ec1(normal_ey: pd.DataFrame, **kwargs) -> float:
     """Interpolate the energy vs teey array and give the E_c1."""
-    if min_e < 0.0:
-        min_e = np.nanmin()
-    ene_interp = np.linspace(0.0, 500.0, 10001)
-
-    # Whith Vaughan, and with seey_low = 1, avoid detecting ec1 below E0
-    if min_e is not None:
-        ene_interp = np.linspace(min_e + 1.0, 500.0, 1001)
-
-    teey_interp = np.interp(ene_interp, ey[:, 0], ey[:, 1], left=0.0)
-    idx = np.argmin(np.abs(teey_interp - 1.0))
-    ec1 = ene_interp[idx]
+    energy = normal_ey[col_energy].to_numpy()
+    teey = normal_ey[col_normal].to_numpy()
+    idx = np.argmin(np.abs(teey - 1.0))
+    ec1 = energy[idx]
     return ec1
 
 
-def get_max(teey: np.ndarray, E0: float = None, **kwargs) -> (float, float):
+def get_max(normal_ey: pd.DataFrame, **kwargs) -> tuple[float, float]:
     """Interpolate the energy vs teey array and give the E and sigma max."""
-    ene_interp = np.linspace(0.0, 1e3, 10001)
-
-    # Whith Vaughan, and with seey_low = 1, avoid detecting ec1 below E0
-    if E0 is not None:
-        ene_interp = np.linspace(E0 + 1.0, 1e3, 1001)
-
-    teey_interp = np.interp(ene_interp, teey[:, 0], teey[:, 1], left=0.0)
-    idx = np.argmax(teey_interp)
-    return ene_interp[idx], teey_interp[idx]
+    energy = normal_ey[col_energy].to_numpy()
+    teey = normal_ey[col_normal].to_numpy()
+    idx = np.argmax(teey)
+    return energy[idx], teey[idx]
