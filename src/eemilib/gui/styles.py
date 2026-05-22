@@ -20,6 +20,9 @@ FILE_LIST_MAX_HEIGHT = 40
 MATH_LABEL_DPI = 150
 #: Font size (pt) passed to matplotlib.
 MATH_LABEL_FONTSIZE = 6
+#: Fallback width (px) used for the first render, before the widget has
+#: been laid out and its real width is known.
+MATH_LABEL_DEFAULT_WIDTH_PX = 300
 
 
 def _normalize_key(key: str) -> str:
@@ -70,6 +73,81 @@ def _parse_key(key: str) -> tuple[str, str]:
     return body, units
 
 
+def _render_to_pixmap(
+    text: str,
+    width_px: int,
+    fontsize: int = MATH_LABEL_FONTSIZE,
+    dpi: int = MATH_LABEL_DPI,
+) -> QPixmap | None:
+    """Render *text* as a matplotlib mathtext pixmap of *width_px* pixels.
+
+    Parameters
+    ----------
+    text:
+        Fully composed mathtext string (output of :func:`compose_mathtext`).
+    width_px:
+        Available horizontal space in pixels.  The figure is sized to this
+        width so that matplotlib's ``wrap=True`` breaks lines at the correct
+        point.
+    fontsize:
+        Font size in points.
+    dpi:
+        Rasterisation resolution.
+
+    Returns
+    -------
+    QPixmap or None
+        Rendered pixmap, or ``None`` if rendering failed.
+
+    """
+    if not text or width_px <= 0:
+        return None
+
+    width_in = max(width_px / dpi, 0.1)
+
+    try:
+        # Set figure width to the available column width so wrap=True
+        # breaks lines at exactly the right point.
+        fig = plt.figure(figsize=(width_in, 0.01))
+        t = fig.text(
+            0,
+            0,
+            text,
+            fontsize=fontsize,
+            wrap=True,
+            horizontalalignment="left",
+            verticalalignment="bottom",
+        )
+
+        renderer = fig.canvas.get_renderer()
+        bbox = t.get_window_extent(renderer=renderer).transformed(
+            fig.dpi_scale_trans.inverted()
+        )
+
+        # Clamp to a minimum size to avoid "tile cannot extend outside image".
+        min_inches = 0.1
+        bbox = bbox.expanded(
+            max(min_inches / max(bbox.width, 1e-6), 1.0),
+            max(min_inches / max(bbox.height, 1e-6), 1.0),
+        )
+
+        buf = io.BytesIO()
+        fig.savefig(
+            buf, format="png", dpi=dpi, bbox_inches=bbox, transparent=True
+        )
+        plt.close(fig)
+        buf.seek(0)
+
+        pixmap = QPixmap()
+        pixmap.loadFromData(buf.read())
+        return pixmap
+
+    except Exception as exc:
+        logging.warning(f"mathtext rendering failed for {text!r}.\n{exc}")
+        plt.close("all")
+        return None
+
+
 def _compose_mathtext(body: str, units: str) -> str:
     """Assemble *body* and *units* into a single matplotlib mathtext string.
 
@@ -96,69 +174,65 @@ def _compose_mathtext(body: str, units: str) -> str:
     return " ".join(parts)
 
 
-def _math_text_label(
-    body: str,
-    units: str,
-    fontsize: int = MATH_LABEL_FONTSIZE,
-    dpi: int = MATH_LABEL_DPI,
-) -> QLabel:
-    """Render a mixed plain/math/unit string as a ``QLabel`` pixmap.
+class MathTextLabel(QLabel):
+    """A ``QLabel`` that renders mixed plain/math text as a pixmap.
+
+    Re-renders automatically whenever the widget is resized, so the text
+    always wraps to fit the available column width.
 
     Parameters
     ----------
     body:
-        Mixed plain/math string (may contain any number of ``$...$``
+        Mixed plain/math string (may contain any number of ``$…$``
         environments).
-    units :
+    units:
         Unit string without brackets (may be empty).
-    fontsize :
+    fontsize:
         Font size in points passed to matplotlib.
-    dpi :
-        Resolution used when rasterising the figure.
-
-    Returns
-    -------
-    QLabel
-        Label whose pixmap contains the rendered text, with a transparent
-        background.  Falls back to a plain ``QLabel(text)`` if rendering
-        fails.
+    dpi:
+        Rasterisation resolution.
 
     """
-    text = _compose_mathtext(body, units)
 
-    label = QLabel()
-    label.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
+    def __init__(
+        self,
+        body: str,
+        units: str,
+        fontsize: int = MATH_LABEL_FONTSIZE,
+        dpi: int = MATH_LABEL_DPI,
+        parent=None,
+    ) -> None:
+        super().__init__(parent)
+        self._body = body
+        self._units = units
+        self._fontsize = fontsize
+        self._dpi = dpi
+        self._text = _compose_mathtext(body, units)
+        self._last_width: int = 0
 
-    try:
-        fig = plt.figure(figsize=(0.01, 0.01))
-        t = fig.text(0, 0, text, fontsize=fontsize)
+        self.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
+        # Do an initial render at a sensible default width so the label is
+        # not blank before the first layout pass.
+        self._render(MATH_LABEL_DEFAULT_WIDTH_PX)
 
-        buf = io.BytesIO()
-        fig.savefig(
-            buf,
-            format="png",
-            dpi=dpi,
-            bbox_inches=t.get_window_extent(
-                renderer=fig.canvas.get_renderer()
-            ).transformed(fig.dpi_scale_trans.inverted()),
-            transparent=True,
+    def resizeEvent(self, event) -> None:  # noqa: N802
+        """Re-render the pixmap whenever the widget width changes."""
+        super().resizeEvent(event)
+        new_width = event.size().width()
+        if new_width != self._last_width:
+            self._last_width = new_width
+            self._render(new_width)
+
+    def _render(self, width_px: int) -> None:
+        """Render at *width_px* and update the displayed pixmap."""
+        pixmap = _render_to_pixmap(
+            self._text, width_px, self._fontsize, self._dpi
         )
-        plt.close(fig)
-        buf.seek(0)
-
-        pixmap = QPixmap()
-        pixmap.loadFromData(buf.read())
-        label.setPixmap(pixmap)
-
-    except Exception as exc:
-        logging.warning(
-            f"mathtext rendering failed for {text!r}, "
-            f"falling back to plain text.\n{exc}"
-        )
-        plt.close("all")
-        label.setText(text)
-
-    return label
+        if pixmap is not None:
+            self.setPixmap(pixmap)
+        else:
+            # Fallback: plain text is always readable.
+            self.setText(self._text)
 
 
 def math_text_label_from_key(
@@ -186,6 +260,22 @@ def math_text_label_from_key(
 
     """
     body, units = _parse_key(key)
-    label_body = _math_text_label(body, "", fontsize=fontsize, dpi=dpi)
-    label_unit = _math_text_label("", units, fontsize=fontsize, dpi=dpi)
+    label_body = MathTextLabel(body, "", fontsize=fontsize, dpi=dpi)
+    label_unit = MathTextLabel("", units, fontsize=fontsize, dpi=dpi)
     return label_body, label_unit
+
+
+def format_number(value: float) -> str:
+    """Format the given number.
+
+    Parameters
+    ----------
+    value :
+        Number to format.
+
+    """
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, float):
+        return f"{value:.2f}"
+    return str(value)

@@ -119,7 +119,7 @@ class Vaughan(Model):
             "value": 1.0,
             "lower_bound": 0.0,
             "upper_bound": 2.0,
-            "description": f"Roughness factor ({rst_math(E_MAX)}. "
+            "description": f"Roughness factor ({rst_math(E_MAX)}). "
             + " Locked by default, but could be used for more precise fits.",
             "is_locked": True,
         },

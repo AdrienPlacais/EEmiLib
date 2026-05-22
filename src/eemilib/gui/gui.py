@@ -5,7 +5,8 @@
     Export/Import settings
 
 .. todo::
-    Add measurables at bottom
+    Add description at and of parameters
+    Dynamic boxes for Parameters?
 
 """
 
@@ -23,7 +24,6 @@ from eemilib.gui.file_selection import file_selection_matrix
 from eemilib.gui.helper import (
     PARAMETER_ATTR_TO_POS,
     PARAMETER_POS_TO_ATTR,
-    format_number,
     set_dropdown_value,
     set_help_button_action,
     setup_dropdown,
@@ -36,7 +36,11 @@ from eemilib.gui.model_selection import (
     ModelSettingsDialog,
     model_configuration,
 )
-from eemilib.gui.styles import TITLE_STYLE, math_text_label_from_key
+from eemilib.gui.styles import (
+    TITLE_STYLE,
+    format_number,
+    math_text_label_from_key,
+)
 from eemilib.loader.loader import Loader
 from eemilib.model.model import Model
 from eemilib.plotter.plotter import Plotter
@@ -318,6 +322,10 @@ class MainWindow(QMainWindow):
             label.setObjectName(param.name)  # anchors the name to the widget
             self.model_table.setCellWidget(row, 0, label)
             self.model_table.setCellWidget(row, 1, unit)
+            description, _ = math_text_label_from_key(param.description)
+            self.model_table.setCellWidget(
+                row, PARAMETER_ATTR_TO_POS["description"], description
+            )
 
             for attr in ("lower_bound", "upper_bound"):
                 col = PARAMETER_ATTR_TO_POS[attr]

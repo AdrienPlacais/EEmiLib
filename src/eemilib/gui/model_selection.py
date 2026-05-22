@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QGroupBox,
+    QHeaderView,
     QLabel,
     QTableWidget,
     QVBoxLayout,
@@ -29,6 +30,17 @@ def model_configuration() -> tuple[QGroupBox, QTableWidget]:
     model_table.setHorizontalHeaderLabels(headers)
     model_table.setMaximumHeight(1000)
     model_table.setMinimumHeight(200)
+    model_table.setAlternatingRowColors(True)
+
+    header = model_table.horizontalHeader()
+    for attr, col in PARAMETER_ATTR_TO_POS.items():
+        mode = (
+            QHeaderView.Stretch
+            if attr == "description"
+            else QHeaderView.ResizeToContents
+        )
+        header.setSectionResizeMode(col, mode)
+
     layout.addWidget(model_table)
 
     group.setLayout(layout)

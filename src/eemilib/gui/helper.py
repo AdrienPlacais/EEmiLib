@@ -224,22 +224,6 @@ def _open_help(obj: Any) -> None:
     QDesktopServices.openUrl(QUrl(url))
 
 
-def format_number(value: float) -> str:
-    """Format the given number.
-
-    Parameters
-    ----------
-    value :
-        Number to format.
-
-    """
-    if isinstance(value, int):
-        return str(value)
-    if isinstance(value, float):
-        return f"{value:.2f}"
-    return str(value)
-
-
 # Associate Parameters attributes with their column position
 # Note that "name" is the key in the Model.parameters dict rather than the
 # Parameter.name attribute (which is not consistent)
@@ -250,6 +234,7 @@ PARAMETER_ATTR_TO_POS = {
     "lower_bound": 3,
     "upper_bound": 4,
     "lock": 5,
+    "description": 6,
 }
 
 #: Maps column position in list of parameters to the corresponding Parameter
