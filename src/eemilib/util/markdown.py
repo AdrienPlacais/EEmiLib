@@ -2,6 +2,9 @@
 
 MAX = r"\mathrm{max}"
 LOW = r"\mathrm{low}"
+SE = r"\mathrm{SE}"
+EBE = r"\mathrm{EBE}"
+IBE = r"\mathrm{IBE}"
 
 DELTA_E_TR = r"\Delta E_{tr}"
 DIFFUSION_LENGTH = "d"
@@ -21,6 +24,44 @@ SIGMA_LOW = f"{SIGMA}_{LOW}"
 SIGMA_MAX = f"{SIGMA}_{MAX}"
 TEMPERATURE = "T"
 W_F = "W_f"
+
+
+# =============================================================================
+# Furman
+# =============================================================================
+# Notations
+BS = r"\mathrm{bs}"
+NORMAL_DELTA_MAX = rf"\delta_{MAX}"
+NORMAL_ETA_E_MAX = r"\eta_{" + MAX + "}"
+RD = r"\mathrm{rd}"
+TS = r"\mathrm{ts}"
+
+# SE
+DELTA_TS = r"\hat \delta_" + TS
+NORMAL_E_MAX_SE = "E_{" + rf"{MAX},\,{SE}" + "}"
+S = "s"
+T1 = "t_1"
+T2 = "t_2"
+T3 = "t_3"
+T4 = "t_4"
+
+# EBE
+NORMAL_E_MAX_EBE = "E_{" + rf"{MAX},\,{EBE}" + "}"
+P1_HAT = r"\hat P_{1,\," + BS + "}"
+P1_INF_EBE = r"P_{1,\," + BS + r"}\left{ \infty \right}"
+SIGMA = r"\sigma_\mathrm{bs}"
+W = "W"
+P = "p"
+E1 = "e_1"
+E2 = "e_2"
+
+# IBE
+NORMAL_E_MAX_IBE = "E_{" + rf"{MAX},\,{IBE}" + "}"
+P1_INF_IBE = r"P_{1,\," + RD + r"}\left{ \infty \right}"
+R = "r"
+Q = "q"
+R1 = "r_1"
+R2 = "r_2"
 
 
 def rst_math(key: str) -> str:
