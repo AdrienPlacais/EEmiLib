@@ -17,9 +17,9 @@ from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
-    IMPLEMENTED_POP,
     ImplementedEmissionData,
     ImplementedPop,
+    col_energy,
 )
 from eemilib.util.markdown import (
     DELTA_MAX,
@@ -165,7 +165,7 @@ class FurmanPivi(Model):
         "normal_e_max_ebe": {
             "markdown": NORMAL_E_MAX_EBE,
             "unit": "eV",
-            "value": 00.0,
+            "value": 0.0,
             "lower_bound": 0.0,
             "description": "Energy where EBEEY is maximum at normal incidence.",
             "is_locked": True,
@@ -367,8 +367,10 @@ class FurmanPivi(Model):
             for j, the in enumerate(theta):
                 out[i, j] = ey_func(ene, the, **self.parameters)
 
-        out_dict = {f"{the} [deg]": out[:, j] for j, the in enumerate(theta)}
-        out_dict["Energy [eV]"] = energy
+        out_dict = {
+            col_energy: energy,
+            **{f"{the} [deg]": out[:, j] for j, the in enumerate(theta)},
+        }
         return pd.DataFrame(out_dict)
 
     def find_optimal_parameters(

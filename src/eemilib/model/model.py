@@ -479,6 +479,8 @@ def _dummy_df(
     n_energy = len(energy)
     n_theta = len(theta)
     out = np.zeros((n_energy, n_theta))
-    out_dict = {f"{the} [deg]": out[:, j] for the, j in enumerate(theta)}
-    out_dict["Energy [eV]"] = energy
+    out_dict = {
+        col_energy: energy,
+        **{f"{the} [deg]": out[:, j] for j, the in enumerate(theta)},
+    }
     return pd.DataFrame(out_dict)
