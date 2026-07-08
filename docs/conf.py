@@ -93,6 +93,8 @@ intersphinx_aliases = {
     "NDArray": "numpy.typing.NDArray",
 }
 
+mathjax3_config = {"tex": {"macros": {"degree": r"{^{\circ}}"}}}
+
 # -- Parameters for sphinx-autodoc-typehints ----------------------------------
 typehints_fully_qualified = False
 
