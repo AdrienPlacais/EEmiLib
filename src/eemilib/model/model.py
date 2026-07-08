@@ -117,7 +117,11 @@ class Model(ABC):
         *args,
         **kwargs,
     ) -> pd.DataFrame:
-        r"""Compute |TEEY| :math:`\sigma`."""
+        r"""Compute |TEEY| :math:`\sigma`.
+
+        Under the hood, it calls :meth:`get_data`.
+
+        """
         teey = self.get_data(
             "all",
             "Emission Yield",
@@ -138,7 +142,11 @@ class Model(ABC):
         *args,
         **kwargs,
     ) -> pd.DataFrame:
-        r"""Compute |SEEY| :math:`\delta`."""
+        r"""Compute |SEEY| :math:`\delta`.
+
+        Under the hood, it calls :meth:`get_data`.
+
+        """
         seey = self.get_data(
             "SE", "Emission Yield", energy=energy, theta=theta, *args, **kwargs
         )
@@ -154,7 +162,11 @@ class Model(ABC):
         *args,
         **kwargs,
     ) -> pd.DataFrame:
-        r"""Compute |SEs| emission energy distribution."""
+        r"""Compute |SEs| emission energy distribution.
+
+        Under the hood, it calls :meth:`get_data`.
+
+        """
         se_distrib = self.get_data(
             "SE",
             "Emission Energy",
@@ -273,18 +285,18 @@ class Model(ABC):
             return plotter.plot_emission_yield(
                 to_plot,
                 axes=axes,
-                ls="--",
                 grid=grid,
                 population=population,
+                is_model=True,
                 **kwargs,
             )
         if emission_data_type == "Emission Energy":
             return plotter.plot_emission_energy_distribution(
                 to_plot,
                 axes=axes,
-                ls="--",
                 grid=grid,
                 population=population,
+                is_model=True,
                 **kwargs,
             )
         raise NotImplementedError

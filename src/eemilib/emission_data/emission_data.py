@@ -22,11 +22,7 @@ from numpy.typing import NDArray
 class EmissionData(ABC):
     """A yield, energy distribution or angular distribution."""
 
-    def __init__(
-        self,
-        population: ImplementedPop,
-        data: pd.DataFrame,
-    ) -> None:
+    def __init__(self, population: ImplementedPop, data: pd.DataFrame) -> None:
         """Instantiate the data.
 
         Parameters
