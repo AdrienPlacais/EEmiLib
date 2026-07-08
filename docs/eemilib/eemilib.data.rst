@@ -14,4 +14,5 @@ Subpackages
 
    eemilib.data.ag
    eemilib.data.cu
+   eemilib.data.pec
    eemilib.data.reference_ag

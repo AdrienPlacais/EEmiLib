@@ -14,6 +14,7 @@ Submodules
 
    eemilib.model.chung_and_everhart
    eemilib.model.dionne
+   eemilib.model.furman_pivi
    eemilib.model.maxwellian
    eemilib.model.model
    eemilib.model.parameter
