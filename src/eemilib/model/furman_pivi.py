@@ -8,12 +8,19 @@ This is an empirical model developed by Dionne :cite:`Furman2002,Furman2013`.
 
 import logging
 import math
-from typing import Any, TypedDict
+from typing import Any, Callable, TypedDict
 
+import numpy as np
+import pandas as pd
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
+from eemilib.util.constants import (
+    IMPLEMENTED_POP,
+    ImplementedEmissionData,
+    ImplementedPop,
+)
 from eemilib.util.markdown import (
     DELTA_MAX,
     DELTA_MAX_FP,
@@ -41,6 +48,7 @@ from eemilib.util.markdown import (
     S,
     W,
 )
+from numpy.typing import NDArray
 
 
 class FurmanPiviParameters(TypedDict):
@@ -84,7 +92,7 @@ class FurmanPiviParameters(TypedDict):
 class FurmanPivi(Model):
     """Define the Furman and Pivi model :cite:`Furman2002,Furman2013`."""
 
-    emission_data_types = ["Emission Yield"]
+    emission_data_types = ["Emission Yield", "Emission Energy"]
     populations = ["EBE", "IBE", "SE"]
     considers_energy = True
     is_3d = True
@@ -107,7 +115,7 @@ class FurmanPivi(Model):
             "is_locked": True,
             "furman_pivi_notation": NORMAL_E_MAX_SE_FP,
         },
-        "normal_seey_max": {
+        "normal_delta_max": {
             "markdown": DELTA_MAX,
             "unit": "1",
             "value": 1.22,
@@ -297,9 +305,6 @@ class FurmanPivi(Model):
         if parameters_values is not None:
             self.set_parameters_values(parameters_values)
 
-        self._func = None
-        raise ValueError("_func should not be None")
-
     @classmethod
     def _generate_parameter_docs(cls) -> str:
         """Generate documentation for the :class:`.Parameter`.
@@ -333,6 +338,43 @@ class FurmanPivi(Model):
             ]
             doc_lines += doc
         return "\n".join(doc_lines)
+
+    def get_data(
+        self,
+        population: ImplementedPop,
+        emission_data_type: ImplementedEmissionData,
+        energy: NDArray[np.float64],
+        theta: NDArray[np.float64],
+        *args,
+        **kwargs,
+    ) -> pd.DataFrame | None:
+        """Return desired data according to current model."""
+        if emission_data_type == "Emission Angle":
+            return super().get_data(
+                population=population,
+                emission_data_type=emission_data_type,
+                energy=energy,
+                theta=theta,
+                *args,
+                **kwargs,
+            )
+        if emission_data_type == "Emission Energy":
+            raise NotImplementedError("Emission Energy not yet implemented.")
+
+        ey_func = EMISSION_YIELD_FUNCS[population]
+        out = np.zeros((len(energy), len(theta)))
+        for i, ene in enumerate(energy):
+            for j, the in enumerate(theta):
+                out[i, j] = ey_func(ene, the, **self.parameters)
+
+        out_dict = {f"{the} [deg]": out[:, j] for j, the in enumerate(theta)}
+        out_dict["Energy [eV]"] = energy
+        return pd.DataFrame(out_dict)
+
+    def find_optimal_parameters(
+        self, data_matrix: DataMatrix, **kwargs
+    ) -> None:
+        raise NotImplementedError
 
     def evaluate(self, data_matrix: DataMatrix) -> dict[str, float]:
         """Evaluate the quality of the model using Fil criterions.
@@ -508,8 +550,8 @@ def seey(
 def ebeey_normal(
     ene: float,
     normal_e_max_ebe: Parameter,
-    P1_hat: Parameter,
-    P1_inf_ebe: Parameter,
+    p_1_hat: Parameter,
+    p_1_inf_ebe: Parameter,
     W: Parameter,
     p: Parameter,
 ) -> float:
@@ -539,7 +581,7 @@ def ebeey_normal(
 
     """
     _in_exp = (abs(ene - normal_e_max_ebe.value) / W.value) ** p.value
-    return P1_inf_ebe.value + (P1_hat.value - P1_inf_ebe.value) * math.exp(
+    return p_1_inf_ebe.value + (p_1_hat.value - p_1_inf_ebe.value) * math.exp(
         -_in_exp / p.value
     )
 
@@ -548,8 +590,8 @@ def ebeey(
     ene: float,
     the: float,
     normal_e_max_ebe: Parameter,
-    P1_hat: Parameter,
-    P1_inf_ebe: Parameter,
+    p_1_hat: Parameter,
+    p_1_inf_ebe: Parameter,
     W: Parameter,
     p: Parameter,
     e_1: Parameter,
@@ -568,8 +610,8 @@ def ebeey(
         at_normal=ebeey_normal(
             ene=ene,
             normal_e_max_ebe=normal_e_max_ebe,
-            P1_hat=P1_hat,
-            P1_inf_ebe=P1_inf_ebe,
+            p_1_hat=p_1_hat,
+            p_1_inf_ebe=p_1_inf_ebe,
             W=W,
             p=p,
         ),
@@ -588,7 +630,7 @@ def ebe_energy_distribution(*args, **kwargs):
 def ibeey_normal(
     ene: float,
     normal_e_max_ibe: Parameter,
-    P1_inf_ibe: Parameter,
+    p_1_inf_ibe: Parameter,
     r: Parameter,
 ) -> float:
     r"""Compute |IBEEY| at normal incidence.
@@ -610,7 +652,7 @@ def ibeey_normal(
             }
 
     """
-    return P1_inf_ibe.value * (
+    return p_1_inf_ibe.value * (
         1 - math.exp(-((ene / normal_e_max_ibe.value) ** r.value))
     )
 
@@ -619,7 +661,7 @@ def ibeey(
     ene: float,
     the: float,
     normal_e_max_ibe: Parameter,
-    P1_inf_ibe: Parameter,
+    p_1_inf_ibe: Parameter,
     r: Parameter,
     r_1: Parameter,
     r_2: Parameter,
@@ -637,7 +679,7 @@ def ibeey(
         at_normal=ibeey_normal(
             ene=ene,
             normal_e_max_ibe=normal_e_max_ibe,
-            P1_inf_ibe=P1_inf_ibe,
+            p_1_inf_ibe=p_1_inf_ibe,
             r=r,
         ),
         a_1=r_1,
@@ -706,6 +748,23 @@ def at_theta_incidence(
     return at_normal * (
         1 + a_1.value * math.cos(math.radians(the)) ** a_2.value
     )
+
+
+def teey(ene: float, the: float, *args, **kwargs) -> float:
+    """Compute |TEEY|."""
+    return (
+        seey(ene, the, *args, **kwargs)
+        + ebeey(ene, the, *args, **kwargs)
+        + ibeey(ene, the, *args, **kwargs)
+    )
+
+
+EMISSION_YIELD_FUNCS: dict[ImplementedPop, Callable] = {
+    "SE": seey,
+    "EBE": ebeey,
+    "IBE": ibeey,
+    "all": teey,
+}
 
 
 # Append dynamically generated docs to the module docstring
