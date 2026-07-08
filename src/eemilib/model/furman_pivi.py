@@ -6,6 +6,7 @@ This is an empirical model developed by Dionne :cite:`Furman2002,Furman2013`.
 
 """
 
+import logging
 import math
 from typing import Any, TypedDict
 
@@ -20,8 +21,10 @@ from eemilib.util.markdown import (
     E2,
     NORMAL_E_MAX_EBE,
     NORMAL_E_MAX_IBE,
+    NORMAL_E_MAX_IBE_FP,
     NORMAL_E_MAX_SE,
     NORMAL_E_MAX_SE_FP,
+    P1_HAT,
     P1_INF_EBE,
     P1_INF_IBE,
     R1,
@@ -59,7 +62,6 @@ class FurmanPiviParameters(TypedDict):
     # EBE
     # =========================================================================
     normal_e_max_ebe: Parameter
-    normal_eta_e_max: Parameter
     W: Parameter
     e1: Parameter
     e2: Parameter
@@ -159,13 +161,18 @@ class FurmanPivi(Model):
             "lower_bound": 0.0,
             "description": "Energy where EBEEY is maximum at normal incidence.",
             "is_locked": True,
+            "furman_pivi_notation": NORMAL_E_MAX_IBE_FP,
         },
         "p_1_hat": {
-            "markdown": P1_INF_EBE,
+            "markdown": P1_HAT,
             "unit": "1",
             "value": 0.5,
             "lower_bound": 0.0,  # TODO: check min/max values
-            "description": "Some kind of probability in EBEEY energy fit. Maybe a peak maximum?",  # TODO: check meaning
+            "description": (
+                "Some kind of probability in EBEEY energy fit. Maybe a peak maximum? "
+                f"Must be bigger than :math:`{P1_INF_EBE}`, which is "
+                "currently not enforced."
+            ),  # TODO: check meaning
             "is_locked": True,
         },
         "sigma": {
@@ -180,7 +187,11 @@ class FurmanPivi(Model):
             "unit": "1",
             "value": 0.07,
             "lower_bound": 0.0,  # TODO: check min/max values
-            "description": "Some kind of probability in EBEEY energy fit.",  # TODO: check meaning
+            "description": (
+                "Some kind of probability in EBEEY energy fit. "
+                f"Must be lower than :math:`{P1_HAT}`, which is currently "
+                "not enforced."
+            ),  # TODO: check meaning
         },
         "W": {
             "markdown": W,
@@ -358,6 +369,9 @@ def _add_furman_pivi_notation(
     )
 
 
+# =============================================================================
+# SEs
+# =============================================================================
 def delta_max(
     the: float,
     normal_delta_max: Parameter,
@@ -378,18 +392,19 @@ def delta_max(
        \hat \delta(\theta_0) = \hat \delta_{\mathrm{ts}}
        \left[1 + t_1 \left(1 - \cos^{t_2}\theta_0 \right) \right]
 
-    """
-    if abs(the) < tol:
-        return normal_delta_max.value
+    See Also
+    --------
+    :func:`at_theta_incidence`
 
-    return normal_delta_max.value * (
-        1 + t1.value * (1 - math.cos(the) ** t2.value)
+    """
+    return at_theta_incidence(
+        the=the, at_normal=normal_delta_max, a_1=t1, a_2=t2, tol=tol, **kwargs
     )
 
 
-def e_max_ts(
+def e_max_se(
     the: float,
-    normal_e_max_ts: Parameter,
+    normal_e_max_se: Parameter,
     t3: Parameter,
     t4: Parameter,
     tol: float = 1e-8,
@@ -407,13 +422,13 @@ def e_max_ts(
        \hat E(\theta_0) = \hat E_{\mathrm{ts}}
        \left[1 + t_3 \left(1 - \cos^{t_4}\theta_0 \right) \right]
 
+    See Also
+    --------
+    :func:`at_theta_incidence`
 
     """
-    if abs(the) < tol:
-        return normal_e_max_ts.value
-
-    return normal_e_max_ts.value * (
-        1 + t3.value * (1 - math.cos(the) ** t4.value)
+    return at_theta_incidence(
+        the=the, at_normal=normal_e_max_se, a_1=t3, a_2=t4, tol=tol, **kwargs
     )
 
 
@@ -433,7 +448,7 @@ def _d_func(x: float, s: Parameter) -> float:
 def seey(
     ene: float,
     the: float,
-    normal_e_max_ts: Parameter,
+    normal_e_max_se: Parameter,
     normal_delta_max: Parameter,
     s: Parameter,
     t1: Parameter,
@@ -458,9 +473,9 @@ def seey(
         tol=tol,
         **kwargs,
     )
-    e_max = e_max_ts(
+    e_max = e_max_se(
+        normal_e_max_se=normal_e_max_se,
         the=the,
-        normal_e_max_ts=normal_e_max_ts,
         t3=t3,
         t4=t4,
         tol=tol,
@@ -468,6 +483,107 @@ def seey(
     )
 
     return seey_max * _d_func(ene / e_max, s=s)
+
+
+# =============================================================================
+# EBEs
+# =============================================================================
+def ebeey_normal(
+    ene: float,
+    normal_e_max_ebe: Parameter,
+    P1_hat: Parameter,
+    P1_inf_ebe: Parameter,
+    W: Parameter,
+    p: Parameter,
+) -> float:
+    r"""Compute |EBEEY| at normal incidence.
+
+    .. math::
+       \eta_e(E,\,\theta=0) =
+            P_{1,\,e}(\infty)
+            + \left[ \hat P_{1,\,e} - P_{1,\,e}(\infty) \right]
+            \mathrm{e}^{
+                - \left( \left| E - E_{\mathrm{max},\,\mathrm{EBE}} \right|
+                  / W \right)^p
+                  / p
+            }
+
+    In Furman and Pivi paper :cite:`Furman2002`, this is Eq. (25):
+
+    .. math::
+       \delta_e(E_0,\,0) =
+            P_{1,\,e}(\infty)
+            + \left[ \hat P_{1,\,e} - P_{1,\,e}(\infty) \right]
+            \mathrm{e}^{
+                - \left( \left| E_0 - \hat E_e \right|
+                  / W \right)^p
+                  / p
+            }
+
+    """
+    _in_exp = (abs(ene - normal_e_max_ebe.value) / W.value) ** p.value
+    return P1_inf_ebe.value + (P1_hat.value - P1_inf_ebe.value) * math.exp(
+        -_in_exp / p.value
+    )
+
+
+# =============================================================================
+# Generic
+# =============================================================================
+def at_theta_incidence(
+    the: float,
+    at_normal: float | Parameter,
+    a_1: Parameter,
+    a_2: Parameter,
+    tol: float = 1e-8,
+    **kwargs,
+) -> float:
+    r"""Compute given quantity at non-normal incidence.
+
+    This function is used in calculations of |SEEY| peak, |SEEY| peak position,
+    |EBEEY|, |IBEEY|:
+
+    .. math::
+       x(E,\,\theta) =
+            x(E,\,\theta=0)
+            \left[1 + a_1 \left(1 - \cos^{a_2}\theta \right) \right]
+
+    In Furman and Pivi paper :cite:`Furman2002`, this is used for Eq. (47a),
+    (47b), (48a), (48b).
+
+    This relation is valid for incident angles in the range
+    :math:`0\degree \leq \theta \lesssim 84\degree`.
+
+    Parameters
+    ----------
+    the :
+        Incidence angle in :unit:`\degree`.
+    at_normal :
+        Quantity at :math:`\theta = 0\degree`.
+    a_1 :
+        Scaling parameter.
+    a_2 :
+        Exponent parameter.
+    tol :
+        Angle limit under which we consider incidence angle to be normal.
+
+    Return
+    ------
+        ``at_normal`` but at :math:`\theta` incidence.
+
+    """
+    if isinstance(at_normal, Parameter):
+        at_normal = at_normal.value
+
+    if abs(the) < tol:
+        return at_normal
+
+    if abs(the) >= 84.0:
+        logging.warning("Relation invalid for angles greater than 84 degrees.")
+
+    return at_normal * (
+        1 + a_1.value * math.cos(math.radians(the)) ** a_2.value
+    )
 
 
 # Append dynamically generated docs to the module docstring

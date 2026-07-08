@@ -30,8 +30,8 @@ W_F = "W_f"
 # Furman
 # =============================================================================
 # Notations
-BS = r"\mathrm{bs}"
-RD = r"\mathrm{rd}"
+BS = r"\mathrm{e}"  # 'bs' in CST, 'e' in Furman and Pivi paper
+RD = r"\mathrm{r}"  # 'rd' in CST, 'r' in Furman and Pivi paper
 TS = r"\mathrm{ts}"
 
 # SE
@@ -47,9 +47,10 @@ T4 = "t_4"
 
 # EBE
 NORMAL_E_MAX_EBE = "E_{" + rf"{MAX},\,{EBE}" + "}"
+NORMAL_E_MAX_EBE_FP = r"\hat E_e"
 P1_HAT = r"\hat P_{1,\," + BS + "}"
 P1_INF_EBE = r"P_{1,\," + BS + r"}\left( \infty \right)"
-SIGMA = r"\sigma_\mathrm{bs}"
+SIGMA = rf"\sigma_{BS}"
 W = "W"
 P = "p"
 E1 = "e_1"
@@ -57,6 +58,7 @@ E2 = "e_2"
 
 # IBE
 NORMAL_E_MAX_IBE = "E_{" + rf"{MAX},\,{IBE}" + "}"
+NORMAL_E_MAX_IBE_FP = rf"\hat E_{RD}"
 P1_INF_IBE = r"P_{1,\," + RD + r"}\left( \infty \right)"
 R = "r"
 Q = "q"
