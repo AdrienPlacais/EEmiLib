@@ -2,7 +2,7 @@ r"""Create the Furman and Pivi model, to compute |SEEY|, |EBEEY|, |IBEEY|.
 
 Also energy emission distributions. Even angular distributions?
 
-This is an empirical model developed by Dionne :cite:`Furman2022,Furman2013`.
+This is an empirical model developed by Dionne :cite:`Furman2002,Furman2013`.
 
 """
 
@@ -14,12 +14,14 @@ from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 from eemilib.util.markdown import (
-    DELTA_TS,
+    DELTA_MAX,
+    DELTA_MAX_FP,
     E1,
     E2,
     NORMAL_E_MAX_EBE,
     NORMAL_E_MAX_IBE,
     NORMAL_E_MAX_SE,
+    NORMAL_E_MAX_SE_FP,
     P1_INF_EBE,
     P1_INF_IBE,
     R1,
@@ -77,7 +79,7 @@ class FurmanPiviParameters(TypedDict):
 
 
 class FurmanPivi(Model):
-    """Define the Furman and Pivi model :cite:`Furman2022,Furman2013`."""
+    """Define the Furman and Pivi model :cite:`Furman2002,Furman2013`."""
 
     emission_data_types = ["Emission Yield"]
     populations = ["EBE", "IBE", "SE"]
@@ -100,14 +102,16 @@ class FurmanPivi(Model):
             "lower_bound": 0.0,
             "description": "Energy where SEEY is maximum at normal incidence.",
             "is_locked": True,
+            "furman_pivi_notation": NORMAL_E_MAX_SE_FP,
         },
         "normal_seey_max": {
-            "markdown": DELTA_TS,
+            "markdown": DELTA_MAX,
             "unit": "1",
             "value": 1.22,
             "lower_bound": 0.0,
             "description": "Maximum SEEY at normal incidence.",
             "is_locked": True,
+            "furman_pivi_notation": DELTA_MAX_FP,
         },
         "t_1": {
             "markdown": T1,
@@ -267,16 +271,56 @@ class FurmanPivi(Model):
             override the default values set in ``initial_parameters``.
 
         """
-        super().__init__(url_doc_override="manual/models/dionne")
+        super().__init__(url_doc_override="manual/models/furman_pivi")
+
+        for parameters_kwargs in self.initial_parameters.values():
+            _add_furman_pivi_notation(parameters_kwargs)
+
         self.parameters: FurmanPiviParameters = {  # type: ignore
             name: Parameter(**kwargs)  # type: ignore
             for name, kwargs in self.initial_parameters.items()
         }
+
         self._generate_parameter_docs()
         if parameters_values is not None:
             self.set_parameters_values(parameters_values)
 
-        self._func = dionne_func
+        self._func = None
+        raise ValueError("_func should not be None")
+
+    @classmethod
+    def _generate_parameter_docs(cls) -> str:
+        """Generate documentation for the :class:`.Parameter`.
+
+        Override default to add the notation from Furman and Pivi.
+
+        """
+        doc_lines = [
+            "",
+            "Model parameters",
+            "================",
+            "",
+            ".. list-table::",
+            "   :widths: 5 10 5 5 65",
+            "   :header-rows: 1",
+            "",
+            "   * - Parameter",
+            "     - Name",
+            "     - Unit",
+            "     - Initial",
+            "     - Description",
+        ]
+        for name, kwargs in cls.initial_parameters.items():
+            _add_furman_pivi_notation(kwargs)
+            doc = [
+                f"   * - :math:`{kwargs.get('markdown', '')}`",
+                f"     - {name}",
+                f"     - :unit:`{kwargs.get('unit', '')}`",
+                f"     - :math:`{kwargs.get('value', '')}`",
+                f"     - {kwargs.get("description","")}",
+            ]
+            doc_lines += doc
+        return "\n".join(doc_lines)
 
     def evaluate(self, data_matrix: DataMatrix) -> dict[str, float]:
         """Evaluate the quality of the model using Fil criterions.
@@ -285,6 +329,33 @@ class FurmanPivi(Model):
 
         """
         return self._evaluate_for_teey_models(data_matrix)
+
+
+def _add_furman_pivi_notation(
+    parameters_kwargs: dict[str, str | float | bool],
+) -> None:
+    """Modify dict in-place to mention original Furman and Pivi notation.
+
+    Parameters
+    ----------
+    parameters_kwargs :
+        A :class:`.Parameter` kwargs. If a ``"furman_pivi_notation"`` key is
+        found, it is removed and added to the ``"description"`` value --
+        provided that both keys are valid strings.
+
+    """
+    description = parameters_kwargs.get("description")
+    if not isinstance(description, str):
+        return
+    furman_pivi_notation = parameters_kwargs.pop("furman_pivi_notation", None)
+    if not isinstance(furman_pivi_notation, str):
+        return
+    parameters_kwargs["description"] = " ".join(
+        (
+            description,
+            f" Denoted :math:`{furman_pivi_notation}` by Furman and Pivi.",
+        )
+    )
 
 
 def delta_max(
@@ -300,6 +371,12 @@ def delta_max(
     .. math::
        \delta_{\mathrm{max}}(\theta) = \delta_{\mathrm{max}}(\theta=0)
        \left[1 + t_1 \left(1 - \cos^{t_2}\theta \right) \right]
+
+    In Furman and Pivi paper :cite:`Furman2002`, this is Eq. (48a):
+
+    .. math::
+       \hat \delta(\theta_0) = \hat \delta_{\mathrm{ts}}
+       \left[1 + t_1 \left(1 - \cos^{t_2}\theta_0 \right) \right]
 
     """
     if abs(the) < tol:
@@ -323,6 +400,13 @@ def e_max_ts(
     .. math::
        E_{\mathrm{max},\,\delta}(\theta) = E_{\mathrm{max},\,\delta}(\theta=0)
        \left[1 + t_3 \left(1 - \cos^{t_4}\theta \right) \right]
+
+    In Furman and Pivi paper :cite:`Furman2002`, this is Eq. (48b):
+
+    .. math::
+       \hat E(\theta_0) = \hat E_{\mathrm{ts}}
+       \left[1 + t_3 \left(1 - \cos^{t_4}\theta_0 \right) \right]
+
 
     """
     if abs(the) < tol:

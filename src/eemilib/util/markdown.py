@@ -31,14 +31,14 @@ W_F = "W_f"
 # =============================================================================
 # Notations
 BS = r"\mathrm{bs}"
-NORMAL_DELTA_MAX = rf"\delta_{MAX}"
-NORMAL_ETA_E_MAX = r"\eta_{" + MAX + "}"
 RD = r"\mathrm{rd}"
 TS = r"\mathrm{ts}"
 
 # SE
-DELTA_TS = r"\hat \delta_" + TS
+DELTA_MAX = rf"\delta_{MAX}"
+DELTA_MAX_FP = rf"\hat \delta_{TS}"
 NORMAL_E_MAX_SE = "E_{" + rf"{MAX},\,{SE}" + "}"
+NORMAL_E_MAX_SE_FP = rf"\hat E_{TS}"
 S = "s"
 T1 = "t_1"
 T2 = "t_2"
@@ -48,7 +48,7 @@ T4 = "t_4"
 # EBE
 NORMAL_E_MAX_EBE = "E_{" + rf"{MAX},\,{EBE}" + "}"
 P1_HAT = r"\hat P_{1,\," + BS + "}"
-P1_INF_EBE = r"P_{1,\," + BS + r"}\left{ \infty \right}"
+P1_INF_EBE = r"P_{1,\," + BS + r"}\left( \infty \right)"
 SIGMA = r"\sigma_\mathrm{bs}"
 W = "W"
 P = "p"
@@ -57,7 +57,7 @@ E2 = "e_2"
 
 # IBE
 NORMAL_E_MAX_IBE = "E_{" + rf"{MAX},\,{IBE}" + "}"
-P1_INF_IBE = r"P_{1,\," + RD + r"}\left{ \infty \right}"
+P1_INF_IBE = r"P_{1,\," + RD + r"}\left( \infty \right)"
 R = "r"
 Q = "q"
 R1 = "r_1"
