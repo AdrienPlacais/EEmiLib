@@ -1,9 +1,13 @@
 """Define plotter relying on pandas."""
 
+from typing import Any
+
 import matplotlib.pyplot as plt
 import pandas as pd
 from eemilib.plotter.helper import explicit_column_names
-from eemilib.plotter.plotter import Plotter
+from eemilib.plotter.plotter import (
+    Plotter,
+)
 from eemilib.util.constants import ImplementedPop, col_energy, md_ylabel
 from matplotlib.axes import Axes
 
@@ -30,6 +34,7 @@ class PandasPlotter(Plotter):
         *args,
         axes: Axes | None = None,
         population: ImplementedPop | None = None,
+        is_model: bool = True,
         **kwargs,
     ) -> Axes:
         """Plot :class:`.EmissionYield` data with |dfplot| method.
@@ -43,8 +48,11 @@ class PandasPlotter(Plotter):
         axes :
             Axes to re-use if given.
         population :
-            Type of population currently plotted. This is used to make the
-            plot legends more precise.
+            Type of population currently plotted. This is used to set plot
+            legends and linestyles.
+        is_model :
+            Whether data being plotted comes from a model. Used to set plot
+            linestyles.
         kwargs :
             Additional keyword arguments passed to the |dfplot| method.
 
@@ -57,12 +65,15 @@ class PandasPlotter(Plotter):
             emission_data_type="Emission Yield",
         )
         updated = df.rename(columns=explicit, inplace=False)
+        merged_kwargs = self._merge_kwargs(
+            population=population, is_model=is_model, kwargs=kwargs
+        )
         axes = updated.plot(
             *args,
             x=explicit[col_energy],
             ax=axes,
             ylabel=md_ylabel["Emission Yield"],
-            **kwargs,
+            **merged_kwargs,
         )
         assert isinstance(axes, Axes)
         return axes
@@ -73,6 +84,7 @@ class PandasPlotter(Plotter):
         *args,
         axes: Axes | None = None,
         population: ImplementedPop | None = None,
+        is_model: bool = True,
         **kwargs,
     ) -> Axes:
         """Plot :class:`.EmissionEnergyDistribution` data with |dfplot| method.
@@ -88,6 +100,9 @@ class PandasPlotter(Plotter):
         population :
             Type of population currently plotted. This is used to make the
             plot legends more precise.
+        is_model :
+            Whether data being plotted comes from a model. Used to set plot
+            linestyles.
         kwargs :
             Additional keyword arguments passed to the |dfplot| method.
 
@@ -100,12 +115,15 @@ class PandasPlotter(Plotter):
             emission_data_type="Emission Energy",
         )
         df.rename(columns=explicit, inplace=True)
+        merged_kwargs = self._merge_kwargs(
+            population=population, is_model=is_model, kwargs=kwargs
+        )
         axes = df.plot(
             *args,
             x=explicit[col_energy],
             ax=axes,
             ylabel=md_ylabel["Emission Energy"],
-            **kwargs,
+            **merged_kwargs,
         )
         assert isinstance(axes, Axes)
         return axes
@@ -122,3 +140,21 @@ class PandasPlotter(Plotter):
         raise NotImplementedError(
             "Plotting emission angle distribution not implemented yet."
         )
+
+    def _merge_kwargs(
+        self,
+        population: ImplementedPop | None,
+        is_model: bool,
+        kwargs: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Resolve plot kwargs.
+
+        Priority is the following: ``population`` < ``is_model`` < ``kwargs``.
+
+        """
+        merged_kwargs = {}
+        if population is not None:
+            merged_kwargs.update(self.population_styles[population])
+        merged_kwargs.update(self.is_model_styles[is_model])
+        merged_kwargs.update(kwargs)
+        return merged_kwargs
