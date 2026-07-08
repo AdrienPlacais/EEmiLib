@@ -148,8 +148,7 @@ class FurmanPivi(Model):
             "markdown": S,
             "unit": "1",
             "value": 1.813,
-            "lower_bound": 0.0,
-            "upper_bound": 1.0,  # TODO: check min/max values
+            "lower_bound": 1.0 + 1e-12,
             "description": "Parameter in the D function.",
         },
         # =====================================================================
@@ -374,7 +373,7 @@ def _add_furman_pivi_notation(
 # =============================================================================
 # SEs
 # =============================================================================
-def delta_max(
+def seey_max(
     the: float,
     normal_delta_max: Parameter,
     t_1: Parameter,
@@ -385,7 +384,7 @@ def delta_max(
     r"""Compute value of |SEEY| peak at non-normal incidence.
 
     .. math::
-       \delta_{\mathrm{max}}(\theta) = \delta_{\mathrm{max}}(\theta=0)
+       \delta_{\mathrm{max}}(\theta) = \delta_{\mathrm{max}}(\theta=0\degree)
        \left[1 + t_1 \left(1 - \cos^{t_2}\theta \right) \right]
 
     In Furman and Pivi paper :cite:`Furman2002`, this is Eq. (48a):
@@ -420,7 +419,7 @@ def e_max_se(
     r"""Compute position of |SEEY| peak at non-normal incidence.
 
     .. math::
-       E_{\mathrm{max},\,\delta}(\theta) = E_{\mathrm{max},\,\delta}(\theta=0)
+       E_{\mathrm{max},\,\delta}(\theta) = E_{\mathrm{max},\,\delta}(\theta=0\degree)
        \left[1 + t_3 \left(1 - \cos^{t_4}\theta \right) \right]
 
     In Furman and Pivi paper :cite:`Furman2002`, this is Eq. (48b):
@@ -445,7 +444,9 @@ def _d_func(x: float, s: Parameter) -> float:
     .. math::
        D(x) = \frac{sx}{s-1+x^s}
 
-    where :math:`s` is also a Furman and Pivi parameter.
+    where :math:`s` is an adjustable parameter strictly greater than unity.
+
+    In Furman and Pivi paper :cite:`Furman2002`, this is Eq. (32).
 
     """
     s_val = s.value
@@ -469,10 +470,19 @@ def seey(
 
     .. math::
        \delta(E, \theta) = \delta_{\mathrm{max}}(\theta)
-       D\left( \frac{E}{E_{\mathrm{max},\,\delta}(\theta)} \right)
+       D\left( \frac{E}{E_{\mathrm{max},\,\mathrm{SE}}(\theta)} \right)
+
+    where :math:`\delta_{\mathrm{max}}(\theta)` is calculated using
+    :func:`seey_max` and :math:`E_{\mathrm{max},\,\mathrm{SE}}(\theta)` with
+    :func:`e_max_se`.
+
+    In Furman and Pivi paper :cite:`Furman2002`, this is Eq. (31):
+
+    .. math::
+       \delta_{ts} = \hat \delta(\theta_0)D\left[E_0/\hat E(\theta_0)\right]
 
     """
-    seey_max = delta_max(
+    _delta_max = seey_max(
         the=the,
         normal_delta_max=normal_delta_max,
         t_1=t_1,
@@ -489,7 +499,7 @@ def seey(
         **kwargs,
     )
 
-    return seey_max * _d_func(ene / e_max, s=s)
+    return _delta_max * _d_func(ene / e_max, s=s)
 
 
 # =============================================================================
@@ -506,7 +516,7 @@ def ebeey_normal(
     r"""Compute |EBEEY| at normal incidence.
 
     .. math::
-       \eta_e(E,\,\theta=0) =
+       \eta_e(E,\,\theta=0\degree) =
             P_{1,\,e}(\infty)
             + \left[ \hat P_{1,\,e} - P_{1,\,e}(\infty) \right]
             \mathrm{e}^{
@@ -584,7 +594,7 @@ def ibeey_normal(
     r"""Compute |IBEEY| at normal incidence.
 
     .. math::
-       \eta_i(E,\,\theta=0) =
+       \eta_i(E,\,\theta=0\degree) =
             P_{1,\,r}(\infty)
             \mathrm{e}^{
                 -\left( E / E_{\mathrm{max},\,\mathrm{IBE}} \right)^r
@@ -657,7 +667,7 @@ def at_theta_incidence(
 
     .. math::
        x(E,\,\theta) =
-            x(E,\,\theta=0)
+            x(E,\,\theta=0\degree)
             \left[1 + a_1 \left(1 - \cos^{a_2}\theta \right) \right]
 
     In Furman and Pivi paper :cite:`Furman2002`, this is used for Eq. (47a),
