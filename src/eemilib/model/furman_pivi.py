@@ -56,14 +56,14 @@ class FurmanPiviParameters(TypedDict):
     # =========================================================================
     # EBE
     # =========================================================================
-    normal_e_max_ebe: Parameter  # 0.0
-    normal_eta_e_max: Parameter  # 1.9
-    W: Parameter  # 100
-    e1: Parameter  # 0.26
-    e2: Parameter  # 2.0
-    P1_hat: Parameter  # 0.5
-    P1_inf_ebe: Parameter  # 0.7
-    p: Parameter  # 0.9
+    normal_e_max_ebe: Parameter
+    normal_eta_e_max: Parameter
+    W: Parameter
+    e1: Parameter
+    e2: Parameter
+    P1_hat: Parameter
+    P1_inf_ebe: Parameter
+    p: Parameter
 
     # =========================================================================
     # IBE
