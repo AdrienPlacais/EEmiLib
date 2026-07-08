@@ -375,8 +375,8 @@ def _add_furman_pivi_notation(
 def delta_max(
     the: float,
     normal_delta_max: Parameter,
-    t1: Parameter,
-    t2: Parameter,
+    t_1: Parameter,
+    t_2: Parameter,
     tol: float = 1e-8,
     **kwargs,
 ) -> float:
@@ -398,15 +398,20 @@ def delta_max(
 
     """
     return at_theta_incidence(
-        the=the, at_normal=normal_delta_max, a_1=t1, a_2=t2, tol=tol, **kwargs
+        the=the,
+        at_normal=normal_delta_max,
+        a_1=t_1,
+        a_2=t_2,
+        tol=tol,
+        **kwargs,
     )
 
 
 def e_max_se(
     the: float,
     normal_e_max_se: Parameter,
-    t3: Parameter,
-    t4: Parameter,
+    t_3: Parameter,
+    t_4: Parameter,
     tol: float = 1e-8,
     **kwargs,
 ) -> float:
@@ -428,7 +433,7 @@ def e_max_se(
 
     """
     return at_theta_incidence(
-        the=the, at_normal=normal_e_max_se, a_1=t3, a_2=t4, tol=tol, **kwargs
+        the=the, at_normal=normal_e_max_se, a_1=t_3, a_2=t_4, tol=tol, **kwargs
     )
 
 
@@ -451,10 +456,10 @@ def seey(
     normal_e_max_se: Parameter,
     normal_delta_max: Parameter,
     s: Parameter,
-    t1: Parameter,
-    t2: Parameter,
-    t3: Parameter,
-    t4: Parameter,
+    t_1: Parameter,
+    t_2: Parameter,
+    t_3: Parameter,
+    t_4: Parameter,
     tol: float = 1e-8,
     **kwargs,
 ) -> float:
@@ -468,16 +473,16 @@ def seey(
     seey_max = delta_max(
         the=the,
         normal_delta_max=normal_delta_max,
-        t1=t1,
-        t2=t2,
+        t_1=t_1,
+        t_2=t_2,
         tol=tol,
         **kwargs,
     )
     e_max = e_max_se(
         normal_e_max_se=normal_e_max_se,
         the=the,
-        t3=t3,
-        t4=t4,
+        t_3=t_3,
+        t_4=t_4,
         tol=tol,
         **kwargs,
     )
@@ -525,6 +530,49 @@ def ebeey_normal(
     return P1_inf_ebe.value + (P1_hat.value - P1_inf_ebe.value) * math.exp(
         -_in_exp / p.value
     )
+
+
+def ebeey(
+    ene: float,
+    the: float,
+    normal_e_max_ebe: Parameter,
+    P1_hat: Parameter,
+    P1_inf_ebe: Parameter,
+    W: Parameter,
+    p: Parameter,
+    e_1: Parameter,
+    e_2: Parameter,
+    **kwargs,
+) -> float:
+    """Compute |EBEEY|.
+
+    First, we compute |EBEEY| at normal incidence using :func:`ebeey_normal`.
+    Then, we compute it at provided incidence angle using
+    :func:`at_theta_incidence`.
+
+    """
+    return at_theta_incidence(
+        the=the,
+        at_normal=ebeey_normal(
+            ene=ene,
+            normal_e_max_ebe=normal_e_max_ebe,
+            P1_hat=P1_hat,
+            P1_inf_ebe=P1_inf_ebe,
+            W=W,
+            p=p,
+        ),
+        a_1=e_1,
+        a_2=e_2,
+    )
+
+
+def ebe_energy_distribution(*args, **kwargs):
+    return NotImplementedError("PDF of EBEs not implemented yet.")
+
+
+# =============================================================================
+# IBEs
+# =============================================================================
 
 
 # =============================================================================
