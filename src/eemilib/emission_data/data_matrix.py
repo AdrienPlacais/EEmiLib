@@ -183,7 +183,13 @@ class DataMatrix:
         population: ImplementedPop | None = None,
         emission_data_type: ImplementedEmissionData | None = None,
     ) -> None:
-        """Set the data by index or name."""
+        """Set the data by index or name.
+
+        .. todo::
+           ``population`` is already known if emission_data is given.
+           ``emission_data_type`` could be known if emission_data is given.
+
+        """
         if population and emission_data_type:
             row, col = self._natures_to_indexes(
                 population_type=population,
@@ -245,15 +251,16 @@ class DataMatrix:
         self,
         row: int,
         col: int,
-        population: None,
-        emission_data_type: None,
+        population: None = None,
+        emission_data_type: None = None,
     ) -> None | EmissionData | Collection[EmissionData]: ...
 
     @overload
     def get_data(
         self,
-        row: None,
-        col: None,
+        row: None = None,
+        col: None = None,
+        *,
         population: ImplementedPop,
         emission_data_type: Literal["Emission Yield"],
     ) -> None | EmissionYield | Collection[EmissionYield]: ...
@@ -261,8 +268,9 @@ class DataMatrix:
     @overload
     def get_data(
         self,
-        row: None,
-        col: None,
+        row: None = None,
+        col: None = None,
+        *,
         population: ImplementedPop,
         emission_data_type: Literal["Emission Energy"],
     ) -> (
@@ -274,8 +282,9 @@ class DataMatrix:
     @overload
     def get_data(
         self,
-        row: None,
-        col: None,
+        row: None = None,
+        col: None = None,
+        *,
         population: ImplementedPop,
         emission_data_type: Literal["Emission Angle"],
     ) -> (
@@ -287,27 +296,29 @@ class DataMatrix:
     @overload
     def get_data(
         self,
-        row: None,
-        col: None,
-        population: None,
-        emission_data_type: None,
+        row: None = None,
+        col: None = None,
+        population: None = None,
+        emission_data_type: None = None,
     ) -> Collection[EmissionData]: ...
 
     @overload
     def get_data(
         self,
-        row: None,
-        col: None,
+        row: None = None,
+        col: None = None,
+        *,
         population: ImplementedPop,
-        emission_data_type: None,
+        emission_data_type: None = None,
     ) -> Collection[EmissionData]: ...
 
     @overload
     def get_data(
         self,
-        row: None,
-        col: None,
-        population: None,
+        row: None = None,
+        col: None = None,
+        *,
+        population: None = None,
         emission_data_type: ImplementedEmissionData,
     ) -> Collection[EmissionData]: ...
 
