@@ -4,6 +4,10 @@ Also energy emission distributions. Even angular distributions?
 
 This is an empirical model developed by Dionne :cite:`Furman2002,Furman2013`.
 
+.. todo::
+    Energy distributions depend on impact energy, in contrary to Chung and
+    Everhart that were always the same.
+
 """
 
 import logging
@@ -49,6 +53,7 @@ from eemilib.util.markdown import (
     W,
 )
 from numpy.typing import NDArray
+from scipy.special import erf
 
 
 class FurmanPiviParameters(TypedDict):
@@ -622,8 +627,54 @@ def ebeey(
     )
 
 
-def ebe_energy_distribution(*args, **kwargs):
-    return NotImplementedError("PDF of EBEs not implemented yet.")
+def ebe_energy_distribution(
+    impact_energy: float,
+    emission_energies: NDArray[np.float64],
+    the: float,
+    normal_e_max_ebe: Parameter,
+    p_1_hat: Parameter,
+    p_1_inf_ebe: Parameter,
+    W: Parameter,
+    p: Parameter,
+    e_1: Parameter,
+    e_2: Parameter,
+    sigma_e: Parameter,
+    **kwargs,
+) -> NDArray[np.float64]:
+    r"""Compute PDF for |EBEs|.
+
+    This is Eq. (26) in Furman and Pivi paper :cite:`Furman2002`:
+
+    .. math::
+       f_{1,\,e} = \theta(E)\theta(E_0 - E)\delta_e(E_0,\,\theta_0)\frac{
+            2\mathrm{e}^{-\left(E-E_0\right)^2/2\sigma_e^2}
+       }{
+            \sqrt{2\pi}\sigma_e\mathrm{erf}\left(E_0 / \sqrt{2}\sigma_e\right)
+       }
+
+    """
+    energy_diff = impact_energy - emission_energies
+    return (
+        _remove_extrema(impact_energy, emission_energies)
+        * ebeey(
+            ene=impact_energy,
+            the=the,
+            normal_e_max_ebe=normal_e_max_ebe,
+            p_1_hat=p_1_hat,
+            p_1_inf_ebe=p_1_inf_ebe,
+            W=W,
+            p=p,
+            e_1=e_1,
+            e_2=e_2,
+        )
+        * 2
+        * np.exp(-(energy_diff**2) / (2 * sigma_e.value**2))
+        / (
+            math.sqrt(2 * math.pi)
+            * sigma_e.value
+            * erf(impact_energy / (math.sqrt(2) * sigma_e.value))
+        )
+    )
 
 
 # =============================================================================
@@ -749,6 +800,44 @@ def at_theta_incidence(
 
     return at_normal * (
         1 + a_1.value * math.cos(math.radians(the)) ** a_2.value
+    )
+
+
+def _theta_func(x: NDArray[np.float64]) -> NDArray[np.float64]:
+    """Compute the Heaviside step function.
+
+    Parameters
+    ----------
+    x :
+        Input values.
+
+    Returns
+    -------
+        1 where ``x >= 0``, 0 where ``x < 0``.
+
+    """
+    return np.heaviside(x, 1.0)
+
+
+def _remove_extrema(
+    impact_energy: float, emission_energies: NDArray[np.float64]
+) -> NDArray[np.float64]:
+    """Zero out emission energies outside ``[0, impact_energy]``.
+
+    Parameters
+    ----------
+    impact_energy :
+        Impact energy :math:`E_0`.
+    emission_energies :
+        Emission energies :math:`E`.
+
+    Returns
+    -------
+        1 where ``0 <= emission_energies <= impact_energy``, 0 elsewhere.
+
+    """
+    return _theta_func(emission_energies) * _theta_func(
+        impact_energy - emission_energies
     )
 
 
