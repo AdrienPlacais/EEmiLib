@@ -35,7 +35,7 @@ class EmissionData(ABC):
 
         """
         self.doc_url = documentation_url(self)
-        self.population = population
+        self.population: ImplementedPop = population
         self.data = data
         self._n_points = len(self.data)
 
