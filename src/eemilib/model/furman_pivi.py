@@ -20,6 +20,7 @@ from eemilib.util.markdown import (
     E1,
     E2,
     NORMAL_E_MAX_EBE,
+    NORMAL_E_MAX_EBE_FP,
     NORMAL_E_MAX_IBE,
     NORMAL_E_MAX_IBE_FP,
     NORMAL_E_MAX_SE,
@@ -161,7 +162,7 @@ class FurmanPivi(Model):
             "lower_bound": 0.0,
             "description": "Energy where EBEEY is maximum at normal incidence.",
             "is_locked": True,
-            "furman_pivi_notation": NORMAL_E_MAX_IBE_FP,
+            "furman_pivi_notation": NORMAL_E_MAX_EBE_FP,
         },
         "p_1_hat": {
             "markdown": P1_HAT,
@@ -231,6 +232,7 @@ class FurmanPivi(Model):
             "lower_bound": 0.0,
             "description": "Energy where IBEEY is maximum at normal incidence.",
             "is_locked": True,
+            "furman_pivi_notation": NORMAL_E_MAX_IBE_FP,
         },
         "p_1_inf_ibe": {
             "markdown": P1_INF_IBE,
@@ -573,6 +575,68 @@ def ebe_energy_distribution(*args, **kwargs):
 # =============================================================================
 # IBEs
 # =============================================================================
+def ibeey_normal(
+    ene: float,
+    normal_e_max_ibe: Parameter,
+    P1_inf_ibe: Parameter,
+    r: Parameter,
+) -> float:
+    r"""Compute |IBEEY| at normal incidence.
+
+    .. math::
+       \eta_i(E,\,\theta=0) =
+            P_{1,\,r}(\infty)
+            \mathrm{e}^{
+                -\left( E / E_{\mathrm{max},\,\mathrm{IBE}} \right)^r
+            }
+
+    In Furman and Pivi paper :cite:`Furman2002`, this is Eq. (28):
+
+    .. math::
+       \delta_r(E_0,\,0) =
+            P_{1,\,r}(\infty)
+            \mathrm{e}^{
+                -\left( E / E_r \right)^r
+            }
+
+    """
+    return P1_inf_ibe.value * (
+        1 - math.exp(-((ene / normal_e_max_ibe.value) ** r.value))
+    )
+
+
+def ibeey(
+    ene: float,
+    the: float,
+    normal_e_max_ibe: Parameter,
+    P1_inf_ibe: Parameter,
+    r: Parameter,
+    r_1: Parameter,
+    r_2: Parameter,
+    **kwargs,
+) -> float:
+    """Compute |IBEEY|.
+
+    First, we compute |IBEEY| at normal incidence using :func:`ibeey_normal`.
+    Then, we compute it at provided incidence angle using
+    :func:`at_theta_incidence`.
+
+    """
+    return at_theta_incidence(
+        the=the,
+        at_normal=ibeey_normal(
+            ene=ene,
+            normal_e_max_ibe=normal_e_max_ibe,
+            P1_inf_ibe=P1_inf_ibe,
+            r=r,
+        ),
+        a_1=r_1,
+        a_2=r_2,
+    )
+
+
+def ibe_energy_distribution(*args, **kwargs):
+    return NotImplementedError("PDF of IBEs not implemented yet.")
 
 
 # =============================================================================
