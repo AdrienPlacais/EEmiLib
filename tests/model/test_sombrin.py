@@ -8,6 +8,7 @@ import pandas as pd
 import pytest
 from eemilib import teey_reference_ag
 from eemilib.emission_data.data_matrix import DataMatrix
+from eemilib.emission_data.emission_data import EmissionData
 from eemilib.emission_data.emission_yield import EmissionYield
 from eemilib.loader.pandas_loader import PandasLoader
 from eemilib.model.sombrin import Sombrin
@@ -23,7 +24,7 @@ def sombrin_model() -> Sombrin:
 class MockDataMatrix(DataMatrix):
     """Mock a data matrix with only a TEEY."""
 
-    def __init__(self, emission_data):
+    def __init__(self, emission_data: EmissionData) -> None:
         """Set emission yield for 'all' population."""
         self.data_matrix = [
             [None, None, None],
