@@ -18,10 +18,6 @@ This is an empirical model developed by Dionne :cite:`Furman2002,Furman2013`.
 .. todo::
     Warning when |SEEY| exceeds max number of |SEs| :data:`_M_MAX_SECONDARIES`.
 
-.. todo::
-    Save somewhere the settings for Copper and Stainless Steel from the paper.
-    In :mod:`eemilib.data` for example.
-
 """
 
 import logging
