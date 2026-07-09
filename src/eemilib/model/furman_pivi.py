@@ -8,6 +8,13 @@ This is an empirical model developed by Dionne :cite:`Furman2002,Furman2013`.
     Energy distributions depend on impact energy, in contrary to Chung and
     Everhart that were always the same.
 
+.. todo::
+   Separate implementation into two dropdowns in GUI.
+
+.. todo::
+   Store the max number of secondaries in the Model, make it editable, like
+   from the Parameters section in the GUI.
+
 """
 
 import logging
@@ -56,7 +63,20 @@ from numpy.typing import NDArray
 from scipy.special import erf
 from scipy.stats import binom, poisson
 
-PROBABILITY_TO_EMIT_N_SECONDARIES_T = Literal["Poisson", "Binomial"]
+FurmanPiviImplementation = Literal[
+    "poisson-incident",
+    "poisson-penetrated",
+    "binomial-incident",
+    "binomial-penetrated",
+]
+FURMAN_PIVI_IMPLEMENTATIONS = (
+    "poisson-incident",
+    "poisson-penetrated",
+    "binomial-incident",
+    "binomial-penetrated",
+)
+NORMALIZATION_T = Literal["incident", "penetrated"]
+PROBABILITY_TO_EMIT_N_SECONDARIES_T = Literal["poisson", "binomial"]
 #: Max number of |SEs|. In Furman and Pivi paper, this is denoted :math:`M`.
 _M_MAX_SECONDARIES = 10
 
@@ -428,14 +448,24 @@ class FurmanPivi(Model):
             "description": "Exponent parameter in IBEEY impact angle fit.",
         },
     }
+    implementations = FURMAN_PIVI_IMPLEMENTATIONS
 
     def __init__(
-        self, parameters_values: dict[str, Any] | None = None
+        self,
+        implementation: FurmanPiviImplementation = "poisson-incident",
+        parameters_values: dict[str, Any] | None = None,
     ) -> None:
         r"""Instantiate the object.
 
         Parameters
         ----------
+        implementation :
+            Selects the distribution used for the number of |SEs| emitted
+            per event (``"poisson"`` or ``"binomial"``, *cf* Eqs. (37)/(38)
+            in :cite:`Furman2002`) and the normalization used for the
+            associated probabilities (``"incident"`` or ``"penetrated"``,
+            *cf* Eqs. (35) and (43)). Can be changed later with
+            :meth:`set_implementation`.
         parameters_values :
             Contains name of parameters and associated value. If provided, will
             override the default values set in ``initial_parameters``.
@@ -457,6 +487,38 @@ class FurmanPivi(Model):
         self._generate_parameter_docs()
         if parameters_values is not None:
             self.set_parameters_values(parameters_values)
+
+        self._proba_emit_n_se: _PROBA_EMIT_N_SE
+        self._normalization: NORMALIZATION_T
+        self.current_implementation: FurmanPiviImplementation
+        self.set_implementation(implementation)
+
+    def set_implementation(
+        self, implementation: FurmanPiviImplementation
+    ) -> None:
+        r"""Update the |SE| number distribution and probability normalization.
+
+        Parameters
+        ----------
+        implementation :
+            One of :data:`FURMAN_PIVI_IMPLEMENTATIONS`. The part before the
+            ``"-"`` selects the distribution for the number of emitted |SEs|
+            (``"poisson"`` or ``"binomial"``). The part after selects the
+            probability normalization (``"incident"``, *cf* Eq. (35), or
+            ``"penetrated"``, *cf* Eq. (43)).
+
+        """
+        distribution_name, normalization = implementation.split("-")
+        self._proba_emit_n_se = (
+            _set_number_of_secondaries_probability_function(
+                cast(
+                    PROBABILITY_TO_EMIT_N_SECONDARIES_T,
+                    distribution_name,
+                )
+            )
+        )
+        self._normalization = cast(NORMALIZATION_T, normalization)
+        self.current_implementation = implementation
 
     @classmethod
     def _generate_parameter_docs(cls) -> str:
@@ -703,7 +765,7 @@ _PROBA_EMIT_N_SE = Callable[[float, int], float]
 
 
 def _set_number_of_secondaries_probability_function(
-    model: PROBABILITY_TO_EMIT_N_SECONDARIES_T = "Poisson",
+    model: PROBABILITY_TO_EMIT_N_SECONDARIES_T = "poisson",
 ) -> _PROBA_EMIT_N_SE:
     """Set the function that computes probability to emit ``n`` secondaries.
 
@@ -722,7 +784,7 @@ def _set_number_of_secondaries_probability_function(
 
     """
 
-    if model == "Binomial":
+    if model == "binomial":
 
         def probability(seey: float, n: int) -> float:
             return float(
@@ -731,11 +793,11 @@ def _set_number_of_secondaries_probability_function(
 
         return probability
 
-    if model != "Poisson":
+    if model != "poisson":
         logging.warning(
             f"Wrong model for number of emitted electrons. {model = } should "
             f"be in {PROBABILITY_TO_EMIT_N_SECONDARIES_T}. Fall back to "
-            "Poisson model."
+            "'poisson' model."
         )
 
     def probability(seey: float, n: int) -> float:

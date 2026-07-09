@@ -80,16 +80,17 @@ class ModelSettingsDialog(QDialog):
         current = getattr(self._model, "current_implementation", None)
         if not current:
             logging.error(
-                f"{self._model} has no `current_implementation` attribute. Delete its "
-                "`implementations` attribute, or set a `current_implementation`."
+                f"{self._model} has no `current_implementation` attribute. "
+                "Delete its `implementations` attribute, or set a "
+                "`current_implementation`."
             )
             return
 
         set_implementation = getattr(self._model, "set_implementation", None)
         if not set_implementation:
             logging.error(
-                f"{self._model} has no `set_implementation` method. Delete its "
-                "`implementations` attribute, or set a `set_implementation`."
+                f"{self._model} has no `set_implementation` method. Delete its"
+                " `implementations` attribute, or set a `set_implementation`."
             )
             return
 
