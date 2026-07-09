@@ -63,7 +63,7 @@ from eemilib.util.markdown import (
     W,
 )
 from numpy.typing import NDArray
-from scipy.special import erf
+from scipy.special import erf, gammainc
 from scipy.stats import binom, poisson
 
 FurmanPiviImplementation = Literal[
@@ -869,6 +869,37 @@ def _p_n(
     return p_n_se
 
 
+def _regularized_incomplete_gamma(
+    a: float, x: NDArray[np.float64]
+) -> NDArray[np.float64]:
+    r"""Compute the regularized lower incomplete gamma function :math:`P(a,x)`.
+
+    Thin wrapper around :func:`scipy.special.gammainc`, handling the
+    :math:`a=0` edge case with the convention :math:`P(0,\,x) = 1` for
+    :math:`x \geq 0`, stated in Appendix A of :cite:`Furman2002` (just below
+    Eq. (A8)). :func:`scipy.special.gammainc` does not support ``a = 0``
+    directly.
+
+    Parameters
+    ----------
+    a :
+        Shape parameter.
+    x :
+        Upper integration bound(s). Values are clipped to be non-negative,
+        since callers may evaluate this outside the physically valid range
+        (the result is expected to be masked out separately in that case).
+
+    Return
+    ------
+        :math:`P(a, x)`.
+
+    """
+    x_clipped = np.clip(x, 0.0, None)
+    if a == 0.0:
+        return np.ones_like(x_clipped)
+    return gammainc(a, x_clipped)
+
+
 def _set_number_of_secondaries_probability_function(
     model: PROBABILITY_TO_EMIT_N_SECONDARIES_T = "poisson",
 ) -> _PROBA_EMIT_N_SE:
@@ -915,40 +946,92 @@ def se_energy_distribution(
     impact_energy: float,
     the: float,
     emission_energies: NDArray[np.float64],
+    p_ns: list[Parameter],
+    eps_ns: list[Parameter],
     proba_emit_n_se: _PROBA_EMIT_N_SE,
+    normalization: NORMALIZATION_T,
     **kwargs,
 ) -> NDArray[np.float64]:
-    r"""Compute PDF for |SEs|.
+    r"""Compute the aggregate |SE| emitted-energy spectrum.
 
-    This is Eq. (33) in Furman and Pivi paper :cite:`Furman2002`:
+    This is Eq. (52) in Furman and Pivi paper :cite:`Furman2002`:
 
+    .. math::
+       \frac{d\delta_{ts}}{dE} = \sum_{n=1}^{n_\mathrm{max}}
+            \frac{
+                n\,P_{n,\,ts}(E_0)\,(E/\varepsilon_n)^{p_n-1}
+                \mathrm{e}^{-E/\varepsilon_n}
+            }{
+                \varepsilon_n\,\Gamma(p_n)\,P(np_n,\,E_0/\varepsilon_n)
+            }
+            \times P\left[(n-1)p_n,\,(E_0-E)/\varepsilon_n\right]
+
+    where :math:`P(z,\,x)` is the regularized lower incomplete gamma
+    function, computed with :func:`_regularized_incomplete_gamma`, and
+    :math:`P_{n,\,ts}(E_0)` is computed with :func:`_p_n_se`.
+
+    In our notation, :math:`\delta_{ts}` is denoted ``delta``, and the sum
+    runs over the same ``n`` as the provided ``p_ns``/``eps_ns`` lists (so
+    :math:`n_\mathrm{max}` is implicitly ``len(p_ns)``).
 
     Parameters
     ----------
     impact_energy :
         Impact energy of the |PE| in :unit:`eV`.
-    theta :
-        Impact angle of the |PE| in :unit:`\degree`.
+    the :
+        Impact angle of the |PE| in :math:`\degree`.
     emission_energies :
         |SE| emission energies you want the distribution from.
+    p_ns :
+        List of :math:`p_n` parameters, one per :math:`n`, starting at
+        :math:`n=1`.
+    eps_ns :
+        List of :math:`\varepsilon_n` parameters, one per :math:`n`, starting
+        at :math:`n=1`. Must be the same length as ``p_ns``.
     proba_emit_n_se :
-        Function computing probability to emit ``n`` |SEs|. In Furman and Pivi
-        paper :cite:`Furman2002`, this is called :math:`P_{n,\,ts}`.
+        Function computing probability to emit ``n`` |SEs|, *cf*
+        :func:`_set_number_of_secondaries_probability_function`.
+    normalization :
+        Selects Eq. (35) (``"incident"``) or Eq. (43) (``"penetrated"``), *cf*
+        :func:`_p_n_se`.
     kwargs :
-        Other unused parameters.
+        Furman and Pivi |SEEY|, |EBEEY|, |IBEEY| parameters, passed to
+        :func:`seey`, :func:`ebeey`, :func:`ibeey` to compute :math:`\delta`,
+        :math:`\eta_e`, :math:`\eta_i`.
 
     Returns
     -------
-        PDF of |SE|.
+        Aggregate |SE| emitted-energy spectrum.
 
     """
-    raise NotImplementedError
-    return (
-        _theta_func(emission_energies)
-        * F_n
-        * emission_energies ** (p_n - 1)
-        * np.exp(-emission_energies / epsilon_n)
-    )
+    delta = seey(ene=impact_energy, the=the, **kwargs)
+    eta_e = ebeey(ene=impact_energy, the=the, **kwargs)
+    eta_i = ibeey(ene=impact_energy, the=the, **kwargs)
+
+    spectrum = np.zeros_like(emission_energies)
+    for n, (p_n_param, eps_n_param) in enumerate(zip(p_ns, eps_ns), start=1):
+        p_n = p_n_param.value
+        eps_n = eps_n_param.value
+
+        p_n_se = _p_n_se(
+            n, delta, eta_e, eta_i, proba_emit_n_se, normalization
+        )
+
+        normalization_term = math.gamma(p_n) * _regularized_incomplete_gamma(
+            n * p_n, np.array(impact_energy / eps_n)
+        )
+        shape_term = (emission_energies / eps_n) ** (p_n - 1) * np.exp(
+            -emission_energies / eps_n
+        )
+        tail_term = _regularized_incomplete_gamma(
+            (n - 1) * p_n, (impact_energy - emission_energies) / eps_n
+        )
+
+        spectrum += (
+            n * p_n_se * shape_term * tail_term / (eps_n * normalization_term)
+        )
+
+    return _remove_extrema(impact_energy, emission_energies) * spectrum
 
 
 # =============================================================================
