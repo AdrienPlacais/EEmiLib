@@ -71,20 +71,22 @@ intersphinx_mapping = {
 }
 
 rst_prolog = """
+.. |EBEEY| replace:: :ref:`EBEEY <EBE-link>`
+.. |EBEs| replace:: :ref:`EBEs <EBE-link>`
+.. |EBE| replace:: :ref:`EBE <EBE-link>`
+.. |EEs| replace:: :ref:`PEs <notations-link>`
+.. |EE| replace:: :ref:`PE <notations-link>`
+.. |IBEEY| replace:: :ref:`IBEEY <IBE-link>`
+.. |IBEs| replace:: :ref:`IBEs <IBE-link>`
+.. |IBE| replace:: :ref:`IBE <IBE-link>`
+.. |PEs| replace:: :ref:`PEs <notations-link>`
+.. |PE| replace:: :ref:`PE <notations-link>`
+.. |SEEY| replace:: :ref:`SEEY <SE-link>`
+.. |SEs| replace:: :ref:`SEs <SE-link>`
+.. |SE| replace:: :ref:`SE <SE-link>`
+.. |TEEY| replace:: :ref:`TEEY <notations-link>`
 .. |axplot| replace:: :meth:`matplotlib.axes.Axes.plot`
 .. |dfplot| replace:: :meth:`pandas.DataFrame.plot`
-.. |SE| replace:: :ref:`SE <SE-link>`
-.. |SEs| replace:: :ref:`SEs <SE-link>`
-.. |SEEY| replace:: :ref:`SEEY <SE-link>`
-.. |IBE| replace:: :ref:`IBE <IBE-link>`
-.. |IBEs| replace:: :ref:`IBEs <IBE-link>`
-.. |IBEEY| replace:: :ref:`IBEEY <IBE-link>`
-.. |EBE| replace:: :ref:`EBE <EBE-link>`
-.. |EBEs| replace:: :ref:`EBEs <EBE-link>`
-.. |EBEEY| replace:: :ref:`EBEEY <EBE-link>`
-.. |PE| replace:: :ref:`PE <notations-link>`
-.. |PEs| replace:: :ref:`PEs <notations-link>`
-.. |TEEY| replace:: :ref:`TEEY <notations-link>`
 
 """
 
