@@ -165,6 +165,146 @@ class FurmanPivi(Model):
             "lower_bound": 1.0 + 1e-12,
             "description": "Parameter in the D function.",
         },
+        "eps_1": {
+            "markdown": "eps_1",
+            "unit": "1",
+            "value": 3.9,
+            "lower_bound": 0.0,  # TODO: check min/max values
+            "description": ".",
+        },
+        "eps_2": {
+            "markdown": "eps_2",
+            "unit": "1",
+            "value": 6.2,
+            "lower_bound": 0.0,  # TODO: check min/max values
+            "description": ".",
+        },
+        "eps_3": {
+            "markdown": "eps_3",
+            "unit": "1",
+            "value": 13.0,
+            "lower_bound": 0.0,  # TODO: check min/max values
+            "description": ".",
+        },
+        "eps_4": {
+            "markdown": "eps_4",
+            "unit": "1",
+            "value": 8.8,
+            "lower_bound": 0.0,  # TODO: check min/max values
+            "description": ".",
+        },
+        "eps_5": {
+            "markdown": "eps_5",
+            "unit": "1",
+            "value": 6.25,
+            "lower_bound": 0.0,  # TODO: check min/max values
+            "description": ".",
+        },
+        "eps_6": {
+            "markdown": "eps_6",
+            "unit": "1",
+            "value": 2.25,
+            "lower_bound": 0.0,  # TODO: check min/max values
+            "description": ".",
+        },
+        "eps_7": {
+            "markdown": "eps_7",
+            "unit": "1",
+            "value": 9.20,
+            "lower_bound": 0.0,  # TODO: check min/max values
+            "description": ".",
+        },
+        "eps_8": {
+            "markdown": "eps_8",
+            "unit": "1",
+            "value": 5.3,
+            "lower_bound": 0.0,  # TODO: check min/max values
+            "description": ".",
+        },
+        "eps_9": {
+            "markdown": "eps_9",
+            "unit": "1",
+            "value": 17.8,
+            "lower_bound": 0.0,  # TODO: check min/max values
+            "description": ".",
+        },
+        "eps_10": {
+            "markdown": "eps_10",
+            "unit": "1",
+            "value": 10.0,
+            "lower_bound": 0.0,  # TODO: check min/max values
+            "description": ".",
+        },
+        "p_1": {
+            "markdown": "p_1",
+            "unit": "1",
+            "value": 1.6,
+            "lower_bound": 0.0,  # TODO: check min/max values
+            "description": ".",
+        },
+        "p_2": {
+            "markdown": "p_2",
+            "unit": "1",
+            "value": 2.0,
+            "lower_bound": 0.0,  # TODO: check min/max values
+            "description": ".",
+        },
+        "p_3": {
+            "markdown": "p_3",
+            "unit": "1",
+            "value": 1.8,
+            "lower_bound": 0.0,  # TODO: check min/max values
+            "description": ".",
+        },
+        "p_4": {
+            "markdown": "p_4",
+            "unit": "1",
+            "value": 4.7,
+            "lower_bound": 0.0,  # TODO: check min/max values
+            "description": ".",
+        },
+        "p_5": {
+            "markdown": "p_5",
+            "unit": "1",
+            "value": 1.8,
+            "lower_bound": 0.0,  # TODO: check min/max values
+            "description": ".",
+        },
+        "p_6": {
+            "markdown": "p_6",
+            "unit": "1",
+            "value": 2.4,
+            "lower_bound": 0.0,  # TODO: check min/max values
+            "description": ".",
+        },
+        "p_7": {
+            "markdown": "p_7",
+            "unit": "1",
+            "value": 1.8,
+            "lower_bound": 0.0,  # TODO: check min/max values
+            "description": ".",
+        },
+        "p_8": {
+            "markdown": "p_8",
+            "unit": "1",
+            "value": 1.8,
+            "lower_bound": 0.0,  # TODO: check min/max values
+            "description": ".",
+        },
+        "p_9": {
+            "markdown": "p_9",
+            "unit": "1",
+            "value": 2.3,
+            "lower_bound": 0.0,  # TODO: check min/max values
+            "description": ".",
+        },
+        "p_10": {
+            "markdown": "p_10",
+            "unit": "1",
+            "value": 1.8,
+            "lower_bound": 0.0,  # TODO: check min/max values
+            "description": ".",
+        },
         # =====================================================================
         # Elastically Backscattered Electrons (or "Reflected")
         # =====================================================================
