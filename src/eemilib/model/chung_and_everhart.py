@@ -4,7 +4,7 @@ You will need to provide emission energy distribution measurements.
 
 """
 
-from typing import Any, TypedDict
+from typing import Any, TypedDict, cast
 
 import numpy as np
 import pandas as pd
@@ -71,10 +71,14 @@ class ChungEverhart(Model):
 
         """
         super().__init__(url_doc_override="manual/models/chung_and_everhart")
-        self.parameters: ChungEverhartParameters = {  # type: ignore
-            name: Parameter(**kwargs)  # type: ignore
-            for name, kwargs in self.initial_parameters.items()
-        }
+        self.parameters = cast(
+            ChungEverhartParameters,
+            {
+                name: Parameter(**cast(dict, kwargs))
+                for name, kwargs in self.initial_parameters.items()
+            },
+        )
+
         self._generate_parameter_docs()
         if parameters_values is not None:
             self.set_parameters_values(parameters_values)

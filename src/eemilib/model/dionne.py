@@ -17,7 +17,7 @@ Dionne1975`.
 #     )
 
 from functools import partial
-from typing import Any, Literal, TypedDict
+from typing import Any, Literal, TypedDict, cast
 
 import numpy as np
 import pandas as pd
@@ -134,10 +134,14 @@ class Dionne(Model):
         """
         super().__init__(url_doc_override="manual/models/dionne")
         self._energy_loss_model: EnergyLossModel = energy_loss_model
-        self.parameters: DionneParameters = {  # type: ignore
-            name: Parameter(**kwargs)  # type: ignore
-            for name, kwargs in self.initial_parameters.items()
-        }
+
+        self.parameters = cast(
+            DionneParameters,
+            {
+                name: Parameter(**cast(dict, kwargs))
+                for name, kwargs in self.initial_parameters.items()
+            },
+        )
         self._generate_parameter_docs()
         if parameters_values is not None:
             self.set_parameters_values(parameters_values)

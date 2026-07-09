@@ -12,7 +12,7 @@ This is an empirical model developed by Dionne :cite:`Furman2002,Furman2013`.
 
 import logging
 import math
-from typing import Any, Callable, TypedDict
+from typing import Any, Callable, TypedDict, cast
 
 import numpy as np
 import pandas as pd
@@ -61,14 +61,14 @@ class FurmanPiviParameters(TypedDict):
     # True secondary emission
     # =========================================================================
     # Emax for normal SEY. could also be E_ts with a ^
-    normal_e_max_ts: Parameter
+    normal_e_max_se: Parameter
     # normal SEYmax. could also be delta_ts with a ^
     normal_delta_max: Parameter
+    t_1: Parameter
+    t_2: Parameter
+    t_3: Parameter
+    t_4: Parameter
     s: Parameter
-    t1: Parameter
-    t2: Parameter
-    t3: Parameter
-    t4: Parameter
     # Resulting epsN: 1, 2
     # Resulting pN: 1, 2
 
@@ -76,22 +76,23 @@ class FurmanPiviParameters(TypedDict):
     # EBE
     # =========================================================================
     normal_e_max_ebe: Parameter
+    p_1_hat: Parameter
+    sigma: Parameter
+    p_1_inf_ebe: Parameter
     W: Parameter
-    e1: Parameter
-    e2: Parameter
-    P1_hat: Parameter
-    P1_inf_ebe: Parameter
     p: Parameter
+    e_1: Parameter
+    e_2: Parameter
 
     # =========================================================================
     # IBE
     # =========================================================================
     normal_e_max_ibe: Parameter
-    P1_inf_ibe: Parameter
+    p_1_inf_ibe: Parameter
     r: Parameter
     q: Parameter
-    r1: Parameter
-    r2: Parameter
+    r_1: Parameter
+    r_2: Parameter
 
 
 class FurmanPivi(Model):
@@ -284,8 +285,7 @@ class FurmanPivi(Model):
     }
 
     def __init__(
-        self,
-        parameters_values: dict[str, Any] | None = None,
+        self, parameters_values: dict[str, Any] | None = None
     ) -> None:
         r"""Instantiate the object.
 
@@ -301,10 +301,13 @@ class FurmanPivi(Model):
         for parameters_kwargs in self.initial_parameters.values():
             _add_furman_pivi_notation(parameters_kwargs)
 
-        self.parameters: FurmanPiviParameters = {  # type: ignore
-            name: Parameter(**kwargs)  # type: ignore
-            for name, kwargs in self.initial_parameters.items()
-        }
+        self.parameters = cast(
+            FurmanPiviParameters,
+            {
+                name: Parameter(**cast(dict, kwargs))
+                for name, kwargs in self.initial_parameters.items()
+            },
+        )
 
         self._generate_parameter_docs()
         if parameters_values is not None:
@@ -422,7 +425,7 @@ def _add_furman_pivi_notation(
 # =============================================================================
 # SEs
 # =============================================================================
-def seey_max(
+def _seey_max(
     the: float,
     normal_delta_max: Parameter,
     t_1: Parameter,
@@ -457,7 +460,7 @@ def seey_max(
     )
 
 
-def e_max_se(
+def _e_max_se(
     the: float,
     normal_e_max_se: Parameter,
     t_3: Parameter,
@@ -522,8 +525,8 @@ def seey(
        D\left( \frac{E}{E_{\mathrm{max},\,\mathrm{SE}}(\theta)} \right)
 
     where :math:`\delta_{\mathrm{max}}(\theta)` is calculated using
-    :func:`seey_max` and :math:`E_{\mathrm{max},\,\mathrm{SE}}(\theta)` with
-    :func:`e_max_se`.
+    :func:`_seey_max` and :math:`E_{\mathrm{max},\,\mathrm{SE}}(\theta)` with
+    :func:`_e_max_se`.
 
     In Furman and Pivi paper :cite:`Furman2002`, this is Eq. (31):
 
@@ -531,7 +534,7 @@ def seey(
        \delta_{ts} = \hat \delta(\theta_0)D\left[E_0/\hat E(\theta_0)\right]
 
     """
-    _delta_max = seey_max(
+    _delta_max = _seey_max(
         the=the,
         normal_delta_max=normal_delta_max,
         t_1=t_1,
@@ -539,7 +542,7 @@ def seey(
         tol=tol,
         **kwargs,
     )
-    e_max = e_max_se(
+    e_max = _e_max_se(
         normal_e_max_se=normal_e_max_se,
         the=the,
         t_3=t_3,
@@ -554,7 +557,7 @@ def seey(
 # =============================================================================
 # EBEs
 # =============================================================================
-def ebeey_normal(
+def _ebeey_normal(
     ene: float,
     normal_e_max_ebe: Parameter,
     p_1_hat: Parameter,
@@ -607,14 +610,14 @@ def ebeey(
 ) -> float:
     """Compute |EBEEY|.
 
-    First, we compute |EBEEY| at normal incidence using :func:`ebeey_normal`.
+    First, we compute |EBEEY| at normal incidence using :func:`_ebeey_normal`.
     Then, we compute it at provided incidence angle using
     :func:`at_theta_incidence`.
 
     """
     return at_theta_incidence(
         the=the,
-        at_normal=ebeey_normal(
+        at_normal=_ebeey_normal(
             ene=ene,
             normal_e_max_ebe=normal_e_max_ebe,
             p_1_hat=p_1_hat,
@@ -680,7 +683,7 @@ def ebe_energy_distribution(
 # =============================================================================
 # IBEs
 # =============================================================================
-def ibeey_normal(
+def _ibeey_normal(
     ene: float,
     normal_e_max_ibe: Parameter,
     p_1_inf_ibe: Parameter,
@@ -722,14 +725,14 @@ def ibeey(
 ) -> float:
     """Compute |IBEEY|.
 
-    First, we compute |IBEEY| at normal incidence using :func:`ibeey_normal`.
+    First, we compute |IBEEY| at normal incidence using :func:`_ibeey_normal`.
     Then, we compute it at provided incidence angle using
     :func:`at_theta_incidence`.
 
     """
     return at_theta_incidence(
         the=the,
-        at_normal=ibeey_normal(
+        at_normal=_ibeey_normal(
             ene=ene,
             normal_e_max_ibe=normal_e_max_ibe,
             p_1_inf_ibe=p_1_inf_ibe,
@@ -841,12 +844,27 @@ def _remove_extrema(
     )
 
 
-def teey(ene: float, the: float, *args, **kwargs) -> float:
-    """Compute |TEEY|."""
+def teey(ene: float, the: float, **kwargs) -> float:
+    r"""Compute |TEEY|.
+
+    Parameters
+    ----------
+    ene :
+        Impact energy in :unit:`eV`.
+    the :
+        Impact angle in :unit:`\degree`.
+    kwargs :
+        Model parameters.
+
+    Return
+    ------
+        |TEEY|.
+
+    """
     return (
-        seey(ene, the, *args, **kwargs)
-        + ebeey(ene, the, *args, **kwargs)
-        + ibeey(ene, the, *args, **kwargs)
+        seey(ene, the, **kwargs)
+        + ebeey(ene, the, **kwargs)
+        + ibeey(ene, the, **kwargs)
     )
 
 

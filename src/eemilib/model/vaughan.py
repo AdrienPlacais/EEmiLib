@@ -10,7 +10,7 @@ r"""Create the Vaughan model, to compute |TEEY|.
 
 import logging
 import math
-from typing import Any, Callable, Literal, TypedDict
+from typing import Any, Callable, Literal, TypedDict, cast
 
 import numpy as np
 import pandas as pd
@@ -162,10 +162,13 @@ class Vaughan(Model):
 
         """
         super().__init__(url_doc_override="manual/models/vaughan")
-        self.parameters: VaughanParameters = {  # type: ignore
-            name: Parameter(**kwargs)  # type: ignore
-            for name, kwargs in self.initial_parameters.items()
-        }
+        self.parameters = cast(
+            VaughanParameters,
+            {
+                name: Parameter(**cast(dict, kwargs))
+                for name, kwargs in self.initial_parameters.items()
+            },
+        )
         self._generate_parameter_docs()
         if parameters_values is not None:
             self.set_parameters_values(parameters_values)

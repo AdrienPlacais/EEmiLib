@@ -5,7 +5,7 @@ You will need to provide emission energy distribution measurements.
 """
 
 import math
-from typing import Any, TypedDict, overload
+from typing import Any, TypedDict, cast, overload
 
 import numpy as np
 import pandas as pd
@@ -72,12 +72,13 @@ class Maxwellian(Model):
             override the default values set in ``initial_parameters``.
 
         """
-        super().__init__(url_doc_override="manual/models/chung_and_everhart")
-        self.parameters: MaxwellianParameters = MaxwellianParameters(
-            **{
-                name: Parameter(**kwargs)
+        super().__init__(url_doc_override="manual/models/maxwellian")
+        self.parameters = cast(
+            MaxwellianParameters,
+            {
+                name: Parameter(**cast(dict, kwargs))
                 for name, kwargs in self.initial_parameters.items()
-            }
+            },
         )
         self._generate_parameter_docs()
         if parameters_values is not None:

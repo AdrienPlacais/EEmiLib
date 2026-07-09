@@ -6,7 +6,7 @@ incident angle into account.
 """
 
 import math
-from typing import Any, TypedDict
+from typing import Any, TypedDict, cast
 
 import numpy as np
 import pandas as pd
@@ -84,10 +84,13 @@ class Sombrin(Model):
 
         """
         super().__init__(url_doc_override="manual/models/sombrin")
-        self.parameters: SombrinParameters = {  # type: ignore
-            name: Parameter(**kwargs)  # type: ignore
-            for name, kwargs in self.initial_parameters.items()
-        }
+        self.parameters = cast(
+            SombrinParameters,
+            {
+                name: Parameter(**cast(dict, kwargs))
+                for name, kwargs in self.initial_parameters.items()
+            },
+        )
         self._generate_parameter_docs()
         if parameters_values is not None:
             self.set_parameters_values(parameters_values)
