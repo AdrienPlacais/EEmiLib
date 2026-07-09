@@ -94,9 +94,38 @@ class ChungEverhart(Model):
         *args,
         **kwargs,
     ) -> pd.DataFrame | None:
-        """Return desired data according to current model.
+        r"""Return desired data according to current model.
 
         Will return a dataframe only if the |SEs| energy distribution is asked.
+
+        Parameters
+        ----------
+        population :
+            Type of population you want data from. Only |SEs| are modelled by
+            this model.
+        emission_data_type :
+            Desired type of emission data. Only ``"Emission Energy"`` for this
+            model.
+        energy :
+            Array of |SEs| emission energies in :unit:`eV`. By convention, the
+            last element of the array is the impact energy of the |PE|. It is
+            not used in this model, allowing unphysical |SEs| with energy
+            higher than the |PE|.
+        theta :
+            Array of |PE| electrons impact angle in :unit:`\degree`. Will be
+            ignored, as this model models only normal incidence impact.
+        args :
+            Other arguments passed to model functions.
+        kwargs :
+            Other arguments passed to model functions.
+
+        Returns
+        -------
+            ``None`` if ``population`` is different from ``"SE"`` and
+            ``emission_data_type`` is not ``"Emission Energy"``. Otherwise, a
+            dataframe where first column ``"Energy [eV]"`` holds emission
+            energy, and second column ``"0.0 [deg]"`` the corresponding
+            normalized emission energy distribution.
 
         """
         if population != "SE" or emission_data_type != "Emission Energy":
@@ -114,7 +143,7 @@ class ChungEverhart(Model):
                 ene, W_f=self.parameters["W_f"], norm=self.parameters["norm"]
             )
 
-        out_dict = {col_normal: out, col_energy: energy}
+        out_dict = {col_energy: energy, col_normal: out}
         return pd.DataFrame(out_dict)
 
     def find_optimal_parameters(

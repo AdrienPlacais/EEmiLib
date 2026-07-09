@@ -191,13 +191,44 @@ class Model(ABC):
         *args,
         **kwargs,
     ) -> pd.DataFrame | None:
-        """Return desired data according to current model.
+        r"""Return desired data according to current model.
 
         You should override this method for each :class:`.Model` subclass.
         When desired data is not found, a ``None`` is returned. If you want a
-        dummy dataframe instead, call the specific methods for every quantity:
-        :meth:`.Model.teey`, :meth:`.Model.seey`,
+        dummy dataframe instead, call the specific methods for every
+        quantity: :meth:`.Model.teey`, :meth:`.Model.seey`,
         :meth:`.Model.se_energy_distribution`.
+
+        Parameters
+        ----------
+        population :
+            Type of population you want data from.
+        emission_data_type :
+            Desired type of emission data.
+        energy :
+            According to the emission data type, this argument can mean
+            several things:
+
+            - ``"Emission Yield"``: array of |PEs| impact energy in
+            :unit:`eV`.
+            - ``"Emission Energy"``: array of |EEs| emission energy in
+            :unit:`eV`. By convention, the impact energy of the |PE| is
+            also the last value of ``energy``.
+        theta :
+            Array of |PE| electrons impact angle in :math:`^\circ`.
+        args :
+            Other arguments passed to model functions.
+        kwargs :
+            Other arguments passed to model functions.
+
+        Returns
+        -------
+            ``None`` if data is not modelled. Otherwise, a dataframe where
+            the first column is called ``"Energy [eV]"`` and holds energy.
+            Data is stored in the following columns, called ``"0.0 [deg]"``,
+            ``"20.0 [deg]"`` (according to the values of ``theta``). The
+            only column guaranteed to be present is the normal incidence
+            one.
 
         """
         return None
