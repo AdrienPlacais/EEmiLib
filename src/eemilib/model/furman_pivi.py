@@ -15,6 +15,9 @@ This is an empirical model developed by Dionne :cite:`Furman2002,Furman2013`.
    Store the max number of secondaries in the Model, make it editable, like
    from the Parameters section in the GUI.
 
+.. todo::
+    Warning when |SEEY| exceeds max number of |SEs| :data:`_M_MAX_SECONDARIES`.
+
 """
 
 import logging
@@ -762,6 +765,108 @@ def seey(
 
 
 _PROBA_EMIT_N_SE = Callable[[float, int], float]
+
+
+def _p_n_se(
+    n: int,
+    delta: float,
+    eta_e: float,
+    eta_i: float,
+    proba_emit_n_se: _PROBA_EMIT_N_SE,
+    normalization: NORMALIZATION_T,
+) -> float:
+    r"""Compute probability to emit ``n`` |SEs|.
+
+    Dispatches on ``normalization``:
+
+    - ``"incident"``: :math:`P_{n,\,se}` is taken directly from
+      ``proba_emit_n_se`` applied to :math:`\delta`, *cf* Eqs. (37)/(38) in
+      :cite:`Furman2002`.
+    - ``"penetrated"``: :math:`P_{n,\,se} = (1 - \eta_e - \eta_i)
+      P^\prime_{n,\,se}`, where :math:`P^\prime_{n,\,se}` is
+      ``proba_emit_n_se`` applied to :math:`\delta^\prime = \delta / (1 -
+      \eta_e - \eta_i)`, *cf* Eqs. (39), (42), (45)/(46).
+
+    Parameters
+    ----------
+    n :
+        Number of |SEs|.
+    delta :
+        |SEEY| (:math:`\delta_{ts}` in :cite:`Furman2002`).
+    eta_e :
+        |EBEEY| (:math:`\delta_e` in :cite:`Furman2002`).
+    eta_i :
+        |IBEEY| (:math:`\delta_r` in :cite:`Furman2002`).
+    proba_emit_n_se :
+        Function computing probability to emit ``n`` |SEs|, *cf*
+        :func:`_set_number_of_secondaries_probability_function`.
+    normalization :
+        Selects Eq. (37)/(38) (``"incident"``) or Eq. (39), (42), (45)/(46)
+        (``"penetrated"``).
+
+    Return
+    ------
+        :math:`P_{n,\,se}` (:math:`P_{n,\,ts}` in :cite:`Furman2002`).
+
+    """
+    if normalization == "incident":
+        return proba_emit_n_se(delta, n)
+
+    available_fraction = 1.0 - eta_e - eta_i
+    delta_prime = delta / available_fraction
+    return available_fraction * proba_emit_n_se(delta_prime, n)
+
+
+def _p_n(
+    n: int,
+    delta: float,
+    eta_e: float,
+    eta_i: float,
+    proba_emit_n_se: _PROBA_EMIT_N_SE,
+    normalization: NORMALIZATION_T,
+) -> float:
+    r"""Compute the overall :math:`P_n`, combining all electron types.
+
+    Applies the mutual-exclusion assumption, Eq. (21) in :ref:`Furman2002`:
+
+    - :math:`n \geq 2`: :math:`P_n = P_{n,\,se}`.
+    - :math:`n = 1`: :math:`P_1 = P_{1,\,se} + \eta_e + \eta_i`.
+    - :math:`n = 0`: :math:`P_0 = P_{0,\,se} - \eta_e - \eta_i` when
+      ``normalization`` is ``"incident"`` (Eq. 35a); :math:`P_0 = P_{0,\,se}`
+      when it is ``"penetrated"`` (Eq. 43a).
+
+    Parameters
+    ----------
+    n :
+        Number of |EEs|.
+    delta :
+        |SEEY| (:math:`\delta_{ts}` in :cite:`Furman2002`).
+    eta_e :
+        |EBEEY| (:math:`\delta_e` in :cite:`Furman2002`).
+    eta_i :
+        |IBEEY| (:math:`\delta_r` in :cite:`Furman2002`).
+    proba_emit_n_se :
+        Function computing probability to emit ``n`` |SEs|, *cf*
+        :func:`_set_number_of_secondaries_probability_function`.
+    normalization :
+        Selects Eq. (35) (``"incident"``) or Eq. (43) (``"penetrated"``).
+
+    Return
+    ------
+        :math:`P_n`.
+
+    """
+    p_n_se = _p_n_se(n, delta, eta_e, eta_i, proba_emit_n_se, normalization)
+
+    if n == 0:
+        if normalization == "incident":
+            return p_n_se - eta_e - eta_i
+        return p_n_se
+
+    if n == 1:
+        return p_n_se + eta_e + eta_i
+
+    return p_n_se
 
 
 def _set_number_of_secondaries_probability_function(
