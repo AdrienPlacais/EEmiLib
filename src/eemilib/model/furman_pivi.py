@@ -632,8 +632,8 @@ def ebeey(
 
 def ebe_energy_distribution(
     impact_energy: float,
-    emission_energies: NDArray[np.float64],
     the: float,
+    emission_energies: NDArray[np.float64],
     normal_e_max_ebe: Parameter,
     p_1_hat: Parameter,
     p_1_inf_ebe: Parameter,
@@ -655,8 +655,38 @@ def ebe_energy_distribution(
             \sqrt{2\pi}\sigma_e\mathrm{erf}\left(E_0 / \sqrt{2}\sigma_e\right)
        }
 
+    Parameters
+    ----------
+    impact_energy :
+        Impact energy of the |PE| in :unit:`eV`.
+    theta :
+        Impact angle of the |PE| in :unit:`\degree`.
+    emission_energies :
+        |EBE| emission energies you want the distribution from.
+    normal_e_max_ebe :
+        Furman and Pivi |EBEEY| parameter.
+    p_1_hat :
+        Furman and Pivi |EBEEY| parameter.
+    p_1_inf_ebe :
+        Furman and Pivi |EBEEY| parameter.
+    W :
+        Furman and Pivi |EBEEY| parameter.
+    p :
+        Furman and Pivi |EBEEY| parameter.
+    e_1 :
+        Furman and Pivi |EBEEY| parameter.
+    e_2 :
+        Furman and Pivi |EBEEY| parameter.
+    sigma_e :
+        Furman and Pivi |EBE| PDF parameter.
+    kwargs :
+        Other unused parameters.
+
+    Returns
+    -------
+        PDF of |EBE|.
+
     """
-    energy_diff = impact_energy - emission_energies
     return (
         _remove_extrema(impact_energy, emission_energies)
         * ebeey(
@@ -671,7 +701,10 @@ def ebe_energy_distribution(
             e_2=e_2,
         )
         * 2
-        * np.exp(-(energy_diff**2) / (2 * sigma_e.value**2))
+        * np.exp(
+            -((impact_energy - emission_energies) ** 2)
+            / (2 * sigma_e.value**2)
+        )
         / (
             math.sqrt(2 * math.pi)
             * sigma_e.value
@@ -743,8 +776,71 @@ def ibeey(
     )
 
 
-def ibe_energy_distribution(*args, **kwargs):
-    return NotImplementedError("PDF of IBEs not implemented yet.")
+def ibe_energy_distribution(
+    impact_energy: float,
+    the: float,
+    emission_energies: NDArray[np.float64],
+    normal_e_max_ibe: Parameter,
+    p_1_inf_ibe: Parameter,
+    r: Parameter,
+    r_1: Parameter,
+    r_2: Parameter,
+    q: Parameter,
+    **kwargs,
+) -> NDArray[np.float64]:
+    r"""Compute PDF for |IBEs|.
+
+    This is Eq. (29) in Furman and Pivi paper :cite:`Furman2002`:
+
+    .. math::
+       f_{1,\,r} = \theta(E)\theta(E_0 - E)\delta_r(E_0,\,\theta_0)\frac{
+            (q+1)E^q
+       }{
+            E_0^{q+1}
+       }
+
+    Parameters
+    ----------
+    impact_energy :
+        Impact energy of the |PE| in :unit:`eV`.
+    theta :
+        Impact angle of the |PE| in :unit:`\degree`.
+    emission_energies :
+        |IBE| emission energies you want the distribution from.
+    normal_e_max_ibe :
+        Furman and Pivi |IBEEY| parameter.
+    p_1_inf_ibe :
+        Furman and Pivi |IBEEY| parameter.
+    r :
+        Furman and Pivi |IBEEY| parameter.
+    r_1 :
+        Furman and Pivi |IBEEY| parameter.
+    r_2 :
+        Furman and Pivi |IBEEY| parameter.
+    q :
+        Furman and Pivi |IBE| PDF parameter.
+
+    Returns
+    -------
+        PDF of |IBE|.
+
+    """
+    q_val = q.value
+    return (
+        _remove_extrema(impact_energy, emission_energies)
+        * ibeey(
+            ene=impact_energy,
+            the=the,
+            normal_e_max_ibe=normal_e_max_ibe,
+            p_1_inf_ibe=p_1_inf_ibe,
+            r=r,
+            r_1=r_1,
+            r_2=r_2,
+        )
+        * (q_val + 1)
+        * emission_energies**q_val
+        / impact_energy ** (q_val + 1)
+    )
 
 
 # =============================================================================
