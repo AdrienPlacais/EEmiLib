@@ -45,6 +45,16 @@ from eemilib.util.markdown import (
     DELTA_MAX_FP,
     E1,
     E2,
+    EPS_1,
+    EPS_2,
+    EPS_3,
+    EPS_4,
+    EPS_5,
+    EPS_6,
+    EPS_7,
+    EPS_8,
+    EPS_9,
+    EPS_10,
     NORMAL_E_MAX_EBE,
     NORMAL_E_MAX_EBE_FP,
     NORMAL_E_MAX_IBE,
@@ -54,6 +64,16 @@ from eemilib.util.markdown import (
     P1_HAT,
     P1_INF_EBE,
     P1_INF_IBE,
+    P_1,
+    P_2,
+    P_3,
+    P_4,
+    P_5,
+    P_6,
+    P_7,
+    P_8,
+    P_9,
+    P_10,
     R1,
     R2,
     SIGMA,
@@ -93,17 +113,33 @@ class FurmanPiviParameters(TypedDict):
     # =========================================================================
     # True secondary emission
     # =========================================================================
-    # Emax for normal SEY. could also be E_ts with a ^
     normal_e_max_se: Parameter
-    # normal SEYmax. could also be delta_ts with a ^
     normal_delta_max: Parameter
     t_1: Parameter
     t_2: Parameter
     t_3: Parameter
     t_4: Parameter
     s: Parameter
-    # Resulting epsN: 1, 2
-    # Resulting pN: 1, 2
+    eps_1: Parameter
+    eps_2: Parameter
+    eps_3: Parameter
+    eps_4: Parameter
+    eps_5: Parameter
+    eps_6: Parameter
+    eps_7: Parameter
+    eps_8: Parameter
+    eps_9: Parameter
+    eps_10: Parameter
+    p_1: Parameter
+    p_2: Parameter
+    p_3: Parameter
+    p_4: Parameter
+    p_5: Parameter
+    p_6: Parameter
+    p_7: Parameter
+    p_8: Parameter
+    p_9: Parameter
+    p_10: Parameter
 
     # =========================================================================
     # EBE
@@ -199,140 +235,140 @@ class FurmanPivi(Model):
             "description": "Parameter in the D function.",
         },
         "eps_1": {
-            "markdown": "eps_1",
+            "markdown": EPS_1,
             "unit": "1",
             "value": 3.9,
             "lower_bound": 0.0,  # TODO: check min/max values
             "description": ".",
         },
         "eps_2": {
-            "markdown": "eps_2",
+            "markdown": EPS_2,
             "unit": "1",
             "value": 6.2,
             "lower_bound": 0.0,  # TODO: check min/max values
             "description": ".",
         },
         "eps_3": {
-            "markdown": "eps_3",
+            "markdown": EPS_3,
             "unit": "1",
             "value": 13.0,
             "lower_bound": 0.0,  # TODO: check min/max values
             "description": ".",
         },
         "eps_4": {
-            "markdown": "eps_4",
+            "markdown": EPS_4,
             "unit": "1",
             "value": 8.8,
             "lower_bound": 0.0,  # TODO: check min/max values
             "description": ".",
         },
         "eps_5": {
-            "markdown": "eps_5",
+            "markdown": EPS_5,
             "unit": "1",
             "value": 6.25,
             "lower_bound": 0.0,  # TODO: check min/max values
             "description": ".",
         },
         "eps_6": {
-            "markdown": "eps_6",
+            "markdown": EPS_6,
             "unit": "1",
             "value": 2.25,
             "lower_bound": 0.0,  # TODO: check min/max values
             "description": ".",
         },
         "eps_7": {
-            "markdown": "eps_7",
+            "markdown": EPS_7,
             "unit": "1",
             "value": 9.20,
             "lower_bound": 0.0,  # TODO: check min/max values
             "description": ".",
         },
         "eps_8": {
-            "markdown": "eps_8",
+            "markdown": EPS_8,
             "unit": "1",
             "value": 5.3,
             "lower_bound": 0.0,  # TODO: check min/max values
             "description": ".",
         },
         "eps_9": {
-            "markdown": "eps_9",
+            "markdown": EPS_9,
             "unit": "1",
             "value": 17.8,
             "lower_bound": 0.0,  # TODO: check min/max values
             "description": ".",
         },
         "eps_10": {
-            "markdown": "eps_10",
+            "markdown": EPS_10,
             "unit": "1",
             "value": 10.0,
             "lower_bound": 0.0,  # TODO: check min/max values
             "description": ".",
         },
         "p_1": {
-            "markdown": "p_1",
+            "markdown": P_1,
             "unit": "1",
             "value": 1.6,
             "lower_bound": 0.0,  # TODO: check min/max values
             "description": ".",
         },
         "p_2": {
-            "markdown": "p_2",
+            "markdown": P_2,
             "unit": "1",
             "value": 2.0,
             "lower_bound": 0.0,  # TODO: check min/max values
             "description": ".",
         },
         "p_3": {
-            "markdown": "p_3",
+            "markdown": P_3,
             "unit": "1",
             "value": 1.8,
             "lower_bound": 0.0,  # TODO: check min/max values
             "description": ".",
         },
         "p_4": {
-            "markdown": "p_4",
+            "markdown": P_4,
             "unit": "1",
             "value": 4.7,
             "lower_bound": 0.0,  # TODO: check min/max values
             "description": ".",
         },
         "p_5": {
-            "markdown": "p_5",
+            "markdown": P_5,
             "unit": "1",
             "value": 1.8,
             "lower_bound": 0.0,  # TODO: check min/max values
             "description": ".",
         },
         "p_6": {
-            "markdown": "p_6",
+            "markdown": P_6,
             "unit": "1",
             "value": 2.4,
             "lower_bound": 0.0,  # TODO: check min/max values
             "description": ".",
         },
         "p_7": {
-            "markdown": "p_7",
+            "markdown": P_7,
             "unit": "1",
             "value": 1.8,
             "lower_bound": 0.0,  # TODO: check min/max values
             "description": ".",
         },
         "p_8": {
-            "markdown": "p_8",
+            "markdown": P_8,
             "unit": "1",
             "value": 1.8,
             "lower_bound": 0.0,  # TODO: check min/max values
             "description": ".",
         },
         "p_9": {
-            "markdown": "p_9",
+            "markdown": P_9,
             "unit": "1",
             "value": 2.3,
             "lower_bound": 0.0,  # TODO: check min/max values
             "description": ".",
         },
         "p_10": {
-            "markdown": "p_10",
+            "markdown": P_10,
             "unit": "1",
             "value": 1.8,
             "lower_bound": 0.0,  # TODO: check min/max values
@@ -1210,7 +1246,7 @@ def ebe_energy_distribution(
     p: Parameter,
     e_1: Parameter,
     e_2: Parameter,
-    sigma_e: Parameter,
+    sigma: Parameter,
     **kwargs,
 ) -> NDArray[np.float64]:
     r"""Compute PDF for |EBEs|.
@@ -1246,7 +1282,7 @@ def ebe_energy_distribution(
         Furman and Pivi |EBEEY| parameter.
     e_2 :
         Furman and Pivi |EBEEY| parameter.
-    sigma_e :
+    sigma :
         Furman and Pivi |EBE| PDF parameter.
     kwargs :
         Other unused parameters.
@@ -1271,13 +1307,12 @@ def ebe_energy_distribution(
         )
         * 2
         * np.exp(
-            -((impact_energy - emission_energies) ** 2)
-            / (2 * sigma_e.value**2)
+            -((impact_energy - emission_energies) ** 2) / (2 * sigma.value**2)
         )
         / (
             math.sqrt(2 * math.pi)
-            * sigma_e.value
-            * erf(impact_energy / (math.sqrt(2) * sigma_e.value))
+            * sigma.value
+            * erf(impact_energy / (math.sqrt(2) * sigma.value))
         )
     )
 
