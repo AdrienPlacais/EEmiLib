@@ -97,6 +97,10 @@ FurmanPiviImplementation = Literal[
     "binomial-incident",
     "binomial-penetrated",
 ]
+#: Different implementations for model. The part before the ``"-"`` selects the
+#: distribution for the number of emitted |SEs| (``"poisson"`` or
+#: ``"binomial"``). The part after selects the probability normalization
+#: (``"incident"``, *cf* Eq. (35), or ``"penetrated"``, *cf* Eq. (43)).
 FURMAN_PIVI_IMPLEMENTATIONS = (
     "poisson-incident",
     "poisson-penetrated",
@@ -605,7 +609,7 @@ class FurmanPivi(Model):
         Parameters
         ----------
         implementation :
-            One of :data:`FURMAN_PIVI_IMPLEMENTATIONS`. The part before the
+            One of :data:`.FURMAN_PIVI_IMPLEMENTATIONS`. The part before the
             ``"-"`` selects the distribution for the number of emitted |SEs|
             (``"poisson"`` or ``"binomial"``). The part after selects the
             probability normalization (``"incident"``, *cf* Eq. (35), or
@@ -1012,7 +1016,7 @@ def _p_n(
 ) -> float:
     r"""Compute the overall :math:`P_n`, combining all electron types.
 
-    Applies the mutual-exclusion assumption, Eq. (21) in :ref:`Furman2002`:
+    Applies the mutual-exclusion assumption, Eq. (21) in :cite:`Furman2002`:
 
     - :math:`n \geq 2`: :math:`P_n = P_{n,\,se}`.
     - :math:`n = 1`: :math:`P_1 = P_{1,\,se} + \eta_e + \eta_i`.
@@ -1059,11 +1063,10 @@ def _regularized_incomplete_gamma(
 ) -> NDArray[np.float64]:
     r"""Compute the regularized lower incomplete gamma function :math:`P(a,x)`.
 
-    Thin wrapper around :func:`scipy.special.gammainc`, handling the
-    :math:`a=0` edge case with the convention :math:`P(0,\,x) = 1` for
-    :math:`x \geq 0`, stated in Appendix A of :cite:`Furman2002` (just below
-    Eq. (A8)). :func:`scipy.special.gammainc` does not support ``a = 0``
-    directly.
+    Thin wrapper around `gammainc`, handling the :math:`a=0` edge case with the
+    convention :math:`P(0,\,x) = 1` for :math:`x \geq 0`, stated in Appendix A
+    of :cite:`Furman2002` (just below Eq. (A8)). `gammainc` does not support
+    ``a = 0`` directly.
 
     Parameters
     ----------
