@@ -12,7 +12,7 @@ This is an empirical model developed by Dionne :cite:`Furman2002,Furman2013`.
 
 import logging
 import math
-from typing import Any, Callable, TypedDict, cast
+from typing import Any, Callable, Literal, TypedDict, cast
 
 import numpy as np
 import pandas as pd
@@ -54,6 +54,11 @@ from eemilib.util.markdown import (
 )
 from numpy.typing import NDArray
 from scipy.special import erf
+from scipy.stats import binom, poisson
+
+PROBABILITY_TO_EMIT_N_SECONDARIES_T = Literal["Poisson", "Binomial"]
+#: Max number of |SEs|. In Furman and Pivi paper, this is denoted :math:`M`.
+_M_MAX_SECONDARIES = 10
 
 
 class FurmanPiviParameters(TypedDict):
@@ -692,6 +697,91 @@ def seey(
     )
 
     return _delta_max * _d_func(ene / e_max, s=s)
+
+
+_PROBA_EMIT_N_SE = Callable[[float, int], float]
+
+
+def _set_number_of_secondaries_probability_function(
+    model: PROBABILITY_TO_EMIT_N_SECONDARIES_T = "Poisson",
+) -> _PROBA_EMIT_N_SE:
+    """Set the function that computes probability to emit ``n`` secondaries.
+
+    This let you choose between the two propositions in Furman and Pivi paper
+    :cite:`Furman2002`, *cf* Eqs. (37) and (38).
+
+    Parameters
+    ----------
+    model :
+        Name of the model to use.
+
+    Return
+    ------
+        A function that takes in the |SEEY| and the |SEs|, and returns the
+        probability to emit this number of |SEs|.
+
+    """
+
+    if model == "Binomial":
+
+        def probability(seey: float, n: int) -> float:
+            return float(
+                binom.pmf(n, _M_MAX_SECONDARIES, seey / _M_MAX_SECONDARIES)
+            )
+
+        return probability
+
+    if model != "Poisson":
+        logging.warning(
+            f"Wrong model for number of emitted electrons. {model = } should "
+            f"be in {PROBABILITY_TO_EMIT_N_SECONDARIES_T}. Fall back to "
+            "Poisson model."
+        )
+
+    def probability(seey: float, n: int) -> float:
+        return float(poisson.pmf(n, seey))
+
+    return probability
+
+
+def se_energy_distribution(
+    impact_energy: float,
+    the: float,
+    emission_energies: NDArray[np.float64],
+    proba_emit_n_se: _PROBA_EMIT_N_SE,
+    **kwargs,
+) -> NDArray[np.float64]:
+    r"""Compute PDF for |SEs|.
+
+    This is Eq. (33) in Furman and Pivi paper :cite:`Furman2002`:
+
+
+    Parameters
+    ----------
+    impact_energy :
+        Impact energy of the |PE| in :unit:`eV`.
+    theta :
+        Impact angle of the |PE| in :unit:`\degree`.
+    emission_energies :
+        |SE| emission energies you want the distribution from.
+    proba_emit_n_se :
+        Function computing probability to emit ``n`` |SEs|. In Furman and Pivi
+        paper :cite:`Furman2002`, this is called :math:`P_{n,\,ts}`.
+    kwargs :
+        Other unused parameters.
+
+    Returns
+    -------
+        PDF of |SE|.
+
+    """
+    raise NotImplementedError
+    return (
+        _theta_func(emission_energies)
+        * F_n
+        * emission_energies ** (p_n - 1)
+        * np.exp(-emission_energies / epsilon_n)
+    )
 
 
 # =============================================================================
