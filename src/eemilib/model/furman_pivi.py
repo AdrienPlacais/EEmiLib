@@ -26,6 +26,7 @@ This is an empirical model developed by Dionne :cite:`Furman2002,Furman2013`.
 
 import logging
 import math
+from functools import partial
 from typing import Any, Callable, Literal, TypedDict, cast
 
 import numpy as np
@@ -561,6 +562,54 @@ class FurmanPivi(Model):
             doc_lines += doc
         return "\n".join(doc_lines)
 
+    def _get_energy_distribution_data(
+        self,
+        population: ImplementedPop,
+        energy: NDArray[np.float64],
+        theta: NDArray[np.float64],
+        impact_energy: float | None,
+    ) -> pd.DataFrame | None:
+        """Compute emitted-energy spectrum data for one population."""
+        e_0 = impact_energy if impact_energy is not None else energy[-1]
+        p_ns = [
+            self.parameters[f"p_{i}"] for i in range(1, _M_MAX_SECONDARIES + 1)
+        ]
+        eps_ns = [
+            self.parameters[f"eps_{i}"]
+            for i in range(1, _M_MAX_SECONDARIES + 1)
+        ]
+        se_kwargs = {
+            "p_ns": p_ns,
+            "eps_ns": eps_ns,
+            "proba_emit_n_se": self._proba_emit_n_se,
+            "normalization": self._normalization,
+        }
+
+        dist_funcs: dict[ImplementedPop, Callable] = {
+            "EBE": ebe_energy_distribution,
+            "IBE": ibe_energy_distribution,
+            "SE": partial(se_energy_distribution, **se_kwargs),
+            "all": partial(all_energy_distribution, **se_kwargs),
+        }
+        dist_func = dist_funcs.get(population)
+        if dist_func is None:
+            return None
+
+        out = np.zeros((len(energy), len(theta)))
+        for j, the in enumerate(theta):
+            out[:, j] = dist_func(
+                impact_energy=e_0,
+                the=the,
+                emission_energies=energy,
+                **self.parameters,
+            )
+
+        out_dict = {
+            col_energy: energy,
+            **{f"{the} [deg]": out[:, j] for j, the in enumerate(theta)},
+        }
+        return pd.DataFrame(out_dict)
+
     def get_data(
         self,
         population: ImplementedPop,
@@ -568,9 +617,19 @@ class FurmanPivi(Model):
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
         *args,
+        impact_energy: float | None = None,
         **kwargs,
     ) -> pd.DataFrame | None:
-        """Return desired data according to current model."""
+        r"""Return desired data according to current model.
+
+        Parameters
+        ----------
+        impact_energy :
+            Only used when ``emission_data_type == "Emission Energy"``. Impact
+            energy :math:`E_0` at which the emitted-energy spectrum is
+            evaluated. If not given, defaults to the last value of ``energy``.
+
+        """
         if emission_data_type == "Emission Angle":
             return super().get_data(
                 population=population,
@@ -580,10 +639,35 @@ class FurmanPivi(Model):
                 *args,
                 **kwargs,
             )
-        if emission_data_type == "Emission Energy":
-            raise NotImplementedError("Emission Energy not yet implemented.")
 
-        ey_func = EMISSION_YIELD_FUNCS[population]
+        if emission_data_type == "Emission Energy":
+            data = self._get_energy_distribution_data(
+                population=population,
+                energy=energy,
+                theta=theta,
+                impact_energy=impact_energy,
+            )
+            if data is not None:
+                return data
+            return super().get_data(
+                population=population,
+                emission_data_type=emission_data_type,
+                energy=energy,
+                theta=theta,
+                *args,
+                **kwargs,
+            )
+
+        ey_func = EMISSION_YIELD_FUNCS.get(population)
+        if ey_func is None:
+            return super().get_data(
+                population=population,
+                emission_data_type=emission_data_type,
+                energy=energy,
+                theta=theta,
+                *args,
+                **kwargs,
+            )
         out = np.zeros((len(energy), len(theta)))
         for i, ene in enumerate(energy):
             for j, the in enumerate(theta):
@@ -821,6 +905,7 @@ def _p_n_se(
     return available_fraction * proba_emit_n_se(delta_prime, n)
 
 
+# TODO: to implement
 def _p_n(
     n: int,
     delta: float,
@@ -1445,6 +1530,79 @@ def teey(ene: float, the: float, **kwargs) -> float:
         seey(ene, the, **kwargs)
         + ebeey(ene, the, **kwargs)
         + ibeey(ene, the, **kwargs)
+    )
+
+
+def all_energy_distribution(
+    impact_energy: float,
+    the: float,
+    emission_energies: NDArray[np.float64],
+    p_ns: list[Parameter],
+    eps_ns: list[Parameter],
+    proba_emit_n_se: _PROBA_EMIT_N_SE,
+    normalization: NORMALIZATION_T,
+    **kwargs,
+) -> NDArray[np.float64]:
+    r"""Compute the overall emitted-energy spectrum.
+
+    This is Eq. (51) in Furman and Pivi paper :cite:`Furman2002`:
+
+    .. math::
+       \frac{d\delta}{dE} = f_{1,\,e} + f_{1,\,r} + \frac{d\delta_{ts}}{dE}
+
+    Each term is already normalized to integrate to its own yield (Eqs. 27,
+    30, 50), so no additional weighting is applied here.
+
+    Parameters
+    ----------
+    impact_energy :
+        Impact energy of the |PE| in :unit:`eV`.
+    the :
+        Impact angle of the |PE| in :math:`\degree`.
+    emission_energies :
+        Emission energies you want the distribution from.
+    p_ns :
+        List of :math:`p_n` parameters, *cf* :func:`se_energy_distribution`.
+    eps_ns :
+        List of :math:`\varepsilon_n` parameters, *cf*
+        :func:`se_energy_distribution`.
+    proba_emit_n_se :
+        Function computing probability to emit ``n`` |SEs|, *cf*
+        :func:`se_energy_distribution`.
+    normalization :
+        Selects Eq. (35) or Eq. (43), *cf* :func:`se_energy_distribution`.
+    kwargs :
+        Furman and Pivi |SEEY|, |EBEEY|, |IBEEY|, |EBE| and |IBE| PDF
+        parameters.
+
+    Returns
+    -------
+        Overall emitted-energy spectrum.
+
+    """
+    return (
+        ebe_energy_distribution(
+            impact_energy=impact_energy,
+            the=the,
+            emission_energies=emission_energies,
+            **kwargs,
+        )
+        + ibe_energy_distribution(
+            impact_energy=impact_energy,
+            the=the,
+            emission_energies=emission_energies,
+            **kwargs,
+        )
+        + se_energy_distribution(
+            impact_energy=impact_energy,
+            the=the,
+            emission_energies=emission_energies,
+            p_ns=p_ns,
+            eps_ns=eps_ns,
+            proba_emit_n_se=proba_emit_n_se,
+            normalization=normalization,
+            **kwargs,
+        )
     )
 
 
