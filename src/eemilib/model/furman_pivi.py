@@ -238,141 +238,201 @@ class FurmanPivi(Model):
             "markdown": EPS_1,
             "unit": "1",
             "value": 3.9,
-            "lower_bound": 0.0,  # TODO: check min/max values
-            "description": ".",
+            "lower_bound": 0.0,
+            "description": (
+                "Scale parameter for n=1 in the true-secondary energy "
+                "spectrum, Eq. (33)."
+            ),
         },
         "eps_2": {
             "markdown": EPS_2,
             "unit": "1",
             "value": 6.2,
-            "lower_bound": 0.0,  # TODO: check min/max values
-            "description": ".",
+            "lower_bound": 0.0,
+            "description": (
+                "Scale parameter for n=2 in the true-secondary energy "
+                "spectrum, Eq. (33)."
+            ),
         },
         "eps_3": {
             "markdown": EPS_3,
             "unit": "1",
             "value": 13.0,
-            "lower_bound": 0.0,  # TODO: check min/max values
-            "description": ".",
+            "lower_bound": 0.0,
+            "description": (
+                "Scale parameter for n=3 in the true-secondary energy "
+                "spectrum, Eq. (33)."
+            ),
         },
         "eps_4": {
             "markdown": EPS_4,
             "unit": "1",
             "value": 8.8,
-            "lower_bound": 0.0,  # TODO: check min/max values
-            "description": ".",
+            "lower_bound": 0.0,
+            "description": (
+                "Scale parameter for n=4 in the true-secondary energy "
+                "spectrum, Eq. (33)."
+            ),
         },
         "eps_5": {
             "markdown": EPS_5,
             "unit": "1",
             "value": 6.25,
-            "lower_bound": 0.0,  # TODO: check min/max values
-            "description": ".",
+            "lower_bound": 0.0,
+            "description": (
+                "Scale parameter for n=5 in the true-secondary energy "
+                "spectrum, Eq. (33)."
+            ),
         },
         "eps_6": {
             "markdown": EPS_6,
             "unit": "1",
             "value": 2.25,
-            "lower_bound": 0.0,  # TODO: check min/max values
-            "description": ".",
+            "lower_bound": 0.0,
+            "description": (
+                "Scale parameter for n=6 in the true-secondary energy "
+                "spectrum, Eq. (33)."
+            ),
         },
         "eps_7": {
             "markdown": EPS_7,
             "unit": "1",
             "value": 9.20,
-            "lower_bound": 0.0,  # TODO: check min/max values
-            "description": ".",
+            "lower_bound": 0.0,
+            "description": (
+                "Scale parameter for n=7 in the true-secondary energy "
+                "spectrum, Eq. (33)."
+            ),
         },
         "eps_8": {
             "markdown": EPS_8,
             "unit": "1",
             "value": 5.3,
-            "lower_bound": 0.0,  # TODO: check min/max values
-            "description": ".",
+            "lower_bound": 0.0,
+            "description": (
+                "Scale parameter for n=8 in the true-secondary energy "
+                "spectrum, Eq. (33)."
+            ),
         },
         "eps_9": {
             "markdown": EPS_9,
             "unit": "1",
             "value": 17.8,
-            "lower_bound": 0.0,  # TODO: check min/max values
-            "description": ".",
+            "lower_bound": 0.0,
+            "description": (
+                "Scale parameter for n=9 in the true-secondary energy "
+                "spectrum, Eq. (33)."
+            ),
         },
         "eps_10": {
             "markdown": EPS_10,
             "unit": "1",
             "value": 10.0,
-            "lower_bound": 0.0,  # TODO: check min/max values
-            "description": ".",
+            "lower_bound": 0.0,
+            "description": (
+                "Scale parameter for n=10 in the true-secondary energy "
+                "spectrum, Eq. (33)."
+            ),
         },
         "p_1": {
             "markdown": P_1,
             "unit": "1",
             "value": 1.6,
-            "lower_bound": 0.0,  # TODO: check min/max values
-            "description": ".",
+            "lower_bound": 0.0,
+            "description": (
+                "Shape parameter for n=1 in the true-secondary energy "
+                "spectrum, Eq. (33)."
+            ),
         },
         "p_2": {
             "markdown": P_2,
             "unit": "1",
             "value": 2.0,
-            "lower_bound": 0.0,  # TODO: check min/max values
-            "description": ".",
+            "lower_bound": 0.0,
+            "description": (
+                "Shape parameter for n=2 in the true-secondary energy "
+                "spectrum, Eq. (33)."
+            ),
         },
         "p_3": {
             "markdown": P_3,
             "unit": "1",
             "value": 1.8,
-            "lower_bound": 0.0,  # TODO: check min/max values
-            "description": ".",
+            "lower_bound": 0.0,
+            "description": (
+                "Shape parameter for n=3 in the true-secondary energy "
+                "spectrum, Eq. (33)."
+            ),
         },
         "p_4": {
             "markdown": P_4,
             "unit": "1",
             "value": 4.7,
-            "lower_bound": 0.0,  # TODO: check min/max values
-            "description": ".",
+            "lower_bound": 0.0,
+            "description": (
+                "Shape parameter for n=4 in the true-secondary energy "
+                "spectrum, Eq. (33)."
+            ),
         },
         "p_5": {
             "markdown": P_5,
             "unit": "1",
             "value": 1.8,
-            "lower_bound": 0.0,  # TODO: check min/max values
-            "description": ".",
+            "lower_bound": 0.0,
+            "description": (
+                "Shape parameter for n=5 in the true-secondary energy "
+                "spectrum, Eq. (33)."
+            ),
         },
         "p_6": {
             "markdown": P_6,
             "unit": "1",
             "value": 2.4,
-            "lower_bound": 0.0,  # TODO: check min/max values
-            "description": ".",
+            "lower_bound": 0.0,
+            "description": (
+                "Shape parameter for n=6 in the true-secondary energy "
+                "spectrum, Eq. (33)."
+            ),
         },
         "p_7": {
             "markdown": P_7,
             "unit": "1",
             "value": 1.8,
-            "lower_bound": 0.0,  # TODO: check min/max values
-            "description": ".",
+            "lower_bound": 0.0,
+            "description": (
+                "Shape parameter for n=7 in the true-secondary energy "
+                "spectrum, Eq. (33)."
+            ),
         },
         "p_8": {
             "markdown": P_8,
             "unit": "1",
             "value": 1.8,
-            "lower_bound": 0.0,  # TODO: check min/max values
-            "description": ".",
+            "lower_bound": 0.0,
+            "description": (
+                "Shape parameter for n=8 in the true-secondary energy "
+                "spectrum, Eq. (33)."
+            ),
         },
         "p_9": {
             "markdown": P_9,
             "unit": "1",
             "value": 2.3,
-            "lower_bound": 0.0,  # TODO: check min/max values
-            "description": ".",
+            "lower_bound": 0.0,
+            "description": (
+                "Shape parameter for n=9 in the true-secondary energy "
+                "spectrum, Eq. (33)."
+            ),
         },
         "p_10": {
             "markdown": P_10,
             "unit": "1",
             "value": 1.8,
-            "lower_bound": 0.0,  # TODO: check min/max values
-            "description": ".",
+            "lower_bound": 0.0,
+            "description": (
+                "Shape parameter for n=10 in the true-secondary energy "
+                "spectrum, Eq. (33)."
+            ),
         },
         # =====================================================================
         # Elastically Backscattered Electrons (or "Reflected")
