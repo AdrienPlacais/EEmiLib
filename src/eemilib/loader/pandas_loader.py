@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
-from eemilib.loader.helper import read_comments, read_header
+from eemilib.loader.helper import DataPath, read_comments, read_header
 from eemilib.loader.loader import Loader
 
 
@@ -26,7 +26,7 @@ class PandasLoader(Loader):
 
     def load_emission_yield(
         self,
-        filepath: str | Path,
+        filepath: DataPath,
         sep: str | None = None,
         comment: str | None = None,
     ) -> pd.DataFrame:

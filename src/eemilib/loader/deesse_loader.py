@@ -1,10 +1,12 @@
 """Define a loader adapted to DEESSE (ONERA, Toulouse) file format."""
 
 import logging
+from importlib.resources.abc import Traversable
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
+from eemilib.loader.helper import DataPath
 from eemilib.loader.loader import Loader
 from eemilib.util.constants import col_energy, col_normal
 
@@ -21,7 +23,7 @@ class DeesseLoader(Loader):
         """
         super().__init__()
 
-    def load_emission_yield(self, *filepath: str | Path) -> pd.DataFrame:
+    def load_emission_yield(self, *filepath: DataPath) -> pd.DataFrame:
         """Load and format the given emission yield files.
 
         Parameters
@@ -47,6 +49,8 @@ class DeesseLoader(Loader):
         }
         all_df = []
         for file in filepath:
+            if isinstance(filepath, Traversable):
+                raise NotImplementedError("Not yet handling Traversable")
             full_df = pd.read_csv(file, **kwargs)
             incidence_angle = self._extract_incidence_angle(full_df)
             of_interest_df = full_df[[col1, col2]].rename(
@@ -75,7 +79,7 @@ class DeesseLoader(Loader):
 
     def load_emission_energy_distribution(
         self,
-        filepath: str | Path,
+        filepath: DataPath,
         e_pe: float | None = None,
     ) -> tuple[pd.DataFrame, float | None]:
         """Load and format an emission energy file from DEESSE.
@@ -102,6 +106,8 @@ class DeesseLoader(Loader):
         """
         col1 = "Kinetic Energy [eV]"
         col2 = "Intensity[cts/s]"
+        if isinstance(filepath, Traversable):
+            raise NotImplementedError("Not yet handling Traversable")
         extension = Path(filepath).suffix
         if extension == ".csv":
             df = pd.read_csv(filepath, sep=";")

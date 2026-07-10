@@ -2,7 +2,6 @@
 
 from abc import ABC, abstractmethod
 from collections.abc import Collection
-from pathlib import Path
 
 import pandas as pd
 from eemilib.loader.helper import DataPath
@@ -34,7 +33,7 @@ class Loader(ABC):
     @abstractmethod
     def load_emission_energy_distribution(
         self,
-        filepath: str | Path | Collection[str] | Collection[Path],
+        filepath: DataPath | Collection[DataPath],
         *args,
         **kwargs,
     ) -> tuple[pd.DataFrame, float | None]:
