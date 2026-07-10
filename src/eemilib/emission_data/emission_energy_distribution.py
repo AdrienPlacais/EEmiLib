@@ -1,10 +1,11 @@
 """Define an object to store an emission energy distribution."""
 
 from pathlib import Path
-from typing import Self
+from typing import Literal, Self
 
 import pandas as pd
 from eemilib.emission_data.emission_data import EmissionData
+from eemilib.loader.helper import DataPath
 from eemilib.loader.loader import Loader
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
@@ -50,36 +51,26 @@ class EmissionEnergyDistribution(EmissionData):
             float(col.split()[0]) for col in data.columns if col != col_energy
         ]
 
-        #: Energy at the maximum of |SEs| in :unit:`eV`. Defined for |SEs| and
-        #: distribution of all electrons.
-        self.e_peak_se: float
-        i_peak_se, self.e_peak_se = self._find_SE_peak()
-        #: Energy at the maximum of |EBEs| in :unit:`eV`. Defined for |EBEs|
-        #: and distribution of all electrons.
-        self.e_peak_ebe: float
-        #: Position of |EBE| peak.
-        self.i_peak_ebe: int
-        self.i_peak_ebe, self.e_peak_ebe = self._find_EBE_peak()
+        #: Energy of peak distribution in :unit:`eV`.
+        self.e_peak: float
+        _, self.e_peak = self._peak
 
         #: Energy of |PEs| in :unit:`eV`. If this information is not found in
-        #: the file header, we set it to the value of ``self.e_peak_ebe``.
-        self.e_pe: float
-        if e_pe:
-            self.e_pe = e_pe
-        self.e_pe = e_pe if e_pe else self.e_peak_ebe
+        #: the file header, we suppose it is the maximum of the input energy
+        #: array.
+        self.e_pe = e_pe if e_pe else float(self.data[col_energy].max())
 
         #: Re-normalization factor of distribution.
-        self.norm: float = (
-            norm if norm else self.data.at[i_peak_se, col_normal]
-        )
-        self._normalize()
+        self.norm = norm
+        if self.norm:
+            self.normalize()
 
     @classmethod
     def from_filepath(
         cls,
         population: ImplementedPop,
         loader: Loader,
-        *filepath: str | Path,
+        *filepath: DataPath,
     ) -> Self:
         """Instantiate the data from files.
 
@@ -132,8 +123,10 @@ class EmissionEnergyDistribution(EmissionData):
             **kwargs,
         )
 
-    def _normalize(self) -> None:
-        """Normalize the distribution."""
+    def normalize(self) -> None:
+        """Normalize the distribution by :attr:`norm`."""
+        if self.norm is None:
+            raise ValueError("Cannot normalize if norm is None")
         data_columns = [c for c in self.data.columns if c != col_energy]
         self.data[data_columns] /= self.norm
 
@@ -142,13 +135,87 @@ class EmissionEnergyDistribution(EmissionData):
         """Arbitrary index limit between |SEs| and |EBEs|."""
         return int(self._n_points / 4)
 
-    def _find_SE_peak(self) -> tuple[int, float]:
+    @property
+    def _peak(self) -> tuple[int, float]:
+        """Find maximum of PDF.
+
+        Returns
+        -------
+        int
+            Index of maximum value.
+        float
+            Position of the peak in :unit:`eV`.
+
+        """
+        i = self.data[col_normal].argmax()
+        e_peak = self.data.at[i, col_energy]
+        return int(i), float(e_peak)
+
+
+class SEEmissionEnergyDistribution(EmissionEnergyDistribution):
+    """Emission energy distribution of |SEs|."""
+
+    def __init__(
+        self,
+        data: pd.DataFrame,
+        e_pe: float | None = None,
+        norm: float | None = None,
+    ) -> None:
+        super().__init__(population="SE", data=data, e_pe=e_pe, norm=norm)
+
+
+class EBEEmissionEnergyDistribution(EmissionEnergyDistribution):
+    """Emission energy distribution of |EBEs|."""
+
+    def __init__(
+        self,
+        data: pd.DataFrame,
+        e_pe: float | None = None,
+        norm: float | None = None,
+    ) -> None:
+        super().__init__(population="EBE", data=data, e_pe=e_pe, norm=norm)
+
+
+class IBEEmissionEnergyDistribution(EmissionEnergyDistribution):
+    """Emission energy distribution of |EBEs|."""
+
+    def __init__(
+        self,
+        data: pd.DataFrame,
+        e_pe: float | None = None,
+        norm: float | None = None,
+    ) -> None:
+        super().__init__(population="IBE", data=data, e_pe=e_pe, norm=norm)
+
+
+class AllEmissionEnergyDistribution(EmissionEnergyDistribution):
+    """Emission energy distribution of all populations."""
+
+    def __init__(
+        self,
+        data: pd.DataFrame,
+        e_pe: float | None = None,
+        norm: float | None = None,
+    ) -> None:
+        super().__init__(population="all", data=data, e_pe=e_pe, norm=norm)
+        #: Energy at the maximum of |SEs| in :unit:`eV`.
+        self.e_peak_se: float
+        _, self.e_peak_se = self._SE_peak
+        #: Energy at the maximum of |EBEs| in :unit:`eV`.
+        self.e_peak_ebe: float
+        #: Position of |EBE| peak.
+        self.i_peak_ebe: int
+        self.i_peak_ebe, self.e_peak_ebe = self._EBE_peak
+
+    @property
+    def _SE_peak(self) -> tuple[int, float]:
         """Find the |SEs| maximum."""
         i = self.data[: self._se_ebe_limit][col_normal].argmax()
         e_peak_se = self.data.at[i, col_energy]
         return int(i), float(e_peak_se)
 
-    def _find_EBE_peak(self) -> tuple[int, float]:
+    @property
+    def _EBE_peak(self) -> tuple[int, float]:
         """Find the position of the |EBE| peak."""
         i = (
             self.data[self._se_ebe_limit :][col_normal].argmax()
@@ -156,3 +223,15 @@ class EmissionEnergyDistribution(EmissionData):
         )
         e_peak_ebe = self.data.at[i, col_energy]
         return int(i), float(e_peak_ebe)
+
+
+#: Maps populations to their appropriate :class:`.EmissionEnergyDistribution`
+#: subclass.
+EMISSION_ENERGIES_BY_POP: dict[
+    ImplementedPop, type[EmissionEnergyDistribution]
+] = {
+    "SE": SEEmissionEnergyDistribution,
+    "EBE": EBEEmissionEnergyDistribution,
+    "IBE": IBEEmissionEnergyDistribution,
+    "all": AllEmissionEnergyDistribution,
+}

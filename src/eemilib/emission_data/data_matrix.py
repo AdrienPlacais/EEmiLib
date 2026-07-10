@@ -16,7 +16,11 @@ from eemilib.emission_data.emission_angle_distribution import (
 )
 from eemilib.emission_data.emission_data import EmissionData
 from eemilib.emission_data.emission_energy_distribution import (
-    EmissionEnergyDistribution,
+    EMISSION_ENERGIES_BY_POP,
+    AllEmissionEnergyDistribution,
+    EBEEmissionEnergyDistribution,
+    IBEEmissionEnergyDistribution,
+    SEEmissionEnergyDistribution,
 )
 from eemilib.emission_data.emission_yield import EmissionYield
 from eemilib.loader.loader import Loader
@@ -155,11 +159,50 @@ class DataMatrix:
     def set_data(
         self,
         emission_data: (
-            EmissionEnergyDistribution | Collection[EmissionEnergyDistribution]
+            SEEmissionEnergyDistribution
+            | Collection[SEEmissionEnergyDistribution]
         ),
         row: None,
         col: None,
-        population: ImplementedPop,
+        population: Literal["SE"],
+        emission_data_type: Literal["Emission Energy"],
+    ) -> None: ...
+
+    @overload
+    def set_data(
+        self,
+        emission_data: (
+            EBEEmissionEnergyDistribution
+            | Collection[EBEEmissionEnergyDistribution]
+        ),
+        row: None,
+        col: None,
+        population: Literal["EBE"],
+        emission_data_type: Literal["Emission Energy"],
+    ) -> None: ...
+
+    @overload
+    def set_data(
+        self,
+        emission_data: (
+            IBEEmissionEnergyDistribution
+            | Collection[IBEEmissionEnergyDistribution]
+        ),
+        row: None,
+        col: None,
+        population: Literal["IBE"],
+        emission_data_type: Literal["Emission Energy"],
+    ) -> None: ...
+    @overload
+    def set_data(
+        self,
+        emission_data: (
+            AllEmissionEnergyDistribution
+            | Collection[AllEmissionEnergyDistribution]
+        ),
+        row: None,
+        col: None,
+        population: Literal["all"],
         emission_data_type: Literal["Emission Energy"],
     ) -> None: ...
 
@@ -271,12 +314,54 @@ class DataMatrix:
         row: None = None,
         col: None = None,
         *,
-        population: ImplementedPop,
+        population: Literal["SE"],
         emission_data_type: Literal["Emission Energy"],
     ) -> (
         None
-        | EmissionEnergyDistribution
-        | Collection[EmissionEnergyDistribution]
+        | SEEmissionEnergyDistribution
+        | Collection[SEEmissionEnergyDistribution]
+    ): ...
+
+    @overload
+    def get_data(
+        self,
+        row: None = None,
+        col: None = None,
+        *,
+        population: Literal["EBE"],
+        emission_data_type: Literal["Emission Energy"],
+    ) -> (
+        None
+        | EBEEmissionEnergyDistribution
+        | Collection[EBEEmissionEnergyDistribution]
+    ): ...
+
+    @overload
+    def get_data(
+        self,
+        row: None = None,
+        col: None = None,
+        *,
+        population: Literal["IBE"],
+        emission_data_type: Literal["Emission Energy"],
+    ) -> (
+        None
+        | IBEEmissionEnergyDistribution
+        | Collection[IBEEmissionEnergyDistribution]
+    ): ...
+
+    @overload
+    def get_data(
+        self,
+        row: None = None,
+        col: None = None,
+        *,
+        population: Literal["all"],
+        emission_data_type: Literal["Emission Energy"],
+    ) -> (
+        None
+        | AllEmissionEnergyDistribution
+        | Collection[AllEmissionEnergyDistribution]
     ): ...
 
     @overload
@@ -421,9 +506,9 @@ class DataMatrix:
                     )
 
                 elif data_type == "Emission Energy":
-                    emission_data = EmissionEnergyDistribution.from_filepath(
-                        pop, loader, *filepath
-                    )
+                    emission_data = EMISSION_ENERGIES_BY_POP[
+                        pop
+                    ].from_filepath(loader=loader, *filepath)
 
                 elif data_type == "Emission Angle":
                     emission_data = EmissionAngleDistribution.from_filepath(
@@ -575,25 +660,25 @@ class DataMatrix:
         return emission_yield
 
     @property
-    def se_energy_distribution(self) -> EmissionEnergyDistribution:
+    def se_energy_distribution(self) -> SEEmissionEnergyDistribution:
         """Return the energy distribution of |SEs|."""
-        distrib = self.data_matrix[0][1]
+        distrib = self.get_data(
+            population="SE", emission_data_type="Emission Energy"
+        )
         if distrib is None:
             raise MissingDataError
-        assert isinstance(
-            distrib, EmissionEnergyDistribution
-        ), f"Incorrect type for energy distribution: {type(distrib)}"
-        assert distrib.population == "SE"
-        return distrib
+        if isinstance(distrib, SEEmissionEnergyDistribution):
+            return distrib
+        raise ValueError("Several Energy distributions not handled.")
 
     @property
-    def all_energy_distribution(self) -> EmissionEnergyDistribution:
+    def all_energy_distribution(self) -> AllEmissionEnergyDistribution:
         """Return the energy distribution of all emitted electrons."""
-        distrib = self.data_matrix[3][1]
+        distrib = self.get_data(
+            population="all", emission_data_type="Emission Energy"
+        )
         if distrib is None:
             raise MissingDataError
-        assert isinstance(
-            distrib, EmissionEnergyDistribution
-        ), f"Incorrect type for energy distribution: {type(distrib)}"
-        assert distrib.population == "all"
-        return distrib
+        if isinstance(distrib, AllEmissionEnergyDistribution):
+            return distrib
+        raise ValueError("Several Energy distributions not handled.")
