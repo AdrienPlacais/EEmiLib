@@ -1,7 +1,6 @@
 """Define an object to store an emission energy distribution."""
 
-from pathlib import Path
-from typing import Literal, Self
+from typing import Self
 
 import pandas as pd
 from eemilib.emission_data.emission_data import EmissionData

@@ -5,12 +5,16 @@ You will need to provide emission energy distribution measurements.
 """
 
 import math
-from typing import Any, TypedDict, cast, overload
+from typing import Any, Literal, TypedDict, cast, overload
 
 import numpy as np
 import pandas as pd
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data.data_matrix import DataMatrix
+from eemilib.emission_data.emission_energy_distribution import (
+    AllEmissionEnergyDistribution,
+    SEEmissionEnergyDistribution,
+)
 from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
@@ -121,14 +125,36 @@ class Maxwellian(Model):
         return pd.DataFrame(out_dict)
 
     def find_optimal_parameters(
-        self, data_matrix: DataMatrix, **kwargs
+        self,
+        data_matrix: DataMatrix,
+        population: Literal["SE", "all"] = "all",
+        **kwargs,
     ) -> None:
-        """Fit model parameters on measurements."""
+        """Fit model parameters on measurements.
+
+        Parameters
+        ----------
+        data_matrix :
+            Object holding measurements.
+        population :
+            Population on which data should be fitted. Even if the model is
+            about |SEs|, we fit on ``"all"`` population by default because in
+            general we measure the distribution energy of all electrons.
+
+        """
         if not data_matrix.has_all_mandatory_files(self.model_config):
             raise ValueError("Files are not all provided.")
 
-        distribution = data_matrix.se_energy_distribution
-        assert distribution.population == "SE"
+        distribution = data_matrix.get_data(
+            population=population, emission_data_type="Emission Energy"
+        )
+        assert isinstance(
+            distribution,
+            (AllEmissionEnergyDistribution, SEEmissionEnergyDistribution),
+        ), (
+            f"Emission energy for {population} not stored, or several files "
+            "were returned."
+        )
 
         param = self.parameters["temperature"]
 
