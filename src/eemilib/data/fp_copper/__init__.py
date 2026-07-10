@@ -23,6 +23,12 @@ Parameters are taken from Tab. 1 and 2 in Furman and Pivi paper
 
 """
 
+from importlib import resources
+
+files = resources.files(__name__)
+cst_emission_yields = files / "cst_emission_yields.txt"
+cst_energy_distributions = files / "cst_energy_distributions.txt"
+
 furman_pivi_parameters_values = {
     # =====================================================================
     # Secondary Electrons (or "True Secondaries")

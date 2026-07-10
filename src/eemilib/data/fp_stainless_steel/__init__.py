@@ -25,6 +25,12 @@ These settings are the default in CST when selecting Furman and Pivi model.
 
 """
 
+from importlib import resources
+
+files = resources.files(__name__)
+cst_emission_yields = files / "cst_emission_yields.txt"
+cst_energy_distributions = files / "cst_energy_distributions.txt"
+
 furman_pivi_parameters_values = {
     # =====================================================================
     # Secondary Electrons (or "True Secondaries")
