@@ -1,8 +1,13 @@
 """Define some common helpers for loading data."""
 
+from importlib.resources.abc import Traversable
 from pathlib import Path
 
 from eemilib.util.constants import col_energy
+
+#: .. todo::
+#:    All loaders should support Traversable also
+DataPath = str | Path | Traversable
 
 
 def read_header(
@@ -80,3 +85,20 @@ def read_comments(filepath: str | Path, comment: str = "#") -> list[str]:
                 return comments
             comments.append(line[1:])
     return comments
+
+
+def read_text(filepath: DataPath) -> str:
+    """Read file contents regardless of path type or encoding.
+
+    Accepts a plain string path, a :class:`~pathlib.Path`, or a
+    :class:`~importlib.resources.abc.Traversable` (as returned by
+    ``importlib.resources.files``). Falls back to Latin-1 if the file is not
+    valid UTF-8, since some exported files (e.g. from CST) are Windows-encoded
+    rather than UTF-8.
+
+    """
+    target = Path(filepath) if isinstance(filepath, str) else filepath
+    try:
+        return target.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        return target.read_text(encoding="latin-1")
