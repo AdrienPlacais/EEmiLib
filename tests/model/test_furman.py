@@ -1,7 +1,7 @@
 """Define tests for the Furman and Pivi model.
 
 .. todo::
-   Emission energy distributions
+   Emission angle distributions
 
 """
 
@@ -12,6 +12,13 @@ from eemilib.data import fp_copper as cu
 from eemilib.data import fp_stainless_steel as ss
 from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.emission_data.emission_data import EmissionData
+from eemilib.emission_data.emission_energy_distribution import (
+    AllEmissionEnergyDistribution,
+    EBEEmissionEnergyDistribution,
+    EmissionEnergyDistribution,
+    IBEEmissionEnergyDistribution,
+    SEEmissionEnergyDistribution,
+)
 from eemilib.emission_data.emission_yield import EmissionYield
 from eemilib.model import FurmanPivi
 from eemilib.util.constants import ImplementedPop
@@ -32,31 +39,41 @@ def furman_pivi_ss() -> FurmanPivi:
     them in case default parameters change.
 
     """
-    return FurmanPivi(parameters_values=ss.furman_pivi_parameters_values)
+    return FurmanPivi(
+        parameters_values=ss.furman_pivi_parameters_values,
+        implementation="binomial-penetrated",
+    )
 
 
 @pytest.fixture
 def furman_pivi_cu() -> FurmanPivi:
     """Create an instance with the Cu parameters."""
-    return FurmanPivi(parameters_values=cu.furman_pivi_parameters_values)
+    return FurmanPivi(
+        parameters_values=cu.furman_pivi_parameters_values,
+        implementation="binomial-penetrated",
+    )
 
 
 class MockDataMatrix(DataMatrix):
-    """Mock a data matrix with emission yields for all populations."""
+    """Mock a data matrix with emission yields and/or energy distributions."""
 
     def __init__(
         self,
-        seey: EmissionData,
-        ebeey: EmissionData,
-        ibeey: EmissionData,
-        teey: EmissionData,
+        seey: EmissionData | None = None,
+        ebeey: EmissionData | None = None,
+        ibeey: EmissionData | None = None,
+        teey: EmissionData | None = None,
+        se_pdf: EmissionData | None = None,
+        ebe_pdf: EmissionData | None = None,
+        ibe_pdf: EmissionData | None = None,
+        all_pdf: EmissionData | None = None,
     ) -> None:
-        """Set emission yield for |SEs|, |EBEs|, |IBEs|."""
+        """Set emission yield and/or energy distribution for all populations."""
         self.data_matrix = [
-            [seey, None, None],
-            [ebeey, None, None],
-            [ibeey, None, None],
-            [teey, None, None],
+            [seey, se_pdf, None],
+            [ebeey, ebe_pdf, None],
+            [ibeey, ibe_pdf, None],
+            [teey, all_pdf, None],
         ]
 
     def has_all_mandatory_files(self, *args, **kwargs) -> bool:
@@ -73,16 +90,54 @@ def _mock_data_matrix_from_yields(yields: dict) -> MockDataMatrix:
     return MockDataMatrix(seey=seey, ebeey=ebeey, ibeey=ibeey, teey=teey)
 
 
+def _mock_data_matrix_from_energy_distributions(
+    distributions: dict,
+) -> MockDataMatrix:
+    """Build a :class:`MockDataMatrix` from loaded (df, e_pe) distribution pairs."""
+    se_df, se_e_pe = distributions["SE"]
+    ebe_df, ebe_e_pe = distributions["EBE"]
+    ibe_df, ibe_e_pe = distributions["IBE"]
+    all_df, all_e_pe = distributions["all"]
+
+    se_pdf = SEEmissionEnergyDistribution(data=se_df, e_pe=se_e_pe)
+    ebe_pdf = EBEEmissionEnergyDistribution(data=ebe_df, e_pe=ebe_e_pe)
+    ibe_pdf = IBEEmissionEnergyDistribution(data=ibe_df, e_pe=ibe_e_pe)
+    all_pdf = AllEmissionEnergyDistribution(data=all_df, e_pe=all_e_pe)
+    return MockDataMatrix(
+        se_pdf=se_pdf, ebe_pdf=ebe_pdf, ibe_pdf=ibe_pdf, all_pdf=all_pdf
+    )
+
+
 @pytest.fixture
 def emission_data_ss(verified_ss_emission_yields: dict) -> MockDataMatrix:
-    """Instantiate SS exported with CST, via the verified loader fixture."""
+    """Instantiate SS yields exported with CST, via the verified loader fixture."""
     return _mock_data_matrix_from_yields(verified_ss_emission_yields)
 
 
 @pytest.fixture
 def emission_data_cu(verified_cu_emission_yields: dict) -> MockDataMatrix:
-    """Instantiate Cu exported with CST, via the verified loader fixture."""
+    """Instantiate Cu yields exported with CST, via the verified loader fixture."""
     return _mock_data_matrix_from_yields(verified_cu_emission_yields)
+
+
+@pytest.fixture
+def energy_distrib_data_ss(
+    verified_ss_energy_distributions: dict,
+) -> MockDataMatrix:
+    """Instantiate SS energy distributions, via the verified loader fixture."""
+    return _mock_data_matrix_from_energy_distributions(
+        verified_ss_energy_distributions
+    )
+
+
+@pytest.fixture
+def energy_distrib_data_cu(
+    verified_cu_energy_distributions: dict,
+) -> MockDataMatrix:
+    """Instantiate Cu energy distributions, via the verified loader fixture."""
+    return _mock_data_matrix_from_energy_distributions(
+        verified_cu_energy_distributions
+    )
 
 
 def test_initial_parameters(furman_pivi_model: FurmanPivi) -> None:
@@ -196,6 +251,69 @@ def test_emission_yields_values(
     )
 
     assert_frame_equal(expected.data, calculated)
+
+
+@pytest.mark.parametrize(
+    "material, model_fixture, data_fixture",
+    [
+        pytest.param(
+            "SS",
+            "furman_pivi_ss",
+            "energy_distrib_data_ss",
+            id="Stainless steel",
+        ),
+        pytest.param(
+            "Cu", "furman_pivi_cu", "energy_distrib_data_cu", id="Copper"
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    "population",
+    [
+        pytest.param("SE", id="SE energy distribution"),
+        pytest.param("EBE", id="EBE energy distribution"),
+        pytest.param("IBE", id="IBE energy distribution"),
+        pytest.param("all", id="Overall energy distribution"),
+    ],
+)
+def test_energy_distribution_values(
+    request: pytest.FixtureRequest,
+    material: str,
+    model_fixture: str,
+    data_fixture: str,
+    population: ImplementedPop,
+) -> None:
+    """Check that our implementation gives same spectrum as CST, for SS and Cu.
+
+    Both ``expected`` and ``calculated`` are wrapped in
+    :class:`.EmissionEnergyDistribution` before comparison, since this class
+    normalizes ``data`` in its constructor; comparing raw model output
+    against already-normalized CST data would otherwise fail on scale alone.
+
+    """
+    model: FurmanPivi = request.getfixturevalue(model_fixture)
+    data_matrix: MockDataMatrix = request.getfixturevalue(data_fixture)
+
+    expected = data_matrix.get_data(
+        population=population, emission_data_type="Emission Energy"
+    )
+    assert isinstance(expected, EmissionEnergyDistribution)
+    emission_energies = np.array(expected.energies)
+    theta = np.array(expected.angles)
+
+    calculated_df = model.get_data(
+        population=population,
+        emission_data_type="Emission Energy",
+        energy=emission_energies,
+        theta=theta,
+        impact_energy=expected.e_pe,
+    )
+    assert isinstance(calculated_df, pd.DataFrame)
+    calculated = EmissionEnergyDistribution(
+        population=population, data=calculated_df, e_pe=expected.e_pe
+    )
+
+    assert_frame_equal(expected.data, calculated.data)
 
 
 @pytest.mark.xfail

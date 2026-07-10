@@ -1,5 +1,6 @@
 """Define tests for the Maxwellian model."""
 
+from os import supports_bytes_environ
 from pathlib import Path
 
 import numpy as np
@@ -8,9 +9,10 @@ import pytest
 from eemilib import emission_energy_ag
 from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.emission_data.emission_energy_distribution import (
-    EmissionEnergyDistribution,
+    SEEmissionEnergyDistribution,
 )
 from eemilib.loader import PandasLoader
+from eemilib.loader.helper import DataPath
 from eemilib.model import Maxwellian
 from pytest import approx
 
@@ -24,7 +26,7 @@ def maxwellian_model() -> Maxwellian:
 class MockDataMatrix(DataMatrix):
     """Mock a data matrix with only an energy distribution for |SEs|."""
 
-    def __init__(self, emission_data: EmissionEnergyDistribution) -> None:
+    def __init__(self, emission_data: SEEmissionEnergyDistribution) -> None:
         """Set emission energy pdf for 'SEs' population."""
         self.data_matrix = [
             [None, emission_data, None],
@@ -73,13 +75,13 @@ def test_find_optimal_parameters(
     """Test on several samples that the fit gives expected results."""
     data_matrix = DataMatrix()
     data_matrix.set_files(
-        [Path(filepath)],
         population="SE",
         emission_data_type="Emission Energy",
+        files=(Path(filepath),),
     )
     data_matrix.load_data(PandasLoader())
     model = Maxwellian()
-    model.find_optimal_parameters(data_matrix)
+    model.find_optimal_parameters(data_matrix, population="SE")
     found_parameters = {
         name: val.value for name, val in model.parameters.items()
     }
