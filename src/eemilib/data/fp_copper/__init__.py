@@ -66,7 +66,7 @@ furman_pivi_parameters_values = {
     "normal_e_max_ebe": 0.0,
     "p_1_hat": 0.496,
     "sigma": 2,
-    "p_1_inf_ebe": 0.07,
+    "p_1_inf_ebe": 0.02,
     "W": 60.86,
     "p": 1,
     "e_1": 0.26,

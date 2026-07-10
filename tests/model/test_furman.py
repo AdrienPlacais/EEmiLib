@@ -195,7 +195,7 @@ def test_emission_yields_values(
         theta=theta,
     )
 
-    assert_frame_equal(expected.data, calculated, atol=1e-1)
+    assert_frame_equal(expected.data, calculated)
 
 
 @pytest.mark.xfail
