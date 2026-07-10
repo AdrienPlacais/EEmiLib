@@ -11,7 +11,7 @@ DataPath = str | Path | Traversable
 
 
 def read_header(
-    filepath: str | Path,
+    filepath: DataPath,
     sep: str = "\t",
     comment: str = "#",
 ) -> tuple[list[str], int]:
@@ -41,11 +41,11 @@ def read_header(
     """
     header = []
     n_comments = 0
-    with open(filepath) as file:
-        for n_comments, line in enumerate(file):
-            if not line.startswith(comment):
-                header = line.strip().split(sep)
-                break
+    file = read_text(filepath)
+    for n_comments, line in enumerate(file):
+        if not line.startswith(comment):
+            header = line.strip().split(sep)
+            break
     if not header:
         raise OSError(
             f"Error reading {filepath}. It seems there is no uncommented line?"
@@ -62,7 +62,7 @@ def _format_header(header: list[str]) -> list[str]:
     return header
 
 
-def read_comments(filepath: str | Path, comment: str = "#") -> list[str]:
+def read_comments(filepath: DataPath, comment: str = "#") -> list[str]:
     """Read the comments in the file.
 
     Parameters
@@ -79,11 +79,11 @@ def read_comments(filepath: str | Path, comment: str = "#") -> list[str]:
 
     """
     comments: list[str] = []
-    with open(filepath) as file:
-        for line in file:
-            if not line.startswith(comment):
-                return comments
-            comments.append(line[1:])
+    file = read_text(filepath)
+    for line in file:
+        if not line.startswith(comment):
+            return comments
+        comments.append(line[1:])
     return comments
 
 
