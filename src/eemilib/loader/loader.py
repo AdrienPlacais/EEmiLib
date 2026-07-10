@@ -5,9 +5,8 @@ from collections.abc import Collection
 from pathlib import Path
 
 import pandas as pd
+from eemilib.loader.helper import DataPath
 from eemilib.util.helper import documentation_url
-
-paths = Path | str
 
 
 class Loader(ABC):
@@ -26,7 +25,7 @@ class Loader(ABC):
     @abstractmethod
     def load_emission_yield(
         self,
-        filepath: str | Path | Collection[str] | Collection[Path],
+        filepath: DataPath | Collection[DataPath],
         *args,
         **kwargs,
     ) -> pd.DataFrame:
@@ -50,7 +49,7 @@ class Loader(ABC):
     @abstractmethod
     def load_emission_angle_distribution(
         self,
-        filepath: str | Path | Collection[str] | Collection[Path],
+        filepath: DataPath | Collection[DataPath],
         *args,
         **kwargs,
     ) -> pd.DataFrame:
