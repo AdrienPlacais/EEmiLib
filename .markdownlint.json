@@ -1,0 +1,4 @@
+{
+  // Deactive warning for multiple identical headings
+  "MD024": false
+}
