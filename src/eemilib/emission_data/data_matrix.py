@@ -7,7 +7,6 @@
 
 import logging
 from collections.abc import Collection
-from pathlib import Path
 from typing import Literal, overload
 
 from eemilib.core.model_config import ModelConfig
@@ -23,6 +22,7 @@ from eemilib.emission_data.emission_energy_distribution import (
     SEEmissionEnergyDistribution,
 )
 from eemilib.emission_data.emission_yield import EmissionYield
+from eemilib.loader.helper import DataPath
 from eemilib.loader.loader import Loader
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
@@ -56,9 +56,7 @@ class DataMatrix:
 
     def __init__(self) -> None:
         """Instantiate the object."""
-        self.files_matrix: list[
-            list[None | str | Collection[str] | Path | Collection[Path]]
-        ]
+        self.files_matrix: list[list[None | DataPath | Collection[DataPath]]]
         self.files_matrix = [
             [None for _ in range(n_cols)] for _ in range(n_rows)
         ]
@@ -94,26 +92,27 @@ class DataMatrix:
     @overload
     def set_files(
         self,
-        files: str | Path | Collection[str] | Collection[Path],
+        files: DataPath | Collection[DataPath],
         row: int,
         col: int,
-        population: None,
-        emission_data_type: None,
+        population: None = None,
+        emission_data_type: None = None,
     ) -> None: ...
 
     @overload
     def set_files(
         self,
-        files: str | Path | Collection[str] | Collection[Path],
-        row: None,
-        col: None,
+        files: DataPath | Collection[DataPath],
+        row: None = None,
+        col: None = None,
+        *,
         population: ImplementedPop,
         emission_data_type: ImplementedEmissionData,
     ) -> None: ...
 
     def set_files(
         self,
-        files: str | Path | Collection[str] | Collection[Path],
+        files: DataPath | Collection[DataPath],
         row: int | None = None,
         col: int | None = None,
         population: ImplementedPop | None = None,
@@ -255,7 +254,7 @@ class DataMatrix:
         col: int,
         population: None,
         emission_data_type: None,
-    ) -> None | str | Path | Collection[str] | Collection[Path]: ...
+    ) -> None | DataPath | Collection[DataPath]: ...
 
     @overload
     def get_files(
@@ -264,7 +263,7 @@ class DataMatrix:
         col: None,
         population: ImplementedPop,
         emission_data_type: ImplementedEmissionData,
-    ) -> None | str | Path | Collection[str] | Collection[Path]: ...
+    ) -> None | DataPath | Collection[DataPath]: ...
 
     def get_files(
         self,
@@ -272,7 +271,7 @@ class DataMatrix:
         col: int | None = None,
         population: ImplementedPop | None = None,
         emission_data_type: ImplementedEmissionData | None = None,
-    ) -> None | str | Path | Collection[str] | Collection[Path]:
+    ) -> None | DataPath | Collection[DataPath]:
         """Get the file(s) by index or name."""
         if population and emission_data_type:
             row, col = self._natures_to_indexes(
@@ -502,17 +501,17 @@ class DataMatrix:
                 emission_data = None
                 if data_type == "Emission Yield":
                     emission_data = EmissionYield.from_filepath(
-                        pop, loader, *filepath
+                        loader, *filepath, population=pop
                     )
 
                 elif data_type == "Emission Energy":
                     emission_data = EMISSION_ENERGIES_BY_POP[
                         pop
-                    ].from_filepath(loader=loader, *filepath)
+                    ].from_filepath(loader, *filepath, population=pop)
 
                 elif data_type == "Emission Angle":
                     emission_data = EmissionAngleDistribution.from_filepath(
-                        pop, loader, *filepath
+                        loader, *filepath, population=pop
                     )
 
                 if emission_data:
