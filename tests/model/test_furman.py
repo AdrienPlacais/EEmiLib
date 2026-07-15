@@ -99,10 +99,16 @@ def _mock_data_matrix_from_energy_distributions(
     ibe_df, ibe_e_pe = distributions["IBE"]
     all_df, all_e_pe = distributions["all"]
 
-    se_pdf = SEEmissionEnergyDistribution(data=se_df, e_pe=se_e_pe)
-    ebe_pdf = EBEEmissionEnergyDistribution(data=ebe_df, e_pe=ebe_e_pe)
-    ibe_pdf = IBEEmissionEnergyDistribution(data=ibe_df, e_pe=ibe_e_pe)
-    all_pdf = AllEmissionEnergyDistribution(data=all_df, e_pe=all_e_pe)
+    se_pdf = SEEmissionEnergyDistribution(data=se_df, e_pe=se_e_pe, norm=1.0)
+    ebe_pdf = EBEEmissionEnergyDistribution(
+        data=ebe_df, e_pe=ebe_e_pe, norm=1.0
+    )
+    ibe_pdf = IBEEmissionEnergyDistribution(
+        data=ibe_df, e_pe=ibe_e_pe, norm=1.0
+    )
+    all_pdf = AllEmissionEnergyDistribution(
+        data=all_df, e_pe=all_e_pe, norm=1.0
+    )
     return MockDataMatrix(
         se_pdf=se_pdf, ebe_pdf=ebe_pdf, ibe_pdf=ibe_pdf, all_pdf=all_pdf
     )

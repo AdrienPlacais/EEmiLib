@@ -12,7 +12,6 @@ from eemilib.emission_data.emission_energy_distribution import (
     SEEmissionEnergyDistribution,
 )
 from eemilib.loader import PandasLoader
-from eemilib.loader.helper import DataPath
 from eemilib.model import Maxwellian
 from pytest import approx
 

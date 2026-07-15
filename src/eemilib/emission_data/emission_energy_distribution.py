@@ -40,9 +40,9 @@ class EmissionEnergyDistribution(EmissionData):
         e_pe :
             Energy of primary electrons in :unit:`eV`.
         norm :
-            To specify re-normalization constant. If not provided, we try to
-            set the maximum of |SEs| to unity. Provide ``1.0`` to avoid any
-            normalization.
+            Re-normalization constant. If not provided, defaults to
+            :meth:`_default_norm`, which each subclass defines according to its
+            own population. Pass ``1.0`` explicitly to disable normalization.
 
         """
         super().__init__(population, data)
@@ -61,9 +61,8 @@ class EmissionEnergyDistribution(EmissionData):
         self.e_pe = e_pe if e_pe else float(self.data[col_energy].max())
 
         #: Re-normalization factor of distribution.
-        self.norm = norm
-        if self.norm:
-            self.normalize()
+        self.norm = norm if norm is not None else self._default_norm()
+        self.normalize()
 
     @classmethod
     def from_filepath(
@@ -86,6 +85,18 @@ class EmissionEnergyDistribution(EmissionData):
         """
         data, e_pe = loader.load_emission_energy_distribution(*filepath)
         return cls(population, data, e_pe=e_pe)
+
+    def _default_norm(self) -> float:
+        """Compute the default normalization constant for this population.
+
+        Subclasses should override this to define population-specific behavior
+        (e.g. normalizing by this population's own peak value).
+
+        """
+        logging.warning(
+            "Default norm was not overriden. Returning default value of 1.0"
+        )
+        return 1.0
 
     @property
     def label(self) -> str:
@@ -136,20 +147,20 @@ class EmissionEnergyDistribution(EmissionData):
         return int(self._n_points / 4)
 
     @property
-    def _peak(self) -> tuple[int, float]:
+    def _peak(self) -> tuple[float, float]:
         """Find maximum of PDF.
 
         Returns
         -------
-        int
-            Index of maximum value.
         float
             Position of the peak in :unit:`eV`.
+        float
+            Value of the peak.
 
         """
         i = self.data[col_normal].argmax()
         e_peak = self.data.at[i, col_energy]
-        return int(i), float(e_peak)
+        return float(e_peak), float(self.data.at[i, col_normal])
 
 
 class SEEmissionEnergyDistribution(EmissionEnergyDistribution):
@@ -190,6 +201,15 @@ class SEEmissionEnergyDistribution(EmissionEnergyDistribution):
             )
         data, e_pe = loader.load_emission_energy_distribution(*filepath)
         return cls(data, e_pe=e_pe)
+
+    def _default_norm(self) -> float:
+        """Compute the default normalization constant for this population.
+
+        Subclasses should override this to define population-specific behavior
+        (e.g. normalizing by this population's own peak value).
+
+        """
+        return self._peak[1]
 
 
 class EBEEmissionEnergyDistribution(EmissionEnergyDistribution):
@@ -284,12 +304,11 @@ class AllEmissionEnergyDistribution(EmissionEnergyDistribution):
         super().__init__(population="all", data=data, e_pe=e_pe, norm=norm)
         #: Energy at the maximum of |SEs| in :unit:`eV`.
         self.e_peak_se: float
-        _, self.e_peak_se = self._SE_peak
+        self.e_peak_se, _ = self._SE_peak
         #: Energy at the maximum of |EBEs| in :unit:`eV`.
         self.e_peak_ebe: float
         #: Position of |EBE| peak.
-        self.i_peak_ebe: int
-        self.i_peak_ebe, self.e_peak_ebe = self._EBE_peak
+        self.e_peak_ebe, _ = self._EBE_peak
 
     @classmethod
     def from_filepath(
@@ -319,22 +338,25 @@ class AllEmissionEnergyDistribution(EmissionEnergyDistribution):
         data, e_pe = loader.load_emission_energy_distribution(*filepath)
         return cls(data, e_pe=e_pe)
 
+    def _default_norm(self) -> float:
+        return self._SE_peak[1]
+
     @property
-    def _SE_peak(self) -> tuple[int, float]:
+    def _SE_peak(self) -> tuple[float, float]:
         """Find the |SEs| maximum."""
         i = self.data[: self._se_ebe_limit][col_normal].argmax()
         e_peak_se = self.data.at[i, col_energy]
-        return int(i), float(e_peak_se)
+        return float(e_peak_se), float(self.data.at[i, col_normal])
 
     @property
-    def _EBE_peak(self) -> tuple[int, float]:
+    def _EBE_peak(self) -> tuple[float, float]:
         """Find the position of the |EBE| peak."""
         i = (
             self.data[self._se_ebe_limit :][col_normal].argmax()
             + self._se_ebe_limit
         )
         e_peak_ebe = self.data.at[i, col_energy]
-        return int(i), float(e_peak_ebe)
+        return float(e_peak_ebe), float(self.data.at[i, col_normal])
 
 
 #: Maps populations to their appropriate :class:`.EmissionEnergyDistribution`
