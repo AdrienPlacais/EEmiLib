@@ -1,5 +1,6 @@
 """Define an object to store an emission energy distribution."""
 
+import logging
 from typing import Self
 
 import pandas as pd
@@ -181,7 +182,14 @@ class SEEmissionEnergyDistribution(EmissionEnergyDistribution):
             The concerned population of electrons.
 
         """
-        return super().from_filepath(loader, *filepath, population=population)
+        if population != "SE":
+            logging.warning(
+                f"{cls.__name__} always represents population 'SE', but "
+                f"{population = } was given. The returned object will still "
+                "hold 'SE' data; the mismatched argument is ignored."
+            )
+        data, e_pe = loader.load_emission_energy_distribution(*filepath)
+        return cls(data, e_pe=e_pe)
 
 
 class EBEEmissionEnergyDistribution(EmissionEnergyDistribution):
@@ -214,7 +222,14 @@ class EBEEmissionEnergyDistribution(EmissionEnergyDistribution):
             The concerned population of electrons.
 
         """
-        return super().from_filepath(loader, *filepath, population=population)
+        if population != "EBE":
+            logging.warning(
+                f"{cls.__name__} always represents population 'EBE', but "
+                f"{population = } was given. The returned object will still "
+                "hold 'EBE' data; the mismatched argument is ignored."
+            )
+        data, e_pe = loader.load_emission_energy_distribution(*filepath)
+        return cls(data, e_pe=e_pe)
 
 
 class IBEEmissionEnergyDistribution(EmissionEnergyDistribution):
@@ -247,7 +262,14 @@ class IBEEmissionEnergyDistribution(EmissionEnergyDistribution):
             The concerned population of electrons.
 
         """
-        return super().from_filepath(loader, *filepath, population=population)
+        if population != "IBE":
+            logging.warning(
+                f"{cls.__name__} always represents population 'IBE', but "
+                f"{population = } was given. The returned object will still "
+                "hold 'IBE' data; the mismatched argument is ignored."
+            )
+        data, e_pe = loader.load_emission_energy_distribution(*filepath)
+        return cls(data, e_pe=e_pe)
 
 
 class AllEmissionEnergyDistribution(EmissionEnergyDistribution):
@@ -288,7 +310,14 @@ class AllEmissionEnergyDistribution(EmissionEnergyDistribution):
             The concerned population of electrons.
 
         """
-        return super().from_filepath(loader, *filepath, population=population)
+        if population != "all":
+            logging.warning(
+                f"{cls.__name__} always represents population 'all', but "
+                f"{population = } was given. The returned object will still "
+                "hold 'all' data; the mismatched argument is ignored."
+            )
+        data, e_pe = loader.load_emission_energy_distribution(*filepath)
+        return cls(data, e_pe=e_pe)
 
     @property
     def _SE_peak(self) -> tuple[int, float]:
