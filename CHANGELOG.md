@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0]
+
+### Added
+
+- Furman and Pivi model.
+  - Several implementations are provided, following Furman and Pivi paper.
+  - [ ] Fit.
+  - [ ] Doc.
+  - [ ] Add max number of emitted electrons implementation.
+  - [ ] Emission angle distribution.
+- `CSTLoader` to load `ASCII Export`-ed emission yield files.
+- Emission yield and energy distributions for Stainless Steel and Copper files.
+  - Modelled with Furman and Pivi, data taken from their paper.
+  - Exported with CST, you can load them with `CSTLoader`.
+
+### Changed
+
+- The GUI `Plot` section is in a new tab to avoid overloading the main tab.
+- Both `ChungEverhart` and `Maxwellian` energy distribution models can be fitted
+  on SEs or all electrons emission energy distribution files.
+
 ## [0.1.5] -- 2026-05-22
 
 ### Added
