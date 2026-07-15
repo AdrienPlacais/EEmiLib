@@ -10,7 +10,7 @@ import math
 from abc import ABC, abstractmethod
 from collections.abc import Collection
 from pprint import pformat
-from typing import Any
+from typing import Any, ClassVar
 
 import numpy as np
 import pandas as pd
@@ -49,9 +49,10 @@ class Model(ABC):
         List the :class:`.Parameter` kwargs.
     model_config :
         List the files that the model needs to know in order to work.
-    implementations :
-        List of different implementations for the same :class:`.Model`. See
-        for example :class:`.vaughan.Vaughan`.
+    implementation_choices :
+        Maps each independent implementation axis to its allowed options. Empty
+        by default -- models with a single fixed implementation don't need to
+        define this.
 
     """
 
@@ -62,7 +63,7 @@ class Model(ABC):
     is_dielectrics_compatible: bool
     initial_parameters: dict[str, dict[str, str | float | bool]]
     model_config: ModelConfig
-    implementations: tuple[str, ...] | None = None
+    implementation_choices: ClassVar[dict[str, tuple[str, ...]]] = {}
 
     def __init__(
         self, *args, parameters_values: dict[str, Any] | None = None, **kwargs
@@ -80,6 +81,9 @@ class Model(ABC):
         #: A :class:`.TypedDict` specific to every :class:`.model.Model`. Keys
         #: are parameters names, values are :class:`.Parameter`.
         self.parameters: Any
+        #: Maps each axis name (see :attr:`implementation_choices`) to the
+        #: currently selected option.
+        self.current_implementations: dict[str, str] = {}
 
     @classmethod
     def _generate_parameter_docs(cls) -> str:
@@ -369,6 +373,15 @@ class Model(ABC):
         """Reset multiple parameter values."""
         for name in names:
             self.reset_parameter_value(name)
+
+    def set_implementation(self, name: str, value: str) -> None:
+        """Update one implementation axis.
+
+        Subclasses defining :attr:`implementation_choices` must override
+        this to apply the effect of switching ``name`` to ``value``.
+
+        """
+        raise NotImplementedError
 
     def evaluate(
         self,

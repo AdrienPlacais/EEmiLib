@@ -41,7 +41,8 @@ def furman_pivi_ss() -> FurmanPivi:
     """
     return FurmanPivi(
         parameters_values=ss.furman_pivi_parameters_values,
-        implementation="binomial-penetrated",
+        distribution="Binomial",
+        normalization="penetrated",
     )
 
 
@@ -50,7 +51,8 @@ def furman_pivi_cu() -> FurmanPivi:
     """Create an instance with the Cu parameters."""
     return FurmanPivi(
         parameters_values=cu.furman_pivi_parameters_values,
-        implementation="binomial-penetrated",
+        distribution="Binomial",
+        normalization="penetrated",
     )
 
 

@@ -136,7 +136,7 @@ class Vaughan(Model):
             "is_locked": False,
         },
     }
-    implementations = VAUGHAN_IMPLEMENTATIONS
+    implementation_choices = {"implementation": VAUGHAN_IMPLEMENTATIONS}
 
     def __init__(
         self,
@@ -175,11 +175,9 @@ class Vaughan(Model):
 
         self._func: Callable
         self.current_implementation: VaughanImplementation
-        self.set_implementation(implementation)
+        self.set_implementation("implementation", implementation)
 
-    def set_implementation(
-        self, implementation: VaughanImplementation
-    ) -> None:
+    def set_implementation(self, name: str, value: str) -> None:
         r"""Update some parameters to reproduce a specific implementation.
 
         Vaughan CST:
@@ -200,20 +198,26 @@ class Vaughan(Model):
            ``parameters_values`` argument of ``__init__`` method.
 
         """
-        current_implementation = getattr(self, "current_implementation", None)
-        if current_implementation == implementation:
+        if name != "implementation":
+            logging.error(
+                f"Unknown implementation axis {name = } for Vaughan."
+            )
             return
-        implementation_update = current_implementation is not None
+
+        implementation = cast(VaughanImplementation, value)
+        current = self.current_implementations.get("implementation")
+        if current == implementation:
+            return
+        implementation_update = current is not None
         if implementation_update:
             logging.info(
-                f"Changing Vaughan implementation: {current_implementation} to"
-                f" {implementation}."
+                f"Changing Vaughan implementation: {current} to "
+                f"{implementation}."
             )
 
-        self.current_implementation = implementation
+        self.current_implementations["implementation"] = implementation
         if implementation == "original":
             self._func = vaughan_func
-
             if implementation_update:
                 self.reset_parameters_values(
                     "teey_low", "delta_E_transition", "E_0"
@@ -223,7 +227,6 @@ class Vaughan(Model):
 
         if implementation == "CST":
             self._func = vaughan_func
-
             if implementation_update:
                 self.reset_parameters_values("delta_E_transition", "E_0")
             self.set_parameter_value("teey_low", 0.0)
@@ -232,17 +235,16 @@ class Vaughan(Model):
 
         if implementation == "SPARK3D":
             self._func = vaughan_spark3d
-
             self.set_parameters_values(
                 {"teey_low": 0.0, "delta_E_transition": 2.0}
             )
             self.parameters["E_0"].unlock()
-
-            E_0 = self._E_0_matching(E_c1=self.parameters["E_c1"].value)
-            if np.isnan(E_0):
+            e_0 = self._E_0_matching(E_c1=self.parameters["E_c1"].value)
+            if np.isnan(e_0):
                 return
-            self.set_parameter_value("E_0", E_0)
+            self.set_parameter_value("E_0", e_0)
             return
+
         logging.error(f"{implementation = } not in {VaughanImplementation}")
 
     def get_data(

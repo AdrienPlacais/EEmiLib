@@ -1,6 +1,5 @@
 """Define tests for the Maxwellian model."""
 
-from os import supports_bytes_environ
 from pathlib import Path
 
 import numpy as np

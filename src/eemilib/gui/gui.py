@@ -33,7 +33,7 @@ from eemilib.gui.helper import (
 )
 from eemilib.gui.loader_selection import LoaderSettingsDialog
 from eemilib.gui.model_selection import (
-    ModelSettingsDialog,
+    ModelImplementationsDialog,
     model_configuration,
 )
 from eemilib.gui.styles import (
@@ -194,7 +194,9 @@ class MainWindow(QMainWindow):
     # =========================================================================
     def _setup_loader_dropdown(self) -> None:
         """Set the :class:`.Loader` related interface."""
-        settings_label, settings_action = self._setup_loader_settings_dialog()
+        settings_label, settings_action = (
+            self._setup_loader_implementations_dialog()
+        )
         classes, layout, dropdown, buttons = setup_dropdown(
             module_name="eemilib.loader",
             base_class=Loader,
@@ -216,9 +218,9 @@ class MainWindow(QMainWindow):
         self.loader = self._dropdown_to_class("Loader")()
         set_help_button_action(self.loader_help_button, self.loader)
 
-    def _setup_loader_settings_dialog(self) -> tuple[str, Callable]:
+    def _setup_loader_implementations_dialog(self) -> tuple[str, Callable]:
         """Give arguments to setup the loader setttings button."""
-        settings_label = "⚙️ Settings"
+        settings_label = "⚙️ Implementations"
 
         def settings_action() -> int:
             code = LoaderSettingsDialog(self, self.loader).exec()
@@ -287,7 +289,7 @@ class MainWindow(QMainWindow):
         settings_label = "⚙️ Settings"
 
         def settings_action() -> int:
-            code = ModelSettingsDialog(self, self.model).exec()
+            code = ModelImplementationsDialog(self, self.model).exec()
             self._populate_parameters_table_values()
             self._populate_parameters_table_constants()
             return code
