@@ -88,7 +88,7 @@ class CSTLoader(Loader):
         if comment is None:
             comment = self.comment
 
-        lines = read_text(filepath).splitlines()
+        lines = read_text(filepath)
 
         blocks: dict[str, pd.DataFrame] = {}
         current_name: str | None = None
@@ -139,7 +139,7 @@ class CSTLoader(Loader):
         """
         if comment is None:
             comment = self.comment
-        for line in read_text(filepath).splitlines():
+        for line in read_text(filepath):
             stripped = line.strip()
             if not stripped.startswith(comment):
                 continue

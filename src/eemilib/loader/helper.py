@@ -11,9 +11,7 @@ DataPath = str | Path | Traversable
 
 
 def read_header(
-    filepath: DataPath,
-    sep: str = "\t",
-    comment: str = "#",
+    filepath: DataPath, sep: str = "\t", comment: str = "#"
 ) -> tuple[list[str], int]:
     """Get the line describing columns content.
 
@@ -87,7 +85,7 @@ def read_comments(filepath: DataPath, comment: str = "#") -> list[str]:
     return comments
 
 
-def read_text(filepath: DataPath) -> str:
+def read_text(filepath: DataPath) -> list[str]:
     """Read file contents regardless of path type or encoding.
 
     Accepts a plain string path, a :class:`~pathlib.Path`, or a
@@ -99,6 +97,6 @@ def read_text(filepath: DataPath) -> str:
     """
     target = Path(filepath) if isinstance(filepath, str) else filepath
     try:
-        return target.read_text(encoding="utf-8")
+        return target.read_text(encoding="utf-8").splitlines()
     except UnicodeDecodeError:
-        return target.read_text(encoding="latin-1")
+        return target.read_text(encoding="latin-1").splitlines()
