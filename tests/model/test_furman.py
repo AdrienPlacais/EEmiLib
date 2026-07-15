@@ -214,12 +214,12 @@ def test_emission_yields_output_shape(
 
 
 @pytest.mark.parametrize(
-    "material, model_fixture, data_fixture",
+    "model_fixture, data_fixture",
     [
         pytest.param(
-            "SS", "furman_pivi_ss", "emission_data_ss", id="Stainless steel"
+            "furman_pivi_ss", "emission_data_ss", id="Stainless steel"
         ),
-        pytest.param("Cu", "furman_pivi_cu", "emission_data_cu", id="Copper"),
+        pytest.param("furman_pivi_cu", "emission_data_cu", id="Copper"),
     ],
 )
 @pytest.mark.parametrize(
@@ -233,7 +233,6 @@ def test_emission_yields_output_shape(
 )
 def test_emission_yields_values(
     request: pytest.FixtureRequest,
-    material: str,
     model_fixture: str,
     data_fixture: str,
     population: ImplementedPop,
@@ -260,17 +259,14 @@ def test_emission_yields_values(
 
 
 @pytest.mark.parametrize(
-    "material, model_fixture, data_fixture",
+    "model_fixture, data_fixture",
     [
         pytest.param(
-            "SS",
             "furman_pivi_ss",
             "energy_distrib_data_ss",
             id="Stainless steel",
         ),
-        pytest.param(
-            "Cu", "furman_pivi_cu", "energy_distrib_data_cu", id="Copper"
-        ),
+        pytest.param("furman_pivi_cu", "energy_distrib_data_cu", id="Copper"),
     ],
 )
 @pytest.mark.parametrize(
@@ -284,7 +280,6 @@ def test_emission_yields_values(
 )
 def test_energy_distribution_values(
     request: pytest.FixtureRequest,
-    material: str,
     model_fixture: str,
     data_fixture: str,
     population: ImplementedPop,
