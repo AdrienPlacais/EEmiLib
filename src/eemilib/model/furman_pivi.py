@@ -6,7 +6,13 @@ This is an empirical model developed by Dionne :cite:`Furman2002,Furman2013`.
 
 .. todo::
    Store the max number of secondaries in the Model, make it editable, like
-   from the Parameters section in the GUI.
+   from the Implementations section in the GUI.
+
+   .. warning::
+      This would influence number of mandatory :math:`\epsilon_i` and
+      :math:`p_i` parameters. This is a significant refactor. And it would not
+      be very useful -- except for niche use cases... So this is not
+      prioritary.
 
 .. todo::
     Warning when |SEEY| exceeds max number of |SEs| :data:`_M_MAX_SECONDARIES`.

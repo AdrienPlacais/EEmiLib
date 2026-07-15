@@ -13,7 +13,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Several implementations are provided, following Furman and Pivi paper.
   - [ ] Fit.
   - [ ] Doc.
-  - [ ] Add max number of emitted electrons implementation.
   - [ ] Emission angle distribution.
 - `CSTLoader` to load `ASCII Export`-ed emission yield files.
 - Emission yield and energy distributions for Stainless Steel and Copper files.
