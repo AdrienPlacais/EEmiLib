@@ -194,9 +194,7 @@ class MainWindow(QMainWindow):
     # =========================================================================
     def _setup_loader_dropdown(self) -> None:
         """Set the :class:`.Loader` related interface."""
-        settings_label, settings_action = (
-            self._setup_loader_implementations_dialog()
-        )
+        settings_label, settings_action = self._setup_loader_settings_dialog()
         classes, layout, dropdown, buttons = setup_dropdown(
             module_name="eemilib.loader",
             base_class=Loader,
@@ -218,9 +216,9 @@ class MainWindow(QMainWindow):
         self.loader = self._dropdown_to_class("Loader")()
         set_help_button_action(self.loader_help_button, self.loader)
 
-    def _setup_loader_implementations_dialog(self) -> tuple[str, Callable]:
+    def _setup_loader_settings_dialog(self) -> tuple[str, Callable]:
         """Give arguments to setup the loader setttings button."""
-        settings_label = "⚙️ Implementations"
+        settings_label = "⚙️ Settings"
 
         def settings_action() -> int:
             code = LoaderSettingsDialog(self, self.loader).exec()
@@ -261,7 +259,9 @@ class MainWindow(QMainWindow):
         Assign the ``model_classes`` and ``model_dropdown``.
 
         """
-        settings_label, settings_action = self._setup_model_settings_dialog()
+        settings_label, settings_action = (
+            self._setup_model_implementations_dialog()
+        )
         classes, layout, dropdown, buttons = setup_dropdown(
             module_name="eemilib.model",
             base_class=Model,
@@ -287,9 +287,9 @@ class MainWindow(QMainWindow):
         self.model_help_button = buttons[0]
         self._data_model_layout.addLayout(layout)
 
-    def _setup_model_settings_dialog(self) -> tuple[str, Callable]:
+    def _setup_model_implementations_dialog(self) -> tuple[str, Callable]:
         """Give arguments to setup the model setttings button."""
-        settings_label = "⚙️ Settings"
+        settings_label = "⚙️ Implementations"
 
         def settings_action() -> int:
             code = ModelImplementationsDialog(self, self.model).exec()
