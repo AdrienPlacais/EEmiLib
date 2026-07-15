@@ -46,9 +46,9 @@ class EmissionData(ABC):
     @abstractmethod
     def from_filepath(
         cls,
-        population: ImplementedPop,
         loader: Loader,
         *filepath: str | Path,
+        population: ImplementedPop,
     ) -> Self:
         """Instantiate the data from files.
 
@@ -56,10 +56,10 @@ class EmissionData(ABC):
         ----------
         loader :
             The object that will load the data.
-        population :
-            The concerned population of electrons.
         *filepath :
             Path(s) to file holding data under study.
+        population :
+            The concerned population of electrons.
 
         """
 

@@ -60,9 +60,9 @@ class EmissionYield(EmissionData):
     @classmethod
     def from_filepath(
         cls,
-        population: ImplementedPop,
         loader: Loader,
         *filepath: str | Path,
+        population: ImplementedPop,
     ) -> Self:
         """Instantiate the data from files.
 

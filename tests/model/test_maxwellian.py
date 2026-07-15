@@ -75,9 +75,9 @@ def test_find_optimal_parameters(
     """Test on several samples that the fit gives expected results."""
     data_matrix = DataMatrix()
     data_matrix.set_files(
+        files=(Path(filepath),),
         population="SE",
         emission_data_type="Emission Energy",
-        files=(Path(filepath),),
     )
     data_matrix.load_data(PandasLoader())
     model = Maxwellian()

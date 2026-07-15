@@ -67,9 +67,9 @@ class EmissionEnergyDistribution(EmissionData):
     @classmethod
     def from_filepath(
         cls,
-        population: ImplementedPop,
         loader: Loader,
         *filepath: DataPath,
+        population: ImplementedPop,
     ) -> Self:
         """Instantiate the data from files.
 
@@ -162,6 +162,27 @@ class SEEmissionEnergyDistribution(EmissionEnergyDistribution):
     ) -> None:
         super().__init__(population="SE", data=data, e_pe=e_pe, norm=norm)
 
+    @classmethod
+    def from_filepath(
+        cls,
+        loader: Loader,
+        *filepath: DataPath,
+        population: ImplementedPop = "SE",
+    ) -> Self:
+        """Instantiate the data from files.
+
+        Parameters
+        ----------
+        loader :
+            The object that will load the data.
+        *filepath :
+            Path(s) to file holding data under study.
+        population :
+            The concerned population of electrons.
+
+        """
+        return super().from_filepath(loader, *filepath, population=population)
+
 
 class EBEEmissionEnergyDistribution(EmissionEnergyDistribution):
     """Emission energy distribution of |EBEs|."""
@@ -174,6 +195,27 @@ class EBEEmissionEnergyDistribution(EmissionEnergyDistribution):
     ) -> None:
         super().__init__(population="EBE", data=data, e_pe=e_pe, norm=norm)
 
+    @classmethod
+    def from_filepath(
+        cls,
+        loader: Loader,
+        *filepath: DataPath,
+        population: ImplementedPop = "EBE",
+    ) -> Self:
+        """Instantiate the data from files.
+
+        Parameters
+        ----------
+        loader :
+            The object that will load the data.
+        *filepath :
+            Path(s) to file holding data under study.
+        population :
+            The concerned population of electrons.
+
+        """
+        return super().from_filepath(loader, *filepath, population=population)
+
 
 class IBEEmissionEnergyDistribution(EmissionEnergyDistribution):
     """Emission energy distribution of |EBEs|."""
@@ -185,6 +227,27 @@ class IBEEmissionEnergyDistribution(EmissionEnergyDistribution):
         norm: float | None = None,
     ) -> None:
         super().__init__(population="IBE", data=data, e_pe=e_pe, norm=norm)
+
+    @classmethod
+    def from_filepath(
+        cls,
+        loader: Loader,
+        *filepath: DataPath,
+        population: ImplementedPop = "IBE",
+    ) -> Self:
+        """Instantiate the data from files.
+
+        Parameters
+        ----------
+        loader :
+            The object that will load the data.
+        *filepath :
+            Path(s) to file holding data under study.
+        population :
+            The concerned population of electrons.
+
+        """
+        return super().from_filepath(loader, *filepath, population=population)
 
 
 class AllEmissionEnergyDistribution(EmissionEnergyDistribution):
@@ -205,6 +268,27 @@ class AllEmissionEnergyDistribution(EmissionEnergyDistribution):
         #: Position of |EBE| peak.
         self.i_peak_ebe: int
         self.i_peak_ebe, self.e_peak_ebe = self._EBE_peak
+
+    @classmethod
+    def from_filepath(
+        cls,
+        loader: Loader,
+        *filepath: DataPath,
+        population: ImplementedPop = "all",
+    ) -> Self:
+        """Instantiate the data from files.
+
+        Parameters
+        ----------
+        loader :
+            The object that will load the data.
+        *filepath :
+            Path(s) to file holding data under study.
+        population :
+            The concerned population of electrons.
+
+        """
+        return super().from_filepath(loader, *filepath, population=population)
 
     @property
     def _SE_peak(self) -> tuple[int, float]:
