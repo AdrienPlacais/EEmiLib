@@ -1,4 +1,12 @@
-"""Define the model related interface in the GUI."""
+"""Define the model related interface in the GUI.
+
+.. todo::
+   Find a way to display more info in the `Implementations` dialog.
+
+   - A help button redirecting to the doc?
+   - Text/hovering text for each `implementation_choices` entry?
+
+"""
 
 import logging
 
