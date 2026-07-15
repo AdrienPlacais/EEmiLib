@@ -40,6 +40,8 @@ from eemilib.util.markdown import (
     DELTA_MAX_FP,
     E1,
     E2,
+    E_IBE,
+    E_IBE_FP,
     EPS_1,
     EPS_2,
     EPS_3,
@@ -50,15 +52,14 @@ from eemilib.util.markdown import (
     EPS_8,
     EPS_9,
     EPS_10,
+    ETA_E_MAX,
+    ETA_E_MIN,
+    ETA_I_MAX,
+    ETA_I_MAX_FP,
     NORMAL_E_MAX_EBE,
     NORMAL_E_MAX_EBE_FP,
-    NORMAL_E_MAX_IBE,
-    NORMAL_E_MAX_IBE_FP,
     NORMAL_E_MAX_SE,
     NORMAL_E_MAX_SE_FP,
-    P1_HAT,
-    P1_INF_EBE,
-    P1_INF_IBE,
     P_1,
     P_2,
     P_3,
@@ -133,9 +134,9 @@ class FurmanPiviParameters(TypedDict):
     # EBE
     # =========================================================================
     normal_e_max_ebe: Parameter
-    p_1_hat: Parameter
+    eta_e_max: Parameter
     sigma: Parameter
-    p_1_inf_ebe: Parameter
+    eta_e_min: Parameter
     W: Parameter
     p: Parameter
     e_1: Parameter
@@ -144,8 +145,8 @@ class FurmanPiviParameters(TypedDict):
     # =========================================================================
     # IBE
     # =========================================================================
-    normal_e_max_ibe: Parameter
-    p_1_inf_ibe: Parameter
+    e_ibe: Parameter
+    eta_i_max: Parameter
     r: Parameter
     q: Parameter
     r_1: Parameter
@@ -228,7 +229,7 @@ class FurmanPivi(Model):
             "value": 3.9,
             "lower_bound": 0.0,
             "description": (
-                "Scale parameter for n=1 in the true-secondary energy "
+                "Scale parameter for n=1 in the SEs energy "
                 "spectrum, Eq. (33)."
             ),
         },
@@ -238,7 +239,7 @@ class FurmanPivi(Model):
             "value": 6.2,
             "lower_bound": 0.0,
             "description": (
-                "Scale parameter for n=2 in the true-secondary energy "
+                "Scale parameter for n=2 in the SEs energy "
                 "spectrum, Eq. (33)."
             ),
         },
@@ -248,7 +249,7 @@ class FurmanPivi(Model):
             "value": 13.0,
             "lower_bound": 0.0,
             "description": (
-                "Scale parameter for n=3 in the true-secondary energy "
+                "Scale parameter for n=3 in the SEs energy "
                 "spectrum, Eq. (33)."
             ),
         },
@@ -258,7 +259,7 @@ class FurmanPivi(Model):
             "value": 8.8,
             "lower_bound": 0.0,
             "description": (
-                "Scale parameter for n=4 in the true-secondary energy "
+                "Scale parameter for n=4 in the SEs energy "
                 "spectrum, Eq. (33)."
             ),
         },
@@ -268,7 +269,7 @@ class FurmanPivi(Model):
             "value": 6.25,
             "lower_bound": 0.0,
             "description": (
-                "Scale parameter for n=5 in the true-secondary energy "
+                "Scale parameter for n=5 in the SEs energy "
                 "spectrum, Eq. (33)."
             ),
         },
@@ -278,7 +279,7 @@ class FurmanPivi(Model):
             "value": 2.25,
             "lower_bound": 0.0,
             "description": (
-                "Scale parameter for n=6 in the true-secondary energy "
+                "Scale parameter for n=6 in the SEs energy "
                 "spectrum, Eq. (33)."
             ),
         },
@@ -288,7 +289,7 @@ class FurmanPivi(Model):
             "value": 9.20,
             "lower_bound": 0.0,
             "description": (
-                "Scale parameter for n=7 in the true-secondary energy "
+                "Scale parameter for n=7 in the SEs energy "
                 "spectrum, Eq. (33)."
             ),
         },
@@ -298,7 +299,7 @@ class FurmanPivi(Model):
             "value": 5.3,
             "lower_bound": 0.0,
             "description": (
-                "Scale parameter for n=8 in the true-secondary energy "
+                "Scale parameter for n=8 in the SEs energy "
                 "spectrum, Eq. (33)."
             ),
         },
@@ -308,7 +309,7 @@ class FurmanPivi(Model):
             "value": 17.8,
             "lower_bound": 0.0,
             "description": (
-                "Scale parameter for n=9 in the true-secondary energy "
+                "Scale parameter for n=9 in the SEs energy "
                 "spectrum, Eq. (33)."
             ),
         },
@@ -318,7 +319,7 @@ class FurmanPivi(Model):
             "value": 10.0,
             "lower_bound": 0.0,
             "description": (
-                "Scale parameter for n=10 in the true-secondary energy "
+                "Scale parameter for n=10 in the SEs energy "
                 "spectrum, Eq. (33)."
             ),
         },
@@ -328,7 +329,7 @@ class FurmanPivi(Model):
             "value": 1.6,
             "lower_bound": 0.0,
             "description": (
-                "Shape parameter for n=1 in the true-secondary energy "
+                "Shape parameter for n=1 in the SEs energy "
                 "spectrum, Eq. (33)."
             ),
         },
@@ -338,7 +339,7 @@ class FurmanPivi(Model):
             "value": 2.0,
             "lower_bound": 0.0,
             "description": (
-                "Shape parameter for n=2 in the true-secondary energy "
+                "Shape parameter for n=2 in the SEs energy "
                 "spectrum, Eq. (33)."
             ),
         },
@@ -348,7 +349,7 @@ class FurmanPivi(Model):
             "value": 1.8,
             "lower_bound": 0.0,
             "description": (
-                "Shape parameter for n=3 in the true-secondary energy "
+                "Shape parameter for n=3 in the SEs energy "
                 "spectrum, Eq. (33)."
             ),
         },
@@ -358,7 +359,7 @@ class FurmanPivi(Model):
             "value": 4.7,
             "lower_bound": 0.0,
             "description": (
-                "Shape parameter for n=4 in the true-secondary energy "
+                "Shape parameter for n=4 in the SEs energy "
                 "spectrum, Eq. (33)."
             ),
         },
@@ -368,7 +369,7 @@ class FurmanPivi(Model):
             "value": 1.8,
             "lower_bound": 0.0,
             "description": (
-                "Shape parameter for n=5 in the true-secondary energy "
+                "Shape parameter for n=5 in the SEs energy "
                 "spectrum, Eq. (33)."
             ),
         },
@@ -378,7 +379,7 @@ class FurmanPivi(Model):
             "value": 2.4,
             "lower_bound": 0.0,
             "description": (
-                "Shape parameter for n=6 in the true-secondary energy "
+                "Shape parameter for n=6 in the SEs energy "
                 "spectrum, Eq. (33)."
             ),
         },
@@ -388,7 +389,7 @@ class FurmanPivi(Model):
             "value": 1.8,
             "lower_bound": 0.0,
             "description": (
-                "Shape parameter for n=7 in the true-secondary energy "
+                "Shape parameter for n=7 in the SEs energy "
                 "spectrum, Eq. (33)."
             ),
         },
@@ -398,7 +399,7 @@ class FurmanPivi(Model):
             "value": 1.8,
             "lower_bound": 0.0,
             "description": (
-                "Shape parameter for n=8 in the true-secondary energy "
+                "Shape parameter for n=8 in the SEs energy "
                 "spectrum, Eq. (33)."
             ),
         },
@@ -408,7 +409,7 @@ class FurmanPivi(Model):
             "value": 2.3,
             "lower_bound": 0.0,
             "description": (
-                "Shape parameter for n=9 in the true-secondary energy "
+                "Shape parameter for n=9 in the SEs energy "
                 "spectrum, Eq. (33)."
             ),
         },
@@ -418,7 +419,7 @@ class FurmanPivi(Model):
             "value": 1.8,
             "lower_bound": 0.0,
             "description": (
-                "Shape parameter for n=10 in the true-secondary energy "
+                "Shape parameter for n=10 in the SEs energy "
                 "spectrum, Eq. (33)."
             ),
         },
@@ -431,20 +432,19 @@ class FurmanPivi(Model):
             "value": 0.0,
             "lower_bound": 0.0,
             "description": "Energy where EBEEY is maximum at normal incidence.",
-            "is_locked": True,
             "furman_pivi_notation": NORMAL_E_MAX_EBE_FP,
         },
-        "p_1_hat": {
-            "markdown": P1_HAT,
+        "eta_e_max": {
+            "markdown": ETA_E_MAX,
             "unit": "1",
             "value": 0.5,
-            "lower_bound": 0.0,  # TODO: check min/max values
+            "lower_bound": 0.0,
+            "upper_bound": 1.0,
             "description": (
-                "Some kind of probability in EBEEY energy fit. Maybe a peak maximum? "
-                f"Must be bigger than :math:`{P1_INF_EBE}`, which is "
-                "currently not enforced."
-            ),  # TODO: check meaning
-            "is_locked": True,
+                "EBEEY maximum. "
+                f"Must be bigger than :math:`{ETA_E_MIN}`, which is currently "
+                "not enforced."
+            ),
         },
         "sigma": {
             "markdown": SIGMA,
@@ -453,16 +453,16 @@ class FurmanPivi(Model):
             "lower_bound": 0.0,  # TODO: check min/max values
             "description": "Parameter in EBE PDF function.",
         },
-        "p_1_inf_ebe": {
-            "markdown": P1_INF_EBE,
+        "eta_e_min": {
+            "markdown": ETA_E_MIN,
             "unit": "1",
             "value": 0.07,
-            "lower_bound": 0.0,  # TODO: check min/max values
+            "lower_bound": 0.0,
+            "upper_bound": 0.2,
             "description": (
-                "Some kind of probability in EBEEY energy fit. "
-                f"Must be lower than :math:`{P1_HAT}`, which is currently "
-                "not enforced."
-            ),  # TODO: check meaning
+                "EBEEY asymptotic minimum. Must be lower than "
+                rf":math:`{ETA_E_MAX}`, which is currently not enforced."
+            ),
         },
         "W": {
             "markdown": W,
@@ -495,21 +495,26 @@ class FurmanPivi(Model):
         # =====================================================================
         # Inelastically Backscattered Electrons (or "Rediffused")
         # =====================================================================
-        "normal_e_max_ibe": {
-            "markdown": NORMAL_E_MAX_IBE,
+        "e_ibe": {
+            "markdown": E_IBE,
             "unit": "eV",
             "value": 40.0,
             "lower_bound": 0.0,
-            "description": "Energy where IBEEY is maximum at normal incidence.",
-            "is_locked": True,
-            "furman_pivi_notation": NORMAL_E_MAX_IBE_FP,
+            "description": (
+                "Normal incidence characteristic energy. At this energy, IBEEY"
+                r" has reached :math:`63.2\,\%` of its asymptotic "
+                "maximum."
+            ),
+            "furman_pivi_notation": E_IBE_FP,
         },
-        "p_1_inf_ibe": {
-            "markdown": P1_INF_IBE,
+        "eta_i_max": {
+            "markdown": ETA_I_MAX,
             "unit": "1",
             "value": 0.74,
-            "lower_bound": 0.0,  # TODO: check min/max values
-            "description": "Some kind of probability in IBEEY energy fit.",  # TODO: check meaning
+            "lower_bound": 0.0,
+            "upper_bound": 1.0,
+            "description": "IBEEY asymptotic maximum.",
+            "furman_pivi_notation": ETA_I_MAX_FP,
         },
         "r": {
             "markdown": R,
@@ -774,6 +779,50 @@ class FurmanPivi(Model):
     ) -> None:
         raise NotImplementedError
 
+    def _find_ibe_parameters(self) -> None:
+        r"""Find the best parameters for |IBE|.
+
+        Specifically:
+
+        1. Fit :math:`E_\mathrm{IBE}`, :math:`\eta_{i,\,\mathrm{max}}` and
+           :math:`r` from the exponential law (:func:`._ibeey_normal`) on the
+           normal incidence |IBEEY| measurements.
+        2. Fit :math:`r_1` and :math:`r_2` from :func:`.at_theta_incidence`
+           oblique incidence |IBEEY| measurements.
+        3. Fit :math:`q` from :func:`.ibe_energy_distribution` on all the
+           |IBE| emission energy distribution measurements.
+
+        .. note::
+           If you do not have specific measurement files for the |IBEEY|, it
+           is important to have at least one |TEEY| measurement at normal
+           incidence and high impact energies. Otherwise, it is hard to
+           discriminate |SEEY| from |IBEEY|.
+
+        """
+        normal_ibeey_parameters = self._fit_normal_ibeey()
+        self.set_parameters_values(normal_ibeey_parameters)
+
+        # raise warning if we do not have normal incidence high energy files,
+        # see note in docstring
+
+        oblique_ibeey_parameters = self._fit_oblique_ibeey()
+        self.set_parameters_values(oblique_ibeey_parameters)
+
+        ibe_pdf_parameters = self._fit_ibe_energy_distribution()
+        self.set_parameters_values(ibe_pdf_parameters)
+
+    def _fit_normal_ibeey(self) -> dict[str, float]:
+        raise NotImplementedError
+        return {"e_ibe": -1.0, "eta_i_max": -1.0, "r": -1.0}
+
+    def _fit_oblique_ibeey(self) -> dict[str, float]:
+        raise NotImplementedError
+        return {"r_1": -1.0, "r_2": -1.0}
+
+    def _fit_ibe_energy_distribution(self) -> dict[str, float]:
+        raise NotImplementedError
+        return {"q": -1.0}
+
     def evaluate(self, data_matrix: DataMatrix) -> dict[str, float]:
         """Evaluate the quality of the model using Fil criterions.
 
@@ -805,7 +854,7 @@ def _add_furman_pivi_notation(
     parameters_kwargs["description"] = " ".join(
         (
             description,
-            f" Denoted :math:`{furman_pivi_notation}` by Furman and Pivi.",
+            f"Denoted :math:`{furman_pivi_notation}` by Furman and Pivi.",
         )
     )
 
@@ -1218,8 +1267,8 @@ def se_energy_distribution(
 def _ebeey_normal(
     ene: float,
     normal_e_max_ebe: Parameter,
-    p_1_hat: Parameter,
-    p_1_inf_ebe: Parameter,
+    eta_e_max: Parameter,
+    eta_e_min: Parameter,
     W: Parameter,
     p: Parameter,
 ) -> float:
@@ -1227,8 +1276,8 @@ def _ebeey_normal(
 
     .. math::
        \eta_e(E,\,\theta=0\degree) =
-            P_{1,\,e}(\infty)
-            + \left[ \hat P_{1,\,e} - P_{1,\,e}(\infty) \right]
+            \eta_{e,\,\mathrm{min}}
+            + \left[ \eta_{e,\,\mathrm{max}} - \eta_{e,\,\mathrm{min}} \right]
             \mathrm{e}^{
                 - \left( \left| E - E_{\mathrm{max},\,\mathrm{EBE}} \right|
                   / W \right)^p
@@ -1249,7 +1298,7 @@ def _ebeey_normal(
 
     """
     _in_exp = (abs(ene - normal_e_max_ebe.value) / W.value) ** p.value
-    return p_1_inf_ebe.value + (p_1_hat.value - p_1_inf_ebe.value) * math.exp(
+    return eta_e_min.value + (eta_e_max.value - eta_e_min.value) * math.exp(
         -_in_exp / p.value
     )
 
@@ -1258,8 +1307,8 @@ def ebeey(
     ene: float,
     the: float,
     normal_e_max_ebe: Parameter,
-    p_1_hat: Parameter,
-    p_1_inf_ebe: Parameter,
+    eta_e_max: Parameter,
+    eta_e_min: Parameter,
     W: Parameter,
     p: Parameter,
     e_1: Parameter,
@@ -1278,8 +1327,8 @@ def ebeey(
         at_normal=_ebeey_normal(
             ene=ene,
             normal_e_max_ebe=normal_e_max_ebe,
-            p_1_hat=p_1_hat,
-            p_1_inf_ebe=p_1_inf_ebe,
+            eta_e_max=eta_e_max,
+            eta_e_min=eta_e_min,
             W=W,
             p=p,
         ),
@@ -1293,8 +1342,8 @@ def ebe_energy_distribution(
     the: float,
     emission_energies: NDArray[np.float64],
     normal_e_max_ebe: Parameter,
-    p_1_hat: Parameter,
-    p_1_inf_ebe: Parameter,
+    eta_e_max: Parameter,
+    eta_e_min: Parameter,
     W: Parameter,
     p: Parameter,
     e_1: Parameter,
@@ -1323,9 +1372,9 @@ def ebe_energy_distribution(
         |EBE| emission energies you want the distribution from.
     normal_e_max_ebe :
         Furman and Pivi |EBEEY| parameter.
-    p_1_hat :
+    eta_e_max :
         Furman and Pivi |EBEEY| parameter.
-    p_1_inf_ebe :
+    eta_e_min :
         Furman and Pivi |EBEEY| parameter.
     W :
         Furman and Pivi |EBEEY| parameter.
@@ -1351,8 +1400,8 @@ def ebe_energy_distribution(
             ene=impact_energy,
             the=the,
             normal_e_max_ebe=normal_e_max_ebe,
-            p_1_hat=p_1_hat,
-            p_1_inf_ebe=p_1_inf_ebe,
+            eta_e_max=eta_e_max,
+            eta_e_min=eta_e_min,
             W=W,
             p=p,
             e_1=e_1,
@@ -1375,39 +1424,39 @@ def ebe_energy_distribution(
 # =============================================================================
 def _ibeey_normal(
     ene: float,
-    normal_e_max_ibe: Parameter,
-    p_1_inf_ibe: Parameter,
+    e_ibe: Parameter,
+    eta_i_max: Parameter,
     r: Parameter,
 ) -> float:
     r"""Compute |IBEEY| at normal incidence.
 
     .. math::
        \eta_i(E,\,\theta=0\degree) =
-            P_{1,\,r}(\infty)
-            \mathrm{e}^{
-                -\left( E / E_{\mathrm{max},\,\mathrm{IBE}} \right)^r
+            \eta_{i,\,\mathrm{max}} \left(
+            1 - \mathrm{e}^{
+                -\left( E / E_\mathrm{IBE} \right)^r
             }
+            \right)
 
     In Furman and Pivi paper :cite:`Furman2002`, this is Eq. (28):
 
     .. math::
        \delta_r(E_0,\,0) =
-            P_{1,\,r}(\infty)
-            \mathrm{e}^{
+            P_{1,\,r}(\infty) \left(
+            1 - \mathrm{e}^{
                 -\left( E / E_r \right)^r
             }
+            \right)
 
     """
-    return p_1_inf_ibe.value * (
-        1 - math.exp(-((ene / normal_e_max_ibe.value) ** r.value))
-    )
+    return eta_i_max.value * (1 - math.exp(-((ene / e_ibe.value) ** r.value)))
 
 
 def ibeey(
     ene: float,
     the: float,
-    normal_e_max_ibe: Parameter,
-    p_1_inf_ibe: Parameter,
+    e_ibe: Parameter,
+    eta_i_max: Parameter,
     r: Parameter,
     r_1: Parameter,
     r_2: Parameter,
@@ -1424,8 +1473,8 @@ def ibeey(
         the=the,
         at_normal=_ibeey_normal(
             ene=ene,
-            normal_e_max_ibe=normal_e_max_ibe,
-            p_1_inf_ibe=p_1_inf_ibe,
+            e_ibe=e_ibe,
+            eta_i_max=eta_i_max,
             r=r,
         ),
         a_1=r_1,
@@ -1437,8 +1486,8 @@ def ibe_energy_distribution(
     impact_energy: float,
     the: float,
     emission_energies: NDArray[np.float64],
-    normal_e_max_ibe: Parameter,
-    p_1_inf_ibe: Parameter,
+    e_ibe: Parameter,
+    eta_i_max: Parameter,
     r: Parameter,
     r_1: Parameter,
     r_2: Parameter,
@@ -1464,9 +1513,9 @@ def ibe_energy_distribution(
         Impact angle of the |PE| in :unit:`\degree`.
     emission_energies :
         |IBE| emission energies you want the distribution from.
-    normal_e_max_ibe :
+    e_ibe :
         Furman and Pivi |IBEEY| parameter.
-    p_1_inf_ibe :
+    eta_i_max :
         Furman and Pivi |IBEEY| parameter.
     r :
         Furman and Pivi |IBEEY| parameter.
@@ -1488,8 +1537,8 @@ def ibe_energy_distribution(
         * ibeey(
             ene=impact_energy,
             the=the,
-            normal_e_max_ibe=normal_e_max_ibe,
-            p_1_inf_ibe=p_1_inf_ibe,
+            e_ibe=e_ibe,
+            eta_i_max=eta_i_max,
             r=r,
             r_1=r_1,
             r_2=r_2,
