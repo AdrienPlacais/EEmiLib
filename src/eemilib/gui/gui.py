@@ -75,14 +75,14 @@ Dropdowns = Literal["Loader", "Model", "Plotter"]
 class MainWindow(QMainWindow):
     """This object holds the GUI."""
 
-    #: If selecting Model in dropdown should automatically fill the appopriate
-    #: data to plot checkbox
+    #: Whether selecting Model in dropdown should automatically fill the
+    #: appropriate data to plot checkbox.
     autofill_data_to_plot = True
-    #: If selecting Model in dropdown should automatically fill the appopriate
-    #: emission data checkbox
+    #: Whether selecting Model in dropdown should automatically fill the
+    #: appropriate emission data checkbox.
     autofill_nature_to_plot = True
-    #: If loading data should automatically fill the energy/angle ranges with
-    #: their maximum values
+    #: Whether loading data should automatically fill the energy/angle ranges
+    #: with their maximum values.
     autofill_plotting_ranges = True
 
     def __init__(
@@ -279,6 +279,9 @@ class MainWindow(QMainWindow):
         )
         dropdown.currentIndexChanged.connect(
             self._fill_plot_nature_and_population
+        )
+        dropdown.currentIndexChanged.connect(
+            self._populate_parameters_table_values
         )
 
         self.model_help_button = buttons[0]
