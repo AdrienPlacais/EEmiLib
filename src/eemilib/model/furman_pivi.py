@@ -5,13 +5,6 @@ Also energy emission distributions. Even angular distributions?
 This is an empirical model developed by Dionne :cite:`Furman2002,Furman2013`.
 
 .. todo::
-    Energy distributions depend on impact energy, in contrary to Chung and
-    Everhart that were always the same.
-
-.. todo::
-   Separate implementation into two dropdowns in GUI.
-
-.. todo::
    Store the max number of secondaries in the Model, make it editable, like
    from the Parameters section in the GUI.
 
@@ -89,7 +82,7 @@ from scipy.stats import binom, poisson
 
 #: Distribution for the number of emitted |SEs| at a given |SEEY|.
 FURMAN_PIVI_DISTRIBUTIONS = ("Poisson", "Binomial")
-#: Probability normalization, *cf* Eqs. (35) and (36) in :cite:`Furman2022`.
+#: Probability normalization, *cf* Eqs. (35) and (36) in :cite:`Furman2002`.
 FURMAN_PIVI_NORMALIZATIONS = ("incident", "penetrated")
 
 NORMALIZATION_T = Literal["incident", "penetrated"]

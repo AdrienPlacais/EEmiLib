@@ -81,7 +81,7 @@ class Model(ABC):
         #: A :class:`.TypedDict` specific to every :class:`.model.Model`. Keys
         #: are parameters names, values are :class:`.Parameter`.
         self.parameters: Any
-        #: Maps each axis name (see :attr:`implementation_choices`) to the
+        #: Maps each axis name (see :attr:`.Model.implementation_choices`) to the
         #: currently selected option.
         self.current_implementations: dict[str, str] = {}
 
@@ -214,12 +214,13 @@ class Model(ABC):
             several things:
 
             - ``"Emission Yield"``: array of |PEs| impact energy in
-            :unit:`eV`.
+              :unit:`eV`.
             - ``"Emission Energy"``: array of |EEs| emission energy in
-            :unit:`eV`. By convention, the impact energy of the |PE| is
-            also the last value of ``energy``.
+              :unit:`eV`. By convention, the impact energy of the |PE| is
+              also the last value of ``energy``.
+
         theta :
-            Array of |PE| electrons impact angle in :math:`^\circ`.
+            Array of |PE| electrons impact angle in :unit:`\degrees`.
         args :
             Other arguments passed to model functions.
         kwargs :

@@ -251,6 +251,18 @@ class EBEEmissionEnergyDistribution(EmissionEnergyDistribution):
         data, e_pe = loader.load_emission_energy_distribution(*filepath)
         return cls(data, e_pe=e_pe)
 
+    def _default_norm(self) -> float:
+        """Compute the default normalization constant for this population.
+
+        Subclasses should override this to define population-specific behavior
+        (e.g. normalizing by this population's own peak value).
+
+        """
+        logging.warning(
+            "Default norm was not overriden. Returning default value of 1.0"
+        )
+        return 1.0
+
 
 class IBEEmissionEnergyDistribution(EmissionEnergyDistribution):
     """Emission energy distribution of |EBEs|."""
@@ -290,6 +302,18 @@ class IBEEmissionEnergyDistribution(EmissionEnergyDistribution):
             )
         data, e_pe = loader.load_emission_energy_distribution(*filepath)
         return cls(data, e_pe=e_pe)
+
+    def _default_norm(self) -> float:
+        """Compute the default normalization constant for this population.
+
+        Subclasses should override this to define population-specific behavior
+        (e.g. normalizing by this population's own peak value).
+
+        """
+        logging.warning(
+            "Default norm was not overriden. Returning default value of 1.0"
+        )
+        return 1.0
 
 
 class AllEmissionEnergyDistribution(EmissionEnergyDistribution):

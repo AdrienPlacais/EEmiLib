@@ -83,15 +83,15 @@ def _render_to_pixmap(
 
     Parameters
     ----------
-    text:
-        Fully composed mathtext string (output of :func:`compose_mathtext`).
-    width_px:
+    text :
+        Fully composed mathtext string (output of :func:`_compose_mathtext`).
+    width_px :
         Available horizontal space in pixels.  The figure is sized to this
         width so that matplotlib's ``wrap=True`` breaks lines at the correct
         point.
-    fontsize:
+    fontsize :
         Font size in points.
-    dpi:
+    dpi :
         Rasterisation resolution.
 
     Returns
@@ -182,14 +182,14 @@ class MathTextLabel(QLabel):
 
     Parameters
     ----------
-    body:
+    body :
         Mixed plain/math string (may contain any number of ``$…$``
         environments).
-    units:
+    units :
         Unit string without brackets (may be empty).
-    fontsize:
+    fontsize :
         Font size in points passed to matplotlib.
-    dpi:
+    dpi :
         Rasterisation resolution.
 
     """

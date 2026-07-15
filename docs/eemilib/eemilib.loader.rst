@@ -12,6 +12,7 @@ Submodules
 .. toctree::
    :maxdepth: 5
 
+   eemilib.loader.cst_loader
    eemilib.loader.deesse_loader
    eemilib.loader.helper
    eemilib.loader.loader
