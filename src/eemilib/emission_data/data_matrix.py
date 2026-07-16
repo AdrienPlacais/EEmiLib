@@ -6,8 +6,8 @@
 """
 
 import logging
-from collections.abc import Collection
-from typing import Literal, overload
+from collections.abc import Collection, Sequence
+from typing import Literal, cast, overload
 
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data.emission_angle_distribution import (
@@ -56,9 +56,9 @@ class DataMatrix:
 
     def __init__(self) -> None:
         """Instantiate the object."""
-        self.files_matrix: list[list[None | DataPath | Collection[DataPath]]]
+        self.files_matrix: list[list[list[DataPath]]]
         self.files_matrix = [
-            [None for _ in range(n_cols)] for _ in range(n_rows)
+            [[] for _ in range(n_cols)] for _ in range(n_rows)
         ]
 
         self.data_matrix: list[
@@ -132,7 +132,10 @@ class DataMatrix:
                 f"{emission_data_type = }"
             )
 
-        self.files_matrix[row][col] = files
+        if isinstance(files, DataPath):
+            self.files_matrix[row][col] = [files]
+        else:
+            self.files_matrix[row][col] = list(files)
 
     @overload
     def set_data(
@@ -250,7 +253,7 @@ class DataMatrix:
     @overload
     def get_files(
         self, row: int, col: int, population: None, emission_data_type: None
-    ) -> None | DataPath | Collection[DataPath]: ...
+    ) -> list[DataPath]: ...
 
     @overload
     def get_files(
@@ -259,7 +262,7 @@ class DataMatrix:
         col: None,
         population: ImplementedPop,
         emission_data_type: ImplementedEmissionData,
-    ) -> None | DataPath | Collection[DataPath]: ...
+    ) -> list[DataPath]: ...
 
     def get_files(
         self,
@@ -267,7 +270,7 @@ class DataMatrix:
         col: int | None = None,
         population: ImplementedPop | None = None,
         emission_data_type: ImplementedEmissionData | None = None,
-    ) -> None | DataPath | Collection[DataPath]:
+    ) -> list[DataPath]:
         """Get the file(s) by index or name."""
         if population and emission_data_type:
             row, col = self._natures_to_indexes(
@@ -291,7 +294,7 @@ class DataMatrix:
         col: int,
         population: None = None,
         emission_data_type: None = None,
-    ) -> None | EmissionData | Collection[EmissionData]: ...
+    ) -> None | EmissionData | Sequence[EmissionData]: ...
 
     @overload
     def get_data(
@@ -301,7 +304,7 @@ class DataMatrix:
         *,
         population: ImplementedPop,
         emission_data_type: Literal["Emission Yield"],
-    ) -> None | EmissionYield | Collection[EmissionYield]: ...
+    ) -> None | EmissionYield | Sequence[EmissionYield]: ...
 
     @overload
     def get_data(
@@ -311,11 +314,7 @@ class DataMatrix:
         *,
         population: Literal["SE"],
         emission_data_type: Literal["Emission Energy"],
-    ) -> (
-        None
-        | SEEmissionEnergyDistribution
-        | Collection[SEEmissionEnergyDistribution]
-    ): ...
+    ) -> Sequence[SEEmissionEnergyDistribution]: ...
 
     @overload
     def get_data(
@@ -325,11 +324,7 @@ class DataMatrix:
         *,
         population: Literal["EBE"],
         emission_data_type: Literal["Emission Energy"],
-    ) -> (
-        None
-        | EBEEmissionEnergyDistribution
-        | Collection[EBEEmissionEnergyDistribution]
-    ): ...
+    ) -> Sequence[EBEEmissionEnergyDistribution]: ...
 
     @overload
     def get_data(
@@ -339,11 +334,7 @@ class DataMatrix:
         *,
         population: Literal["IBE"],
         emission_data_type: Literal["Emission Energy"],
-    ) -> (
-        None
-        | IBEEmissionEnergyDistribution
-        | Collection[IBEEmissionEnergyDistribution]
-    ): ...
+    ) -> Sequence[IBEEmissionEnergyDistribution]: ...
 
     @overload
     def get_data(
@@ -353,11 +344,7 @@ class DataMatrix:
         *,
         population: Literal["all"],
         emission_data_type: Literal["Emission Energy"],
-    ) -> (
-        None
-        | AllEmissionEnergyDistribution
-        | Collection[AllEmissionEnergyDistribution]
-    ): ...
+    ) -> Sequence[AllEmissionEnergyDistribution]: ...
 
     @overload
     def get_data(
@@ -368,9 +355,7 @@ class DataMatrix:
         population: ImplementedPop,
         emission_data_type: Literal["Emission Angle"],
     ) -> (
-        None
-        | EmissionAngleDistribution
-        | Collection[EmissionAngleDistribution]
+        None | EmissionAngleDistribution | Sequence[EmissionAngleDistribution]
     ): ...
 
     @overload
@@ -380,7 +365,7 @@ class DataMatrix:
         col: None = None,
         population: None = None,
         emission_data_type: None = None,
-    ) -> Collection[EmissionData]: ...
+    ) -> Sequence[EmissionData]: ...
 
     @overload
     def get_data(
@@ -390,7 +375,7 @@ class DataMatrix:
         *,
         population: ImplementedPop,
         emission_data_type: None = None,
-    ) -> Collection[EmissionData]: ...
+    ) -> Sequence[EmissionData]: ...
 
     @overload
     def get_data(
@@ -400,7 +385,7 @@ class DataMatrix:
         *,
         population: None = None,
         emission_data_type: ImplementedEmissionData,
-    ) -> Collection[EmissionData]: ...
+    ) -> Sequence[EmissionData]: ...
 
     def get_data(
         self,
@@ -408,7 +393,7 @@ class DataMatrix:
         col: int | None = None,
         population: ImplementedPop | None = None,
         emission_data_type: ImplementedEmissionData | None = None,
-    ) -> None | EmissionData | Collection[EmissionData]:
+    ) -> None | EmissionData | Sequence[EmissionData]:
         """Get the file(s) by index or name.
 
         You can provide ``row`` and ``col`` directly.
@@ -432,7 +417,9 @@ class DataMatrix:
         Returns
         -------
             Desired data; if the specified data does not exists, a ``None`` is
-            returned without any error message.
+            returned without any error message. ``"EmissionEnergyDistribution``
+            behave differently: a list is always returned, and is empty if no
+            data was found.
 
         """
         if population and emission_data_type:
@@ -440,7 +427,6 @@ class DataMatrix:
                 population_type=population,
                 emission_data_type=emission_data_type,
             )
-
         if population and emission_data_type is None:
             single_pop_data = [
                 self.get_data(
@@ -448,7 +434,10 @@ class DataMatrix:
                 )
                 for data_type in IMPLEMENTED_EMISSION_DATA
             ]
-            return [d for d in flatten(single_pop_data) if d is not None]
+            return cast(
+                list[EmissionData],
+                [d for d in flatten(single_pop_data) if d is not None],
+            )
 
         if emission_data_type and population is None:
             emission_data = [
@@ -457,7 +446,10 @@ class DataMatrix:
                 )
                 for pop in IMPLEMENTED_POP
             ]
-            return [d for d in flatten(emission_data) if d is not None]
+            return cast(
+                list[EmissionData],
+                [d for d in flatten(emission_data) if d is not None],
+            )
 
         if row is None and col is None:
             all_data = [
@@ -467,7 +459,10 @@ class DataMatrix:
                 ]
                 for data_type in IMPLEMENTED_EMISSION_DATA
             ]
-            return [d for d in flatten(all_data) if d is not None]
+            return cast(
+                list[EmissionData],
+                [d for d in flatten(all_data) if d is not None],
+            )
 
         if row is None or col is None:
             raise ValueError(
@@ -476,7 +471,12 @@ class DataMatrix:
                 f"{emission_data_type = }"
             )
 
-        return self.data_matrix[row][col]
+        stored = self.data_matrix[row][col]
+        if stored is None:
+            return []
+        if isinstance(stored, EmissionData):
+            return [stored]
+        return list(stored)
 
     def load_data(self, loader: Loader) -> None:
         """Load all filepaths in ``files_matrix``.
@@ -487,27 +487,27 @@ class DataMatrix:
         """
         for pop in IMPLEMENTED_POP:
             for data_type in IMPLEMENTED_EMISSION_DATA:
-                filepath = self.get_files(
+                filepaths = self.get_files(
                     population=pop, emission_data_type=data_type
                 )  # type: ignore
 
-                if not filepath:
+                if not filepaths:
                     continue
 
                 emission_data = None
                 if data_type == "Emission Yield":
                     emission_data = EmissionYield.from_filepath(
-                        loader, *filepath, population=pop
+                        loader, *filepaths, population=pop
                     )
 
                 elif data_type == "Emission Energy":
                     emission_data = EMISSION_ENERGIES_BY_POP[
                         pop
-                    ].from_filepath(loader, *filepath, population=pop)
+                    ].from_filepath(loader, *filepaths, population=pop)
 
                 elif data_type == "Emission Angle":
                     emission_data = EmissionAngleDistribution.from_filepath(
-                        loader, *filepath, population=pop
+                        loader, *filepaths, population=pop
                     )
 
                 if emission_data:
