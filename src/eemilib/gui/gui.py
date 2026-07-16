@@ -696,7 +696,7 @@ class MainWindow(QMainWindow):
         data_type_to_plot = model.emission_data_types[0]
 
         data = data_matrix.get_data(emission_data_type=data_type_to_plot)
-        if len(data) == 0:
+        if not data:
             logging.debug(
                 "No valid data, cannot fill energy/angle plotting ranges."
             )
