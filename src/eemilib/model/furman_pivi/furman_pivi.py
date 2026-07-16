@@ -194,10 +194,10 @@ class FurmanPivi(Model):
         population: ImplementedPop,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
-        impact_energy: float | None,
+        e_pe: float | None,
     ) -> pd.DataFrame | None:
         """Compute emitted-energy spectrum data for one population."""
-        e_0 = impact_energy if impact_energy is not None else energy[-1]
+        e_0 = e_pe if e_pe is not None else energy[-1]
         p_ns = [
             self.parameters[f"p_{i}"] for i in range(1, M_MAX_SECONDARIES + 1)
         ]
@@ -243,15 +243,15 @@ class FurmanPivi(Model):
         emission_data_type: ImplementedEmissionData,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
+        e_pe: float | None = None,
         *args,
-        impact_energy: float | None = None,
         **kwargs,
     ) -> pd.DataFrame | None:
         r"""Return desired data according to current model.
 
         Parameters
         ----------
-        impact_energy :
+        e_pe :
             Only used when ``emission_data_type == "Emission Energy"``. Impact
             energy :math:`E_0` at which the emitted-energy spectrum is
             evaluated. If not given, defaults to the last value of ``energy``.
@@ -269,10 +269,7 @@ class FurmanPivi(Model):
 
         if emission_data_type == "Emission Energy":
             data = self._get_energy_distribution_data(
-                population=population,
-                energy=energy,
-                theta=theta,
-                impact_energy=impact_energy,
+                population=population, energy=energy, theta=theta, e_pe=e_pe
             )
             if data is not None:
                 return data

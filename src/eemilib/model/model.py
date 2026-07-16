@@ -192,6 +192,7 @@ class Model(ABC):
         emission_data_type: ImplementedEmissionData,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
+        e_pe: float | None = None,
         *args,
         **kwargs,
     ) -> pd.DataFrame | None:
@@ -216,11 +217,13 @@ class Model(ABC):
             - ``"Emission Yield"``: array of |PEs| impact energy in
               :unit:`eV`.
             - ``"Emission Energy"``: array of |EEs| emission energy in
-              :unit:`eV`. By convention, the impact energy of the |PE| is
-              also the last value of ``energy``.
+              :unit:`eV`. By convention, if ``e_pe`` is not provided, the
+              impact energy of the |PE| is also the last value of ``energy``.
 
         theta :
             Array of |PE| electrons impact angle in :unit:`\degrees`.
+        e_pe :
+            Energy of |PEs| in :unit:`eV`, if applicable.
         args :
             Other arguments passed to model functions.
         kwargs :
@@ -253,6 +256,7 @@ class Model(ABC):
         angles: NDArray[np.float64],
         axes: T | None = None,
         grid: bool = True,
+        e_pe: float | None = None,
         **kwargs,
     ) -> T | None:
         """Plot desired modelled data using ``plotter``.
@@ -279,6 +283,8 @@ class Model(ABC):
             Axes to re-use if given.
         grid :
             If grid should be plotted.
+        e_pe :
+            Energy of |PEs| in :unit:`eV`, if applicable.
         kwargs :
             Other keyword arguments passed to the :meth:`.Model.plot`
             method.
@@ -309,6 +315,7 @@ class Model(ABC):
             emission_data_type=emission_data_type,
             energy=energies,
             theta=angles,
+            e_pe=e_pe,
         )
         if to_plot is None:
             logging.info(
@@ -333,6 +340,7 @@ class Model(ABC):
                 grid=grid,
                 population=population,
                 is_model=True,
+                e_pe=e_pe,
                 **kwargs,
             )
         raise NotImplementedError
