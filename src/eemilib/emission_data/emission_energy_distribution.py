@@ -1,8 +1,9 @@
 """Define an object to store an emission energy distribution."""
 
 import logging
-from typing import Self
+from typing import Callable, Self
 
+import numpy as np
 import pandas as pd
 from eemilib.emission_data.emission_data import EmissionData
 from eemilib.loader.helper import DataPath
@@ -14,6 +15,7 @@ from eemilib.util.constants import (
     col_normal,
     md_energy_distrib,
 )
+from numpy.typing import NDArray
 
 
 class EmissionEnergyDistribution(EmissionData):
@@ -378,6 +380,92 @@ class AllEmissionEnergyDistribution(EmissionEnergyDistribution):
         )
         e_peak_ebe = self.data.at[i, col_energy]
         return float(e_peak_ebe), float(self.data.at[i, col_normal])
+
+    def decompose(
+        self,
+        se_shape: Callable[[NDArray[np.float64]], NDArray[np.float64]],
+        ebe_shape: Callable[[NDArray[np.float64]], NDArray[np.float64]],
+        ibe_shape: Callable[[NDArray[np.float64]], NDArray[np.float64]],
+    ) -> tuple[
+        SEEmissionEnergyDistribution,
+        EBEEmissionEnergyDistribution,
+        IBEEmissionEnergyDistribution,
+    ]:
+        r"""Split total energy distribution into |SE|/|EBE|/|IBE| shares.
+
+        At each emission energy :math:`E`, the measured total value is split
+        proportionally to each population's expected shape at that energy:
+
+        .. math::
+        f_\mathrm{pop}(E) = f_\mathrm{all}(E) \times
+                \frac{
+                    \mathrm{shape}_\mathrm{pop}(E)
+                }{
+                    \mathrm{shape}_\mathrm{SE}(E)
+                    + \mathrm{shape}_\mathrm{EBE}(E)
+                    + \mathrm{shape}_\mathrm{IBE}(E)
+                }
+
+        This is a soft decomposition (fractional weights, not a hard cutoff): a
+        given energy can be mostly SE and partly EBE, for instance.
+
+        Parameters
+        ----------
+        se_shape :
+            Function returning the expected (unnormalized) |SE| shape at the
+            given emission energies. Must already be bound to the relevant
+            impact energy and incidence angle (e.g. via
+            :func:`functools.partial` applied to
+            :func:`.se_energy_distribution`).
+        ebe_shape :
+            Same as ``se_shape``, for |EBEs| (e.g. bound
+            :func:`.ebe_energy_distribution`).
+        ibe_shape :
+            Same as ``se_shape``, for |IBEs| (e.g. bound
+            :func:`.ibe_energy_distribution`).
+
+        Return
+        ------
+            The |SE|, |EBE|, |IBE| shares of ``self``, each as their respective
+            :class:`.EmissionEnergyDistribution` subclass. Values are
+            constructed with ``norm=1.0`` (no further re-normalization), since
+            they are already consistently scaled with ``self``.
+
+        """
+        energies = np.array(self.energies)
+        e_pe = self.e_pe
+
+        shapes = {
+            "SE": se_shape(energies),
+            "EBE": ebe_shape(energies),
+            "IBE": ibe_shape(energies),
+        }
+        total_shape = sum(shapes.values())
+        has_signal = total_shape > 0
+        weights = {
+            pop: np.where(has_signal, shape / total_shape, 0.0)
+            for pop, shape in shapes.items()
+        }
+
+        data_columns = [c for c in self.data.columns if c != col_energy]
+        split_data = {
+            pop: self.data.assign(
+                **{col: self.data[col] * weight for col in data_columns}
+            )
+            for pop, weight in weights.items()
+        }
+
+        return (
+            SEEmissionEnergyDistribution(
+                split_data["SE"], e_pe=e_pe, norm=1.0
+            ),
+            EBEEmissionEnergyDistribution(
+                split_data["EBE"], e_pe=e_pe, norm=1.0
+            ),
+            IBEEmissionEnergyDistribution(
+                split_data["IBE"], e_pe=e_pe, norm=1.0
+            ),
+        )
 
 
 #: Maps populations to their appropriate :class:`.EmissionEnergyDistribution`
