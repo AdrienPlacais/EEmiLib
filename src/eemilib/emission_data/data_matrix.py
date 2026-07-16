@@ -478,11 +478,24 @@ class DataMatrix:
             return [stored]
         return list(stored)
 
-    def load_data(self, loader: Loader) -> None:
+    def load_data(
+        self,
+        loader: Loader,
+        e_pes_emission_energies: (
+            dict[ImplementedPop, Sequence[float]] | None
+        ) = None,
+    ) -> None:
         """Load all filepaths in ``files_matrix``.
 
-        .. todo::
-            Could be more concise.
+        Parameters
+        ----------
+        loader :
+            Actual instance that will load data.
+        e_pes_emission_energies :
+            Maps emitted electrons populations to their files' |PEs| energies
+            in :unit:`eV`. Every value must have the same length as it's
+            corresponding file paths. Use it only if the original files do not
+            contain this info and/or the :class:`.Loader` cannot infer it.
 
         """
         for pop in IMPLEMENTED_POP:
@@ -501,9 +514,18 @@ class DataMatrix:
                     )
 
                 elif data_type == "Emission Energy":
-                    emission_data = EMISSION_ENERGIES_BY_POP[
-                        pop
-                    ].from_filepath(loader, *filepaths, population=pop)
+                    emission_data = list(
+                        EMISSION_ENERGIES_BY_POP[pop].from_filepaths(
+                            loader,
+                            *filepaths,
+                            population=pop,
+                            e_pes=(
+                                e_pes_emission_energies[pop]
+                                if e_pes_emission_energies
+                                else None
+                            ),
+                        )
+                    )
 
                 elif data_type == "Emission Angle":
                     emission_data = EmissionAngleDistribution.from_filepath(

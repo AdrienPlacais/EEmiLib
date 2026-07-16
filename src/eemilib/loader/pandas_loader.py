@@ -27,7 +27,7 @@ class PandasLoader(Loader):
 
     def load_emission_yield(
         self,
-        filepath: DataPath,
+        *filepaths: DataPath,
         sep: str | None = None,
         comment: str | None = None,
         population: ImplementedPop | None = None,
@@ -55,8 +55,8 @@ class PandasLoader(Loader):
 
         Parameters
         ----------
-        filepath :
-            Path to file holding data under study.
+        filepaths :
+            Path to files holding data under study.
         sep :
             Column delimiter.
         comment :
@@ -71,6 +71,9 @@ class PandasLoader(Loader):
             corresponding emission yield.
 
         """
+        if len(filepaths) != 1:
+            raise NotImplementedError("Can only load exactly one file.")
+        filepath = filepaths[0]
         if sep is None:
             sep = self.sep
         if comment is None:
@@ -83,7 +86,7 @@ class PandasLoader(Loader):
             names=header,
             skiprows=n_comments + 1,
         )
-        logging.info(f"Successfully loaded emission yield file(s) {filepath}")
+        logging.info(f"Successfully loaded emission yield file(s) {filepaths}")
         return df
 
     def load_emission_angle_distribution(self, *args) -> Any:
@@ -91,12 +94,16 @@ class PandasLoader(Loader):
 
     def load_emission_energy_distribution(
         self,
-        filepath: DataPath,
+        *filepaths: DataPath,
+        population: ImplementedPop | None = None,
         sep: str | None = None,
         comment: str | None = None,
-        population: ImplementedPop | None = None,
-    ) -> tuple[pd.DataFrame, float | None]:
-        """Load and format the given emission energy file.
+        **kwargs,
+    ) -> dict[DataPath, tuple[pd.DataFrame, float | None]]:
+        """Load and format the given emission energy files.
+
+        It is expected that all files are associated to the same
+        ``population``, but were measured at different |PE| energy.
 
         ``CSV`` files can have comments at the start of the file, starting with
         a ``#`` character. It is expected that the energy of |PEs| used for the
@@ -124,8 +131,56 @@ class PandasLoader(Loader):
 
         Parameters
         ----------
+        filepaths :
+            Path to files holding data under study, corresponding to several
+            |PE| energies.
+        population :
+            Unused by this loader.
+        sep :
+            Column delimiter.
+        comment :
+            Comment character.
+
+        Returns
+        -------
+            For every filepath:
+
+            - A pandas dataframe holding the data. Has a ``Energy [eV]`` column
+              holding emitted electrons energy. And one or several columns
+              ``theta [deg]``, where ``theta`` is the value of the incidence
+              angle and content is corresponding emission energy distribution.
+            - Energy of |PEs| in :unit:`eV`. If not found in the file comments,
+              it will be inferred from the position of the |EBEs| peak.
+
+        """
+        if len(filepaths) == 0:
+            raise ValueError("Cannot load, no file provided.")
+
+        if sep is None:
+            sep = self.sep
+        if comment is None:
+            comment = self.comment
+
+        return {
+            fp: self._load_single_emission_energy_distribution(
+                fp, sep=sep, comment=comment
+            )
+            for fp in filepaths
+        }
+
+    def _load_single_emission_energy_distribution(
+        self,
+        filepath: DataPath,
+        sep: str,
+        comment: str,
+        population: ImplementedPop | None = None,
+    ) -> tuple[pd.DataFrame, float | None]:
+        """Load and format a single emission energy distribution file.
+
+        Parameters
+        ----------
         filepath :
-            Path to file holding data under study.
+            Path to the file holding data under study.
         sep :
             Column delimiter.
         comment :
@@ -138,15 +193,11 @@ class PandasLoader(Loader):
             holding emitted electrons energy. And one or several columns
             ``theta [deg]``, where ``theta`` is the value of the incidence
             angle and content is corresponding emission energy distribution.
-        float
-            Energy of Primary Electrons in :unit:`eV`. If not found in the file
-            comments, it will be inferred from the position of the |EBEs| peak.
+        float | None
+            Energy of |PEs| in :unit:`eV`, or ``None`` if not found in the file
+            comments.
 
         """
-        if sep is None:
-            sep = self.sep
-        if comment is None:
-            comment = self.comment
         header, n_comments = read_header(filepath, sep, comment)
         df = pd.read_csv(
             filepath,

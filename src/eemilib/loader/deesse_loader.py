@@ -3,7 +3,7 @@
 import logging
 from importlib.resources.abc import Traversable
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 
 import pandas as pd
 from eemilib.loader.helper import DataPath
@@ -77,11 +77,53 @@ class DeesseLoader(Loader):
 
     def load_emission_energy_distribution(
         self,
+        *filepaths: DataPath,
+        population: ImplementedPop | None = None,
+        e_pes: Sequence[float] | None = None,
+        **kwargs,
+    ) -> dict[DataPath, tuple[pd.DataFrame, float | None]]:
+        """Load and format several emission energy files from DEESSE.
+
+
+        Parameters
+        ----------
+        filepaths :
+            Path to files holding data under study.
+        population :
+            Unused.
+        e_pes :
+            Energy of |PEs| in :unit:`eV`, for every path in ``filepaths``.
+            Should be manually provided, as not present in DEESSE files.
+
+        Returns
+        -------
+            For every filepath:
+
+            - A pandas dataframe holding the data. Has a ``Energy [eV]`` column
+              holding emitted electrons energy. And one or several columns
+              ``theta [deg]``, where ``theta`` is the value of the incidence
+              angle and content is corresponding emission energy distribution.
+            - Energy of |PEs| in :unit:`eV`.
+
+        """
+        if len(filepaths) == 0:
+            raise ValueError("Cannot load, no file provided.")
+
+        if e_pes is None:
+            raise ValueError("DesseLoader nees PEs energy to work.")
+
+        return {
+            fp: self._load_single_emission_energy_distribution(fp, e_pe=e_pe)
+            for fp, e_pe in zip(filepaths, e_pes, strict=True)
+        }
+
+    def _load_single_emission_energy_distribution(
+        self,
         filepath: DataPath,
         e_pe: float | None = None,
         population: ImplementedPop | None = None,
     ) -> tuple[pd.DataFrame, float | None]:
-        """Load and format an emission energy file from DEESSE.
+        """Load and format a single emission energy file from DEESSE.
 
         Parameters
         ----------
@@ -99,8 +141,8 @@ class DeesseLoader(Loader):
             ``theta [deg]``, where ``theta`` is the value of the incidence
             angle and content is corresponding emission energy distribution.
         float
-            Energy of Primary Electrons in :unit:`eV`. If not found in the file
-            comments, it will be inferred from the position of the |EBEs| peak.
+            Energy of |PEs| in :unit:`eV`. If not found in the file comments,
+            it will be inferred from the position of the |EBEs| peak.
 
         """
         col1 = "Kinetic Energy [eV]"

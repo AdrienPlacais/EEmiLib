@@ -150,7 +150,7 @@ class CSTLoader(Loader):
 
     def load_emission_yields(
         self,
-        filepath: DataPath,
+        *filepaths: DataPath,
         sep: str | None = None,
         comment: str | None = None,
     ) -> dict[ImplementedPop, pd.DataFrame]:
@@ -160,8 +160,8 @@ class CSTLoader(Loader):
 
         Parameters
         ----------
-        filepath :
-            Path to file holding data under study.
+        filepaths :
+            Path to files holding data under study.
         sep :
             Column delimiter.
         comment :
@@ -174,6 +174,9 @@ class CSTLoader(Loader):
             ``"{theta} [deg]"`` column.
 
         """
+        if len(filepaths) != 1:
+            raise NotImplementedError("Can only load exactly one file.")
+        filepath = filepaths[0]
         angle = self._angle(filepath, comment=comment)
         blocks = self._parse_blocks(filepath, sep=sep, comment=comment)
 
@@ -189,7 +192,7 @@ class CSTLoader(Loader):
 
     def load_emission_yield(
         self,
-        filepath: DataPath,
+        *filepaths: DataPath,
         population: ImplementedPop,
         sep: str | None = None,
         comment: str | None = None,
@@ -201,7 +204,7 @@ class CSTLoader(Loader):
         Parameters
         ----------
         filepath :
-            Path to file holding data under study.
+            Path to files holding data under study.
         population :
             Population to extract from the file.
         sep :
@@ -215,6 +218,9 @@ class CSTLoader(Loader):
             and one ``"{theta} [deg]"`` column, for the requested population.
 
         """
+        if len(filepaths) != 1:
+            raise NotImplementedError("Can only load exactly one file.")
+        filepath = filepaths[0]
         return self.load_emission_yields(filepath, sep=sep, comment=comment)[
             population
         ]
@@ -228,7 +234,9 @@ class CSTLoader(Loader):
         sep: str | None = None,
         comment: str | None = None,
     ) -> dict[ImplementedPop, tuple[pd.DataFrame, float]]:
-        """Load every population from a CST emission energy file.
+        """Load every population from a single CST emission energy file.
+
+        Loads only **one** file corresponding to **one** |PE| energy.
 
         See :meth:`_parse_blocks` for the expected file format. The energy of
         |PEs| is taken to be the last emission energy present in the file.
@@ -267,40 +275,56 @@ class CSTLoader(Loader):
 
     def load_emission_energy_distribution(
         self,
-        filepath: DataPath,
-        population: ImplementedPop,
+        *filepaths: DataPath,
+        population: ImplementedPop | None = None,
         sep: str | None = None,
         comment: str | None = None,
-    ) -> tuple[pd.DataFrame, float]:
-        """Load one population from a CST emission energy file.
+        **kwargs,
+    ) -> dict[DataPath, tuple[pd.DataFrame, float | None]]:
+        """Load the given electron emission energy distribution files.
+
+        .. note::
+           All populations are stored in the same file, so you need to precise
+           which population you want to load.
 
         See :meth:`load_emission_energy_distributions` for the expected file
         format.
 
         Parameters
         ----------
-        filepath :
-            Path to file holding data under study.
+        filepaths :
+            Path to files holding data under study, corresponding to several
+            |PE| energies.
         population :
-            Population to extract from the file.
+            Population to extract from the file. If ``None``, a ``ValueError``
+            is raised.
         sep :
             Column delimiter.
         comment :
             Comment character.
 
-        Return
-        ------
-        pd.DataFrame
-            ``"Energy [eV]"`` column holding emission energy, and one
-            ``"{theta} [deg]"`` column, for the requested population.
-        float
-            Energy of |PEs| in :unit:`eV`, taken to be the last emission
-            energy present in the file.
+        Returns
+        -------
+            For every filepath:
+
+            - A pandas dataframe holding the data. Has a ``Energy [eV]`` column
+              holding emitted electrons energy. And one or several columns
+              ``theta [deg]``, where ``theta`` is the value of the incidence
+              angle and content is corresponding emission energy distribution.
+            - Energy of Primary Electrons in :unit:`eV`. If not found in the
+              file comments, it will be inferred from the position of the
+              |EBEs| peak.
+
 
         """
-        return self.load_emission_energy_distributions(
-            filepath, sep=sep, comment=comment
-        )[population]
+        if population is None:
+            raise ValueError("population arg must be given")
+        return {
+            fp: self.load_emission_energy_distributions(
+                fp, sep=sep, comment=comment
+            )[population]
+            for fp in filepaths
+        }
 
 
 if __name__ == "__main__":
