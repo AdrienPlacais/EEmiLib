@@ -82,7 +82,9 @@ class EmissionEnergyDistribution(EmissionData):
             Path(s) to file holding data under study.
 
         """
-        data, e_pe = loader.load_emission_energy_distribution(*filepath)
+        data, e_pe = loader.load_emission_energy_distribution(
+            *filepath, population=population
+        )
         return cls(population, data, e_pe=e_pe)
 
     def _default_norm(self) -> float:
@@ -198,7 +200,9 @@ class SEEmissionEnergyDistribution(EmissionEnergyDistribution):
                 f"{population = } was given. The returned object will still "
                 "hold 'SE' data; the mismatched argument is ignored."
             )
-        data, e_pe = loader.load_emission_energy_distribution(*filepath)
+        data, e_pe = loader.load_emission_energy_distribution(
+            *filepath, population=population
+        )
         return cls(data, e_pe=e_pe)
 
     def _default_norm(self) -> float:
@@ -247,7 +251,9 @@ class EBEEmissionEnergyDistribution(EmissionEnergyDistribution):
                 f"{population = } was given. The returned object will still "
                 "hold 'EBE' data; the mismatched argument is ignored."
             )
-        data, e_pe = loader.load_emission_energy_distribution(*filepath)
+        data, e_pe = loader.load_emission_energy_distribution(
+            *filepath, population=population
+        )
         return cls(data, e_pe=e_pe)
 
     def _default_norm(self) -> float:
@@ -299,7 +305,9 @@ class IBEEmissionEnergyDistribution(EmissionEnergyDistribution):
                 f"{population = } was given. The returned object will still "
                 "hold 'IBE' data; the mismatched argument is ignored."
             )
-        data, e_pe = loader.load_emission_energy_distribution(*filepath)
+        data, e_pe = loader.load_emission_energy_distribution(
+            *filepath, population=population
+        )
         return cls(data, e_pe=e_pe)
 
     def _default_norm(self) -> float:
@@ -358,7 +366,9 @@ class AllEmissionEnergyDistribution(EmissionEnergyDistribution):
                 f"{population = } was given. The returned object will still "
                 "hold 'all' data; the mismatched argument is ignored."
             )
-        data, e_pe = loader.load_emission_energy_distribution(*filepath)
+        data, e_pe = loader.load_emission_energy_distribution(
+            *filepath, population=population
+        )
         return cls(data, e_pe=e_pe)
 
     def _default_norm(self) -> float:

@@ -73,7 +73,7 @@ class EmissionYield(EmissionData):
             Path(s) to file holding data under study.
 
         """
-        data = loader.load_emission_yield(*filepath)
+        data = loader.load_emission_yield(*filepath, population=population)
         return cls(population, data)
 
     @property
