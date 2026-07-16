@@ -498,10 +498,10 @@ class DataMatrix:
             contain this info and/or the :class:`.Loader` cannot infer it.
 
         """
-        for pop in IMPLEMENTED_POP:
+        for population in IMPLEMENTED_POP:
             for data_type in IMPLEMENTED_EMISSION_DATA:
                 filepaths = self.get_files(
-                    population=pop, emission_data_type=data_type
+                    population=population, emission_data_type=data_type
                 )  # type: ignore
 
                 if not filepaths:
@@ -510,17 +510,17 @@ class DataMatrix:
                 emission_data = None
                 if data_type == "Emission Yield":
                     emission_data = EmissionYield.from_filepath(
-                        loader, *filepaths, population=pop
+                        loader, *filepaths, population=population
                     )
 
                 elif data_type == "Emission Energy":
                     emission_data = list(
-                        EMISSION_ENERGIES_BY_POP[pop].from_filepaths(
+                        EMISSION_ENERGIES_BY_POP[population].from_filepaths(
                             loader,
                             *filepaths,
-                            population=pop,
+                            population=population,
                             e_pes=(
-                                e_pes_emission_energies[pop]
+                                e_pes_emission_energies[population]
                                 if e_pes_emission_energies
                                 else None
                             ),
@@ -529,13 +529,13 @@ class DataMatrix:
 
                 elif data_type == "Emission Angle":
                     emission_data = EmissionAngleDistribution.from_filepath(
-                        loader, *filepaths, population=pop
+                        loader, *filepaths, population=population
                     )
 
                 if emission_data:
                     self.set_data(
                         emission_data,
-                        population=pop,
+                        population=population,
                         emission_data_type=data_type,
                     )  # type: ignore
 
