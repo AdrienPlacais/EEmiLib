@@ -13,6 +13,7 @@ from typing import Any
 import pandas as pd
 from eemilib.loader.helper import DataPath, read_comments, read_header
 from eemilib.loader.loader import Loader
+from eemilib.util.constants import ImplementedPop
 
 
 class PandasLoader(Loader):
@@ -29,6 +30,7 @@ class PandasLoader(Loader):
         filepath: DataPath,
         sep: str | None = None,
         comment: str | None = None,
+        population: ImplementedPop | None = None,
     ) -> pd.DataFrame:
         """Load and format the given emission yield file.
 
@@ -89,9 +91,10 @@ class PandasLoader(Loader):
 
     def load_emission_energy_distribution(
         self,
-        filepath: str | Path,
+        filepath: DataPath,
         sep: str | None = None,
         comment: str | None = None,
+        population: ImplementedPop | None = None,
     ) -> tuple[pd.DataFrame, float | None]:
         """Load and format the given emission energy file.
 

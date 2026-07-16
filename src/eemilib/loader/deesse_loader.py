@@ -8,7 +8,7 @@ from typing import Any
 import pandas as pd
 from eemilib.loader.helper import DataPath
 from eemilib.loader.loader import Loader
-from eemilib.util.constants import col_energy, col_normal
+from eemilib.util.constants import ImplementedPop, col_energy, col_normal
 
 
 class DeesseLoader(Loader):
@@ -23,7 +23,9 @@ class DeesseLoader(Loader):
         """
         super().__init__()
 
-    def load_emission_yield(self, *filepath: DataPath) -> pd.DataFrame:
+    def load_emission_yield(
+        self, *filepath: DataPath, population: ImplementedPop | None = None
+    ) -> pd.DataFrame:
         """Load and format the given emission yield files.
 
         Parameters
@@ -74,7 +76,10 @@ class DeesseLoader(Loader):
         raise NotImplementedError
 
     def load_emission_energy_distribution(
-        self, filepath: DataPath, e_pe: float | None = None
+        self,
+        filepath: DataPath,
+        e_pe: float | None = None,
+        population: ImplementedPop | None = None,
     ) -> tuple[pd.DataFrame, float | None]:
         """Load and format an emission energy file from DEESSE.
 
