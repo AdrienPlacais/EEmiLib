@@ -64,9 +64,9 @@ furman_pivi_parameters_values = {
     # Elastically Backscattered Electrons (or "Reflected")
     # =====================================================================
     "normal_e_max_ebe": 0.0,
-    "p_1_hat": 0.496,
+    "eta_e_max": 0.496,
     "sigma": 2,
-    "p_1_inf_ebe": 0.02,
+    "eta_e_min": 0.02,
     "W": 60.86,
     "p": 1,
     "e_1": 0.26,
@@ -74,8 +74,8 @@ furman_pivi_parameters_values = {
     # =====================================================================
     # Inelastically Backscattered Electrons (or "Rediffused")
     # =====================================================================
-    "normal_e_max_ibe": 0.041,
-    "p_1_inf_ibe": 0.2,
+    "e_ibe": 0.041,
+    "eta_i_max": 0.2,
     "r": 0.104,
     "q": 0.5,
     "r_1": 0.26,
