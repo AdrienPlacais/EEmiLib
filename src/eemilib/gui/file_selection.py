@@ -56,8 +56,7 @@ def file_selection_matrix(
 
 
 def _setup_file_selection_widget(
-    select_file_func: Callable,
-    max_height: int | None = FILE_LIST_MAX_HEIGHT,
+    select_file_func: Callable, max_height: int | None = FILE_LIST_MAX_HEIGHT
 ) -> tuple[QPushButton, QListWidget]:
     """Set the button to load and the list of selected files."""
     button = QPushButton("📂")

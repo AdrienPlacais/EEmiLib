@@ -21,11 +21,7 @@ def main() -> None:
 
     # A matrix with 4 rows, 3 cols. You click on a cell, a window opens and you
     # select the file(s) to open.
-    data_matrix.set_files(
-        filepaths,
-        row=3,
-        col=0,
-    )
+    data_matrix.set_files(filepaths, row=3, col=0)
 
     # Dropdown menu. Possible values are modules in eemilib.loader, deriving
     # from Loader

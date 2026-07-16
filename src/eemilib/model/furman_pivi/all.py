@@ -3,9 +3,7 @@
 import numpy as np
 from eemilib.model.furman_pivi.ebe import ebe_energy_distribution, ebeey
 from eemilib.model.furman_pivi.ibe import ibe_energy_distribution, ibeey
-from eemilib.model.furman_pivi.physics import (
-    NORMALIZATION_T,
-)
+from eemilib.model.furman_pivi.physics import NORMALIZATION_T
 from eemilib.model.furman_pivi.se import (
     PROBA_EMIT_N_SE,
     se_energy_distribution,

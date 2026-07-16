@@ -249,11 +249,7 @@ class DataMatrix:
 
     @overload
     def get_files(
-        self,
-        row: int,
-        col: int,
-        population: None,
-        emission_data_type: None,
+        self, row: int, col: int, population: None, emission_data_type: None
     ) -> None | DataPath | Collection[DataPath]: ...
 
     @overload
@@ -627,10 +623,7 @@ class DataMatrix:
 
         for data in emission_data:
             axes = data.plot(
-                plotter,
-                axes=axes,
-                population=population,
-                **kwargs,
+                plotter, axes=axes, population=population, **kwargs
             )
         return axes
 

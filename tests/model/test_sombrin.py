@@ -118,9 +118,7 @@ def test_teey_output_shape(sombrin_model: Sombrin) -> None:
     ],
 )
 def test_find_optimal_parameters(
-    sombrin_model: Sombrin,
-    emission_yield: Any,
-    expected: dict[str, float],
+    sombrin_model: Sombrin, emission_yield: Any, expected: dict[str, float]
 ) -> None:
     """Test on several samples that the fit gives expected results."""
     mock_data_matrix = MockDataMatrix(emission_yield)

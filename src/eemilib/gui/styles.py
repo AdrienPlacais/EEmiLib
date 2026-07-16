@@ -236,9 +236,7 @@ class MathTextLabel(QLabel):
 
 
 def math_text_label_from_key(
-    key: str,
-    fontsize: int = MATH_LABEL_FONTSIZE,
-    dpi: int = MATH_LABEL_DPI,
+    key: str, fontsize: int = MATH_LABEL_FONTSIZE, dpi: int = MATH_LABEL_DPI
 ) -> tuple[QLabel, QLabel]:
     """Convenience wrapper: parse *key* then render it.
 

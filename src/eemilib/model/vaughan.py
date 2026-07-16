@@ -300,10 +300,7 @@ class Vaughan(Model):
         assert emission_yield.population == "all"
 
         self.set_parameters_values(
-            {
-                "E_max": emission_yield.e_max,
-                "teey_max": emission_yield.ey_max,
-            }
+            {"E_max": emission_yield.e_max, "teey_max": emission_yield.ey_max}
         )
         if not self.parameters["E_c1"].is_locked:
             self.set_parameter_value("E_c1", emission_yield.e_c1)

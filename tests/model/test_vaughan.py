@@ -150,9 +150,7 @@ def test_teey_output_shape(vaughan_model: Vaughan) -> None:
     ],
 )
 def test_find_optimal_parameters(
-    vaughan_model: Vaughan,
-    emission_yield: Any,
-    expected: dict[str, float],
+    vaughan_model: Vaughan, emission_yield: Any, expected: dict[str, float]
 ) -> None:
     """Test on several samples that the fit gives expected results."""
     mock_data_matrix = MockDataMatrix(emission_yield)

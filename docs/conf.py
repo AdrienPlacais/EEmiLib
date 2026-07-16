@@ -47,17 +47,11 @@ bibtex_bibfiles = ["references.bib"]
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
-html_sidebars = {
-    "**": [
-        "versions.html",
-    ],
-}
+html_sidebars = {"**": ["versions.html"]}
 
 # -- Check that there is no broken link --------------------------------------
 nitpicky = True
-nitpick_ignore = [
-    ("py:class", "numpy.float64"),
-]
+nitpick_ignore = [("py:class", "numpy.float64")]
 intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),

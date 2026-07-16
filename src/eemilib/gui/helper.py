@@ -23,9 +23,7 @@ from PyQt5.QtWidgets import (
 
 
 def setup_dropdown(
-    module_name: str,
-    base_class: ABCMeta,
-    buttons_args: dict[str, Any],
+    module_name: str, base_class: ABCMeta, buttons_args: dict[str, Any]
 ) -> tuple[dict[str, str], QHBoxLayout, QComboBox, list[QPushButton]]:
     """Set up interface with a dropdown menu and a button next to it.
 
@@ -144,9 +142,7 @@ def _linspace_entry(
     return entry
 
 
-def setup_lock_checkbox(
-    parameter: Parameter,
-) -> QWidget:
+def setup_lock_checkbox(parameter: Parameter) -> QWidget:
     """Create the checkbox for the Lock button."""
     checkbox = QCheckBox()
     checkbox.setChecked(parameter.is_locked)

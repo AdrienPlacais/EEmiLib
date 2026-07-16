@@ -66,10 +66,7 @@ class EmissionEnergyDistribution(EmissionData):
 
     @classmethod
     def from_filepath(
-        cls,
-        loader: Loader,
-        *filepath: DataPath,
-        population: ImplementedPop,
+        cls, loader: Loader, *filepath: DataPath, population: ImplementedPop
     ) -> Self:
         """Instantiate the data from files.
 

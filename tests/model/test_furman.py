@@ -264,9 +264,7 @@ def test_emission_yields_values(
     "model_fixture, data_fixture",
     [
         pytest.param(
-            "furman_pivi_ss",
-            "energy_distrib_data_ss",
-            id="Stainless steel",
+            "furman_pivi_ss", "energy_distrib_data_ss", id="Stainless steel"
         ),
         pytest.param("furman_pivi_cu", "energy_distrib_data_cu", id="Copper"),
     ],

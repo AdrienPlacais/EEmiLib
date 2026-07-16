@@ -507,9 +507,7 @@ class MainWindow(QMainWindow):
             quantities, labels, initial_values, max_values
         ):
             layout, first, last, points = setup_linspace_entries(
-                label,
-                initial_values=initial,
-                max_value=max_val,
+                label, initial_values=initial, max_value=max_val
             )
             self.energy_angle_layout.addLayout(layout)
             if qty == ("energy"):
@@ -559,9 +557,7 @@ class MainWindow(QMainWindow):
     def _set_up_population_to_plot_checkboxes(self) -> None:
         """Add checkbox to select which population should be plotted."""
         layout, checkboxes = to_plot_checkboxes(
-            "Population to plot:",
-            IMPLEMENTED_POP,
-            several_can_be_checked=True,
+            "Population to plot:", IMPLEMENTED_POP, several_can_be_checked=True
         )
         self._plot_layout.addLayout(layout)
         self.population_checkboxes = checkboxes

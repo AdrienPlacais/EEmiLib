@@ -381,8 +381,7 @@ def generation(
 
 
 def transport(
-    range: float | NDArray[np.float64],
-    diffusion_length: Parameter | float,
+    range: float | NDArray[np.float64], diffusion_length: Parameter | float
 ) -> float | NDArray[np.float64]:
     r"""Compute the transport term.
 

@@ -31,10 +31,7 @@ class EmissionAngleDistribution(EmissionData):
 
     @classmethod
     def from_filepath(
-        cls,
-        loader: Loader,
-        *filepath: str | Path,
-        population: ImplementedPop,
+        cls, loader: Loader, *filepath: str | Path, population: ImplementedPop
     ) -> Self:
         """Instantiate the data from files.
 

@@ -6,9 +6,7 @@ from eemilib.util.constants import col_energy, col_normal
 
 
 def trim(
-    normal_ey: pd.DataFrame,
-    min_e: float = -1.0,
-    max_e: float = -1.0,
+    normal_ey: pd.DataFrame, min_e: float = -1.0, max_e: float = -1.0
 ) -> pd.DataFrame:
     """Remove EY outside of given energy range (if provided).
 
@@ -57,9 +55,7 @@ def resample(ey: pd.DataFrame, n_interp: int = -1) -> pd.DataFrame:
         if col_name == col_energy:
             continue
         new_ey[col_name] = np.interp(
-            x=new_ey[col_energy],
-            xp=ey[col_energy],
-            fp=ey[col_name],
+            x=new_ey[col_energy], xp=ey[col_energy], fp=ey[col_name]
         )
 
     return pd.DataFrame(new_ey)

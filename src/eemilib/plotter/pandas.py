@@ -5,9 +5,7 @@ from typing import Any
 import matplotlib.pyplot as plt
 import pandas as pd
 from eemilib.plotter.helper import explicit_column_names
-from eemilib.plotter.plotter import (
-    Plotter,
-)
+from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import ImplementedPop, col_energy, md_ylabel
 from matplotlib.axes import Axes
 

@@ -59,10 +59,7 @@ class EmissionYield(EmissionData):
 
     @classmethod
     def from_filepath(
-        cls,
-        loader: Loader,
-        *filepath: str | Path,
-        population: ImplementedPop,
+        cls, loader: Loader, *filepath: str | Path, population: ImplementedPop
     ) -> Self:
         """Instantiate the data from files.
 
@@ -85,8 +82,7 @@ class EmissionYield(EmissionData):
         return md_ey[self.population]
 
     def _parameters(
-        self,
-        n_resample: int = -1,
+        self, n_resample: int = -1
     ) -> tuple[float, float, float, float | None]:
         """Compute the characteristics of the emission yield."""
         assert 0.0 in self.angles, "Need the normal incidence measurements."

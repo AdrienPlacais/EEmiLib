@@ -42,11 +42,7 @@ class DeesseLoader(Loader):
         """
         col1 = "Energie réelle des électrons (eV)"
         col2 = "TEEY"
-        kwargs = {
-            "sep": ";",
-            "encoding": "latin1",
-            "header": 5,
-        }
+        kwargs = {"sep": ";", "encoding": "latin1", "header": 5}
         all_df = []
         for file in filepath:
             if isinstance(filepath, Traversable):
@@ -78,9 +74,7 @@ class DeesseLoader(Loader):
         raise NotImplementedError
 
     def load_emission_energy_distribution(
-        self,
-        filepath: DataPath,
-        e_pe: float | None = None,
+        self, filepath: DataPath, e_pe: float | None = None
     ) -> tuple[pd.DataFrame, float | None]:
         """Load and format an emission energy file from DEESSE.
 

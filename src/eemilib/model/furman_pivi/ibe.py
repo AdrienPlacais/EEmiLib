@@ -4,18 +4,13 @@ import math
 
 import numpy as np
 from eemilib.model.furman_pivi.helper import remove_extrema
-from eemilib.model.furman_pivi.physics import (
-    at_theta_incidence,
-)
+from eemilib.model.furman_pivi.physics import at_theta_incidence
 from eemilib.model.parameter import Parameter
 from numpy.typing import NDArray
 
 
 def _ibeey_normal(
-    ene: float,
-    e_ibe: Parameter,
-    eta_i_max: Parameter,
-    r: Parameter,
+    ene: float, e_ibe: Parameter, eta_i_max: Parameter, r: Parameter
 ) -> float:
     r"""Compute |IBEEY| at normal incidence.
 
@@ -61,10 +56,7 @@ def ibeey(
     return at_theta_incidence(
         the=the,
         at_normal=_ibeey_normal(
-            ene=ene,
-            e_ibe=e_ibe,
-            eta_i_max=eta_i_max,
-            r=r,
+            ene=ene, e_ibe=e_ibe, eta_i_max=eta_i_max, r=r
         ),
         a_1=r_1,
         a_2=r_2,

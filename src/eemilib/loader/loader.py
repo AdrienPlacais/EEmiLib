@@ -23,19 +23,13 @@ class Loader(ABC):
 
     @abstractmethod
     def load_emission_yield(
-        self,
-        filepath: DataPath | Collection[DataPath],
-        *args,
-        **kwargs,
+        self, filepath: DataPath | Collection[DataPath], *args, **kwargs
     ) -> pd.DataFrame:
         """Load the given electron emission yield file."""
 
     @abstractmethod
     def load_emission_energy_distribution(
-        self,
-        filepath: DataPath | Collection[DataPath],
-        *args,
-        **kwargs,
+        self, filepath: DataPath | Collection[DataPath], *args, **kwargs
     ) -> tuple[pd.DataFrame, float | None]:
         """Load the given electron emission energy distribution file.
 
@@ -47,9 +41,6 @@ class Loader(ABC):
 
     @abstractmethod
     def load_emission_angle_distribution(
-        self,
-        filepath: DataPath | Collection[DataPath],
-        *args,
-        **kwargs,
+        self, filepath: DataPath | Collection[DataPath], *args, **kwargs
     ) -> pd.DataFrame:
         """Load the given electron emission angle distribution file."""
