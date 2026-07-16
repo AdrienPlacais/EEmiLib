@@ -12,7 +12,7 @@ from typing import Any, Literal, TypedDict, cast
 import numpy as np
 import pandas as pd
 from eemilib.core.model_config import ModelConfig
-from eemilib.emission_data.data_matrix import DataMatrix
+from eemilib.emission_data.data_matrix import DataMatrix, MissingDataError
 from eemilib.emission_data.emission_energy_distribution import (
     AllEmissionEnergyDistribution,
     SEEmissionEnergyDistribution,
@@ -174,26 +174,30 @@ class ChungEverhart(Model):
         if not data_matrix.has_all_mandatory_files(self.model_config):
             raise ValueError("Files are not all provided.")
 
-        distribution = data_matrix.get_data(
+        distributions = data_matrix.get_data(
             population=population, emission_data_type="Emission Energy"
         )
-        assert isinstance(
-            distribution,
-            (AllEmissionEnergyDistribution, SEEmissionEnergyDistribution),
-        ), (
-            f"Emission energy for {population} not stored, or several files "
-            "were returned."
-        )
-        param = self.parameters["W_f"]
+        if not distributions:
+            raise MissingDataError(f"Missing emission energy for {population}")
 
+        def _aggregate_residue(w_f: float) -> NDArray[np.float64]:
+            """Compute residues on all distributions."""
+            return np.concatenate(
+                [
+                    _residue(
+                        w_f,
+                        distribution.data[col_energy].to_numpy(),
+                        distribution.data[col_normal].to_numpy(),
+                    )
+                    for distribution in distributions
+                ]
+            )
+
+        param = self.parameters["W_f"]
         lsq = least_squares(
-            fun=_residue,
+            fun=_aggregate_residue,
             x0=param.value,
             bounds=Bounds(param.lower_bound, param.upper_bound),
-            args=(
-                distribution.data[col_energy].to_numpy(),
-                distribution.data[col_normal].to_numpy(),
-            ),
         )
         w_f = lsq.x[0]
         self.set_parameters_values(

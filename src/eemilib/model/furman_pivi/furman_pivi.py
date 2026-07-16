@@ -310,6 +310,31 @@ class FurmanPivi(Model):
         self, data_matrix: DataMatrix, **kwargs
     ) -> None:
         raise NotImplementedError
+        # se_shape = partial(
+        #     se_energy_distribution,
+        #     impact_energy=e_0,
+        #     the=0.0,
+        #     p_ns=p_ns,
+        #     eps_ns=eps_ns,
+        #     proba_emit_n_se=self._proba_emit_n_se,
+        #     normalization=self._normalization,
+        #     **self.parameters,
+        # )
+        # ebe_shape = partial(
+        #     ebe_energy_distribution,
+        #     impact_energy=e_0,
+        #     the=0.0,
+        #     **self.parameters,
+        # )
+        # ibe_shape = partial(
+        #     ibe_energy_distribution,
+        #     impact_energy=e_0,
+        #     the=0.0,
+        #     **self.parameters,
+        # )
+        # _, _, ibe_distrib = decompose_all_energy_distribution(
+        #     all_distribution, se_shape, ebe_shape, ibe_shape
+        # )
 
     def _find_ibe_parameters(self) -> None:
         r"""Find the best parameters for |IBE|.
