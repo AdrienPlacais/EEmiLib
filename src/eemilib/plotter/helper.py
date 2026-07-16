@@ -16,6 +16,7 @@ def explicit_column_names(
     columns: Sequence[str],
     population: ImplementedPop | None = None,
     emission_data_type: ImplementedEmissionData | None = None,
+    e_pe: float | None = None,
 ) -> dict[str, str]:
     """Explicit column names for the plot.
 
@@ -29,10 +30,11 @@ def explicit_column_names(
         Type of emitted electrons in data frame.
     emission_data_type :
         Type of data stored in data frame.
+    e_pe :
+        Energy of |PEs| in :unit:`eV`, if applicable.
 
     Returns
     -------
-    dict[str, str]
         Mapping to easily rename the data frame.
 
     """
@@ -55,14 +57,15 @@ def explicit_column_names(
         return explicit
 
     if emission_data_type == "Emission Energy":
-        explicit = {
-            col: (
-                f"{md_energy_distrib[population]} @{col}"
-                if col != col_energy
-                else col_energy
-            )
-            for col in columns
-        }
+        explicit = {}
+        for col in columns:
+            if col == col_energy:
+                explicit[col] = col
+                continue
+
+            explicit[col] = f"{md_energy_distrib[population]} @{col}"
+            if e_pe:
+                explicit[col] += f", {e_pe} eV"
         return explicit
 
     logging.info(

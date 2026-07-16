@@ -83,6 +83,7 @@ class PandasPlotter(Plotter):
         axes: Axes | None = None,
         population: ImplementedPop | None = None,
         is_model: bool = True,
+        e_pe: float | None = None,
         **kwargs,
     ) -> Axes:
         """Plot :class:`.EmissionEnergyDistribution` data with |dfplot| method.
@@ -101,6 +102,8 @@ class PandasPlotter(Plotter):
         is_model :
             Whether data being plotted comes from a model. Used to set plot
             linestyles.
+        e_pe :
+            Energy of |PEs| in :unit:`eV`.
         kwargs :
             Additional keyword arguments passed to the |dfplot| method.
 
@@ -111,6 +114,7 @@ class PandasPlotter(Plotter):
             df.columns,
             population=population,
             emission_data_type="Emission Energy",
+            e_pe=e_pe,
         )
         df.rename(columns=explicit, inplace=True)
         merged_kwargs = self._merge_kwargs(

@@ -1,6 +1,7 @@
 """Define an object to store an emission energy distribution."""
 
 import logging
+from abc import abstractmethod
 from typing import Callable, Self, Sequence
 
 import numpy as np
@@ -21,9 +22,10 @@ from numpy.typing import NDArray
 class EmissionEnergyDistribution(EmissionData):
     """An emission energy distribution."""
 
+    population: ImplementedPop
+
     def __init__(
         self,
-        population: ImplementedPop,
         data: pd.DataFrame,
         e_pe: float | None = None,
         norm: float | None = None,
@@ -32,8 +34,6 @@ class EmissionEnergyDistribution(EmissionData):
 
         Parameters
         ----------
-        population :
-            The concerned population of electrons.
         data :
             Structure holding the data. Must have a ``Energy (eV)`` column
             holding ``population`` energy. And one or several columns
@@ -47,7 +47,7 @@ class EmissionEnergyDistribution(EmissionData):
             own population. Pass ``1.0`` explicitly to disable normalization.
 
         """
-        super().__init__(population, data)
+        super().__init__(self.population, data)
         self.energies = data[col_energy].to_numpy()
         self.angles = [
             float(col.split()[0]) for col in data.columns if col != col_energy
@@ -94,16 +94,23 @@ class EmissionEnergyDistribution(EmissionData):
         """
         if isinstance(e_pes, (float, int)):
             e_pes = [e_pes]
+        if population != cls.population:
+            logging.warning(
+                f"{cls.__name__} always represents population {cls.population}"
+                f", but {population = } was given. The returned object will "
+                f"still hold {cls.population} data; the mismatched argument is"
+                " ignored."
+            )
         results = loader.load_emission_energy_distribution(
-            *filepath, population=population, e_pes=e_pes
+            *filepath, population=cls.population, e_pes=e_pes
         )
         if len(results) != 1:
             raise ValueError(
-                f"Expected exactly one loaded distribution, got {len(results)}"
-                ". Use `from_filepaths` to load several files at once."
+                f"Expected exactly one loaded distribution, got {len(results)}. "
+                "Use `from_filepaths` to load several files at once."
             )
         data, e_pe = next(iter(results.values()))
-        return cls(population, data, e_pe=e_pe)
+        return cls(data=data, e_pe=e_pe)
 
     @classmethod
     def from_filepaths(
@@ -134,12 +141,11 @@ class EmissionEnergyDistribution(EmissionData):
 
         """
         results = loader.load_emission_energy_distribution(
-            *filepath, population=population, e_pes=e_pes
+            *filepath, population=cls.population, e_pes=e_pes
         )
-        return [
-            cls(population, data, e_pe=e_pe) for data, e_pe in results.values()
-        ]
+        return [cls(data, e_pe=e_pe) for data, e_pe in results.values()]
 
+    @abstractmethod
     def _default_norm(self) -> float:
         """Compute the default normalization constant for this population.
 
@@ -147,10 +153,6 @@ class EmissionEnergyDistribution(EmissionData):
         (e.g. normalizing by this population's own peak value).
 
         """
-        logging.warning(
-            "Default norm was not overriden. Returning default value of 1.0"
-        )
-        return 1.0
 
     @property
     def label(self) -> str:
@@ -185,6 +187,7 @@ class EmissionEnergyDistribution(EmissionData):
             label=self.label,
             population=population,
             is_model=False,
+            e_pe=self.e_pe,
             **kwargs,
         )
 
@@ -220,97 +223,7 @@ class EmissionEnergyDistribution(EmissionData):
 class SEEmissionEnergyDistribution(EmissionEnergyDistribution):
     """Emission energy distribution of |SEs|."""
 
-    def __init__(
-        self,
-        data: pd.DataFrame,
-        e_pe: float | None = None,
-        norm: float | None = None,
-    ) -> None:
-        super().__init__(population="SE", data=data, e_pe=e_pe, norm=norm)
-
-    @classmethod
-    def from_filepath(
-        cls,
-        loader: Loader,
-        *filepath: DataPath,
-        population: ImplementedPop = "SE",
-        e_pes: Sequence[float] | float | None = None,
-    ) -> Self:
-        """Instantiate the data from files.
-
-        Parameters
-        ----------
-        loader :
-            The object that will load the data.
-        *filepath :
-            Path(s) to file holding data under study. Only the first result is
-            used; if you have several measurement files, prefer
-            :meth:`from_filepaths`.
-        population :
-            The concerned population of electrons.
-        e_pes :
-            |PEs| energies, if the loader cannot find them in the given files.
-            Must have the same length as ``filepaths``. Can be a single float
-            if only file is to be loaded.
-
-        """
-        if isinstance(e_pes, (float, int)):
-            e_pes = [e_pes]
-        if population != "SE":
-            logging.warning(
-                f"{cls.__name__} always represents population 'SE', but "
-                f"{population = } was given. The returned object will still "
-                "hold 'SE' data; the mismatched argument is ignored."
-            )
-        results = loader.load_emission_energy_distribution(
-            *filepath, population=population, e_pes=e_pes
-        )
-        if len(results) != 1:
-            raise ValueError(
-                f"Expected exactly one loaded distribution, got {len(results)}. "
-                "Use `from_filepaths` to load several files at once."
-            )
-        data, e_pe = next(iter(results.values()))
-        return cls(data=data, e_pe=e_pe)
-
-    @classmethod
-    def from_filepaths(
-        cls,
-        loader: Loader,
-        *filepath: DataPath,
-        population: ImplementedPop = "SE",
-        e_pes: Sequence[float] | None = None,
-    ) -> Sequence[Self]:
-        """Instantiate one instance per given file.
-
-        Parameters
-        ----------
-        loader :
-            The object that will load the data.
-        *filepath :
-            Path(s) to file(s) holding data under study, one measurement per
-            file (in particular: taken at different |PEs| energies).
-        population :
-            The concerned population of electrons.
-        e_pes :
-            |PEs| energies, if the loader cannot find them in the given files.
-            Must have the same length as ``filepaths``.
-
-        Return
-        ------
-            One instance per successfully loaded file.
-
-        """
-        if population != "SE":
-            logging.warning(
-                f"{cls.__name__} always represents population 'SE', but "
-                f"{population = } was given. The returned object will still "
-                "hold 'SE' data; the mismatched argument is ignored."
-            )
-        results = loader.load_emission_energy_distribution(
-            *filepath, population=population, e_pes=e_pes
-        )
-        return [cls(data=data, e_pe=e_pe) for data, e_pe in results.values()]
+    population = "SE"
 
     def _default_norm(self) -> float:
         """Compute the default normalization constant for this population.
@@ -325,97 +238,7 @@ class SEEmissionEnergyDistribution(EmissionEnergyDistribution):
 class EBEEmissionEnergyDistribution(EmissionEnergyDistribution):
     """Emission energy distribution of |EBEs|."""
 
-    def __init__(
-        self,
-        data: pd.DataFrame,
-        e_pe: float | None = None,
-        norm: float | None = None,
-    ) -> None:
-        super().__init__(population="EBE", data=data, e_pe=e_pe, norm=norm)
-
-    @classmethod
-    def from_filepath(
-        cls,
-        loader: Loader,
-        *filepath: DataPath,
-        population: ImplementedPop = "EBE",
-        e_pes: Sequence[float] | float | None = None,
-    ) -> Self:
-        """Instantiate the data from files.
-
-        Parameters
-        ----------
-        loader :
-            The object that will load the data.
-        *filepath :
-            Path(s) to file holding data under study. Only the first result is
-            used; if you have several measurement files, prefer
-            :meth:`from_filepaths`.
-        population :
-            The concerned population of electrons.
-        e_pes :
-            |PEs| energies, if the loader cannot find them in the given files.
-            Must have the same length as ``filepaths``. Can be a single float
-            if only file is to be loaded.
-
-        """
-        if isinstance(e_pes, (float, int)):
-            e_pes = [e_pes]
-        if population != "EBE":
-            logging.warning(
-                f"{cls.__name__} always represents population 'EBE', but "
-                f"{population = } was given. The returned object will still "
-                "hold 'EBE' data; the mismatched argument is ignored."
-            )
-        results = loader.load_emission_energy_distribution(
-            *filepath, population=population, e_pes=e_pes
-        )
-        if len(results) != 1:
-            raise ValueError(
-                f"Expected exactly one loaded distribution, got {len(results)}. "
-                "Use `from_filepaths` to load several files at once."
-            )
-        data, e_pe = next(iter(results.values()))
-        return cls(data=data, e_pe=e_pe)
-
-    @classmethod
-    def from_filepaths(
-        cls,
-        loader: Loader,
-        *filepath: DataPath,
-        population: ImplementedPop = "EBE",
-        e_pes: Sequence[float] | None = None,
-    ) -> Sequence[Self]:
-        """Instantiate one instance per given file.
-
-        Parameters
-        ----------
-        loader :
-            The object that will load the data.
-        *filepath :
-            Path(s) to file(s) holding data under study, one measurement per
-            file (in particular: taken at different |PEs| energies).
-        population :
-            The concerned population of electrons.
-        e_pes :
-            |PEs| energies, if the loader cannot find them in the given files.
-            Must have the same length as ``filepaths``.
-
-        Return
-        ------
-            One instance per successfully loaded file.
-
-        """
-        if population != "EBE":
-            logging.warning(
-                f"{cls.__name__} always represents population 'EBE', but "
-                f"{population = } was given. The returned object will still "
-                "hold 'EBE' data; the mismatched argument is ignored."
-            )
-        results = loader.load_emission_energy_distribution(
-            *filepath, population=population, e_pes=e_pes
-        )
-        return [cls(data=data, e_pe=e_pe) for data, e_pe in results.values()]
+    population = "EBE"
 
     def _default_norm(self) -> float:
         """Compute the default normalization constant for this population.
@@ -433,97 +256,7 @@ class EBEEmissionEnergyDistribution(EmissionEnergyDistribution):
 class IBEEmissionEnergyDistribution(EmissionEnergyDistribution):
     """Emission energy distribution of |EBEs|."""
 
-    def __init__(
-        self,
-        data: pd.DataFrame,
-        e_pe: float | None = None,
-        norm: float | None = None,
-    ) -> None:
-        super().__init__(population="IBE", data=data, e_pe=e_pe, norm=norm)
-
-    @classmethod
-    def from_filepath(
-        cls,
-        loader: Loader,
-        *filepath: DataPath,
-        population: ImplementedPop = "IBE",
-        e_pes: Sequence[float] | float | None = None,
-    ) -> Self:
-        """Instantiate the data from files.
-
-        Parameters
-        ----------
-        loader :
-            The object that will load the data.
-        *filepath :
-            Path(s) to file holding data under study. Only the first result is
-            used; if you have several measurement files, prefer
-            :meth:`from_filepaths`.
-        population :
-            The concerned population of electrons.
-        e_pes :
-            |PEs| energies, if the loader cannot find them in the given files.
-            Must have the same length as ``filepaths``. Can be a single float
-            if only file is to be loaded.
-
-        """
-        if isinstance(e_pes, (float, int)):
-            e_pes = [e_pes]
-        if population != "IBE":
-            logging.warning(
-                f"{cls.__name__} always represents population 'IBE', but "
-                f"{population = } was given. The returned object will still "
-                "hold 'IBE' data; the mismatched argument is ignored."
-            )
-        results = loader.load_emission_energy_distribution(
-            *filepath, population=population, e_pes=e_pes
-        )
-        if len(results) != 1:
-            raise ValueError(
-                f"Expected exactly one loaded distribution, got {len(results)}. "
-                "Use `from_filepaths` to load several files at once."
-            )
-        data, e_pe = next(iter(results.values()))
-        return cls(data=data, e_pe=e_pe)
-
-    @classmethod
-    def from_filepaths(
-        cls,
-        loader: Loader,
-        *filepath: DataPath,
-        population: ImplementedPop = "IBE",
-        e_pes: Sequence[float] | None = None,
-    ) -> Sequence[Self]:
-        """Instantiate one instance per given file.
-
-        Parameters
-        ----------
-        loader :
-            The object that will load the data.
-        *filepath :
-            Path(s) to file(s) holding data under study, one measurement per
-            file (in particular: taken at different |PEs| energies).
-        population :
-            The concerned population of electrons.
-        e_pes :
-            |PEs| energies, if the loader cannot find them in the given files.
-            Must have the same length as ``filepaths``.
-
-        Return
-        ------
-            One instance per successfully loaded file.
-
-        """
-        if population != "IBE":
-            logging.warning(
-                f"{cls.__name__} always represents population 'IBE', but "
-                f"{population = } was given. The returned object will still "
-                "hold 'IBE' data; the mismatched argument is ignored."
-            )
-        results = loader.load_emission_energy_distribution(
-            *filepath, population=population, e_pes=e_pes
-        )
-        return [cls(data=data, e_pe=e_pe) for data, e_pe in results.values()]
+    population = "IBE"
 
     def _default_norm(self) -> float:
         """Compute the default normalization constant for this population.
@@ -541,104 +274,7 @@ class IBEEmissionEnergyDistribution(EmissionEnergyDistribution):
 class AllEmissionEnergyDistribution(EmissionEnergyDistribution):
     """Emission energy distribution of all populations."""
 
-    def __init__(
-        self,
-        data: pd.DataFrame,
-        e_pe: float | None = None,
-        norm: float | None = None,
-    ) -> None:
-        super().__init__(population="all", data=data, e_pe=e_pe, norm=norm)
-        #: Energy at the maximum of |SEs| in :unit:`eV`.
-        self.e_peak_se: float
-        self.e_peak_se, _ = self._SE_peak
-        #: Energy at the maximum of |EBEs| in :unit:`eV`.
-        self.e_peak_ebe: float
-        #: Position of |EBE| peak.
-        self.e_peak_ebe, _ = self._EBE_peak
-
-    @classmethod
-    def from_filepath(
-        cls,
-        loader: Loader,
-        *filepath: DataPath,
-        population: ImplementedPop = "all",
-        e_pes: Sequence[float] | float | None = None,
-    ) -> Self:
-        """Instantiate the data from files.
-
-        Parameters
-        ----------
-        loader :
-            The object that will load the data.
-        *filepath :
-            Path(s) to file holding data under study. Only the first result is
-            used; if you have several measurement files, prefer
-            :meth:`from_filepaths`.
-        population :
-            The concerned population of electrons.
-        e_pes :
-            |PEs| energies, if the loader cannot find them in the given files.
-            Must have the same length as ``filepaths``. Can be a single float
-            if only file is to be loaded.
-
-        """
-        if isinstance(e_pes, (float, int)):
-            e_pes = [e_pes]
-        if population != "all":
-            logging.warning(
-                f"{cls.__name__} always represents population 'all', but "
-                f"{population = } was given. The returned object will still "
-                "hold 'all' data; the mismatched argument is ignored."
-            )
-        results = loader.load_emission_energy_distribution(
-            *filepath, population=population, e_pes=e_pes
-        )
-        if len(results) != 1:
-            raise ValueError(
-                f"Expected exactly one loaded distribution, got {len(results)}. "
-                "Use `from_filepaths` to load several files at once."
-            )
-        data, e_pe = next(iter(results.values()))
-        return cls(data=data, e_pe=e_pe)
-
-    @classmethod
-    def from_filepaths(
-        cls,
-        loader: Loader,
-        *filepath: DataPath,
-        population: ImplementedPop = "all",
-        e_pes: Sequence[float] | None = None,
-    ) -> Sequence[Self]:
-        """Instantiate one instance per given file.
-
-        Parameters
-        ----------
-        loader :
-            The object that will load the data.
-        *filepath :
-            Path(s) to file(s) holding data under study, one measurement per
-            file (in particular: taken at different |PEs| energies).
-        population :
-            The concerned population of electrons.
-        e_pes :
-            |PEs| energies, if the loader cannot find them in the given files.
-            Must have the same length as ``filepaths``.
-
-        Return
-        ------
-            One instance per successfully loaded file.
-
-        """
-        if population != "all":
-            logging.warning(
-                f"{cls.__name__} always represents population 'all', but "
-                f"{population = } was given. The returned object will still "
-                "hold 'all' data; the mismatched argument is ignored."
-            )
-        results = loader.load_emission_energy_distribution(
-            *filepath, population=population, e_pes=e_pes
-        )
-        return [cls(data=data, e_pe=e_pe) for data, e_pe in results.values()]
+    population = "all"
 
     def _default_norm(self) -> float:
         return self._SE_peak[1]
