@@ -5,6 +5,7 @@ from collections.abc import Collection
 
 import pandas as pd
 from eemilib.loader.helper import DataPath
+from eemilib.util.constants import ImplementedPop
 from eemilib.util.helper import documentation_url
 
 
@@ -23,13 +24,21 @@ class Loader(ABC):
 
     @abstractmethod
     def load_emission_yield(
-        self, filepath: DataPath | Collection[DataPath], *args, **kwargs
+        self,
+        filepath: DataPath | Collection[DataPath],
+        *args,
+        population: ImplementedPop | None = None,
+        **kwargs,
     ) -> pd.DataFrame:
         """Load the given electron emission yield file."""
 
     @abstractmethod
     def load_emission_energy_distribution(
-        self, filepath: DataPath | Collection[DataPath], *args, **kwargs
+        self,
+        filepath: DataPath | Collection[DataPath],
+        *args,
+        population: ImplementedPop | None = None,
+        **kwargs,
     ) -> tuple[pd.DataFrame, float | None]:
         """Load the given electron emission energy distribution file.
 
