@@ -27,7 +27,9 @@ import numpy as np
 import pandas as pd
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data.data_matrix import DataMatrix
+from eemilib.model.furman_pivi.all import all_energy_distribution, teey
 from eemilib.model.furman_pivi.ebe import ebe_energy_distribution, ebeey
+from eemilib.model.furman_pivi.helper import add_furman_pivi_notation
 from eemilib.model.furman_pivi.ibe import ibe_energy_distribution, ibeey
 from eemilib.model.furman_pivi.physics import (
     DISTRIBUTION_T,
@@ -52,6 +54,13 @@ from eemilib.util.constants import (
     col_energy,
 )
 from numpy.typing import NDArray
+
+EMISSION_YIELD_FUNCS: dict[ImplementedPop, Callable] = {
+    "SE": seey,
+    "EBE": ebeey,
+    "IBE": ibeey,
+    "all": teey,
+}
 
 
 class FurmanPivi(Model):
@@ -99,7 +108,7 @@ class FurmanPivi(Model):
         super().__init__(url_doc_override="manual/models/furman_pivi")
 
         for parameters_kwargs in self.initial_parameters.values():
-            _add_furman_pivi_notation(parameters_kwargs)
+            add_furman_pivi_notation(parameters_kwargs)
 
         self.parameters = cast(
             FurmanPiviParameters,
@@ -169,7 +178,7 @@ class FurmanPivi(Model):
             "     - Description",
         ]
         for name, kwargs in cls.initial_parameters.items():
-            _add_furman_pivi_notation(kwargs)
+            add_furman_pivi_notation(kwargs)
             doc = [
                 f"   * - :math:`{kwargs.get('markdown', '')}`",
                 f"     - {name}",
@@ -353,138 +362,6 @@ class FurmanPivi(Model):
 
         """
         return self._evaluate_for_teey_models(data_matrix)
-
-
-def _add_furman_pivi_notation(
-    parameters_kwargs: dict[str, str | float | bool],
-) -> None:
-    """Modify dict in-place to mention original Furman and Pivi notation.
-
-    Parameters
-    ----------
-    parameters_kwargs :
-        A :class:`.Parameter` kwargs. If a ``"furman_pivi_notation"`` key is
-        found, it is removed and added to the ``"description"`` value --
-        provided that both keys are valid strings.
-
-    """
-    description = parameters_kwargs.get("description")
-    if not isinstance(description, str):
-        return
-    furman_pivi_notation = parameters_kwargs.pop("furman_pivi_notation", None)
-    if not isinstance(furman_pivi_notation, str):
-        return
-    parameters_kwargs["description"] = " ".join(
-        (
-            description,
-            f"Denoted :math:`{furman_pivi_notation}` by Furman and Pivi.",
-        )
-    )
-
-
-def teey(ene: float, the: float, **kwargs) -> float:
-    r"""Compute |TEEY|.
-
-    Parameters
-    ----------
-    ene :
-        Impact energy in :unit:`eV`.
-    the :
-        Impact angle in :unit:`\degree`.
-    kwargs :
-        Model parameters.
-
-    Return
-    ------
-        |TEEY|.
-
-    """
-    return (
-        seey(ene, the, **kwargs)
-        + ebeey(ene, the, **kwargs)
-        + ibeey(ene, the, **kwargs)
-    )
-
-
-def all_energy_distribution(
-    impact_energy: float,
-    the: float,
-    emission_energies: NDArray[np.float64],
-    p_ns: list[Parameter],
-    eps_ns: list[Parameter],
-    proba_emit_n_se: PROBA_EMIT_N_SE,
-    normalization: NORMALIZATION_T,
-    **kwargs,
-) -> NDArray[np.float64]:
-    r"""Compute the overall emitted-energy spectrum.
-
-    This is Eq. (51) in Furman and Pivi paper :cite:`Furman2002`:
-
-    .. math::
-       \frac{d\delta}{dE} = f_{1,\,e} + f_{1,\,r} + \frac{d\delta_{ts}}{dE}
-
-    Each term is already normalized to integrate to its own yield (Eqs. 27,
-    30, 50), so no additional weighting is applied here.
-
-    Parameters
-    ----------
-    impact_energy :
-        Impact energy of the |PE| in :unit:`eV`.
-    the :
-        Impact angle of the |PE| in :math:`\degree`.
-    emission_energies :
-        Emission energies you want the distribution from.
-    p_ns :
-        List of :math:`p_n` parameters, *cf* :func:`se_energy_distribution`.
-    eps_ns :
-        List of :math:`\varepsilon_n` parameters, *cf*
-        :func:`se_energy_distribution`.
-    proba_emit_n_se :
-        Function computing probability to emit ``n`` |SEs|, *cf*
-        :func:`se_energy_distribution`.
-    normalization :
-        Selects Eq. (35) or Eq. (43), *cf* :func:`se_energy_distribution`.
-    kwargs :
-        Furman and Pivi |SEEY|, |EBEEY|, |IBEEY|, |EBE| and |IBE| PDF
-        parameters.
-
-    Returns
-    -------
-        Overall emitted-energy spectrum.
-
-    """
-    return (
-        ebe_energy_distribution(
-            impact_energy=impact_energy,
-            the=the,
-            emission_energies=emission_energies,
-            **kwargs,
-        )
-        + ibe_energy_distribution(
-            impact_energy=impact_energy,
-            the=the,
-            emission_energies=emission_energies,
-            **kwargs,
-        )
-        + se_energy_distribution(
-            impact_energy=impact_energy,
-            the=the,
-            emission_energies=emission_energies,
-            p_ns=p_ns,
-            eps_ns=eps_ns,
-            proba_emit_n_se=proba_emit_n_se,
-            normalization=normalization,
-            **kwargs,
-        )
-    )
-
-
-EMISSION_YIELD_FUNCS: dict[ImplementedPop, Callable] = {
-    "SE": seey,
-    "EBE": ebeey,
-    "IBE": ibeey,
-    "all": teey,
-}
 
 
 # Append dynamically generated docs to the module docstring

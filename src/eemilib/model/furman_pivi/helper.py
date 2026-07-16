@@ -1,4 +1,4 @@
-"""Define helpers for array manipulation."""
+"""Define helpers for array manipulation, better documentation."""
 
 import numpy as np
 from numpy.typing import NDArray
@@ -39,4 +39,31 @@ def remove_extrema(
     """
     return _theta_func(emission_energies) * _theta_func(
         impact_energy - emission_energies
+    )
+
+
+def add_furman_pivi_notation(
+    parameters_kwargs: dict[str, str | float | bool],
+) -> None:
+    """Modify dict in-place to mention original Furman and Pivi notation.
+
+    Parameters
+    ----------
+    parameters_kwargs :
+        A :class:`.Parameter` kwargs. If a ``"furman_pivi_notation"`` key is
+        found, it is removed and added to the ``"description"`` value --
+        provided that both keys are valid strings.
+
+    """
+    description = parameters_kwargs.get("description")
+    if not isinstance(description, str):
+        return
+    furman_pivi_notation = parameters_kwargs.pop("furman_pivi_notation", None)
+    if not isinstance(furman_pivi_notation, str):
+        return
+    parameters_kwargs["description"] = " ".join(
+        (
+            description,
+            f"Denoted :math:`{furman_pivi_notation}` by Furman and Pivi.",
+        )
     )
