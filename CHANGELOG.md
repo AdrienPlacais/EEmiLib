@@ -18,6 +18,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Emission yield and energy distributions for Stainless Steel and Copper files.
   - Modelled with Furman and Pivi, data taken from their paper.
   - Exported with CST, you can load them with `CSTLoader`.
+- `DataMatrix.plot` accepts `group_by_pe` argument, defaulting to `False`. When
+  it is `True`:
+  - If `emission_data_type` is not `"Emission Energy"`, an error is raised.
+  - One plot per PE impact energy is created. The returned value is a
+    dictionary mapping PE energies to axes objects: `dict[float, Axes]`.
+- `Model.plot` accepts `group_by_pe` argument, defaulting to `False`. When it is
+  True:
+  - If `emission_data_type` is not `"Emission Energy"`, an error is raised.
+  - If `e_pes: list[float]` is given, model is plotted for these impact
+    energies.
+  - If `axes: dict[float, Axes]` is given, axes are re-used. This `axes` can be
+    returned by `Model.plot`.
+  - When both `e_pes` and `axes` are returned, we use `e_pes` energies, re-use
+    corresponding `Axes` in `axes` if they are present, create new ones
+    otherwise.
+- TODO:
+  - [ ] To incorporate in the GUI.
 
 ### Changed
 
