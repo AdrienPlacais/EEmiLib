@@ -189,7 +189,7 @@ def _maxwellian_norm(temp: float) -> float:
 def maxwellian_pdf(
     ene: float,
     temperature: Parameter | float,
-    norm: Parameter | None = None,
+    norm: Parameter | float = 1.0,
     **parameters,
 ) -> float: ...
 
@@ -198,7 +198,7 @@ def maxwellian_pdf(
 def maxwellian_pdf(
     ene: NDArray[np.float64],
     temperature: Parameter | float,
-    norm: Parameter | None = None,
+    norm: Parameter | float = 1.0,
     **parameters,
 ) -> NDArray[np.float64]: ...
 
@@ -206,7 +206,7 @@ def maxwellian_pdf(
 def maxwellian_pdf(
     ene: float | NDArray[np.float64],
     temperature: Parameter | float,
-    norm: Parameter | None = None,
+    norm: Parameter | float = 1.0,
     **parameters,
 ) -> float | NDArray[np.float64]:
     """Compute the energy distribution."""
@@ -215,8 +215,8 @@ def maxwellian_pdf(
         if isinstance(temperature, Parameter)
         else temperature
     )
-    norm_value = _maxwellian_norm(temp) if not norm else norm.value
-    return 2 * norm_value * np.sqrt(ene / (pi * temp**3)) * np.exp(-ene / temp)
+    nor = norm.value if isinstance(norm, Parameter) else norm
+    return nor * np.sqrt(ene**2 / (pi * temp**3)) * np.exp(-ene / temp)
 
 
 def _residue(
