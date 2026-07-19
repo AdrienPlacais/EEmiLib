@@ -288,9 +288,9 @@ def _regularized_incomplete_gamma(
 def set_number_of_secondaries_probability_function(
     model: DISTRIBUTION_T = "Poisson",
 ) -> PROBA_EMIT_N_SE:
-    """SET THE FUNCTION THAT COMPUTES PROBABILITY TO EMIT ``N`` SECONDARIES.
+    """Set the function that computes probability to emit ``n`` secondaries.
 
-    THIS LET YOU CHOOSE BETWEEN THE TWO PROPOSITIONS IN FURMAN AND PIVI PAPER
+    This let you choose between the two propositions in Furman and Pivi paper
     :cite:`Furman2002`, *cf* Eqs. (37) and (38).
 
     Parameters
@@ -328,7 +328,7 @@ def set_number_of_secondaries_probability_function(
 
 
 def se_energy_distribution(
-    impact_energy: float,
+    e_pe: float,
     the: float,
     emission_energies: NDArray[np.float64],
     p_ns: list[Parameter],
@@ -361,7 +361,7 @@ def se_energy_distribution(
 
     Parameters
     ----------
-    impact_energy :
+    e_pe :
         Impact energy of the |PE| in :unit:`eV`.
     the :
         Impact angle of the |PE| in :math:`\degree`.
@@ -389,9 +389,9 @@ def se_energy_distribution(
         Aggregate |SE| emitted-energy spectrum.
 
     """
-    delta = seey(ene=impact_energy, the=the, **kwargs)
-    eta_e = ebeey(ene=impact_energy, the=the, **kwargs)
-    eta_i = ibeey(ene=impact_energy, the=the, **kwargs)
+    delta = seey(ene=e_pe, the=the, **kwargs)
+    eta_e = ebeey(ene=e_pe, the=the, **kwargs)
+    eta_i = ibeey(ene=e_pe, the=the, **kwargs)
 
     spectrum = np.zeros_like(emission_energies)
     for n, (p_n_param, eps_n_param) in enumerate(zip(p_ns, eps_ns), start=1):
@@ -403,17 +403,17 @@ def se_energy_distribution(
         )
 
         normalization_term = math.gamma(p_n) * _regularized_incomplete_gamma(
-            n * p_n, np.array(impact_energy / eps_n)
+            n * p_n, np.array(e_pe / eps_n)
         )
         shape_term = (emission_energies / eps_n) ** (p_n - 1) * np.exp(
             -emission_energies / eps_n
         )
         tail_term = _regularized_incomplete_gamma(
-            (n - 1) * p_n, (impact_energy - emission_energies) / eps_n
+            (n - 1) * p_n, (e_pe - emission_energies) / eps_n
         )
 
         spectrum += (
             n * p_n_se * shape_term * tail_term / (eps_n * normalization_term)
         )
 
-    return remove_extrema(impact_energy, emission_energies) * spectrum
+    return remove_extrema(e_pe, emission_energies) * spectrum

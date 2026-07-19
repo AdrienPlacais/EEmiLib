@@ -433,7 +433,7 @@ class Model(ABC):
             emission_data_type=emission_data_type,
             energy=energies,
             theta=angles,
-            impact_energy=e_pe,
+            e_pe=e_pe,
         )
         if data is None:
             logging.info(

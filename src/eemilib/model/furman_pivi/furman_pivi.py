@@ -225,10 +225,7 @@ class FurmanPivi(Model):
         out = np.zeros((len(energy), len(theta)))
         for j, the in enumerate(theta):
             out[:, j] = dist_func(
-                impact_energy=e_0,
-                the=the,
-                emission_energies=energy,
-                **self.parameters,
+                e_pe=e_0, the=the, emission_energies=energy, **self.parameters
             )
 
         out_dict = {
@@ -309,7 +306,7 @@ class FurmanPivi(Model):
         raise NotImplementedError
         # se_shape = partial(
         #     se_energy_distribution,
-        #     impact_energy=e_0,
+        #     e_pe=e_0,
         #     the=0.0,
         #     p_ns=p_ns,
         #     eps_ns=eps_ns,
@@ -319,13 +316,13 @@ class FurmanPivi(Model):
         # )
         # ebe_shape = partial(
         #     ebe_energy_distribution,
-        #     impact_energy=e_0,
+        #     e_pe=e_0,
         #     the=0.0,
         #     **self.parameters,
         # )
         # ibe_shape = partial(
         #     ibe_energy_distribution,
-        #     impact_energy=e_0,
+        #     e_pe=e_0,
         #     the=0.0,
         #     **self.parameters,
         # )

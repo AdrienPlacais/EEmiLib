@@ -38,7 +38,7 @@ def teey(ene: float, the: float, **kwargs) -> float:
 
 
 def all_energy_distribution(
-    impact_energy: float,
+    e_pe: float,
     the: float,
     emission_energies: NDArray[np.float64],
     p_ns: list[Parameter],
@@ -59,7 +59,7 @@ def all_energy_distribution(
 
     Parameters
     ----------
-    impact_energy :
+    e_pe :
         Impact energy of the |PE| in :unit:`eV`.
     the :
         Impact angle of the |PE| in :math:`\degree`.
@@ -86,19 +86,13 @@ def all_energy_distribution(
     """
     return (
         ebe_energy_distribution(
-            impact_energy=impact_energy,
-            the=the,
-            emission_energies=emission_energies,
-            **kwargs,
+            e_pe=e_pe, the=the, emission_energies=emission_energies, **kwargs
         )
         + ibe_energy_distribution(
-            impact_energy=impact_energy,
-            the=the,
-            emission_energies=emission_energies,
-            **kwargs,
+            e_pe=e_pe, the=the, emission_energies=emission_energies, **kwargs
         )
         + se_energy_distribution(
-            impact_energy=impact_energy,
+            e_pe=e_pe,
             the=the,
             emission_energies=emission_energies,
             p_ns=p_ns,

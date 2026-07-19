@@ -21,24 +21,24 @@ def _theta_func(x: NDArray[np.float64]) -> NDArray[np.float64]:
 
 
 def remove_extrema(
-    impact_energy: float, emission_energies: NDArray[np.float64]
+    e_pe: float, emission_energies: NDArray[np.float64]
 ) -> NDArray[np.float64]:
-    """Zero out emission energies outside ``[0, impact_energy]``.
+    """Zero out emission energies outside ``[0, e_pe]``.
 
     Parameters
     ----------
-    impact_energy :
+    e_pe :
         Impact energy :math:`E_0`.
     emission_energies :
         Emission energies :math:`E`.
 
     Returns
     -------
-        1 where ``0 <= emission_energies <= impact_energy``, 0 elsewhere.
+        1 where ``0 <= emission_energies <= e_pe``, 0 elsewhere.
 
     """
     return _theta_func(emission_energies) * _theta_func(
-        impact_energy - emission_energies
+        e_pe - emission_energies
     )
 
 

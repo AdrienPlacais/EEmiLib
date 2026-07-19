@@ -64,7 +64,7 @@ def ibeey(
 
 
 def ibe_energy_distribution(
-    impact_energy: float,
+    e_pe: float,
     the: float,
     emission_energies: NDArray[np.float64],
     e_ibe: Parameter,
@@ -88,7 +88,7 @@ def ibe_energy_distribution(
 
     Parameters
     ----------
-    impact_energy :
+    e_pe :
         Impact energy of the |PE| in :unit:`eV`.
     theta :
         Impact angle of the |PE| in :unit:`\degree`.
@@ -114,9 +114,9 @@ def ibe_energy_distribution(
     """
     q_val = q.value
     return (
-        remove_extrema(impact_energy, emission_energies)
+        remove_extrema(e_pe, emission_energies)
         * ibeey(
-            ene=impact_energy,
+            ene=e_pe,
             the=the,
             e_ibe=e_ibe,
             eta_i_max=eta_i_max,
@@ -126,5 +126,5 @@ def ibe_energy_distribution(
         )
         * (q_val + 1)
         * emission_energies**q_val
-        / impact_energy ** (q_val + 1)
+        / e_pe ** (q_val + 1)
     )
