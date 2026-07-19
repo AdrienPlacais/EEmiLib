@@ -584,20 +584,43 @@ class DataMatrix:
                     return False
         return True
 
+    @overload
     def plot[T](
         self,
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
         emission_data_type: ImplementedEmissionData,
         axes: T | None = None,
+        group_by_pe: Literal[False] = False,
         **kwargs,
-    ) -> T | None:
+    ) -> T | None: ...
+
+    @overload
+    def plot[T](
+        self,
+        plotter: Plotter,
+        population: ImplementedPop | Collection[ImplementedPop],
+        emission_data_type: Literal["Emission Energy"],
+        axes: dict[float, T] | None = None,
+        group_by_pe: Literal[True] = True,
+        **kwargs,
+    ) -> dict[float, T]: ...
+
+    def plot[T](
+        self,
+        plotter: Plotter,
+        population: ImplementedPop | Collection[ImplementedPop],
+        emission_data_type: ImplementedEmissionData,
+        axes: T | dict[float, T] | None = None,
+        group_by_pe: bool = False,
+        **kwargs,
+    ) -> T | dict[float, T] | None:
         """Plot desired measured data using ``plotter``.
 
-        This method uses :meth:`.DataMatrix.get_data` to get the
-        :class:`.EmissionData` instance matching ``population`` and
-        ``emission_data_type``. Then it calls the :meth:`.EmissionData.plot`
-        method.
+        This method is an orchestrator: it decides which underlying routine
+        handles the request, and delegates the actual plotting to
+        :meth:`.EmissionData.plot` (single-axes case) or
+        :meth:`_plot_grouped_by_pe` (``group_by_pe=True`` case).
 
         Parameters
         ----------
@@ -606,20 +629,41 @@ class DataMatrix:
             :meth:`.EmissionData.plot` method.
         population :
             One or several populations to plot. If several are given, we simply
-            recursively call this method.
+            recursively call this method. They will share the same axes.
         emission_data_type :
             Type of data to plot.
         axes :
-            Axes to re-use if given.
+            Axes to re-use if given. A plain ``T`` in the default case; a
+            ``dict[float, T]`` keyed by impact energy when
+            ``group_by_pe=True``.
+        group_by_pe :
+            Only supported for ``emission_data_type == "Emission Energy"``. If
+            ``True``, one axes is created (or re-used) per distinct impact
+            energy found in the measurements, instead of sharing a single axes
+            for everything.
         kwargs :
             Other keyword arguments passed to the :meth:`.EmissionData.plot`
             method.
 
         Returns
         -------
-            Created axes object, or ``None`` if no plot was created.
+            Created axes object (or ``dict`` of axes if ``group_by_pe=True``),
+            can be empty if no plot was created.
 
         """
+        if group_by_pe:
+            if emission_data_type != "Emission Energy":
+                raise ValueError(
+                    "`group_by_pe=True` is only supported for "
+                    "`emission_data_type='Emission Energy'`."
+                )
+            return self._plot_grouped_by_pe(
+                plotter,
+                population,
+                axes=cast(dict[float, T] | None, axes),
+                **kwargs,
+            )
+
         if isinstance(population, Collection) and not isinstance(
             population, str
         ):
@@ -633,19 +677,80 @@ class DataMatrix:
             population=population, emission_data_type=emission_data_type
         )
 
-        if emission_data is None:
+        if not emission_data:
             logging.info(
                 f"No measurement found for {population = } and "
                 f"{emission_data_type = }. Skipping this plot."
             )
             return axes
 
-        if isinstance(emission_data, EmissionData):
-            emission_data = (emission_data,)
-
+        if not hasattr(emission_data, "__iter__"):
+            raise ValueError(
+                "now, emission data should be a possibly empty list"
+            )
         for data in emission_data:
             axes = data.plot(
                 plotter, axes=axes, population=population, **kwargs
+            )
+        return axes
+
+    def _plot_grouped_by_pe[T](
+        self,
+        plotter: Plotter,
+        population: ImplementedPop | Collection[ImplementedPop],
+        axes: dict[float, T] | None = None,
+        **kwargs,
+    ) -> dict[float, T]:
+        """Plot ``"Emission Energy"`` data, one axes per impact energy.
+
+        Distributions are grouped by their
+        :attr:`.EmissionEnergyDistribution.e_pe`; one axes is created (or
+        re-used from ``axes``) per distinct value found. If several populations
+        are given and share the same ``e_pe``, they are plotted on the same
+        axes together.
+
+        Parameters
+        ----------
+        plotter :
+            Object realizing the plot.
+        population :
+            One or several populations to plot.
+        axes :
+            Existing ``e_pe``-keyed axes to re-use, if any.
+        kwargs :
+            Other keyword arguments passed to :meth:`.EmissionData.plot`.
+
+        Return
+        ------
+            Axes, keyed by impact energy.
+
+        """
+        if axes is None:
+            axes = {}
+
+        if isinstance(population, Collection) and not isinstance(
+            population, str
+        ):
+            for pop in population:
+                axes = self._plot_grouped_by_pe(
+                    plotter, pop, axes=axes, **kwargs
+                )
+            return axes
+
+        emission_data = self.get_data(
+            population=population, emission_data_type="Emission Energy"
+        )
+        if not emission_data:
+            logging.info(
+                f"No measurement found for {population = } and "
+                '"Emission Energy". Skipping this plot.'
+            )
+            return axes
+
+        for distrib in emission_data:
+            e_pe = distrib.e_pe
+            axes[e_pe] = distrib.plot(
+                plotter, axes=axes.get(e_pe), population=population, **kwargs
             )
         return axes
 
