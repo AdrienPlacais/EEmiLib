@@ -76,6 +76,8 @@ class EmissionEnergyDistribution(EmissionData):
     ) -> Self:
         """Instantiate the data from files.
 
+        Currently unused.
+
         Parameters
         ----------
         loader :
@@ -119,6 +121,7 @@ class EmissionEnergyDistribution(EmissionData):
         *filepath: DataPath,
         population: ImplementedPop,
         e_pes: Sequence[float] | None = None,
+        norms: Sequence[float | None] | None = None,
     ) -> Sequence[Self]:
         """Instantiate one instance per given file.
 
@@ -143,6 +146,8 @@ class EmissionEnergyDistribution(EmissionData):
         results = loader.load_emission_energy_distribution(
             *filepath, population=cls.population, e_pes=e_pes
         )
+        if norms is None:
+            norms = [None for _ in results]
         return [cls(data, e_pe=e_pe) for data, e_pe in results.values()]
 
     @abstractmethod
