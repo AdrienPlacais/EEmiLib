@@ -10,7 +10,7 @@ import math
 from abc import ABC, abstractmethod
 from collections.abc import Collection
 from pprint import pformat
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Literal, cast, overload
 
 import numpy as np
 import pandas as pd
@@ -247,6 +247,7 @@ class Model(ABC):
     ) -> None:
         """Find the best parameters for the current model."""
 
+    @overload
     def plot[T](
         self,
         plotter: Plotter,
@@ -255,95 +256,260 @@ class Model(ABC):
         energies: NDArray[np.float64],
         angles: NDArray[np.float64],
         axes: T | None = None,
-        grid: bool = True,
-        e_pe: float | None = None,
+        group_by_pe: Literal[False] = False,
+        e_pes: float | None = None,
         **kwargs,
-    ) -> T | None:
-        """Plot desired modelled data using ``plotter``.
+    ) -> T | None: ...
 
-        This method uses :meth:`.Model.get_data` to compute the modelled data
-        matching ``population`` and ``emission_data_type``. Then it calls the
-        :meth:`.Model.plot` method.
+    @overload
+    def plot[T](
+        self,
+        plotter: Plotter,
+        population: ImplementedPop | Collection[ImplementedPop],
+        emission_data_type: Literal["Emission Energy"],
+        energies: NDArray[np.float64],
+        angles: NDArray[np.float64],
+        axes: dict[float, T] | None = None,
+        group_by_pe: Literal[True] = True,
+        e_pes: Collection[float] | None = None,
+        **kwargs,
+    ) -> dict[float, T]: ...
+
+    def plot[T](
+        self,
+        plotter: Plotter,
+        population: ImplementedPop | Collection[ImplementedPop],
+        emission_data_type: ImplementedEmissionData,
+        energies: NDArray[np.float64],
+        angles: NDArray[np.float64],
+        axes: T | dict[float, T] | None = None,
+        group_by_pe: bool = False,
+        e_pes: float | Collection[float] | None = None,
+        **kwargs,
+    ) -> T | dict[float, T] | None:
+        """Plot model predictions using ``plotter``.
+
+        This method is an orchestrator: it decides which underlying routine
+        handles the request, and delegates the actual plotting to
+        :meth:`_plot_single` (single-axes case) or :meth:`_plot_grouped_by_pe`
+        (``group_by_pe=True`` case).
 
         Parameters
         ----------
         plotter :
-            Object realizing the plot. We transfer it to the
-            :meth:`.Model.plot` method.
+            Object realizing the plot.
         population :
-            One or several populations to plot. If several are given, we simply
-            recursively call this method.
+            One or several populations to plot.
         emission_data_type :
             Type of data to plot.
         energies :
-            Energies in :unit:`eV` for which model should be plotted.
+            Energies at which the model is evaluated.
         angles :
-            Angles in :unit:`deg` for which model should be plotted.
+            Angles at which the model is evaluated.
         axes :
-            Axes to re-use if given.
-        grid :
-            If grid should be plotted.
-        e_pe :
-            Energy of |PEs| in :unit:`eV`, if applicable.
+            Axes to re-use if given. A plain ``T`` in the default case; a
+            ``dict[float, T]`` keyed by impact energy when ``group_by_pe=True``.
+        group_by_pe :
+            Only supported for ``emission_data_type == "Emission Energy"``. If
+            ``True``, one axes is created (or re-used) per impact energy,
+            instead of a single shared axes.
+        e_pes :
+            |PE| energy/energies. In the single-axes case
+            (``group_by_pe=False``), a single ``float`` (or ``None``). In the
+            grouped case (``group_by_pe=True``), one or several impact
+            energies to plot at, only used when ``axes`` is not given (nothing
+            to infer impact energies from otherwise). If ``axes`` is given,
+            its keys are used instead and ``e_pes`` is ignored.
         kwargs :
-            Other keyword arguments passed to the :meth:`.Model.plot`
-            method.
+            Other keyword arguments passed to the underlying plotting routine.
 
         Returns
         -------
-            Created axes object, or ``None`` if no plot was created.
+            Created axes object (or ``dict`` of axes if ``group_by_pe=True``),
+            can be empty if no plot was created.
+
+        """
+        if not group_by_pe:
+            if isinstance(axes, dict):
+                logging.error(
+                    "Given axes is a dictionary, but should be a singles Axes "
+                    "instance or `None`. A dictionary is expected only when "
+                    "`group_by_pe=True`. Setting `axes=None` and trying to "
+                    f"continue... Given axes was:\n{pformat(axes)}"
+                )
+                axes = None
+            e_pe = cast(float | None, e_pes)
+            return self._plot_single(
+                plotter,
+                population,
+                emission_data_type,
+                energies,
+                angles,
+                axes=cast(T | None, axes),
+                e_pe=e_pe,
+                **kwargs,
+            )
+
+        if emission_data_type != "Emission Energy":
+            raise ValueError(
+                "`group_by_pe=True` is only supported for `emission_data_type="
+                "'Emission Energy'`."
+            )
+
+        e_pes_collection: Collection[float] | None
+        if e_pes is None:
+            e_pes_collection = None
+        elif isinstance(e_pes, (int, float)):
+            e_pes_collection = (float(e_pes),)
+        else:
+            e_pes_collection = e_pes
+
+        return self._plot_grouped_by_pe(
+            plotter,
+            population,
+            energies,
+            angles,
+            axes=cast(dict[float, T] | None, axes),
+            e_pes=e_pes_collection,
+            **kwargs,
+        )
+
+    def _plot_single[T](
+        self,
+        plotter: Plotter,
+        population: ImplementedPop | Collection[ImplementedPop],
+        emission_data_type: ImplementedEmissionData,
+        energies: NDArray[np.float64],
+        angles: NDArray[np.float64],
+        axes: T | None = None,
+        e_pe: float | None = None,
+        **kwargs,
+    ) -> T | None:
+        """Plot model predictions on a single shared axes.
+
+        Parameters
+        ----------
+        plotter :
+            Object realizing the plot.
+        population :
+            One or several populations to plot.
+        emission_data_type :
+            Type of data to plot.
+        energies :
+            Energies at which the model is evaluated.
+        angles :
+            Angles at which the model is evaluated.
+        axes :
+            Axes to re-use if given.
+        e_pe :
+            Impact energy, only used when ``emission_data_type == "Emission
+            Energy"``.
+        kwargs :
+            Other keyword arguments passed to the underlying plotting routine.
+
+        Return
+        ------
+            Created axes object, can be ``None`` if no plot was created.
 
         """
         if isinstance(population, Collection) and not isinstance(
             population, str
         ):
             for pop in population:
-                axes = self.plot(
+                axes = self._plot_single(
                     plotter,
                     pop,
                     emission_data_type,
                     energies,
                     angles,
                     axes=axes,
-                    grid=grid,
+                    e_pe=e_pe,
                     **kwargs,
                 )
             return axes
 
-        to_plot = self.get_data(
+        data = self.get_data(
             population=population,
             emission_data_type=emission_data_type,
             energy=energies,
             theta=angles,
-            e_pe=e_pe,
+            impact_energy=e_pe,
         )
-        if to_plot is None:
+        if data is None:
             logging.info(
-                f"No modelled data found for {population = } and "
+                f"No model data for {population = } and "
                 f"{emission_data_type = }. Skipping this plot."
             )
             return axes
 
-        if emission_data_type == "Emission Yield":
-            return plotter.plot_emission_yield(
-                to_plot,
-                axes=axes,
-                grid=grid,
-                population=population,
-                is_model=True,
-                **kwargs,
+        return plotter.plot(
+            emission_data_type=emission_data_type,
+            df=data,
+            axes=axes,
+            population=population,
+            **kwargs,
+        )
+
+    def _plot_grouped_by_pe[T](
+        self,
+        plotter: Plotter,
+        population: ImplementedPop | Collection[ImplementedPop],
+        energies: NDArray[np.float64],
+        angles: NDArray[np.float64],
+        axes: dict[float, T] | None = None,
+        e_pes: Collection[float] | None = None,
+        **kwargs,
+    ) -> dict[float, T]:
+        """
+        Plot ``"Emission Energy"`` model predictions, one axes per |PE| energy.
+
+        If ``axes`` is given, its keys determine which impact energies to plot
+        at (and their axes are re-used). Otherwise, ``e_pes`` must be given.
+
+        Parameters
+        ----------
+        plotter :
+            Object realizing the plot.
+        population :
+            One or several populations to plot.
+        energies :
+            Energies at which the model is evaluated.
+        angles :
+            Angles at which the model is evaluated.
+        axes :
+            Existing ``e_pe``-keyed axes to re-use, if any. If ``e_pes`` is
+            given, these energies will be used rather than ``axes`` keys.
+        e_pes :
+            Impact energies to plot at. Required if ``axes`` is not given.
+        kwargs :
+            Other keyword arguments passed to the underlying plotting routine.
+
+        Return
+        ------
+            Axes, keyed by impact energy.
+
+        """
+        axes = axes or {}
+        e_pes = e_pes or list(axes.keys())
+
+        if not e_pes:
+            raise ValueError(
+                "You must provide either `axes` (to plot at its existing "
+                "impact energies) or `e_pes` (to plot at new impact energies)."
             )
-        if emission_data_type == "Emission Energy":
-            return plotter.plot_emission_energy_distribution(
-                to_plot,
-                axes=axes,
-                grid=grid,
+
+        for e_pe in e_pes:
+            axes[e_pe] = self._plot_single(
+                plotter,
                 population=population,
-                is_model=True,
+                emission_data_type="Emission Energy",
+                energies=energies,
+                angles=angles,
+                axes=axes.get(e_pe),
                 e_pe=e_pe,
                 **kwargs,
             )
-        raise NotImplementedError
+        return axes
 
     def set_parameter_value(self, name: str, value: Any) -> None:
         """Give the parameter named ``name`` the value ``value``."""
