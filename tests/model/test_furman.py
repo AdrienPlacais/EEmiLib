@@ -8,8 +8,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-from eemilib.data import fp_copper as cu
-from eemilib.data import fp_stainless_steel as ss
+from eemilib.data import fp_copper, fp_stainless_steel
 from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.emission_data.emission_energy_distribution import (
     EMISSION_ENERGIES_BY_POP,
@@ -39,7 +38,7 @@ def furman_pivi_ss() -> FurmanPivi:
 
     """
     return FurmanPivi(
-        parameters_values=ss.furman_pivi_parameters_values,
+        parameters_values=fp_stainless_steel.furman_pivi_parameters_values,
         distribution="Binomial",
         normalization="penetrated",
     )
@@ -49,7 +48,7 @@ def furman_pivi_ss() -> FurmanPivi:
 def furman_pivi_cu() -> FurmanPivi:
     """Create an instance with the Cu parameters."""
     return FurmanPivi(
-        parameters_values=cu.furman_pivi_parameters_values,
+        parameters_values=fp_copper.furman_pivi_parameters_values,
         distribution="Binomial",
         normalization="penetrated",
     )

@@ -1,16 +1,23 @@
 """Shared fixtures for loader-dependent tests."""
 
+import pandas as pd
 import pytest
-from eemilib.data import fp_copper as cu
-from eemilib.data import fp_stainless_steel as ss
+from eemilib.data import fp_copper, fp_stainless_steel
 from eemilib.data.dummy.emission_energy import maxwellian
-from eemilib.loader.cst_loader import CSTLoader
+from eemilib.data.spark3d import ecss_ag, ecss_al, ecss_cu
+from eemilib.loader import CSTLoader, PandasLoader
 
 
 @pytest.fixture(scope="session")
 def cst_loader() -> CSTLoader:
     """Instantiate the CST loader, shared across the test session."""
     return CSTLoader()
+
+
+@pytest.fixture(scope="session")
+def spark3d_loader() -> PandasLoader:
+    """Instantiate a loader for SPARK3D-exported data."""
+    return PandasLoader(sep="\t")
 
 
 # =============================================================================
@@ -25,7 +32,9 @@ def verified_ss_emission_yields(cst_loader: CSTLoader) -> dict:
     immediately instead of silently running against broken data.
 
     """
-    yields = cst_loader.load_emission_yields(ss.cst_emission_yields)
+    yields = cst_loader.load_emission_yields(
+        fp_stainless_steel.cst_emission_yields
+    )
 
     expected_keys = {"SE", "EBE", "IBE", "all"}
     assert (
@@ -54,7 +63,7 @@ def verified_ss_energy_distributions(cst_loader: CSTLoader) -> dict:
 
     """
     distributions = cst_loader.load_emission_energy_distributions(
-        ss.cst_energy_distributions
+        fp_stainless_steel.cst_energy_distributions
     )
 
     expected_keys = {"SE", "EBE", "IBE", "all"}
@@ -86,7 +95,7 @@ def verified_cu_emission_yields(cst_loader: CSTLoader) -> dict:
     instead of silently running against broken data.
 
     """
-    yields = cst_loader.load_emission_yields(cu.cst_emission_yields)
+    yields = cst_loader.load_emission_yields(fp_copper.cst_emission_yields)
 
     expected_keys = {"SE", "EBE", "IBE", "all"}
     assert (
@@ -115,7 +124,7 @@ def verified_cu_energy_distributions(cst_loader: CSTLoader) -> dict:
 
     """
     distributions = cst_loader.load_emission_energy_distributions(
-        cu.cst_energy_distributions
+        fp_copper.cst_energy_distributions
     )
 
     expected_keys = {"SE", "EBE", "IBE", "all"}
@@ -159,3 +168,39 @@ def verified_maxwellian_distribution(cst_loader: CSTLoader) -> dict:
     assert se_e_pe == pytest.approx(100.0)
 
     return distributions
+
+
+# =============================================================================
+# SPARK3D exported data
+# =============================================================================
+@pytest.fixture(scope="session")
+def verified_al_ecss_emission_yields(
+    spark3d_loader: CSTLoader,
+) -> pd.DataFrame:
+    """Load aluminium emission yields, validated against known values."""
+    seey = spark3d_loader.load_emission_yield(ecss_al, population="SE")
+    assert seey["0.0 [deg]"].iloc[0] == pytest.approx(0.0)
+    assert seey["0.0 [deg]"].iloc[5] == pytest.approx(0.729686)
+    return seey
+
+
+@pytest.fixture(scope="session")
+def verified_ag_ecss_emission_yields(
+    spark3d_loader: CSTLoader,
+) -> pd.DataFrame:
+    """Load silver emission yields, validated against known values."""
+    seey = spark3d_loader.load_emission_yield(ecss_ag, population="SE")
+    assert seey["0.0 [deg]"].iloc[0] == pytest.approx(0.0)
+    assert seey["0.0 [deg]"].iloc[5] == pytest.approx(0.798212)
+    return seey
+
+
+@pytest.fixture(scope="session")
+def verified_cu_ecss_emission_yields(
+    spark3d_loader: CSTLoader,
+) -> pd.DataFrame:
+    """Load copper emission yields, validated cuainst known values."""
+    seey = spark3d_loader.load_emission_yield(ecss_cu, population="SE")
+    assert seey["0.0 [deg]"].iloc[0] == pytest.approx(0.0)
+    assert seey["0.0 [deg]"].iloc[5] == pytest.approx(0.696006)
+    return seey

@@ -2,8 +2,6 @@ r"""Emission yields and emission energy distribution of copper.
 
 Quoting Furman and Pivi :cite:`Furman2002`:
 
-Quoting Furman and Pivi :cite:`Furman2002`:
-
     The copper data was obtained at CERN from a chemically cleaned
     but not *in situ* vacuum-baked sample [24].
     We have used for our fits data for :math:`\delta(E_0)` in the
