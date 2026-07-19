@@ -11,11 +11,10 @@ import pytest
 from eemilib.data import fp_copper as cu
 from eemilib.data import fp_stainless_steel as ss
 from eemilib.emission_data.data_matrix import DataMatrix
-from eemilib.emission_data.emission_data import EmissionData
 from eemilib.emission_data.emission_energy_distribution import (
+    EMISSION_ENERGIES_BY_POP,
     AllEmissionEnergyDistribution,
     EBEEmissionEnergyDistribution,
-    EmissionEnergyDistribution,
     IBEEmissionEnergyDistribution,
     SEEmissionEnergyDistribution,
 )
@@ -61,21 +60,21 @@ class MockDataMatrix(DataMatrix):
 
     def __init__(
         self,
-        seey: EmissionData | None = None,
-        ebeey: EmissionData | None = None,
-        ibeey: EmissionData | None = None,
-        teey: EmissionData | None = None,
-        se_pdf: EmissionData | None = None,
-        ebe_pdf: EmissionData | None = None,
-        ibe_pdf: EmissionData | None = None,
-        all_pdf: EmissionData | None = None,
+        seey: EmissionYield | None = None,
+        ebeey: EmissionYield | None = None,
+        ibeey: EmissionYield | None = None,
+        teey: EmissionYield | None = None,
+        se_pdf: SEEmissionEnergyDistribution | None = None,
+        ebe_pdf: EBEEmissionEnergyDistribution | None = None,
+        ibe_pdf: IBEEmissionEnergyDistribution | None = None,
+        all_pdf: AllEmissionEnergyDistribution | None = None,
     ) -> None:
         """Set emission yield and/or energy distribution for all populations."""
         self.data_matrix = [
-            [seey, se_pdf, None],
-            [ebeey, ebe_pdf, None],
-            [ibeey, ibe_pdf, None],
-            [teey, all_pdf, None],
+            [seey, [se_pdf] if se_pdf else se_pdf, None],
+            [ebeey, [ebe_pdf] if ebe_pdf else ebe_pdf, None],
+            [ibeey, [ibe_pdf] if ibe_pdf else ibe_pdf, None],
+            [teey, [all_pdf] if all_pdf else all_pdf, None],
         ]
 
     def has_all_mandatory_files(self, *args, **kwargs) -> bool:
@@ -245,7 +244,7 @@ def test_emission_yields_values(
 
     expected = data_matrix.get_data(
         population=population, emission_data_type="Emission Yield"
-    )
+    )[0]
     assert isinstance(expected, EmissionYield)
     energy = np.array(expected.energies)
     theta = np.array(expected.angles)
@@ -297,8 +296,7 @@ def test_energy_distribution_values(
 
     expected = data_matrix.get_data(
         population=population, emission_data_type="Emission Energy"
-    )
-    assert isinstance(expected, EmissionEnergyDistribution)
+    )[0]
     emission_energies = np.array(expected.energies)
     theta = np.array(expected.angles)
 
@@ -310,8 +308,8 @@ def test_energy_distribution_values(
         impact_energy=expected.e_pe,
     )
     assert isinstance(calculated_df, pd.DataFrame)
-    calculated = EmissionEnergyDistribution(
-        population=population, data=calculated_df, e_pe=expected.e_pe
+    calculated = EMISSION_ENERGIES_BY_POP[population](
+        data=calculated_df, e_pe=expected.e_pe, norm=1.0
     )
 
     assert_frame_equal(expected.data, calculated.data)
