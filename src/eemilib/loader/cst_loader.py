@@ -21,6 +21,7 @@ _CST_POPULATION_TO_IMPLEMENTED: dict[str, ImplementedPop] = {
     "Rediff": "IBE",
     "True": "SE",
     "Total": "all",
+    "Vaughan": "SE",
 }
 
 #: Matches a CST block header, e.g. ``"Incident Energy @ Incident Angle 0° /
