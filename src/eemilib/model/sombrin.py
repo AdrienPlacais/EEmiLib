@@ -143,7 +143,7 @@ class Sombrin(Model):
                 E_param=self.E,
             )
 
-        out_dict = {col_normal: out, col_energy: energy}
+        out_dict = {col_energy: energy, col_normal: out}
         return pd.DataFrame(out_dict)
 
     def set_parameter_value(self, name: str, value: Any) -> None:

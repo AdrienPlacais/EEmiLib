@@ -176,7 +176,7 @@ class Dionne(Model):
         for i, ene in enumerate(energy):
             out[i] = self._func(ene, **self.parameters)
 
-        out_dict = {col_normal: out, col_energy: energy}
+        out_dict = {col_energy: energy, col_normal: out}
         return pd.DataFrame(out_dict)
 
     def find_optimal_parameters(

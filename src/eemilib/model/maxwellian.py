@@ -121,7 +121,7 @@ class Maxwellian(Model):
                 norm=self.parameters["norm"],
             )
 
-        out_dict = {col_normal: out, col_energy: energy}
+        out_dict = {col_energy: energy, col_normal: out}
         return pd.DataFrame(out_dict)
 
     def find_optimal_parameters(
