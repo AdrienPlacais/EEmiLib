@@ -3,6 +3,7 @@
 import pytest
 from eemilib.data import fp_copper as cu
 from eemilib.data import fp_stainless_steel as ss
+from eemilib.data.dummy.emission_energy import maxwellian
 from eemilib.loader.cst_loader import CSTLoader
 
 
@@ -129,6 +130,32 @@ def verified_cu_energy_distributions(cst_loader: CSTLoader) -> dict:
 
     se_df, se_e_pe = distributions["SE"]
     assert se_df["0.0 [deg]"].iloc[1] == pytest.approx(0.011950962245464)
+    assert se_e_pe == pytest.approx(100.0)
+
+    return distributions
+
+
+# =============================================================================
+# Dummy Maxwellian
+# =============================================================================
+@pytest.fixture(scope="session")
+def verified_maxwellian_distribution(cst_loader: CSTLoader) -> dict:
+    """Load dummy energy distributions, validated against known values.
+
+    This fixture is the single point of trust for CST-loaded dummy
+    energy-distribution data. If it fails, every test depending on it errors
+    out immediately instead of silently running against broken data.
+
+    """
+    distributions = cst_loader.load_emission_energy_distributions(maxwellian)
+
+    expected_keys = {"SE"}
+    assert (
+        set(distributions.keys()) == expected_keys
+    ), f"Expected populations {expected_keys}, got {set(distributions.keys())}"
+
+    se_df, se_e_pe = distributions["SE"]
+    assert se_df["0.0 [deg]"].iloc[1] == pytest.approx(0.0035416216123849)
     assert se_e_pe == pytest.approx(100.0)
 
     return distributions
