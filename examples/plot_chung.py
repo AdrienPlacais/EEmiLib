@@ -1,16 +1,19 @@
 """
 
-Chung and Everhart example
-==========================
+Chung and Everhart
+==================
 
-This script showcases how :class:`.model.ChungEverhart` model can be fitted.
+This script showcases:
 
-In this example, the fit is performed over several energy distributions with
-different |PE| impact energies.
+- How :class:`.model.ChungEverhart` model can be fitted.
+- Some emission energy distributions plot options.
+
+    - In particular, how to create one plot per |PE| impact energy.
 
 """
 
 # sphinx_gallery_tags = ["emission energy", "group_by_pe", "ChungEverhart"]
+# sphinx_gallery_thumbnail_number = 4
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -26,6 +29,8 @@ from eemilib.plotter import PandasPlotter
 filepaths = (distrib_70eV, distrib_100eV)
 
 # %%
+# Load data
+# ---------
 # We associate the filepaths from :mod:`eemilib.data.ag.emission_energy` to
 # the emission energy distribution of |EEs|.
 data_matrix = DataMatrix()
@@ -59,6 +64,8 @@ plt.show()
 __import__("pprint").pprint(axes_1)
 
 # %%
+# Fit the model
+# -------------
 # Create a default :class:`.model.ChungEverhart` instance, and find the
 # :math:`W_f` parameter that works best for all given energies:
 model = ChungEverhart()
@@ -76,10 +83,11 @@ _ = model.plot(
     plotter,
     population="SE",
     emission_data_type="Emission Energy",
-    energies=np.linspace(0, 50, 201),
+    energies=np.linspace(0, 100, 201),
     angles=np.linspace(0, 0, 1),
     axes=axes_2,
     group_by_pe=True,
+    color="red",
 )
 plt.show()
 
