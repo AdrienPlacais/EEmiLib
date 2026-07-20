@@ -14,6 +14,7 @@ Welcome to EEmiLib's documentation!
 
    manual/quick_start
    manual/notations
+   Example scripts <./auto_examples/index.rst>
    manual/models
    manual/bibliography
    API reference <eemilib/modules>
@@ -21,7 +22,6 @@ Welcome to EEmiLib's documentation!
 .. include:: ../README.md
    :parser: myst_parser.sphinx_
 
-.. include:: ./auto_examples/index.rst
 
 
 
