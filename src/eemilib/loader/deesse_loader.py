@@ -15,7 +15,7 @@ class DeesseLoader(Loader):
     """Define the loader."""
 
     def __init__(self) -> None:
-        """Raise an error for now.
+        """Init the object.
 
         Ideally, this loader should detect correct input and columns. But it is
         not for now.
