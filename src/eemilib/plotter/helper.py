@@ -64,7 +64,7 @@ def explicit_column_names(
             pe = ""
         elif emission_data_type == "Emission Energy":
             _types_of_data = md_energy_distrib
-            pe = f"${e_pe}" + r"\,\mathrm{eV}$"
+            pe = f"${e_pe}" + r"\,\mathrm{eV}$" if e_pe is not None else ""
         else:
             raise ValueError(
                 "Plotting implemented for Emission Yield and Emission Energy only."
