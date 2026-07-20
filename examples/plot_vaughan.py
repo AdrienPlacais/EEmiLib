@@ -7,8 +7,8 @@ This script showcases:
 - How :class:`.model.Vaughan` model can be fitted.
 - How different implementations of a same :class:`.Model` are handled.
 
-.. seealso::
-   :class:`.model.FurmanPivi`
+    .. seealso::
+        :class:`.model.FurmanPivi` also has several implementations.
 
 """
 

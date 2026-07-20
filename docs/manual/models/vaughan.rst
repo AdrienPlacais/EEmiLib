@@ -8,8 +8,13 @@ Vaughan
 Presentation
 ------------
 
-This is the most basic Vaughan model, as defined in original Vaughan paper :cite:`Vaughan1989,Vaughan1993`.
-It gives the |TEEY|, and takes the incidence angle of |PEs| into account.
+This is the most basic Vaughan model, as defined in original Vaughan paper
+:cite:`Vaughan1989,Vaughan1993`. It gives the |TEEY|, and takes the incidence
+angle of |PEs| into account.
+
+.. seealso::
+   :ref:`This example script <sphx_glr_auto_examples_plot_vaughan.py>` shows
+   how this model can be used in a script.
 
 
 Input files
@@ -45,7 +50,8 @@ The |TEEY| is given by:
 
     \xi = \frac{E - E_0}{E_\mathrm{max} - E_0}
 
-Under the limit :math:`E_0` (:math:`12.5\mathrm{\,eV}` by default), the |TEEY| is set to a unique value (:math:`0.5` by default).
+Under the limit :math:`E_0` (:math:`12.5\mathrm{\,eV}` by default), the |TEEY|
+is set to a unique value (:math:`0.5` by default).
 
 .. math::
 
@@ -65,12 +71,14 @@ The factor :math:`k` is given by:
 Model parameters
 ----------------
 
-The parameters list is dynamically created here: :py:mod:`Vaughan API documentation<.vaughan>`.
+The parameters list is dynamically created here: :py:mod:`Vaughan API
+documentation<.vaughan>`.
 
 Implementations
 ---------------
 
-Two alternative implementations for Vaughan are implemented: `CST` and `SPARK3D`.
+Two alternative implementations for Vaughan are implemented: `CST` and
+`SPARK3D`.
 
 GUI
 ***
@@ -94,8 +102,10 @@ More specific documentation in :meth:`.vaughan.Vaughan.set_implementation`.
 Parameter Vaughan with :math:`E_{\mathrm{c,\,1}}` instead of :math:`E_0`
 ------------------------------------------------------------------------
 
-When :math:`E_0` is unlocked, a fit over this variable is performed to match :math:`E_{\mathrm{c,\,1}}`.
-You must provide either a |TEEY| file path, either enter the other Vaughan parameters yourself (see image below), and click `Fit!`.
+When :math:`E_0` is unlocked, a fit over this variable is performed to match
+:math:`E_{\mathrm{c,\,1}}`. You must provide either a |TEEY| file path, either
+enter the other Vaughan parameters yourself (see image below), and click
+`Fit!`.
 
 .. image:: /manual/models/images/gui_fit_e0.png
    :target: vaughan.html
