@@ -42,7 +42,7 @@ def _seey_max(
 
     See Also
     --------
-    :func:`at_theta_incidence`
+    :func:`.at_theta_incidence`
 
     """
     return at_theta_incidence(
@@ -77,7 +77,7 @@ def _e_max_se(
 
     See Also
     --------
-    :func:`at_theta_incidence`
+    :func:`.at_theta_incidence`
 
     """
     return at_theta_incidence(
@@ -184,7 +184,7 @@ def _p_n_se(
         |IBEEY| (:math:`\delta_r` in :cite:`Furman2002`).
     proba_emit_n_se :
         Function computing probability to emit ``n`` |SEs|, *cf*
-        :func:`_set_number_of_secondaries_probability_function`.
+        :func:`set_number_of_secondaries_probability_function`.
     normalization :
         Selects Eq. (37)/(38) (``"incident"``) or Eq. (39), (42), (45)/(46)
         (``"penetrated"``).
@@ -233,7 +233,7 @@ def _p_n(
         |IBEEY| (:math:`\delta_r` in :cite:`Furman2002`).
     proba_emit_n_se :
         Function computing probability to emit ``n`` |SEs|, *cf*
-        :func:`_set_number_of_secondaries_probability_function`.
+        :func:`set_number_of_secondaries_probability_function`.
     normalization :
         Selects Eq. (35) (``"incident"``) or Eq. (43) (``"penetrated"``).
 
@@ -375,13 +375,14 @@ def se_energy_distribution(
         at :math:`n=1`. Must be the same length as ``p_ns``.
     proba_emit_n_se :
         Function computing probability to emit ``n`` |SEs|, *cf*
-        :func:`_set_number_of_secondaries_probability_function`.
+        :func:`set_number_of_secondaries_probability_function`.
     normalization :
         Selects Eq. (35) (``"incident"``) or Eq. (43) (``"penetrated"``), *cf*
         :func:`_p_n_se`.
     kwargs :
         Furman and Pivi |SEEY|, |EBEEY|, |IBEEY| parameters, passed to
-        :func:`seey`, :func:`ebeey`, :func:`ibeey` to compute :math:`\delta`,
+        :func:`seey`, :func:`.furman_pivi.ebe.ebeey`,
+        :func:`.furman_pivi.ibe.ibeey` to compute :math:`\delta`,
         :math:`\eta_e`, :math:`\eta_i`.
 
     Returns

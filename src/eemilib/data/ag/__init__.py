@@ -5,10 +5,12 @@ facility from 2018-05-28 to 2018-06-04.
 This is an Ag sample that was heated at 200 celsius during 2 hours. It is
 called "heated Ag#1" in my PhD :cite:`Placais2021`. Two types of measurements
 are available:
+
 - Emission yield at different incidence angles. Can be loaded using
-  :class:`.DeesseLoader`.
+  :class:`.loader.DeesseLoader`.
 - Emission energy data at normal incidence. Corrected using M. Villemant
-  procedure :cite:`Villemant2018`. Can be loaded using :class:`.PandasLoader`.
+  procedure :cite:`Villemant2018`. Can be loaded using
+  :class:`.loader.PandasLoader`.
 
 If you need to want to use this data in your work, please contact me first.
 

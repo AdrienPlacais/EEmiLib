@@ -13,3 +13,4 @@ Subpackages
    :maxdepth: 5
 
    eemilib.data.ag.emission_energy
+   eemilib.data.ag.emission_yield

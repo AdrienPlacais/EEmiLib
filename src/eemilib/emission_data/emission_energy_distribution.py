@@ -317,14 +317,14 @@ class AllEmissionEnergyDistribution(EmissionEnergyDistribution):
         proportionally to each population's expected shape at that energy:
 
         .. math::
-        f_\mathrm{pop}(E) = f_\mathrm{all}(E) \times
-                \frac{
-                    \mathrm{shape}_\mathrm{pop}(E)
-                }{
-                    \mathrm{shape}_\mathrm{SE}(E)
-                    + \mathrm{shape}_\mathrm{EBE}(E)
-                    + \mathrm{shape}_\mathrm{IBE}(E)
-                }
+            f_\mathrm{pop}(E) = f_\mathrm{all}(E) \times
+                    \frac{
+                        \mathrm{shape}_\mathrm{pop}(E)
+                    }{
+                        \mathrm{shape}_\mathrm{SE}(E)
+                        + \mathrm{shape}_\mathrm{EBE}(E)
+                        + \mathrm{shape}_\mathrm{IBE}(E)
+                    }
 
         This is a soft decomposition (fractional weights, not a hard cutoff): a
         given energy can be mostly SE and partly EBE, for instance.

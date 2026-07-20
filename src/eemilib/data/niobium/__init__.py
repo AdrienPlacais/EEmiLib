@@ -5,7 +5,7 @@ It was manually extracted from following papers:
 - Degreased niobium: :cite:`Aull2015`.
 - Sputtered niobium: :cite:`Aull2015`.
 
-This data can be loaded using :class:`.PandasLoader`.
+This data can be loaded using :class:`.loader.PandasLoader`.
 
 """
 

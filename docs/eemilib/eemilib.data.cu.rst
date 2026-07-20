@@ -5,3 +5,11 @@ cu package
    :members:
    :show-inheritance:
    :undoc-members:
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 5
+
+   eemilib.data.cu.emission_yield

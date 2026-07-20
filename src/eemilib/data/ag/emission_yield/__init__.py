@@ -6,7 +6,7 @@ This is an Ag sample that was heated at 200 celsius during 2 hours. It is
 called "heated Ag#1" in my PhD :cite:`Placais2021`.
 
 Emission yield at different incidence angles. Can be loaded using
-:class:`.DeesseLoader`.
+:class:`.loader.DeesseLoader`.
 
 """
 

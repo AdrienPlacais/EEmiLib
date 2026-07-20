@@ -65,7 +65,7 @@ def ebeey(
 
     First, we compute |EBEEY| at normal incidence using :func:`_ebeey_normal`.
     Then, we compute it at provided incidence angle using
-    :func:`at_theta_incidence`.
+    :func:`.physics.at_theta_incidence`.
 
     """
     return at_theta_incidence(

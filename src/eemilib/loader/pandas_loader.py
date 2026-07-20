@@ -1,7 +1,7 @@
 """Define a generic files loader.
 
-Check the documentation of :meth:`.PandasLoader.load_emission_yield` and
-:meth:`.PandasLoader.load_emission_energy_distribution` for expected file
+Check the documentation of :meth:`.loader.PandasLoader.load_emission_yield` and
+:meth:`.loader.PandasLoader.load_emission_energy_distribution` for expected file
 formats.
 
 """

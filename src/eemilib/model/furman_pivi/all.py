@@ -66,15 +66,16 @@ def all_energy_distribution(
     emission_energies :
         Emission energies you want the distribution from.
     p_ns :
-        List of :math:`p_n` parameters, *cf* :func:`se_energy_distribution`.
+        List of :math:`p_n` parameters, *cf*
+        :func:`.se.se_energy_distribution`.
     eps_ns :
         List of :math:`\varepsilon_n` parameters, *cf*
-        :func:`se_energy_distribution`.
+        :func:`.se.se_energy_distribution`.
     proba_emit_n_se :
         Function computing probability to emit ``n`` |SEs|, *cf*
-        :func:`se_energy_distribution`.
+        :func:`.se.se_energy_distribution`.
     normalization :
-        Selects Eq. (35) or Eq. (43), *cf* :func:`se_energy_distribution`.
+        Selects Eq. (35) or Eq. (43), *cf* :func:`.se.se_energy_distribution`.
     kwargs :
         Furman and Pivi |SEEY|, |EBEEY|, |IBEEY|, |EBE| and |IBE| PDF
         parameters.

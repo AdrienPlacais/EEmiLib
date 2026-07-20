@@ -15,7 +15,7 @@ This is an empirical model developed by Dionne :cite:`Furman2002,Furman2013`.
       prioritary.
 
 .. todo::
-    Warning when |SEEY| exceeds max number of |SEs| :data:`_M_MAX_SECONDARIES`.
+    Warning when |SEEY| exceeds max number of |SEs| :data:`.M_MAX_SECONDARIES`.
 
 """
 

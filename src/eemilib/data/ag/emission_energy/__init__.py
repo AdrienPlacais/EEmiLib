@@ -6,7 +6,7 @@ This is an Ag sample that was heated at 200 celsius during 2 hours. It is
 called "heated Ag#1" in my PhD :cite:`Placais2021`.
 
 Emission energy data at normal incidence. Corrected using M. Villemant
-procedure :cite:`Villemant2018`. Can be loaded using :class:`.PandasLoader`.
+procedure :cite:`Villemant2018`. Can be loaded using :class:`.loader.PandasLoader`.
 This data can be loaded with :class:`.pandas_loader.PandasLoader`.
 
 """
