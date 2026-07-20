@@ -1,5 +1,4 @@
 """
-
 Chung and Everhart
 ==================
 
