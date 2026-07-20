@@ -116,11 +116,11 @@ class PandasPlotter(Plotter):
             emission_data_type="Emission Energy",
             e_pe=e_pe,
         )
-        df.rename(columns=explicit, inplace=True)
+        updated = df.rename(columns=explicit, inplace=False)
         merged_kwargs = self._merge_kwargs(
             population=population, is_model=is_model, kwargs=kwargs
         )
-        axes = df.plot(
+        axes = updated.plot(
             *args,
             x=explicit[col_energy],
             ax=axes,
