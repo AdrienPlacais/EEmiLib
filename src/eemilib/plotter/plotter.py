@@ -84,6 +84,7 @@ class Plotter(ABC):
         axes: T | None = None,
         population: ImplementedPop | None = None,
         is_model: bool = True,
+        e_pe: float | None = None,
         **kwargs,
     ) -> T:
         """Plot emission yield data."""

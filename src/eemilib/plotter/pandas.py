@@ -1,5 +1,6 @@
 """Define plotter relying on pandas."""
 
+import logging
 from typing import Any
 
 import matplotlib.pyplot as plt
@@ -33,6 +34,7 @@ class PandasPlotter(Plotter):
         axes: Axes | None = None,
         population: ImplementedPop | None = None,
         is_model: bool = True,
+        e_pe: float | None = None,
         **kwargs,
     ) -> Axes:
         """Plot :class:`.EmissionYield` data with |dfplot| method.
@@ -51,12 +53,20 @@ class PandasPlotter(Plotter):
         is_model :
             Whether data being plotted comes from a model. Used to set plot
             linestyles.
+        e_pe :
+            Unused for this method.
         kwargs :
             Additional keyword arguments passed to the |dfplot| method.
 
         """
         if axes is not None:
             axes.set_prop_cycle(None)
+        if e_pe is not None:
+            logging.warning(
+                "You gave `e_pe` argument to the `plot_emission_yield` method,"
+                "which does not make any sense. Energy of PEs is given by "
+                "`energy` argument."
+            )
         explicit = explicit_column_names(
             df.columns,
             population=population,
