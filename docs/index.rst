@@ -21,6 +21,9 @@ Welcome to EEmiLib's documentation!
 .. include:: ../README.md
    :parser: myst_parser.sphinx_
 
+.. include:: ./auto_examples/index.rst
+
+
 
 Indices and tables
 ==================

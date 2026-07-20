@@ -24,6 +24,7 @@ extensions = [
     "sphinx_rtd_theme",  # ReadTheDocs theme
     "sphinxcontrib.bibtex",
     "unit_role",
+    "sphinx_gallery.gen_gallery",
 ]
 
 autodoc_default_options = {
@@ -121,3 +122,10 @@ typehints_use_signature_return = False
 
 # MyST parser to include markdown files
 myst_gfm_only = True  # interpret markdown with github styling
+
+
+# -- Parameters sphinx-gallery ------------------------------------------------
+sphinx_gallery_conf = {
+    "examples_dirs": "../examples",  # path to your example scripts
+    "gallery_dirs": "auto_examples",  # path to where to save gallery generated output
+}
