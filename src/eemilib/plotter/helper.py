@@ -17,6 +17,7 @@ def explicit_column_names(
     population: ImplementedPop | None = None,
     emission_data_type: ImplementedEmissionData | None = None,
     e_pe: float | None = None,
+    is_model: bool = False,
 ) -> dict[str, str]:
     """Explicit column names for the plot.
 
@@ -32,6 +33,8 @@ def explicit_column_names(
         Type of data stored in data frame.
     e_pe :
         Energy of |PEs| in :unit:`eV`, if applicable.
+    is_model :
+        If data is modelled.
 
     Returns
     -------
@@ -45,31 +48,32 @@ def explicit_column_names(
         )
         return {col: col for col in columns}
 
-    if emission_data_type == "Emission Yield":
-        explicit = {
-            col: (
-                f"{md_ey[population]} @{col}"
-                if col != col_energy
-                else "PEs energy [eV]"
+    explicit = {}
+    for col in columns:
+        if col == col_energy:
+            explicit[col] = col
+            continue
+
+        if is_model:
+            modelled = "Modelled"
+        else:
+            modelled = ""
+
+        if emission_data_type == "Emission Yield":
+            _types_of_data = md_ey
+            pe = ""
+        elif emission_data_type == "Emission Energy":
+            _types_of_data = md_energy_distrib
+            pe = f"${e_pe}" + r"\,\mathrm{eV}$"
+        else:
+            raise ValueError(
+                "Plotting implemented for Emission Yield and Emission Energy only."
             )
-            for col in columns
-        }
-        return explicit
 
-    if emission_data_type == "Emission Energy":
-        explicit = {}
-        for col in columns:
-            if col == col_energy:
-                explicit[col] = col
-                continue
+        type_of_data = _types_of_data[population]
+        _angles = col.split()
+        angle = f"@${_angles[0]}" + r"\,\mathrm{" + _angles[1][1:-1] + r"}$"
 
-            explicit[col] = f"{md_energy_distrib[population]} @{col}"
-            if e_pe:
-                explicit[col] += f", {e_pe} eV"
-        return explicit
-
-    logging.info(
-        f"Explicit column names not implemented for {emission_data_type = }. "
-        "Keeping original."
-    )
-    return {col: col for col in columns}
+        info = (key for key in (modelled, type_of_data, angle, pe) if key)
+        explicit[col] = " ".join(info)
+    return explicit

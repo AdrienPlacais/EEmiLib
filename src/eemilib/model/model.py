@@ -285,6 +285,7 @@ class Model(ABC):
         axes: T | dict[float, T] | None = None,
         group_by_pe: bool = False,
         e_pes: float | Collection[float] | None = None,
+        grid: bool = True,
         **kwargs,
     ) -> T | dict[float, T] | None:
         """Plot model predictions using ``plotter``.
@@ -347,6 +348,7 @@ class Model(ABC):
                 angles,
                 axes=cast(T | None, axes),
                 e_pe=e_pe,
+                grid=grid,
                 **kwargs,
             )
 
@@ -371,6 +373,7 @@ class Model(ABC):
             angles,
             axes=cast(dict[float, T] | None, axes),
             e_pes=e_pes_collection,
+            grid=grid,
             **kwargs,
         )
 
@@ -383,6 +386,7 @@ class Model(ABC):
         angles: NDArray[np.float64],
         axes: T | None = None,
         e_pe: float | None = None,
+        grid: bool = True,
         **kwargs,
     ) -> T | None:
         """Plot model predictions on a single shared axes.
@@ -404,6 +408,8 @@ class Model(ABC):
         e_pe :
             Impact energy, only used when ``emission_data_type == "Emission
             Energy"``.
+        grid :
+            Whether grid should appear.
         kwargs :
             Other keyword arguments passed to the underlying plotting routine.
 
@@ -424,6 +430,7 @@ class Model(ABC):
                     angles,
                     axes=axes,
                     e_pe=e_pe,
+                    grid=grid,
                     **kwargs,
                 )
             return axes
@@ -447,6 +454,9 @@ class Model(ABC):
             df=data,
             axes=axes,
             population=population,
+            e_pe=e_pe,
+            grid=grid,
+            is_model=True,
             **kwargs,
         )
 
@@ -458,6 +468,7 @@ class Model(ABC):
         angles: NDArray[np.float64],
         axes: dict[float, T] | None = None,
         e_pes: Collection[float] | None = None,
+        grid: bool = True,
         **kwargs,
     ) -> dict[float, T]:
         """
@@ -481,6 +492,8 @@ class Model(ABC):
             given, these energies will be used rather than ``axes`` keys.
         e_pes :
             Impact energies to plot at. Required if ``axes`` is not given.
+        grid :
+            Whether grid should be plotted.
         kwargs :
             Other keyword arguments passed to the underlying plotting routine.
 
@@ -507,6 +520,7 @@ class Model(ABC):
                 angles=angles,
                 axes=axes.get(e_pe),
                 e_pe=e_pe,
+                grid=grid,
                 **kwargs,
             )
         return axes

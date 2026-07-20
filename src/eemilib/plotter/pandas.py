@@ -61,6 +61,7 @@ class PandasPlotter(Plotter):
             df.columns,
             population=population,
             emission_data_type="Emission Yield",
+            is_model=is_model,
         )
         updated = df.rename(columns=explicit, inplace=False)
         merged_kwargs = self._merge_kwargs(
@@ -115,6 +116,7 @@ class PandasPlotter(Plotter):
             population=population,
             emission_data_type="Emission Energy",
             e_pe=e_pe,
+            is_model=is_model,
         )
         updated = df.rename(columns=explicit, inplace=False)
         merged_kwargs = self._merge_kwargs(
