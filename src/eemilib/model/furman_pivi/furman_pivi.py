@@ -72,8 +72,8 @@ class FurmanPivi(Model):
     is_3d = True
     is_dielectrics_compatible = False
     model_config = ModelConfig(
-        emission_yield_files=("SE", "IBE", "EBE"),
-        emission_energy_files=(),
+        emission_yield_files=("all",),
+        emission_energy_files=("all",),
         emission_angle_files=(),
     )
     initial_parameters = INITIAL_FURMAN_PIVI_PARAMETERS
