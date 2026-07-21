@@ -22,9 +22,9 @@ from scipy.stats import binom, poisson
 
 def _seey_max(
     the: float,
-    normal_delta_max: Parameter,
-    t_1: Parameter,
-    t_2: Parameter,
+    normal_delta_max: Parameter | float,
+    t_1: Parameter | float,
+    t_2: Parameter | float,
     tol: float = 1e-8,
     **kwargs,
 ) -> float:
@@ -57,17 +57,18 @@ def _seey_max(
 
 def _e_max_se(
     the: float,
-    normal_e_max_se: Parameter,
-    t_3: Parameter,
-    t_4: Parameter,
+    normal_e_max_se: Parameter | float,
+    t_3: Parameter | float,
+    t_4: Parameter | float,
     tol: float = 1e-8,
     **kwargs,
 ) -> float:
     r"""Compute position of |SEEY| peak at non-normal incidence.
 
     .. math::
-       E_{\mathrm{max},\,\delta}(\theta) = E_{\mathrm{max},\,\delta}(\theta=0\degree)
-       \left[1 + t_3 \left(1 - \cos^{t_4}\theta \right) \right]
+       E_{\mathrm{max},\,\delta}(\theta) =
+       E_{\mathrm{max},\,\delta}(\theta=0\degree) \left[1 + t_3 \left(1 -
+       \cos^{t_4}\theta \right) \right]
 
     In Furman and Pivi paper :cite:`Furman2002`, this is Eq. (48b):
 
@@ -85,7 +86,7 @@ def _e_max_se(
     )
 
 
-def _d_func(x: float, s: Parameter) -> float:
+def _d_func(x: float, s: Parameter | float) -> float:
     r"""Define function used in |SEEY|.
 
     .. math::
@@ -96,20 +97,19 @@ def _d_func(x: float, s: Parameter) -> float:
     In Furman and Pivi paper :cite:`Furman2002`, this is Eq. (32).
 
     """
-    s_val = s.value
-    return s_val * x / (s_val - 1 + x**s_val)
+    return s * x / (s - 1 + x**s)
 
 
 def seey(
     ene: float,
     the: float,
-    normal_e_max_se: Parameter,
-    normal_delta_max: Parameter,
-    s: Parameter,
-    t_1: Parameter,
-    t_2: Parameter,
-    t_3: Parameter,
-    t_4: Parameter,
+    normal_e_max_se: Parameter | float,
+    normal_delta_max: Parameter | float,
+    s: Parameter | float,
+    t_1: Parameter | float,
+    t_2: Parameter | float,
+    t_3: Parameter | float,
+    t_4: Parameter | float,
     tol: float = 1e-8,
     **kwargs,
 ) -> float:
@@ -149,6 +149,7 @@ def seey(
     return _delta_max * _d_func(ene / e_max, s=s)
 
 
+#: Probability to emit ``n`` electrons, given the |SEEY| and ``n``.
 PROBA_EMIT_N_SE = Callable[[float, int], float]
 
 
@@ -279,6 +280,8 @@ def _regularized_incomplete_gamma(
         :math:`P(a, x)`.
 
     """
+    # Need to enforce ``np.float64`` for the ``np.clip`` function
+    # x_clipped = np.clip(x.astype(np.float64), 0.0, None)
     x_clipped = np.clip(x, 0.0, None)
     if a == 0.0:
         return np.ones_like(x_clipped)
@@ -331,8 +334,8 @@ def se_energy_distribution(
     e_pe: float,
     the: float,
     emission_energies: NDArray[np.float64],
-    p_ns: list[Parameter],
-    eps_ns: list[Parameter],
+    p_ns: list[Parameter | float],
+    eps_ns: list[Parameter | float],
     proba_emit_n_se: PROBA_EMIT_N_SE,
     normalization: NORMALIZATION_T,
     **kwargs,
@@ -395,10 +398,7 @@ def se_energy_distribution(
     eta_i = ibeey(ene=e_pe, the=the, **kwargs)
 
     spectrum = np.zeros_like(emission_energies)
-    for n, (p_n_param, eps_n_param) in enumerate(zip(p_ns, eps_ns), start=1):
-        p_n = p_n_param.value
-        eps_n = eps_n_param.value
-
+    for n, (p_n, eps_n) in enumerate(zip(p_ns, eps_ns), start=1):
         p_n_se = _p_n_se(
             n, delta, eta_e, eta_i, proba_emit_n_se, normalization
         )
@@ -406,13 +406,22 @@ def se_energy_distribution(
         normalization_term = math.gamma(p_n) * _regularized_incomplete_gamma(
             n * p_n, np.array(e_pe / eps_n)
         )
+        # Need to enforce ``np.float64`` for the ``np.exp`` function
+        # _in_exp = np.astype(-emission_energies / eps_n, np.float64)
+        # shape_term = (emission_energies / eps_n) ** (p_n - 1) * np.exp(_in_exp)
         shape_term = (emission_energies / eps_n) ** (p_n - 1) * np.exp(
             -emission_energies / eps_n
         )
+
         tail_term = _regularized_incomplete_gamma(
             (n - 1) * p_n, (e_pe - emission_energies) / eps_n
         )
 
+        # Need to enforce ``np.float64`` for the ``+=`` operator
+        # spectrum += np.astype(
+        #     n * p_n_se * shape_term * tail_term / (eps_n * normalization_term),
+        #     np.float64,
+        # )
         spectrum += (
             n * p_n_se * shape_term * tail_term / (eps_n * normalization_term)
         )

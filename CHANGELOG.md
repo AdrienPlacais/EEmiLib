@@ -41,6 +41,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The GUI `Plot` section is in a new tab to avoid overloading the main tab.
 - Both `ChungEverhart` and `Maxwellian` energy distribution models can be fitted
   on SEs or all electrons emission energy distribution files.
+- Internal but tricky: added `Parameter` dunder methods so that any electron
+  emission function operating on `float` can operate on `Parameter` with the same
+  syntax. Do not hesitate to reach out if you have strange `int` vs `float`
+  errors.
 
 ## [0.1.5] -- 2026-05-22
 

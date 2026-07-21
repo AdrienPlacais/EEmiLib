@@ -10,7 +10,10 @@ from numpy.typing import NDArray
 
 
 def _ibeey_normal(
-    ene: float, e_ibe: Parameter, eta_i_max: Parameter, r: Parameter
+    ene: float,
+    e_ibe: Parameter | float,
+    eta_i_max: Parameter | float,
+    r: Parameter | float,
 ) -> float:
     r"""Compute |IBEEY| at normal incidence.
 
@@ -33,17 +36,17 @@ def _ibeey_normal(
             \right)
 
     """
-    return eta_i_max.value * (1 - math.exp(-((ene / e_ibe.value) ** r.value)))
+    return eta_i_max * (1 - math.exp(-((ene / e_ibe) ** r)))
 
 
 def ibeey(
     ene: float,
     the: float,
-    e_ibe: Parameter,
-    eta_i_max: Parameter,
-    r: Parameter,
-    r_1: Parameter,
-    r_2: Parameter,
+    e_ibe: Parameter | float,
+    eta_i_max: Parameter | float,
+    r: Parameter | float,
+    r_1: Parameter | float,
+    r_2: Parameter | float,
     **kwargs,
 ) -> float:
     """Compute |IBEEY|.
@@ -67,12 +70,12 @@ def ibe_energy_distribution(
     e_pe: float,
     the: float,
     emission_energies: NDArray[np.float64],
-    e_ibe: Parameter,
-    eta_i_max: Parameter,
-    r: Parameter,
-    r_1: Parameter,
-    r_2: Parameter,
-    q: Parameter,
+    e_ibe: Parameter | float,
+    eta_i_max: Parameter | float,
+    r: Parameter | float,
+    r_1: Parameter | float,
+    r_2: Parameter | float,
+    q: Parameter | float,
     **kwargs,
 ) -> NDArray[np.float64]:
     r"""Compute PDF for |IBEs|.
@@ -112,7 +115,6 @@ def ibe_energy_distribution(
         PDF of |IBE|.
 
     """
-    q_val = q.value
     return (
         remove_extrema(e_pe, emission_energies)
         * ibeey(
@@ -124,7 +126,7 @@ def ibe_energy_distribution(
             r_1=r_1,
             r_2=r_2,
         )
-        * (q_val + 1)
-        * emission_energies**q_val
-        / e_pe ** (q_val + 1)
+        * (q + 1)
+        * emission_energies**q
+        / e_pe ** (q + 1)
     )

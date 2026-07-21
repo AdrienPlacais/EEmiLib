@@ -12,11 +12,11 @@ from scipy.special import erf
 
 def _ebeey_normal(
     ene: float,
-    normal_e_max_ebe: Parameter,
-    eta_e_max: Parameter,
-    eta_e_min: Parameter,
-    W: Parameter,
-    p: Parameter,
+    normal_e_max_ebe: Parameter | float,
+    eta_e_max: Parameter | float,
+    eta_e_min: Parameter | float,
+    W: Parameter | float,
+    p: Parameter | float,
 ) -> float:
     r"""Compute |EBEEY| at normal incidence.
 
@@ -43,22 +43,20 @@ def _ebeey_normal(
             }
 
     """
-    _in_exp = (abs(ene - normal_e_max_ebe.value) / W.value) ** p.value
-    return eta_e_min.value + (eta_e_max.value - eta_e_min.value) * math.exp(
-        -_in_exp / p.value
-    )
+    _in_exp = (abs(ene - normal_e_max_ebe) / W) ** p
+    return eta_e_min + (eta_e_max - eta_e_min) * math.exp(-_in_exp / p)
 
 
 def ebeey(
     ene: float,
     the: float,
-    normal_e_max_ebe: Parameter,
-    eta_e_max: Parameter,
-    eta_e_min: Parameter,
-    W: Parameter,
-    p: Parameter,
-    e_1: Parameter,
-    e_2: Parameter,
+    normal_e_max_ebe: Parameter | float,
+    eta_e_max: Parameter | float,
+    eta_e_min: Parameter | float,
+    W: Parameter | float,
+    p: Parameter | float,
+    e_1: Parameter | float,
+    e_2: Parameter | float,
     **kwargs,
 ) -> float:
     """Compute |EBEEY|.
@@ -87,14 +85,14 @@ def ebe_energy_distribution(
     e_pe: float,
     the: float,
     emission_energies: NDArray[np.float64],
-    normal_e_max_ebe: Parameter,
-    eta_e_max: Parameter,
-    eta_e_min: Parameter,
-    W: Parameter,
-    p: Parameter,
-    e_1: Parameter,
-    e_2: Parameter,
-    sigma: Parameter,
+    normal_e_max_ebe: Parameter | float,
+    eta_e_max: Parameter | float,
+    eta_e_min: Parameter | float,
+    W: Parameter | float,
+    p: Parameter | float,
+    e_1: Parameter | float,
+    e_2: Parameter | float,
+    sigma: Parameter | float,
     **kwargs,
 ) -> NDArray[np.float64]:
     r"""Compute PDF for |EBEs|.
@@ -154,10 +152,6 @@ def ebe_energy_distribution(
             e_2=e_2,
         )
         * 2
-        * np.exp(-((e_pe - emission_energies) ** 2) / (2 * sigma.value**2))
-        / (
-            math.sqrt(2 * math.pi)
-            * sigma.value
-            * erf(e_pe / (math.sqrt(2) * sigma.value))
-        )
+        * np.exp(-((e_pe - emission_energies) ** 2) / (2 * sigma**2))
+        / (math.sqrt(2 * math.pi) * sigma * erf(e_pe / (math.sqrt(2) * sigma)))
     )

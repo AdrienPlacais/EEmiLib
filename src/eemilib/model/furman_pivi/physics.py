@@ -67,9 +67,9 @@ M_MAX_SECONDARIES = 10
 
 def at_theta_incidence(
     the: float,
-    at_normal: float | Parameter,
-    a_1: Parameter,
-    a_2: Parameter,
+    at_normal: Parameter | float,
+    a_1: Parameter | float,
+    a_2: Parameter | float,
     tol: float = 1e-8,
     **kwargs,
 ) -> float:
@@ -107,18 +107,13 @@ def at_theta_incidence(
         ``at_normal`` but at :math:`\theta` incidence.
 
     """
-    if isinstance(at_normal, Parameter):
-        at_normal = at_normal.value
-
     if abs(the) < tol:
-        return at_normal
+        return float(at_normal)
 
     if abs(the) >= 84.0:
         logging.warning("Relation invalid for angles greater than 84 degrees.")
 
-    return at_normal * (
-        1 + a_1.value * math.cos(math.radians(the)) ** a_2.value
-    )
+    return at_normal * (1 + a_1 * math.cos(math.radians(the)) ** a_2)
 
 
 class FurmanPiviParameters(TypedDict):
