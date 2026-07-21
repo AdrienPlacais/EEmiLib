@@ -4,7 +4,29 @@ import numpy as np
 
 
 class Parameter:
-    """An electron emission model parameter."""
+    """An electron emission model parameter.
+
+    Actual parameter value is stored in :attr:`.value`, but you can perform
+    most float operations directly on the instance:
+
+    .. codeblock:: python
+
+       param: Parameter(...)
+
+       # Valid operations:
+       param + 5
+       param ** 3
+       5 - param
+       param <= 10
+       10 < param
+       # ...
+
+       # ===========================================
+       # This one is the only one to be unsupported:
+       param == 210
+       # ===========================================
+
+    """
 
     _tol: float = 1e-10
 
@@ -55,6 +77,95 @@ class Parameter:
     def __str__(self) -> str:
         """Return name of parameter, its value and its unit."""
         return f"{self.value:.3f} [{self.unit}]"
+
+    def __float__(self) -> float:
+        """Allow ``float(self)`` to return stored value.
+
+        Most libraries will vall ``float(parameter_instance)`` when
+        encountering object.
+
+        """
+        return self.value
+
+    def __add__(self, other) -> float:
+        """Allow ``self + other`` operation."""
+        return self.value + other
+
+    def __radd__(self, other):
+        """Allow ``other + self `` operation."""
+        return other + self.value
+
+    def __sub__(self, other):
+        """Allow ``self - other`` operation."""
+        return self.value - other
+
+    def __rsub__(self, other):
+        """Allow ``other - self `` operation."""
+        return other - self.value
+
+    def __mul__(self, other):
+        """Allow ``self * other`` operation."""
+        return self.value * other
+
+    def __rmul__(self, other):
+        """Allow ``other * self `` operation."""
+        return other * self.value
+
+    def __truediv__(self, other):
+        """Allow ``self / other`` operation."""
+        return self.value / other
+
+    def __rtruediv__(self, other):
+        """Allow ``other / self `` operation."""
+        return other / self.value
+
+    def __pow__(self, other):
+        """Allow ``self ** other`` operation."""
+        return self.value**other
+
+    def __rpow__(self, other):
+        """Allow ``other ** self `` operation."""
+        return other**self.value
+
+    def __neg__(self) -> float:
+        """Allow ``-self`` operation."""
+        return -self.value
+
+    def __abs__(self) -> float:
+        """Allow ``abs(self)`` operation."""
+        return abs(self.value)
+
+    def __lt__(self, other):
+        """Allow ``self < other`` operation."""
+        return self.value < other
+
+    def __rlt__(self, other):
+        """Allow ``other < self `` operation."""
+        return other < self.value
+
+    def __le__(self, other):
+        """Allow ``self <= other`` operation."""
+        return self.value <= other
+
+    def __rle__(self, other):
+        """Allow ``other <= self `` operation."""
+        return other <= self.value
+
+    def __gt__(self, other):
+        """Allow ``self > other`` operation."""
+        return self.value > other
+
+    def __rgt__(self, other):
+        """Allow ``other > self `` operation."""
+        return other > self.value
+
+    def __ge__(self, other):
+        """Allow ``self >= other`` operation."""
+        return self.value >= other
+
+    def __rge__(self, other):
+        """Allow ``other >= self `` operation."""
+        return other >= self.value
 
     @property
     def name(self) -> str:
