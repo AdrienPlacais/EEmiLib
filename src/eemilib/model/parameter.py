@@ -30,6 +30,14 @@ class Parameter:
 
     _tol: float = 1e-10
 
+    #: This tricky ass attribute tells numpy to always defer to Python's
+    #: operator protocol (our own __radd__, __rmul__, etc.) instead of trying
+    #: to coerce this object into an array first. Without this, expressions
+    #: like ``ndarray + parameter`` can silently produce object-dtype arrays
+    #: instead of float64 ones. This is not an immediate problem, but we cannot
+    #: use these kind of arrays in a function like np.exp.
+    __array_ufunc__ = None
+
     def __init__(
         self,
         markdown: str,
