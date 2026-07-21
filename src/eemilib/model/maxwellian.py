@@ -11,10 +11,6 @@ import numpy as np
 import pandas as pd
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data.data_matrix import DataMatrix, MissingDataError
-from eemilib.emission_data.emission_energy_distribution import (
-    AllEmissionEnergyDistribution,
-    SEEmissionEnergyDistribution,
-)
 from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
