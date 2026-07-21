@@ -2,6 +2,7 @@ import os
 import sys
 
 import eemilib
+from sphinx_gallery.sorting import ExplicitOrder
 
 project = "EEmiLib"
 copyright = "2025, Adrien Plaçais"
@@ -128,4 +129,12 @@ myst_gfm_only = True  # interpret markdown with github styling
 sphinx_gallery_conf = {
     "examples_dirs": "../examples",  # path to your example scripts
     "gallery_dirs": "auto_examples",  # path to where to save gallery generated output
+    "within_subsection_order": ExplicitOrder(
+        [
+            "../examples/plot_maxwellian.py",
+            "../examples/plot_chung.py",
+            "../examples/plot_vaughan.py",
+            "*",
+        ]
+    ),
 }
