@@ -60,6 +60,7 @@ addopts = ["--import-mode=importlib", "--strict-markers"]
 filterwarnings = ["ignore:.*cKDTree.*:DeprecationWarning"]
 markers = [
   "implementation: mark tests/functionalities currently under implementation",
+  "example: example scripts",
   "slow: mark a test as slow (deselect with '-m \"not slow\"')",
   "smoke: mark quick and critical tests (select with '-m smoke')",
 ]
