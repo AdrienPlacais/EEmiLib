@@ -163,7 +163,7 @@ class Maxwellian(Model):
         param = self.parameters["temperature"]
         lsq = least_squares(
             fun=_aggregate_residue,
-            x0=param.value,
+            x0=param,
             bounds=Bounds(param.lower_bound, param.upper_bound),
         )
         temp = lsq.x[0]
@@ -206,13 +206,11 @@ def maxwellian_pdf(
     **parameters,
 ) -> float | NDArray[np.float64]:
     """Compute the energy distribution."""
-    temp = (
-        temperature.value
-        if isinstance(temperature, Parameter)
-        else temperature
+    return (
+        norm
+        * np.sqrt(ene**2 / (pi * temperature**3))
+        * np.exp(-ene / temperature)
     )
-    nor = norm.value if isinstance(norm, Parameter) else norm
-    return nor * np.sqrt(ene**2 / (pi * temp**3)) * np.exp(-ene / temp)
 
 
 def _residue(

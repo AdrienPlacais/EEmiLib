@@ -192,7 +192,7 @@ class ChungEverhart(Model):
         param = self.parameters["W_f"]
         lsq = least_squares(
             fun=_aggregate_residue,
-            x0=param.value,
+            x0=param,
             bounds=Bounds(param.lower_bound, param.upper_bound),
         )
         w_f = lsq.x[0]
@@ -201,30 +201,29 @@ class ChungEverhart(Model):
         )
 
 
-def _chung_everhart_norm(w_f: float) -> float:
+def _chung_everhart_norm(W_f: Parameter | float) -> float:
     """Return norm value to have distribution maximum to unity."""
-    return 256.0 * w_f**3 / 27.0
+    return 256.0 * W_f**3 / 27.0
 
 
 def chung_everhart_func(
     ene: float | NDArray[np.float64],
     W_f: Parameter | float,
-    norm: Parameter | None = None,
+    norm: Parameter | float | None = None,
     **parameters,
 ) -> float | NDArray[np.float64]:
     """Compute the energy distribution."""
-    w_f_value = W_f.value if isinstance(W_f, Parameter) else W_f
-    norm_value = (
-        norm.value if norm is not None else _chung_everhart_norm(w_f_value)
-    )
-    return norm_value * ene / (ene + w_f_value) ** 4
+    norm = norm if norm is not None else _chung_everhart_norm(W_f)
+    return norm * ene / (ene + W_f) ** 4
 
 
 def _residue(
-    w_f: float, ene: NDArray[np.float64], measured: NDArray[np.float64]
+    W_f: Parameter | float,
+    ene: NDArray[np.float64],
+    measured: NDArray[np.float64],
 ) -> NDArray[np.float64]:
     """Compute array of residues between model and measurements."""
-    return chung_everhart_func(ene, w_f) - measured
+    return chung_everhart_func(ene, W_f) - measured
 
 
 # Append dynamically generated docs to the module docstring

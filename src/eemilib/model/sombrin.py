@@ -181,27 +181,29 @@ class Sombrin(Model):
 
 def sombrin_func(
     ene: float | NDArray[np.float64],
-    E_max: Parameter,
-    teey_max: Parameter,
-    E_c1: Parameter,
+    E_max: Parameter | float,
+    teey_max: Parameter | float,
+    E_c1: Parameter | float,
     E_param: float | None,
     **parameters,
 ) -> float | NDArray[np.float64]:
     """Compute the |TEEY| for incident energy E."""
     if E_param is None:
         E_param = _e_parameter(teey_max, E_max, E_c1)
-    num = 2 * teey_max.value * (ene / E_max.value) ** E_param
-    denom = 1 + (ene / E_max.value) ** (2 * E_param)
+    num = 2 * teey_max * (ene / E_max) ** E_param
+    denom = 1 + (ene / E_max) ** (2 * E_param)
     return num / denom
 
 
 def _e_parameter(
-    sigma_max: Parameter, E_max: Parameter, E_c1: Parameter
+    sigma_max: Parameter | float,
+    E_max: Parameter | float,
+    E_c1: Parameter | float,
 ) -> float:
     """Compute parameter ``E`` in Sombrin model."""
-    E_param = math.log(
-        sigma_max.value - math.sqrt(sigma_max.value**2 - 1)
-    ) / math.log(E_c1.value / E_max.value)
+    E_param = math.log(sigma_max - math.sqrt(sigma_max**2 - 1)) / math.log(
+        E_c1 / E_max
+    )
     return E_param
 
 

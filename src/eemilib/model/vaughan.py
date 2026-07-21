@@ -239,7 +239,7 @@ class Vaughan(Model):
                 {"teey_low": 0.0, "delta_E_transition": 2.0}
             )
             self.parameters["E_0"].unlock()
-            e_0 = self._E_0_matching(E_c1=self.parameters["E_c1"].value)
+            e_0 = self._E_0_matching(E_c1=self.parameters["E_c1"])
             if np.isnan(e_0):
                 return
             self.set_parameter_value("E_0", e_0)
@@ -347,26 +347,24 @@ class Vaughan(Model):
 def vaughan_func(
     ene: float,
     the: float,
-    E_0: Parameter,
-    E_max: Parameter,
-    teey_max: Parameter,
-    teey_low: Parameter,
-    k_se: Parameter,
-    k_s: Parameter,
-    delta_E_transition: Parameter,
+    E_0: Parameter | float,
+    E_max: Parameter | float,
+    teey_max: Parameter | float,
+    teey_low: Parameter | float,
+    k_se: Parameter | float,
+    k_s: Parameter | float,
+    delta_E_transition: Parameter | float,
     **parameters,
 ) -> float | NDArray[np.float64]:
     """Compute the |TEEY| for incident energy E."""
-    mod_e_max = E_max.value * (
-        1.0 + k_se.value * math.radians(the) ** 2 / (2.0 * math.pi)
+    mod_e_max = E_max * (1.0 + k_se * math.radians(the) ** 2 / (2.0 * math.pi))
+    mod_teey_max = teey_max * (
+        1.0 + k_s * math.radians(the) ** 2 / (2.0 * math.pi)
     )
-    mod_teey_max = teey_max.value * (
-        1.0 + k_s.value * math.radians(the) ** 2 / (2.0 * math.pi)
-    )
-    if ene < E_0.value:
-        return teey_low.value
+    if ene < E_0:
+        return float(teey_low)
 
-    xi = (ene - E_0.value) / (mod_e_max - E_0.value)
+    xi = (ene - E_0) / (mod_e_max - E_0)
 
     if xi <= 1.0:
         k = 0.56
