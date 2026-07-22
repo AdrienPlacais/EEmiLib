@@ -45,19 +45,6 @@ class EmissionYield(EmissionData):
         self.angles = [
             float(col.split()[0]) for col in data.columns if col != col_energy
         ]
-        #: Energy at the maximum emission yield in :unit:`eV`. Not defined for
-        #: BEs.
-        self.e_max: float
-        #: Maximum emission yield. Not defined for BEs.
-        self.ey_max: float
-        #: First cross-over enrergy in :unit:`eV`. Not defined for BEs.
-        self.e_c1: float
-        #: Second cross-over enrergy in :unit:`eV`. Not defined for BEs.
-        self.e_c2: float | None
-        if self.population in ("SE", "all"):
-            self.e_max, self.ey_max, self.e_c1, self.e_c2 = self._parameters(
-                n_resample=1000
-            )
 
     @classmethod
     def _from_filepath(
@@ -98,6 +85,63 @@ class EmissionYield(EmissionData):
     def label(self) -> str:
         """Print nature of data (markdown)."""
         return md_ey[self.population]
+
+    def plot[T](
+        self,
+        plotter: Plotter,
+        *args,
+        lw: float | None = 0.0,
+        marker: str | None = "+",
+        axes: T | None = None,
+        grid: bool = True,
+        population: ImplementedPop | None = None,
+        **kwargs,
+    ) -> T:
+        """Plot the contained data using plotter.
+
+        This wrapper simply calls the :meth:`.Plotter.plot_emission_yield`
+        method.
+
+        """
+        return plotter.plot_emission_yield(
+            df=self.data,
+            *args,
+            axes=axes,
+            lw=lw,
+            marker=marker,
+            grid=grid,
+            label=self.label,
+            population=population,
+            is_model=False,
+            **kwargs,
+        )
+
+
+class SEEY(EmissionYield):
+    """|SEEY|.
+
+    In addition to the other emission yields, has characteristic points:
+    cross-over energies, maximum yield, energy at maximum yield.
+
+    """
+
+    population = "SE"
+
+    def __init__(self, data: pd.DataFrame) -> None:
+        """Compute characteristic parameters."""
+        super().__init__(data)
+
+        #: Energy at the maximum emission yield in :unit:`eV`.
+        self.e_max: float
+        #: Maximum emission yield.
+        self.ey_max: float
+        #: First cross-over energy in :unit:`eV`.
+        self.e_c1: float
+        #: Second cross-over energy in :unit:`eV`.
+        self.e_c2: float | None
+        self.e_max, self.ey_max, self.e_c1, self.e_c2 = self._parameters(
+            n_resample=1000
+        )
 
     def _parameters(
         self, n_resample: int = -1
@@ -188,42 +232,6 @@ class EmissionYield(EmissionData):
 
         return ec1, ec2
 
-    def plot[T](
-        self,
-        plotter: Plotter,
-        *args,
-        lw: float | None = 0.0,
-        marker: str | None = "+",
-        axes: T | None = None,
-        grid: bool = True,
-        population: ImplementedPop | None = None,
-        **kwargs,
-    ) -> T:
-        """Plot the contained data using plotter.
-
-        This wrapper simply calls the :meth:`.Plotter.plot_emission_yield`
-        method.
-
-        """
-        return plotter.plot_emission_yield(
-            df=self.data,
-            *args,
-            axes=axes,
-            lw=lw,
-            marker=marker,
-            grid=grid,
-            label=self.label,
-            population=population,
-            is_model=False,
-            **kwargs,
-        )
-
-
-class SEEY(EmissionYield):
-    """|SEEY|."""
-
-    population = "SE"
-
 
 class EBEEY(EmissionYield):
     """|EBEEY|."""
@@ -237,8 +245,13 @@ class IBEEY(EmissionYield):
     population = "IBE"
 
 
-class TEEY(EmissionYield):
-    """|TEEY|."""
+class TEEY(SEEY):
+    """|TEEY|.
+
+    Inherits from :class:`SEEY` to keep the same characteristic points:
+    cross-over energies, maximum yield, energy at maximum yield.
+
+    """
 
     population = "all"
 
