@@ -68,12 +68,8 @@ class DataMatrix:
             [[] for _ in range(n_cols)] for _ in range(n_rows)
         ]
 
-        self.data_matrix: list[
-            list[None | EmissionData | Collection[EmissionData]]
-        ]
-        self.data_matrix = [
-            [None for _ in range(n_cols)] for _ in range(n_rows)
-        ]
+        self.data_matrix: list[list[list[EmissionData]]]
+        self.data_matrix = [[[] for _ in range(n_cols)] for _ in range(n_rows)]
 
     def _natures_to_indexes(
         self,
@@ -255,7 +251,9 @@ class DataMatrix:
                 f"{emission_data_type = }"
             )
 
-        self.data_matrix[row][col] = emission_data
+        if isinstance(emission_data, EmissionData):
+            emission_data = [emission_data]
+        self.data_matrix[row][col] = list(emission_data)
 
     @overload
     def get_files(
@@ -301,7 +299,7 @@ class DataMatrix:
         col: int,
         population: None = None,
         emission_data_type: None = None,
-    ) -> None | EmissionData | Sequence[EmissionData]: ...
+    ) -> Sequence[EmissionData]: ...
 
     @overload
     def get_data(
@@ -391,9 +389,7 @@ class DataMatrix:
         *,
         population: ImplementedPop,
         emission_data_type: Literal["Emission Angle"],
-    ) -> (
-        None | EmissionAngleDistribution | Sequence[EmissionAngleDistribution]
-    ): ...
+    ) -> Sequence[EmissionAngleDistribution]: ...
 
     @overload
     def get_data(
@@ -430,7 +426,7 @@ class DataMatrix:
         col: int | None = None,
         population: ImplementedPop | None = None,
         emission_data_type: ImplementedEmissionData | None = None,
-    ) -> None | EmissionData | Sequence[EmissionData]:
+    ) -> Sequence[EmissionData]:
         """Get the file(s) by index or name.
 
         You can provide ``row`` and ``col`` directly.
@@ -453,10 +449,8 @@ class DataMatrix:
 
         Returns
         -------
-            Desired data; if the specified data does not exists, a ``None`` is
-            returned without any error message. ``"EmissionEnergyDistribution``
-            behave differently: a list is always returned, and is empty if no
-            data was found.
+            Desired data; if the specified data does not exists, an empty list
+            is returned without any error message.
 
         """
         if population and emission_data_type:
@@ -611,11 +605,11 @@ class DataMatrix:
                     )
                     return False
 
-                data_object = self.get_data(
+                data_objects = self.get_data(
                     population=mandatory_population,
                     emission_data_type=emission_data_type,
-                )  # type: ignore
-                if data_object is None:
+                )
+                if not data_objects:
                     logging.error(
                         f"You must load {emission_data_type} filepath for "
                         f"population {mandatory_population}"
