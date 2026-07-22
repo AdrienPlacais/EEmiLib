@@ -67,7 +67,7 @@ class EmissionEnergyDistribution(EmissionData):
         self.normalize()
 
     @classmethod
-    def from_filepath(
+    def _from_filepath(
         cls,
         loader: Loader,
         *filepath: DataPath,

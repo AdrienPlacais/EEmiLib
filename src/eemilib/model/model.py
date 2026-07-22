@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data.data_matrix import DataMatrix, MissingDataError
-from eemilib.emission_data.emission_yield import EmissionYield
+from eemilib.emission_data.emission_yield import TEEY
 from eemilib.emission_data.helper import get_ec1, get_max
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
@@ -622,21 +622,18 @@ class Model(ABC):
         evaluations = self._main_teey_parameters()
 
         try:
-            emission_yield = data_matrix.teey
+            teey = data_matrix.teey
         except MissingDataError:
-            logging.error(
-                "Emission yield mandatory in order to perform evaluations was "
-                "not found."
-            )
+            logging.error("TEEY is mandatory in order to perform evaluations.")
             return evaluations
 
         evaluations.update(
             {
                 rf"Relative error over {tex_math(EC_1)} [\%]": self._error_ec1(
-                    emission_yield
+                    teey
                 ),
                 f"{tex_math(SIGMA)} deviation between {tex_math(EC_1)} and "
-                rf"{tex_math(E_MAX)} [\%]": self._error_teey(emission_yield),
+                rf"{tex_math(E_MAX)} [\%]": self._error_teey(teey),
             }
         )
         return evaluations
@@ -659,7 +656,7 @@ class Model(ABC):
             f"Modelled {tex_math(SIGMA_MAX)}": sigma_max,
         }
 
-    def _error_ec1(self, emission_yield: EmissionYield) -> float:
+    def _error_ec1(self, emission_yield: TEEY) -> float:
         """Compute relative error over first crossover energy in :unit:`%`."""
         measured_ec1 = emission_yield.e_c1
         energy = np.linspace(0, 1.5 * measured_ec1, 10001, dtype=np.float64)
@@ -673,7 +670,7 @@ class Model(ABC):
         error = 100.0 * std / measured_ec1
         return float(error)
 
-    def _error_teey(self, emission_yield: EmissionYield) -> float:
+    def _error_teey(self, emission_yield: TEEY) -> float:
         """Compute |TEEY| relative error between $E_{c1}$ and $E_{max}$.
 
         Returned value is in :unit:`%`.

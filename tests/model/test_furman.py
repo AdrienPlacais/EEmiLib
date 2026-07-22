@@ -17,7 +17,13 @@ from eemilib.emission_data.emission_energy_distribution import (
     IBEEmissionEnergyDistribution,
     SEEmissionEnergyDistribution,
 )
-from eemilib.emission_data.emission_yield import EmissionYield
+from eemilib.emission_data.emission_yield import (
+    EBEEY,
+    IBEEY,
+    SEEY,
+    TEEY,
+    EmissionYield,
+)
 from eemilib.model import FurmanPivi
 from eemilib.util.constants import ImplementedPop
 from pandas.testing import assert_frame_equal
@@ -59,10 +65,10 @@ class MockDataMatrix(DataMatrix):
 
     def __init__(
         self,
-        seey: EmissionYield | None = None,
-        ebeey: EmissionYield | None = None,
-        ibeey: EmissionYield | None = None,
-        teey: EmissionYield | None = None,
+        seey: SEEY | None = None,
+        ebeey: EBEEY | None = None,
+        ibeey: IBEEY | None = None,
+        teey: TEEY | None = None,
         se_pdf: SEEmissionEnergyDistribution | None = None,
         ebe_pdf: EBEEmissionEnergyDistribution | None = None,
         ibe_pdf: IBEEmissionEnergyDistribution | None = None,
@@ -83,10 +89,10 @@ class MockDataMatrix(DataMatrix):
 
 def _mock_data_matrix_from_yields(yields: dict) -> MockDataMatrix:
     """Build a :class:`MockDataMatrix` from a dict of loaded yield DataFrames."""
-    seey = EmissionYield(population="SE", data=yields["SE"])
-    ebeey = EmissionYield(population="EBE", data=yields["EBE"])
-    ibeey = EmissionYield(population="IBE", data=yields["IBE"])
-    teey = EmissionYield(population="all", data=yields["all"])
+    seey = SEEY(data=yields["SE"])
+    ebeey = EBEEY(data=yields["EBE"])
+    ibeey = IBEEY(data=yields["IBE"])
+    teey = TEEY(data=yields["all"])
     return MockDataMatrix(seey=seey, ebeey=ebeey, ibeey=ibeey, teey=teey)
 
 

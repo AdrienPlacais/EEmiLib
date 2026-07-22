@@ -44,7 +44,7 @@ class EmissionData(ABC):
 
     @classmethod
     @abstractmethod
-    def from_filepath(
+    def _from_filepath(
         cls, loader: Loader, *filepath: str | Path, population: ImplementedPop
     ) -> Self:
         """Instantiate the data from files.

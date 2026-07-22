@@ -12,7 +12,7 @@ import pandas as pd
 import pytest
 from eemilib import teey_reference_ag
 from eemilib.emission_data.data_matrix import DataMatrix
-from eemilib.emission_data.emission_yield import EmissionYield
+from eemilib.emission_data.emission_yield import TEEY, EmissionYield
 from eemilib.loader.pandas_loader import PandasLoader
 from eemilib.model.vaughan import Vaughan, VaughanImplementation
 from numpy.testing import assert_array_almost_equal
@@ -71,8 +71,7 @@ def test_teey_output_shape(vaughan_model: Vaughan) -> None:
     "emission_yield,expected",
     [
         pytest.param(
-            EmissionYield(
-                population="all",
+            TEEY(
                 data=pd.DataFrame(
                     {
                         # fmt: off
@@ -83,7 +82,7 @@ def test_teey_output_shape(vaughan_model: Vaughan) -> None:
                         "60.0 [deg]": [0.918, 0.803, 0.817, 0.859, 0.926, 0.995, 1.061, 1.127, 1.195, 1.257, 1.32, 1.375, 1.428, 1.466, 1.51, 1.552, 1.584, 1.616, 1.644, 1.67, 1.694, 1.718, 1.738, 1.759, 1.781, 1.797, 1.817, 1.824, 1.836, 1.852, 1.87, 1.881, 1.893, 1.896, 1.905, 1.917, 1.92, 1.937, 1.94, 1.952, 1.956, 1.966, 1.97, 1.971, 1.976, 1.981, 1.99, 1.993, 1.993, 1.996, 2.001, 2.005, 2.009, 2.008, 2.013, 2.012, 2.016, 2.018, 2.023, 2.024, 2.018, 2.027, 2.019, 2.028, 2.025, 2.027, 2.034, 2.035, 2.027, 2.028, 2.035, 2.033, 2.034, 2.031, 2.031, 2.025, 2.025, 2.033, 2.03, 2.022, 2.023, 2.025, 2.022, 2.019, 2.02, 2.012, 2.018, 2.017, 2.009, 2.018, 2.018, 2.009, 2.008, 2.013, 2.003, 2.009, 2.001, 2.005, 2.002, 1.997, 2.001],
                         # fmt: on
                     }
-                ),
+                )
             ),
             {
                 "E_0": 12.5,
@@ -98,8 +97,7 @@ def test_teey_output_shape(vaughan_model: Vaughan) -> None:
             id="Cu 1 eroded",
         ),
         pytest.param(
-            EmissionYield(
-                population="all",
+            TEEY(
                 data=pd.DataFrame(
                     {
                         # fmt: off
@@ -110,7 +108,7 @@ def test_teey_output_shape(vaughan_model: Vaughan) -> None:
                         "60.0 [deg]": [0.744, 1.063, 1.334, 1.597, 1.739, 1.928, 2.169, 2.183, 2.331, 2.375, 2.374, 2.519, 2.519, 2.506, 2.528, 2.558, 2.583, 2.586, 2.616, 2.605, 2.576, 2.56, 2.582, 2.608, 2.606, 2.582, 2.618, 2.585, 2.546, 2.542, 2.534, 2.556, 2.543, 2.53, 2.509, 2.578, 2.488, 2.511, 2.479, 2.475, 2.541, 2.459, 2.46, 2.503, 2.441, 2.478, 2.444, 2.427, 2.433, 2.411],
                         # fmt: on
                     }
-                ),
+                )
             ),
             {
                 "E_0": 12.5,
@@ -126,8 +124,7 @@ def test_teey_output_shape(vaughan_model: Vaughan) -> None:
             id="Cu 2 as received",
         ),
         pytest.param(
-            EmissionYield(
-                population="all",
+            TEEY(
                 data=pd.DataFrame(
                     {
                         # fmt: off
@@ -138,7 +135,7 @@ def test_teey_output_shape(vaughan_model: Vaughan) -> None:
                     "60.0 [deg]": [0.777, 0.867, 1.058, 1.208, 1.347, 1.464, 1.557, 1.611, 1.694, 1.737, 1.798, 1.822, 1.847, 1.853, 1.876, 1.87, 1.886, 1.918, 1.919, 1.923, 1.91, 1.909, 1.895, 1.926, 1.904, 1.914, 1.924, 1.906, 1.904, 1.897, 1.898, 1.916, 1.917, 1.905, 1.905, 1.886, 1.879, 1.886, 1.881, 1.878, 1.867, 1.851, 1.854, 1.852, 1.855, 1.868, 1.844, 1.839, 1.851, 1.842],
                         # fmt: on
                     }
-                ),
+                )
             ),
             {
                 "E_0": 12.5,

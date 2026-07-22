@@ -2,6 +2,7 @@
 
 import logging
 from pathlib import Path
+from re import L
 from typing import Self
 
 import pandas as pd
@@ -11,6 +12,7 @@ from eemilib.emission_data.helper import (
     get_emax_eymax,
     resample,
 )
+from eemilib.loader.helper import DataPath
 from eemilib.loader.loader import Loader
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
@@ -24,13 +26,13 @@ from eemilib.util.constants import (
 class EmissionYield(EmissionData):
     """An emission yield."""
 
-    def __init__(self, population: ImplementedPop, data: pd.DataFrame) -> None:
+    population: ImplementedPop
+
+    def __init__(self, data: pd.DataFrame) -> None:
         """Instantiate the data.
 
         Parameters
         ----------
-        population :
-            The concerned population of electrons.
         data :
             Structure holding the data. Must have an ``Energy (eV)`` column
             holding |PEs| energy. And one or several columns ``theta [deg]``,
@@ -38,7 +40,7 @@ class EmissionYield(EmissionData):
             corresponding emission yield.
 
         """
-        super().__init__(population, data)
+        super().__init__(self.population, data)
         self.energies = data[col_energy].to_numpy()
         self.angles = [
             float(col.split()[0]) for col in data.columns if col != col_energy
@@ -58,8 +60,8 @@ class EmissionYield(EmissionData):
             )
 
     @classmethod
-    def from_filepath(
-        cls, loader: Loader, *filepath: str | Path, population: ImplementedPop
+    def _from_filepath(
+        cls, loader: Loader, *filepath: DataPath, population: ImplementedPop
     ) -> Self:
         """Instantiate the data from files.
 
@@ -73,8 +75,24 @@ class EmissionYield(EmissionData):
             Path(s) to file holding data under study.
 
         """
-        data = loader.load_emission_yield(*filepath, population=population)
-        return cls(population, data)
+        if population != cls.population:
+            logging.warning(
+                f"{cls.__name__} always represents population {cls.population}"
+                f", but {population = } was given. The returned object will "
+                f"still hold {cls.population} data; the mismatched argument is"
+                " ignored."
+            )
+        data = loader.load_emission_yield(*filepath, population=cls.population)
+        return cls(data=data)
+
+    @classmethod
+    def from_filepaths(
+        cls, loader: Loader, *filepath: DataPath, population: ImplementedPop
+    ) -> list[Self]:
+        return [
+            cls._from_filepath(loader, fp, population=population)
+            for fp in filepath
+        ]
 
     @property
     def label(self) -> str:
@@ -199,3 +217,37 @@ class EmissionYield(EmissionData):
             is_model=False,
             **kwargs,
         )
+
+
+class SEEY(EmissionYield):
+    """|SEEY|."""
+
+    population = "SE"
+
+
+class EBEEY(EmissionYield):
+    """|EBEEY|."""
+
+    population = "EBE"
+
+
+class IBEEY(EmissionYield):
+    """|IBEEY|."""
+
+    population = "IBE"
+
+
+class TEEY(EmissionYield):
+    """|TEEY|."""
+
+    population = "all"
+
+
+#: Maps populations to their appropriate :class:`.EmissionYield`
+#: subclass.
+EMISSION_YIELDS_BY_POP: dict[ImplementedPop, type[EmissionYield]] = {
+    "SE": SEEY,
+    "EBE": EBEEY,
+    "IBE": IBEEY,
+    "all": TEEY,
+}

@@ -21,7 +21,14 @@ from eemilib.emission_data.emission_energy_distribution import (
     IBEEmissionEnergyDistribution,
     SEEmissionEnergyDistribution,
 )
-from eemilib.emission_data.emission_yield import EmissionYield
+from eemilib.emission_data.emission_yield import (
+    EBEEY,
+    EMISSION_YIELDS_BY_POP,
+    IBEEY,
+    SEEY,
+    TEEY,
+    EmissionYield,
+)
 from eemilib.loader.helper import DataPath
 from eemilib.loader.loader import Loader
 from eemilib.plotter.plotter import Plotter
@@ -302,9 +309,39 @@ class DataMatrix:
         row: None = None,
         col: None = None,
         *,
-        population: ImplementedPop,
+        population: Literal["SE"],
         emission_data_type: Literal["Emission Yield"],
-    ) -> None | EmissionYield | Sequence[EmissionYield]: ...
+    ) -> Sequence[SEEY]: ...
+
+    @overload
+    def get_data(
+        self,
+        row: None = None,
+        col: None = None,
+        *,
+        population: Literal["EBE"],
+        emission_data_type: Literal["Emission Yield"],
+    ) -> Sequence[EBEEY]: ...
+
+    @overload
+    def get_data(
+        self,
+        row: None = None,
+        col: None = None,
+        *,
+        population: Literal["IBE"],
+        emission_data_type: Literal["Emission Yield"],
+    ) -> Sequence[IBEEY]: ...
+
+    @overload
+    def get_data(
+        self,
+        row: None = None,
+        col: None = None,
+        *,
+        population: Literal["all"],
+        emission_data_type: Literal["Emission Yield"],
+    ) -> Sequence[TEEY]: ...
 
     @overload
     def get_data(
@@ -509,8 +546,10 @@ class DataMatrix:
 
                 emission_data = None
                 if data_type == "Emission Yield":
-                    emission_data = EmissionYield.from_filepath(
-                        loader, *filepaths, population=population
+                    emission_data = list(
+                        EMISSION_YIELDS_BY_POP[population].from_filepaths(
+                            loader, *filepaths, population=population
+                        )
                     )
 
                 elif data_type == "Emission Energy":
@@ -755,49 +794,25 @@ class DataMatrix:
         return axes
 
     @property
-    def teey(self) -> EmissionYield:
+    def teey(self) -> TEEY:
         """Return the |TEEY| directly."""
-        emission_yield = self.data_matrix[3][0]
-        if emission_yield is None:
+        emission_yield = self.get_data(
+            population="all", emission_data_type="Emission Yield"
+        )
+        if not emission_yield:
             raise MissingDataError
-        assert isinstance(
-            emission_yield, EmissionYield
-        ), f"Incorrect type for emission_yield: {type(emission_yield)}"
-        assert emission_yield.population == "all"
-        return emission_yield
+        if len(emission_yield) > 1:
+            logging.warning("Several TEEY are stored. Returning first.")
+        return emission_yield[0]
 
     @property
-    def seey(self) -> EmissionYield:
+    def seey(self) -> SEEY:
         """Return the |SEEY| directly."""
-        emission_yield = self.data_matrix[0][0]
-        if emission_yield is None:
-            raise MissingDataError
-        assert isinstance(
-            emission_yield, EmissionYield
-        ), f"Incorrect type for emission_yield: {type(emission_yield)}"
-        assert emission_yield.population == "SE"
-        return emission_yield
-
-    @property
-    def se_energy_distribution(self) -> SEEmissionEnergyDistribution:
-        """Return the energy distribution of |SEs|."""
-        distrib = self.get_data(
-            population="SE", emission_data_type="Emission Energy"
+        emission_yield = self.get_data(
+            population="SE", emission_data_type="Emission Yield"
         )
-        if distrib is None:
+        if not emission_yield:
             raise MissingDataError
-        if isinstance(distrib, SEEmissionEnergyDistribution):
-            return distrib
-        raise ValueError("Several Energy distributions not handled.")
-
-    @property
-    def all_energy_distribution(self) -> AllEmissionEnergyDistribution:
-        """Return the energy distribution of all emitted electrons."""
-        distrib = self.get_data(
-            population="all", emission_data_type="Emission Energy"
-        )
-        if distrib is None:
-            raise MissingDataError
-        if isinstance(distrib, AllEmissionEnergyDistribution):
-            return distrib
-        raise ValueError("Several Energy distributions not handled.")
+        if len(emission_yield) > 1:
+            logging.warning("Several SEEY are stored. Returning first.")
+        return emission_yield[0]
