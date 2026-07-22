@@ -1,10 +1,12 @@
 """Define an object to store an emission yield."""
 
 import logging
+from collections.abc import Callable
 from pathlib import Path
 from re import L
 from typing import Self
 
+import numpy as np
 import pandas as pd
 from eemilib.emission_data.emission_data import EmissionData
 from eemilib.emission_data.helper import (
@@ -21,6 +23,7 @@ from eemilib.util.constants import (
     col_normal,
     md_ey,
 )
+from numpy.typing import NDArray
 
 
 class EmissionYield(EmissionData):
@@ -254,6 +257,77 @@ class TEEY(SEEY):
     """
 
     population = "all"
+
+    def decompose(
+        self,
+        se_shape: Callable[[NDArray[np.float64]], NDArray[np.float64]],
+        ebe_shape: Callable[[NDArray[np.float64]], NDArray[np.float64]],
+        ibe_shape: Callable[[NDArray[np.float64]], NDArray[np.float64]],
+    ) -> tuple[SEEY, EBEEY, IBEEY]:
+        r"""Split the measured |TEEY| into |SEEY|/|EBEEY|/|IBEEY| shares.
+
+        At normal incidence, and at each impact energy :math:`E`, the measured
+        total yield is split proportionally to each population's expected shape
+        at that energy:
+
+        .. math::
+        \hat\delta_\mathrm{pop}(E) = \sigma_\mathrm{measured}(E) \times
+        \frac{\mathrm{shape}_\mathrm{pop}(E)} {\mathrm{shape}_\mathrm{SE}(E) +
+        \mathrm{shape}_\mathrm{EBE}(E) + \mathrm{shape}_\mathrm{IBE}(E)}
+
+        This is a soft decomposition (fractional weights, not a hard cutoff),
+        mirroring :meth:`.AllEmissionEnergyDistribution.decompose`. Only the
+        normal-incidence column is considered; oblique-incidence fitting is a
+        separate, later step (angular parameters are independent of the
+        normal-incidence ones).
+
+        Parameters
+        ----------
+        se_shape :
+            Function returning the expected (unnormalized) |SEEY| at the given
+            impact energies. Must already be bound to the relevant parameters
+            (e.g. via :func:`functools.partial` applied to
+            :func:`.furman_pivi.seey`).
+        ebe_shape :
+            Same as ``se_shape``, for |EBEEY| (e.g. bound
+            :func:`.furman_pivi.ebeey`).
+        ibe_shape :
+            Same as ``se_shape``, for |IBEEY| (e.g. bound
+            :func:`.furman_pivi.ibeey`).
+
+        Return
+        ------
+            The |SEEY|, |EBEEY|, |IBEEY| shares of this |TEEY|, at normal
+            incidence.
+
+        """
+        energies = np.asarray(self.energies, dtype=np.float64)
+
+        shapes = {
+            "SE": se_shape(energies),
+            "EBE": ebe_shape(energies),
+            "IBE": ibe_shape(energies),
+        }
+        total_shape = sum(shapes.values())
+        has_signal = total_shape > 0
+        weights = {
+            pop: np.where(has_signal, shape / total_shape, 0.0)
+            for pop, shape in shapes.items()
+        }
+
+        measured = self.data[col_normal].to_numpy()
+        split_data = {
+            pop: pd.DataFrame(
+                {col_energy: energies, col_normal: measured * weight}
+            )
+            for pop, weight in weights.items()
+        }
+
+        return (
+            SEEY(split_data["SE"]),
+            EBEEY(split_data["EBE"]),
+            IBEEY(split_data["IBE"]),
+        )
 
 
 #: Maps populations to their appropriate :class:`.EmissionYield`
