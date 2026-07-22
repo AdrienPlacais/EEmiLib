@@ -19,6 +19,20 @@ from numpy.typing import NDArray
 from scipy.special import gammainc
 from scipy.stats import binom, poisson
 
+#: Probability to emit ``n`` electrons, given the |SEEY| and ``n``.
+PROBA_EMIT_N_SE = Callable[[float, int], float]
+#: Parameters used for calculation of |SEEY| at normal incidence.
+NORMAL_SEEY_PARAM_KEYS = ("normal_e_max_se", "normal_delta_max", "s")
+#: Additional parameters used for calculation of |SEEY| at oblique incidence.
+OBLIQUE_SEEY_PARAM_KEYS = ("t_1", "t_2", "t_3", "t_4")
+#: Additional parameters used for energy distribution calculation.
+SE_DISTRIB_PARAMETERS = (
+    # fmt: off
+    "eps_1", "eps_2", "eps_3", "eps_4", "eps_5", "eps_6", "eps_7", "eps_8", "eps_9", "eps_10",
+    "p_1", "p_2", "p_3", "p_4", "p_5", "p_6", "p_7", "p_8", "p_9", "p_10",
+    # fmt: on
+)
+
 
 def _seey_max(
     the: float,
@@ -147,10 +161,6 @@ def seey(
     )
 
     return _delta_max * _d_func(ene / e_max, s=s)
-
-
-#: Probability to emit ``n`` electrons, given the |SEEY| and ``n``.
-PROBA_EMIT_N_SE = Callable[[float, int], float]
 
 
 def _p_n_se(

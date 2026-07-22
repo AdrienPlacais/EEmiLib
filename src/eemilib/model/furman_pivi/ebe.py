@@ -9,6 +9,19 @@ from eemilib.model.parameter import Parameter
 from numpy.typing import NDArray
 from scipy.special import erf
 
+#: Parameters used for calculation of |EBEEY| at normal incidence.
+NORMAL_EBEEY_PARAM_KEYS = (
+    "normal_e_max_ebe",
+    "eta_e_max",
+    "eta_e_min",
+    "W",
+    "p",
+)
+#: Additional parameters used for calculation of |EBEEY| at oblique incidence.
+OBLIQUE_EBEEY_PARAM_KEYS = ("e_1", "e_2")
+#: Additional parameters used for energy distribution calculation.
+EBE_DISTRIB_PARAMETERS = "sigma"
+
 
 def _ebeey_normal(
     ene: float,
