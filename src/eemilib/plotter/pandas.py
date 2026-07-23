@@ -77,6 +77,7 @@ class PandasPlotter(Plotter):
         merged_kwargs = self._merge_kwargs(
             population=population, is_model=is_model, kwargs=kwargs
         )
+
         axes = updated.plot(
             *args,
             x=explicit[col_energy],
@@ -84,6 +85,7 @@ class PandasPlotter(Plotter):
             ylabel=md_ylabel["Emission Yield"],
             **merged_kwargs,
         )
+
         assert isinstance(axes, Axes)
         return axes
 

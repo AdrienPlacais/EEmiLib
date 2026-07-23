@@ -13,8 +13,8 @@ DEFAULT_POPULATIONS_STYLES: dict[ImplementedPop, dict[str, str | float]] = {
     "IBE": {"ls": ":"},
 }
 DEFAULT_IS_MODEL_STYLES: dict[bool, dict[str, str | float]] = {
-    False: {"marker": "+", "lw": 0.5},
-    True: {"marker": ""},
+    False: {"marker": "+", "lw": 0},
+    True: {"marker": "", "lw": 1.0},
 }
 
 
