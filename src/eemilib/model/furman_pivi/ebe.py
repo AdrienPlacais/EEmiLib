@@ -1,7 +1,5 @@
 """This module define functions related to |EBEs|."""
 
-import math
-
 import numpy as np
 from eemilib.model.furman_pivi.helper import remove_extrema
 from eemilib.model.furman_pivi.physics import at_theta_incidence
@@ -23,13 +21,14 @@ OBLIQUE_EBEEY_PARAM_KEYS = ("e_1", "e_2")
 EBE_DISTRIB_PARAMETERS = "sigma"
 
 
-def _ebeey_normal(
+def ebeey_normal(
     ene: float,
     normal_e_max_ebe: Parameter | float,
     eta_e_max: Parameter | float,
     eta_e_min: Parameter | float,
     W: Parameter | float,
     p: Parameter | float,
+    **kwargs,
 ) -> float:
     r"""Compute |EBEEY| at normal incidence.
 
@@ -57,7 +56,7 @@ def _ebeey_normal(
 
     """
     _in_exp = (abs(ene - normal_e_max_ebe) / W) ** p
-    return eta_e_min + (eta_e_max - eta_e_min) * math.exp(-_in_exp / p)
+    return eta_e_min + (eta_e_max - eta_e_min) * np.exp(-_in_exp / p)
 
 
 def ebeey(
@@ -81,7 +80,7 @@ def ebeey(
     """
     return at_theta_incidence(
         the=the,
-        at_normal=_ebeey_normal(
+        at_normal=ebeey_normal(
             ene=ene,
             normal_e_max_ebe=normal_e_max_ebe,
             eta_e_max=eta_e_max,
@@ -166,5 +165,5 @@ def ebe_energy_distribution(
         )
         * 2
         * np.exp(-((e_pe - emission_energies) ** 2) / (2 * sigma**2))
-        / (math.sqrt(2 * math.pi) * sigma * erf(e_pe / (math.sqrt(2) * sigma)))
+        / (np.sqrt(2 * np.pi) * sigma * erf(e_pe / (np.sqrt(2) * sigma)))
     )

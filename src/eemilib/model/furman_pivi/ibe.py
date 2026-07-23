@@ -1,7 +1,5 @@
 """This module holds everything |IBE| related."""
 
-import math
-
 import numpy as np
 from eemilib.model.furman_pivi.helper import remove_extrema
 from eemilib.model.furman_pivi.physics import at_theta_incidence
@@ -16,11 +14,12 @@ OBLIQUE_IBEEY_PARAM_KEYS = ("r_1", "r_2")
 IBE_DISTRIB_PARAMETERS = "q"
 
 
-def _ibeey_normal(
+def ibeey_normal(
     ene: float,
     e_ibe: Parameter | float,
     eta_i_max: Parameter | float,
     r: Parameter | float,
+    **kwargs,
 ) -> float:
     r"""Compute |IBEEY| at normal incidence.
 
@@ -43,7 +42,7 @@ def _ibeey_normal(
             \right)
 
     """
-    return eta_i_max * (1 - math.exp(-((ene / e_ibe) ** r)))
+    return eta_i_max * (1 - np.exp(-((ene / e_ibe) ** r)))
 
 
 def ibeey(
@@ -65,9 +64,7 @@ def ibeey(
     """
     return at_theta_incidence(
         the=the,
-        at_normal=_ibeey_normal(
-            ene=ene, e_ibe=e_ibe, eta_i_max=eta_i_max, r=r
-        ),
+        at_normal=ibeey_normal(ene=ene, e_ibe=e_ibe, eta_i_max=eta_i_max, r=r),
         a_1=r_1,
         a_2=r_2,
     )
