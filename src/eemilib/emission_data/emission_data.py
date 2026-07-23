@@ -19,6 +19,10 @@ from eemilib.util.helper import documentation_url
 from numpy.typing import NDArray
 
 
+class MissingDataError(ValueError):
+    """Error raised when data is missing."""
+
+
 class EmissionData(ABC):
     """A yield, energy distribution or angular distribution."""
 

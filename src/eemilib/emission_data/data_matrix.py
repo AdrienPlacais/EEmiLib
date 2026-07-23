@@ -54,10 +54,6 @@ n_rows = len(IMPLEMENTED_POP)
 n_cols = len(IMPLEMENTED_EMISSION_DATA)
 
 
-class MissingDataError(ValueError):
-    """Error raised when data is missing from :class:`.DataMatrix`."""
-
-
 class DataMatrix:
     """Store all the input files and corresp data in a single object."""
 
