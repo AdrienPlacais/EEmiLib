@@ -290,8 +290,6 @@ def _regularized_incomplete_gamma(
         :math:`P(a, x)`.
 
     """
-    # Need to enforce ``np.float64`` for the ``np.clip`` function
-    # x_clipped = np.clip(x.astype(np.float64), 0.0, None)
     x_clipped = np.clip(x, 0.0, None)
     if a == 0.0:
         return np.ones_like(x_clipped)
@@ -416,9 +414,6 @@ def se_energy_distribution(
         normalization_term = math.gamma(p_n) * _regularized_incomplete_gamma(
             n * p_n, np.array(e_pe / eps_n)
         )
-        # Need to enforce ``np.float64`` for the ``np.exp`` function
-        # _in_exp = np.astype(-emission_energies / eps_n, np.float64)
-        # shape_term = (emission_energies / eps_n) ** (p_n - 1) * np.exp(_in_exp)
         shape_term = (emission_energies / eps_n) ** (p_n - 1) * np.exp(
             -emission_energies / eps_n
         )
@@ -427,11 +422,6 @@ def se_energy_distribution(
             (n - 1) * p_n, (e_pe - emission_energies) / eps_n
         )
 
-        # Need to enforce ``np.float64`` for the ``+=`` operator
-        # spectrum += np.astype(
-        #     n * p_n_se * shape_term * tail_term / (eps_n * normalization_term),
-        #     np.float64,
-        # )
         spectrum += (
             n * p_n_se * shape_term * tail_term / (eps_n * normalization_term)
         )
