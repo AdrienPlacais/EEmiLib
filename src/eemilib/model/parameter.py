@@ -1,5 +1,7 @@
 """Define a model parameter."""
 
+import logging
+
 import numpy as np
 
 
@@ -188,6 +190,12 @@ class Parameter:
     @value.setter
     def value(self, value: float) -> None:
         """Set the value of the parameter."""
+        if self._value == value:
+            logging.debug(f"{self.name:<52}: is already {value}.")
+        else:
+            logging.debug(
+                f"{self.name:<52}: updating {self._value} -> {value}"
+            )
         self._value = value
 
     @property
