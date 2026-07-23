@@ -114,6 +114,27 @@ def _d_func(x: float, s: Parameter | float) -> float:
     return s * x / (s - 1 + x**s)
 
 
+def seey_normal(
+    ene: float,
+    normal_e_max_se: Parameter | float,
+    normal_delta_max: Parameter | float,
+    s: Parameter | float,
+    **kwargs,
+) -> float:
+    """Compute |SEEY| at normal incidence."""
+    return seey(
+        ene=ene,
+        the=0.0,
+        normal_e_max_se=normal_e_max_se,
+        normal_delta_max=normal_delta_max,
+        s=s,
+        t_1=0.0,
+        t_2=0.0,
+        t_3=0.0,
+        t_4=0.0,
+    )
+
+
 def seey(
     ene: float,
     the: float,
