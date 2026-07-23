@@ -7,7 +7,7 @@ called "heated Ag#1" in my PhD :cite:`Placais2021`. Two types of measurements
 are available:
 
 - Emission yield at different incidence angles. Can be loaded using
-  :class:`.loader.DeesseLoader`.
+  :class:`.loader.PandasLoader`.
 - Emission energy data at normal incidence. Corrected using M. Villemant
   procedure :cite:`Villemant2018`. Can be loaded using
   :class:`.loader.PandasLoader`.

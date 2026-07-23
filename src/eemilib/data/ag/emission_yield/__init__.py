@@ -8,6 +8,13 @@ called "heated Ag#1" in my PhD :cite:`Placais2021`.
 Emission yield at different incidence angles. Can be loaded using
 :class:`.loader.DeesseLoader`.
 
+.. todo::
+   ``DeesseLoader`` does not understand that the 4 files correspond to the same
+   TEEY. It fails at loading the second one, because it has no normal incidence
+   yield.
+
+You can also load ``teey_ag_1_heated_pd`` with :class:`.loader.PandasLoader`.
+
 """
 
 from importlib import resources
@@ -24,3 +31,4 @@ teey_ag_1_heated = (
     teey_ag_1_heated_40deg,
     teey_ag_1_heated_60deg,
 )
+teey_ag_1_heated_pd = files / "cleanAg_TEEY.csv"
