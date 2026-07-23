@@ -8,7 +8,7 @@ from typing import Self
 
 import numpy as np
 import pandas as pd
-from eemilib.emission_data.emission_data import EmissionData
+from eemilib.emission_data.emission_data import EmissionData, MissingDataError
 from eemilib.emission_data.helper import (
     get_crossover_energies,
     get_emax_eymax,
@@ -24,6 +24,10 @@ from eemilib.util.constants import (
     md_ey,
 )
 from numpy.typing import NDArray
+
+
+class MissingNormalEmissionYieldError(MissingDataError):
+    """Error raised when emission yield at normal incidence would be needed."""
 
 
 class EmissionYield(EmissionData):
@@ -150,7 +154,11 @@ class SEEY(EmissionYield):
         self, n_resample: int = -1
     ) -> tuple[float, float, float, float | None]:
         """Compute the characteristics of the emission yield."""
-        assert 0.0 in self.angles, "Need the normal incidence measurements."
+        if 0.0 not in self.angles:
+            raise MissingNormalEmissionYieldError(
+                "We need normal incidence measurements to compute "
+                "characteristic points."
+            )
 
         normal_ey = self.data[[col_energy, col_normal]]
         assert isinstance(normal_ey, pd.DataFrame)
