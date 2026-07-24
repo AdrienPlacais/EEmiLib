@@ -361,7 +361,9 @@ class AllEmissionEnergyDistribution(EmissionEnergyDistribution):
         total_shape = sum(shapes.values())
         has_signal = total_shape > 0
         weights = {
-            pop: np.where(has_signal, shape / total_shape, 0.0)
+            pop: np.divide(
+                shape, total_shape, out=np.zeros_like(shape), where=has_signal
+            )
             for pop, shape in shapes.items()
         }
 
