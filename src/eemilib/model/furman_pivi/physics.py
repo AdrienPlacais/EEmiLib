@@ -416,6 +416,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "unit": "eV",
         "value": 0.0,
         "lower_bound": 0.0,
+        "is_locked": True,
         "description": "Energy where EBEEY is maximum at normal incidence.",
         "furman_pivi_notation": NORMAL_E_MAX_EBE_FP,
     },
