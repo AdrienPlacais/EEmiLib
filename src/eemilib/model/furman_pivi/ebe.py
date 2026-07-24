@@ -18,7 +18,7 @@ NORMAL_EBEEY_PARAM_KEYS = (
 #: Additional parameters used for calculation of |EBEEY| at oblique incidence.
 OBLIQUE_EBEEY_PARAM_KEYS = ("e_1", "e_2")
 #: Additional parameters used for energy distribution calculation.
-EBE_DISTRIB_PARAMETERS = "sigma"
+EBE_DISTRIB_PARAMETERS = ("sigma",)
 
 
 def ebeey_normal(
