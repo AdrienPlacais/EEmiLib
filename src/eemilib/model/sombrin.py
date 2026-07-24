@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data.data_matrix import DataMatrix
+from eemilib.emission_data.emission_data import MissingDataError
 from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
@@ -157,7 +158,7 @@ class Sombrin(Model):
     ) -> None:
         """Extract main |TEEY| curve parameters from measure."""
         if not data_matrix.has_all_mandatory_files(self.model_config):
-            raise ValueError("Files are not all provided.")
+            raise MissingDataError("Files are not all provided.")
 
         emission_yield = data_matrix.teey
         assert emission_yield.population == "all"

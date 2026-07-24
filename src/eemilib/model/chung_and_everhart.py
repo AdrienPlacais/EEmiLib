@@ -169,7 +169,7 @@ class ChungEverhart(Model):
 
         """
         if not data_matrix.has_all_mandatory_files(self.model_config):
-            raise ValueError("Files are not all provided.")
+            raise MissingDataError("Files are not all provided.")
 
         distributions = data_matrix.get_data(
             population=population, emission_data_type="Emission Energy"
