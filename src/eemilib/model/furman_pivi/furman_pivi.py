@@ -29,22 +29,34 @@ import pandas as pd
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.emission_data.emission_data import MissingDataError
+from eemilib.emission_data.emission_energy_distribution import (
+    AllEmissionEnergyDistribution,
+    EBEEmissionEnergyDistribution,
+    EmissionEnergyDistribution,
+    IBEEmissionEnergyDistribution,
+    SEEmissionEnergyDistribution,
+)
 from eemilib.emission_data.emission_yield import (
     EBEEY,
     IBEEY,
     SEEY,
+    TEEY,
     EmissionYield,
 )
 from eemilib.model.furman_pivi.all import all_energy_distribution, teey
 from eemilib.model.furman_pivi.ebe import (
+    EBE_DISTRIB_PARAMETERS,
     NORMAL_EBEEY_PARAM_KEYS,
+    OBLIQUE_EBEEY_PARAM_KEYS,
     ebe_energy_distribution,
     ebeey,
     ebeey_normal,
 )
 from eemilib.model.furman_pivi.helper import add_furman_pivi_notation
 from eemilib.model.furman_pivi.ibe import (
+    IBE_DISTRIB_PARAMETERS,
     NORMAL_IBEEY_PARAM_KEYS,
+    OBLIQUE_IBEEY_PARAM_KEYS,
     ibe_energy_distribution,
     ibeey,
     ibeey_normal,
@@ -60,7 +72,9 @@ from eemilib.model.furman_pivi.physics import (
 )
 from eemilib.model.furman_pivi.se import (
     NORMAL_SEEY_PARAM_KEYS,
+    OBLIQUE_SEEY_PARAM_KEYS,
     PROBA_EMIT_N_SE,
+    SE_DISTRIB_PARAMETERS,
     se_energy_distribution,
     seey,
     seey_normal,
@@ -146,6 +160,7 @@ class FurmanPivi(Model):
 
         self.set_implementation("distribution", distribution)
         self._proba_emit_n_se: PROBA_EMIT_N_SE
+        self._normalization: NORMALIZATION_T
         self.set_implementation("normalization", normalization)
 
     def set_implementation(self, name: str, value: str) -> None:
@@ -326,22 +341,58 @@ class FurmanPivi(Model):
         self, data_matrix: DataMatrix, **kwargs
     ) -> None:
         """Fit all Furman and Pivi parameters on measurements."""
-        _teey = data_matrix.teey
-        # First estimation: position of max SEEY == position of max TEEY
-        self.parameters["normal_e_max_se"].value = _teey.e_max
-        self.parameters["normal_delta_max"].value = _teey.ey_max
+        if not data_matrix.has_all_mandatory_files(self.model_config):
+            raise MissingDataError("Files are not all provided.")
 
-        se_shares, ebe_shares, ibe_shares = self._decompose_teeys(data_matrix)
-        self._find_normal_seey_parameters(se_shares)
-        self._find_normal_ebeey_parameters(ebe_shares)
-        self._find_normal_ibeey_parameters(ibe_shares)
+        teeys = data_matrix.get_data(
+            population="all", emission_data_type="Emission Yield"
+        )
+        self._find_normal_emission_yields_parameters(teeys)
 
-        logging.warning("Skipping oblique incidence fit for now.")
-        logging.warning("Skipping energy distribution fit for now.")
+        self._find_oblique_emission_yields_parameters(data_matrix)
+
+        distribs = data_matrix.get_data(
+            population="all", emission_data_type="Emission Energy"
+        )
+        self._find_energy_distribution_parameters(distribs)
 
     # =========================================================================
     # 1. Find best parameters for emission yield at normal incidence
     # =========================================================================
+    def _find_normal_emission_yields_parameters(
+        self, teeys: Sequence[TEEY]
+    ) -> None:
+        """Orchestrate fitting of all normal emission yields parameters.
+
+        1. Set first estimation for the normal emissino yield parameters.
+
+           - First estimation: position of max SEEY == position of max TEEY
+
+        2. Using the parameters already set, decompose the |TEEY| into its
+           |SEEY|, |EBEEY| and |IBEEY| components.
+
+        3. Fit every emission yield to match the given shapes.
+
+        Parameters
+        ----------
+        teeys :
+            All |TEEY| stored in a :class:`.DataMatrix`. *A priori*, there is
+            only one |TEEY| in the list.
+
+        """
+        if len(teeys) > 1:
+            logging.warning(
+                "Method not actually adapted to several TEEY objects"
+            )
+        for _teey in teeys:
+            self.parameters["normal_e_max_se"].value = _teey.e_max
+            self.parameters["normal_delta_max"].value = _teey.ey_max
+        se_shares, ebe_shares, ibe_shares = self._decompose_teeys(teeys)
+        self._find_normal_seey_parameters(se_shares)
+        self._find_normal_ebeey_parameters(ebe_shares)
+        self._find_normal_ibeey_parameters(ibe_shares)
+
+    # Actual finders
     def _find_normal_seey_parameters(self, se_shares: Sequence[SEEY]) -> None:
         r"""Fit normal |SEEY| parameters, *ie* :data:`.NORMAL_SEEY_PARAM_KEYS`.
 
@@ -402,7 +453,7 @@ class FurmanPivi(Model):
 
     # Helpers
     def _decompose_teeys(
-        self, data_matrix: DataMatrix
+        self, teeys: Sequence[TEEY]
     ) -> tuple[list[SEEY], list[EBEEY], list[IBEEY]]:
         """Decompose every measured |TEEY| into |SEEY|/|EBEY|/|IBEY| shares.
 
@@ -411,8 +462,9 @@ class FurmanPivi(Model):
 
         Parameters
         ----------
-        data_matrix :
-            Object holding measurements.
+        teeys :
+            All |TEEY| stored in a :class:`.DataMatrix`. *A priori*, there is
+            only one |TEEY| in the list.
 
         Return
         ------
@@ -420,14 +472,6 @@ class FurmanPivi(Model):
             measured |TEEY|, in the same order.
 
         """
-        teeys = data_matrix.get_data(
-            population="all", emission_data_type="Emission Yield"
-        )
-        if not teeys:
-            raise MissingDataError(
-                "Missing 'all' emission yield measurements."
-            )
-
         se_shape = partial(seey_normal, **self.parameters)
         ebe_shape = partial(ebeey_normal, **self.parameters)
         ibe_shape = partial(ibeey_normal, **self.parameters)
@@ -500,6 +544,12 @@ class FurmanPivi(Model):
     # =========================================================================
     # 2. Find best parameters for emission yield at oblique incidence
     # =========================================================================
+    def _find_oblique_emission_yields_parameters(
+        self, data_matrix: DataMatrix
+    ) -> None:
+        """Orchestrate fitting of all oblique emission yields parameters."""
+        logging.warning("Skipping oblique incidence fit for now.")
+
     def _find_ibe_parameters(self, ibe_shares: Sequence[IBEEY]) -> None:
         r"""Find the best parameters for |IBE|.
 
@@ -543,7 +593,212 @@ class FurmanPivi(Model):
     # =========================================================================
     # 3. Find best parameters for emission distribution at normal incidence
     # =========================================================================
+    def _find_energy_distribution_parameters(
+        self, distribs: Sequence[AllEmissionEnergyDistribution]
+    ) -> None:
+        """Orchestrate fitting of all normal energy distribution parameters."""
+        se_shares, ebe_shares, ibe_shares = (
+            self._decompose_energy_distributions(distribs)
+        )
+        self._find_se_pdf_parameters(se_shares)
+        self._find_ebe_pdf_parameters(ebe_shares)
+        self._find_ibe_pdf_parameters(ibe_shares)
 
+    # Actual finders
+    def _find_se_pdf_parameters(
+        self, se_shares: Sequence[SEEmissionEnergyDistribution]
+    ) -> None:
+        p_ns = [
+            self.parameters[f"p_{i}"] for i in range(1, M_MAX_SECONDARIES + 1)
+        ]
+        eps_ns = [
+            self.parameters[f"eps_{i}"]
+            for i in range(1, M_MAX_SECONDARIES + 1)
+        ]
+        all_normal_yield_keys = (
+            NORMAL_SEEY_PARAM_KEYS
+            + OBLIQUE_SEEY_PARAM_KEYS
+            + NORMAL_EBEEY_PARAM_KEYS
+            + OBLIQUE_EBEEY_PARAM_KEYS
+            + NORMAL_IBEEY_PARAM_KEYS
+            + OBLIQUE_IBEEY_PARAM_KEYS
+        )
+        fitted = self._fit_energy_distribution(
+            se_shares,
+            se_energy_distribution,
+            SE_DISTRIB_PARAMETERS,
+            extra_kwargs={
+                **{key: self.parameters[key] for key in all_normal_yield_keys},
+                "p_ns": p_ns,
+                "eps_ns": eps_ns,
+                "proba_emit_n_se": self._proba_emit_n_se,
+                "normalization": self._normalization,
+            },
+        )
+        self.set_parameters_values(fitted)
+
+    def _find_ebe_pdf_parameters(
+        self, ebe_shares: Sequence[EBEEmissionEnergyDistribution]
+    ) -> None:
+        fitted = self._fit_energy_distribution(
+            ebe_shares,
+            ebe_energy_distribution,
+            EBE_DISTRIB_PARAMETERS,
+            extra_kwargs={
+                key: self.parameters[key]
+                for key in NORMAL_EBEEY_PARAM_KEYS + OBLIQUE_EBEEY_PARAM_KEYS
+            },
+        )
+        self.set_parameters_values(fitted)
+
+    def _find_ibe_pdf_parameters(
+        self, ibe_shares: Sequence[IBEEmissionEnergyDistribution]
+    ) -> None:
+        fitted = self._fit_energy_distribution(
+            ibe_shares,
+            ibe_energy_distribution,
+            IBE_DISTRIB_PARAMETERS,
+            extra_kwargs={
+                key: self.parameters[key]
+                for key in NORMAL_IBEEY_PARAM_KEYS + OBLIQUE_IBEEY_PARAM_KEYS
+            },
+        )
+        self.set_parameters_values(fitted)
+
+    # Helpers
+    def _decompose_energy_distributions(
+        self, all_distrib: Sequence[AllEmissionEnergyDistribution]
+    ) -> tuple[
+        list[SEEmissionEnergyDistribution],
+        list[EBEEmissionEnergyDistribution],
+        list[IBEEmissionEnergyDistribution],
+    ]:
+        """Decompose every measured 'all' energy distribution into shares."""
+        p_ns = [
+            self.parameters[f"p_{i}"] for i in range(1, M_MAX_SECONDARIES + 1)
+        ]
+        eps_ns = [
+            self.parameters[f"eps_{i}"]
+            for i in range(1, M_MAX_SECONDARIES + 1)
+        ]
+
+        se_shares: list[SEEmissionEnergyDistribution] = []
+        ebe_shares: list[EBEEmissionEnergyDistribution] = []
+        ibe_shares: list[IBEEmissionEnergyDistribution] = []
+        for dist in all_distrib:
+
+            def se_shape(
+                energies: NDArray[np.float64], e_pe: float = dist.e_pe
+            ) -> NDArray[np.float64]:
+                return se_energy_distribution(
+                    e_pe=e_pe,
+                    the=0.0,
+                    emission_energies=energies,
+                    p_ns=p_ns,
+                    eps_ns=eps_ns,
+                    proba_emit_n_se=self._proba_emit_n_se,
+                    normalization=self._normalization,
+                    **self.parameters,
+                )
+
+            def ebe_shape(
+                energies: NDArray[np.float64], e_pe: float = dist.e_pe
+            ) -> NDArray[np.float64]:
+                return ebe_energy_distribution(
+                    e_pe=e_pe,
+                    the=0.0,
+                    emission_energies=energies,
+                    **self.parameters,
+                )
+
+            def ibe_shape(
+                energies: NDArray[np.float64], e_pe: float = dist.e_pe
+            ) -> NDArray[np.float64]:
+                return ibe_energy_distribution(
+                    e_pe=e_pe,
+                    the=0.0,
+                    emission_energies=energies,
+                    **self.parameters,
+                )
+
+            se_share, ebe_share, ibe_share = dist.decompose(
+                se_shape, ebe_shape, ibe_shape
+            )
+            se_shares.append(se_share)
+            ebe_shares.append(ebe_share)
+            ibe_shares.append(ibe_share)
+
+        return se_shares, ebe_shares, ibe_shares
+
+    def _fit_energy_distribution(
+        self,
+        shares: Sequence[EmissionEnergyDistribution],
+        pdf_func: Callable[..., NDArray[np.float64]],
+        param_keys: tuple[str, ...],
+        extra_kwargs: dict[str, Any] | None = None,
+    ) -> dict[str, float]:
+        """Jointly fit an emission energy distribution function's parameters.
+
+        Stacks residuals across every decomposed share (one per measured
+        ``"all"`` energy distribution) into a single least-squares problem.
+        Unlike :meth:`_fit_normal_yield`, ``pdf_func`` also needs fixed,
+        non-fitted context (impact energy, incidence angle, emission
+        energies, and — for |SEs| — the truncated-sum machinery), supplied via
+        ``e_pe``/``the``/``emission_energies`` (bound per share) and
+        ``extra_kwargs`` (bound once, shared across every share).
+
+        Parameters
+        ----------
+        shares :
+            Decomposed emission energy distribution shares, *cf*
+            :meth:`.AllEmissionEnergyDistribution.decompose`.
+        pdf_func :
+            Function computing the emission energy distribution. Takes
+            ``e_pe``, ``the``, ``emission_energies`` as keyword arguments, plus
+            the parameters named in ``param_keys``, plus anything in
+            ``extra_kwargs``.
+        param_keys :
+            Names of ``pdf_func``'s keyword parameters to fit, matching keys in
+            :attr:`self.parameters`.
+        extra_kwargs :
+            Additional fixed keyword arguments ``pdf_func`` needs but that are
+            not being fitted (e.g. ``p_ns``, ``eps_ns``, ``proba_emit_n_se``,
+            ``normalization`` for :func:`.se_energy_distribution`).
+
+        Return
+        ------
+            Dict mapping each of ``param_keys`` to its fitted value.
+
+        """
+        extra_kwargs = extra_kwargs or {}
+
+        def _aggregate_residue(x: NDArray[np.float64]) -> NDArray[np.float64]:
+            kwargs = dict(zip(param_keys, x))
+            residuals = []
+            for share in shares:
+                measured = share.data[col_normal].to_numpy()
+                predicted = pdf_func(
+                    e_pe=share.e_pe,
+                    the=0.0,
+                    emission_energies=share.energies,
+                    **kwargs,
+                    **extra_kwargs,
+                )
+                residuals.append(measured - predicted)
+            return np.concatenate(residuals)
+
+        x0 = [self.parameters[key].value for key in param_keys]
+        lower_bounds = [self.parameters[key].lower_bound for key in param_keys]
+        upper_bounds = [self.parameters[key].upper_bound for key in param_keys]
+
+        lsq = least_squares(
+            fun=_aggregate_residue, x0=x0, bounds=(lower_bounds, upper_bounds)
+        )
+        return dict(zip(param_keys, lsq.x))
+
+    # =========================================================================
+    # 4. Post
+    # =========================================================================
     def evaluate(self, data_matrix: DataMatrix) -> dict[str, float]:
         """Evaluate the quality of the model using Fil criterions.
 
