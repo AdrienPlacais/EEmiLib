@@ -53,9 +53,11 @@ class EmissionEnergyDistribution(EmissionData):
             float(col.split()[0]) for col in data.columns if col != col_energy
         ]
 
-        #: Energy of peak distribution in :unit:`eV`.
-        self.e_peak: float
-        _, self.e_peak = self._peak
+        #: Peak distribution in :unit:`eV^{-1}`.
+        self.peak_value: float
+        #: Index of peak.
+        self.i_peak: int
+        self.i_peak, self.peak_value = self._peak
 
         #: Energy of |PEs| in :unit:`eV`. If this information is not found in
         #: the file header, we suppose it is the maximum of the input energy
@@ -210,20 +212,19 @@ class EmissionEnergyDistribution(EmissionData):
         return int(self._n_points / 4)
 
     @property
-    def _peak(self) -> tuple[float, float]:
+    def _peak(self) -> tuple[int, float]:
         """Find maximum of PDF.
 
         Returns
         -------
         float
-            Position of the peak in :unit:`eV`.
+            Index of the peak.
         float
             Value of the peak.
 
         """
         i = self.data[col_normal].argmax()
-        e_peak = self.data.at[i, col_energy]
-        return float(e_peak), float(self.data.at[i, col_normal])
+        return i, float(self.data.at[i, col_normal])
 
 
 class SEEmissionEnergyDistribution(EmissionEnergyDistribution):
@@ -238,7 +239,7 @@ class SEEmissionEnergyDistribution(EmissionEnergyDistribution):
         (e.g. normalizing by this population's own peak value).
 
         """
-        return self._peak[1]
+        return self.peak_value
 
 
 class EBEEmissionEnergyDistribution(EmissionEnergyDistribution):
@@ -283,18 +284,19 @@ class AllEmissionEnergyDistribution(EmissionEnergyDistribution):
     population = "all"
 
     def _default_norm(self) -> float:
+        return 1.0
         return self._SE_peak[1]
 
     @property
-    def _SE_peak(self) -> tuple[float, float]:
+    def _SE_peak(self) -> tuple[int, float]:
         """Find the |SEs| maximum."""
-        i = self.data[: self._se_ebe_limit][col_normal].argmax()
-        e_peak_se = self.data.at[i, col_energy]
-        return float(e_peak_se), float(self.data.at[i, col_normal])
+        i = int(self.data[: self._se_ebe_limit][col_normal].argmax())
+        return i, float(self.data.at[i, col_normal])
 
     @property
     def _EBE_peak(self) -> tuple[float, float]:
         """Find the position of the |EBE| peak."""
+        raise NotImplementedError("still used?")
         i = (
             self.data[self._se_ebe_limit :][col_normal].argmax()
             + self._se_ebe_limit
