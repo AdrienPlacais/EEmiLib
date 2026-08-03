@@ -2,7 +2,6 @@
 
 from pathlib import Path
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
@@ -10,7 +9,7 @@ from eemilib import emission_energy_ag
 from eemilib.data.dummy.emission_energy import maxwellian_parameters_values
 from eemilib.emission_data.data_matrix import DataMatrix
 from eemilib.emission_data.emission_energy_distribution import (
-    SEEmissionEnergyDistribution,
+    AllEmissionEnergyDistribution,
 )
 from eemilib.loader import PandasLoader
 from eemilib.model import Maxwellian
@@ -27,13 +26,13 @@ def maxwellian_model() -> Maxwellian:
 class MockDataMatrix(DataMatrix):
     """Mock a data matrix with only an energy distribution for |SEs|."""
 
-    def __init__(self, se_pdf: SEEmissionEnergyDistribution) -> None:
+    def __init__(self, se_pdf: AllEmissionEnergyDistribution) -> None:
         """Set emission energy pdf for 'SEs' population."""
         self.data_matrix = [
-            [None, [se_pdf], None],
-            [None, None, None],
-            [None, None, None],
-            [None, None, None],
+            [[], [], []],
+            [[], [], []],
+            [[], [], []],
+            [[], [se_pdf], []],
         ]
 
     def has_all_mandatory_files(self, *args, **kwargs) -> bool:
@@ -46,7 +45,7 @@ def _mock_data_matrix_from_energy_distributions(
 ) -> MockDataMatrix:
     """Build a :class:`MockDataMatrix` from loaded (df, e_pe) distribution pairs."""
     se_df, se_e_pe = distributions["SE"]
-    se_pdf = SEEmissionEnergyDistribution(data=se_df, e_pe=se_e_pe)
+    se_pdf = AllEmissionEnergyDistribution(data=se_df, e_pe=se_e_pe)
     return MockDataMatrix(se_pdf=se_pdf)
 
 
@@ -86,7 +85,7 @@ def test_modelled_maxwellian_agains_cst(
 
     data_matrix = energy_distrib_data
     expected = data_matrix.get_data(
-        population="SE", emission_data_type="Emission Energy"
+        population="all", emission_data_type="Emission Energy"
     )[0]
     emission_energies = np.array(expected.energies)
     theta = np.array(expected.angles)
@@ -100,7 +99,7 @@ def test_modelled_maxwellian_agains_cst(
     )
     assert isinstance(calculated_df, pd.DataFrame)
 
-    calculated = SEEmissionEnergyDistribution(
+    calculated = AllEmissionEnergyDistribution(
         data=calculated_df, e_pe=expected.e_pe
     )
     assert_frame_equal(expected.data, calculated.data)
@@ -123,12 +122,12 @@ def test_find_optimal_parameters(
     data_matrix = DataMatrix()
     data_matrix.set_files(
         files=(Path(filepath),),
-        population="SE",
+        population="all",
         emission_data_type="Emission Energy",
     )
     data_matrix.load_data(PandasLoader())
     model = Maxwellian()
-    model.find_optimal_parameters(data_matrix, population="SE")
+    model.find_optimal_parameters(data_matrix, population="all")
     found_parameters = {
         name: val.value for name, val in model.parameters.items()
     }

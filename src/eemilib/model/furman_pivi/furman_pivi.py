@@ -557,7 +557,7 @@ class FurmanPivi(Model):
         self, data_matrix: DataMatrix
     ) -> None:
         """Orchestrate fitting of all oblique emission yields parameters."""
-        logging.warning("Skipping oblique incidence fit for now.")
+        logging.info("Skipping oblique incidence fit for now.")
 
     def _find_ibe_parameters(self, ibe_shares: Sequence[IBEEY]) -> None:
         r"""Find the best parameters for |IBE|.

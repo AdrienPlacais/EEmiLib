@@ -284,7 +284,6 @@ class AllEmissionEnergyDistribution(EmissionEnergyDistribution):
     population = "all"
 
     def _default_norm(self) -> float:
-        return 1.0
         return self._SE_peak[1]
 
     @property

@@ -41,7 +41,7 @@ class Maxwellian(Model):
     is_dielectrics_compatible = False
     model_config = ModelConfig(
         emission_yield_files=(),
-        emission_energy_files=("SE",),
+        emission_energy_files=("all",),
         emission_angle_files=(),
     )
     initial_parameters = {
