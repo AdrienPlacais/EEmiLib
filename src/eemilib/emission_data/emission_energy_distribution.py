@@ -64,6 +64,7 @@ class EmissionEnergyDistribution(EmissionData):
 
         #: Re-normalization factor of distribution.
         self.norm = norm if norm is not None else self._default_norm()
+        self.unnormalized_data = self.data
         self.normalize()
 
     @classmethod
@@ -199,7 +200,9 @@ class EmissionEnergyDistribution(EmissionData):
         if self.norm is None:
             raise ValueError("Cannot normalize if norm is None")
         data_columns = [c for c in self.data.columns if c != col_energy]
-        self.data[data_columns] /= self.norm
+        self.data[data_columns] = (
+            self.unnormalized_data[data_columns] / self.norm
+        )
 
     @property
     def _se_ebe_limit(self) -> int:
