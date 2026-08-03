@@ -7,7 +7,12 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from eemilib.plotter.helper import explicit_column_names
 from eemilib.plotter.plotter import Plotter
-from eemilib.util.constants import ImplementedPop, col_energy, md_ylabel
+from eemilib.util.constants import (
+    ImplementedEmissionData,
+    ImplementedPop,
+    col_energy,
+    md_ylabel,
+)
 from matplotlib.axes import Axes
 
 
@@ -75,7 +80,10 @@ class PandasPlotter(Plotter):
         )
         updated = df.rename(columns=explicit, inplace=False)
         merged_kwargs = self._merge_kwargs(
-            population=population, is_model=is_model, kwargs=kwargs
+            population=population,
+            is_model=is_model,
+            emission_data_type="Emission Yield",
+            kwargs=kwargs,
         )
 
         axes = updated.plot(
@@ -132,7 +140,10 @@ class PandasPlotter(Plotter):
         )
         updated = df.rename(columns=explicit, inplace=False)
         merged_kwargs = self._merge_kwargs(
-            population=population, is_model=is_model, kwargs=kwargs
+            population=population,
+            is_model=is_model,
+            emission_data_type="Emission Energy",
+            kwargs=kwargs,
         )
         axes = updated.plot(
             *args,
@@ -161,6 +172,7 @@ class PandasPlotter(Plotter):
         self,
         population: ImplementedPop | None,
         is_model: bool,
+        emission_data_type: ImplementedEmissionData,
         kwargs: dict[str, Any],
     ) -> dict[str, Any]:
         """Resolve plot kwargs.
@@ -169,8 +181,19 @@ class PandasPlotter(Plotter):
 
         """
         merged_kwargs = {}
+        if emission_data_type == "Emission Yield":
+            default_population_style = self.pop_styles_ey
+        elif emission_data_type == "Emission Energy":
+            default_population_style = self.pop_styles_emission_energy
+        else:
+            logging.info(
+                f"{emission_data_type = } not implemented. Setting a default "
+                "population style."
+            )
+            default_population_style = self.pop_styles_emission_energy
+
         if population is not None:
-            merged_kwargs.update(self.population_styles[population])
+            merged_kwargs.update(default_population_style[population])
         merged_kwargs.update(self.is_model_styles[is_model])
         merged_kwargs.update(kwargs)
         return merged_kwargs

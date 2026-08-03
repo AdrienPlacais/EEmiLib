@@ -2,16 +2,29 @@
 
 from abc import ABC, abstractmethod
 
+import matplotlib.pyplot as plt
 import pandas as pd
 from eemilib.util.constants import ImplementedEmissionData, ImplementedPop
 from eemilib.util.helper import documentation_url
 
-DEFAULT_POPULATIONS_STYLES: dict[ImplementedPop, dict[str, str | float]] = {
+_COLORS_LIST = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+
+#: Maps populations to their plotting style for emission yield plots.
+POP_STYLES_EY: dict[ImplementedPop, dict[str, str | float]] = {
     "all": {"ls": "-"},
     "SE": {"ls": "--"},
     "EBE": {"ls": "-."},
     "IBE": {"ls": ":"},
 }
+#: Maps populations to their plotting style for emission energy plots.
+POP_STYLES_EMISSION_ENERGY: dict[ImplementedPop, dict[str, str | float]] = {
+    "all": {"ls": "-", "color": _COLORS_LIST[0]},
+    "SE": {"ls": "--", "color": _COLORS_LIST[1]},
+    "EBE": {"ls": "-.", "color": _COLORS_LIST[2]},
+    "IBE": {"ls": ":", "color": _COLORS_LIST[3]},
+}
+
+
 DEFAULT_IS_MODEL_STYLES: dict[bool, dict[str, str | float]] = {
     False: {"marker": "+", "lw": 0},
     True: {"marker": "", "lw": 1.0},
@@ -21,10 +34,14 @@ DEFAULT_IS_MODEL_STYLES: dict[bool, dict[str, str | float]] = {
 class Plotter(ABC):
     """A generic object to plot distributions, emission yields, etc."""
 
-    #: Determine plot styles according to population nature.
-    population_styles: dict[ImplementedPop, dict[str, str | float]] = (
-        DEFAULT_POPULATIONS_STYLES
-    )
+    #: Determine plot styles according to population nature for emission yield
+    #: plots.
+    pop_styles_ey: dict[ImplementedPop, dict[str, str | float]] = POP_STYLES_EY
+    #: Determine plot styles according to population nature for emission
+    #: energy plots.
+    pop_styles_emission_energy: dict[
+        ImplementedPop, dict[str, str | float]
+    ] = POP_STYLES_EMISSION_ENERGY
     #: Determine plot styles according to whether data is modelled or measured.
     is_model_styles: dict[bool, dict[str, str | float]] = (
         DEFAULT_IS_MODEL_STYLES
