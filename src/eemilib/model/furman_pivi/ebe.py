@@ -1,9 +1,13 @@
 """This module define functions related to |EBEs|."""
 
 import numpy as np
+from eemilib.emission_data.emission_energy_distribution import (
+    EBEEmissionEnergyDistribution,
+)
 from eemilib.model.furman_pivi.helper import remove_extrema
 from eemilib.model.furman_pivi.physics import at_theta_incidence
 from eemilib.model.parameter import Parameter
+from eemilib.util.constants import col_energy
 from numpy.typing import NDArray
 from scipy.special import erf
 
@@ -166,4 +170,35 @@ def ebe_energy_distribution(
         * 2
         * np.exp(-((e_pe - emission_energies) ** 2) / (2 * sigma**2))
         / (np.sqrt(2 * np.pi) * sigma * erf(e_pe / (np.sqrt(2) * sigma)))
+    )
+
+
+def double_peak(
+    share: EBEEmissionEnergyDistribution,
+) -> EBEEmissionEnergyDistribution:
+    r"""Return a copy of ``share`` with its peak height doubled.
+
+    Follows the fitting convention described in :cite:`Furman2002` (text
+    following Eq. 27): since the analytic |EBE| curve, Eq. (26), is
+    truncated exactly at its peak (:math:`E=E_0`), only "half" of the
+    physical peak is captured when integrating over :math:`[0, E_0]`.
+    Doubling the measured peak's height before fitting compensates for
+    this, so that the fitted area properly matches :math:`\delta_e`.
+
+    Parameters
+    ----------
+    share :
+        Decomposed |EBEEY| share.
+
+    Return
+    ------
+        A new :class:`.EBEEmissionEnergyDistribution`, identical to
+        ``share`` except for the doubled peak.
+
+    """
+    doubled_data = share.data.copy()
+    data_columns = [c for c in doubled_data.columns if c != col_energy]
+    doubled_data.loc[:, data_columns] *= 2.0
+    return EBEEmissionEnergyDistribution(
+        doubled_data, e_pe=share.e_pe, norm=1.0
     )

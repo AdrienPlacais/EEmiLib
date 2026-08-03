@@ -436,7 +436,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": SIGMA,
         "unit": "1",
         "value": 1.9,
-        "lower_bound": 0.0,  # TODO: check min/max values
+        "lower_bound": 0.1,  # TODO: check min/max values
         "description": "Parameter in EBE PDF function.",
     },
     "eta_e_min": {

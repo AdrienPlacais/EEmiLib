@@ -204,7 +204,7 @@ class PandasPlotter(Plotter):
         self,
         axes: Axes | None,
         emission_data_type: ImplementedEmissionData,
-        n_points: int = 501,
+        n_points: int = 5001,
     ) -> NDArray[np.float64]:
         """Create array of electrons energies from given axes.
 

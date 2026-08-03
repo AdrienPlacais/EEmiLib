@@ -48,6 +48,7 @@ from eemilib.model.furman_pivi.ebe import (
     EBE_DISTRIB_PARAMETERS,
     NORMAL_EBEEY_PARAM_KEYS,
     OBLIQUE_EBEEY_PARAM_KEYS,
+    double_peak,
     ebe_energy_distribution,
     ebeey,
     ebeey_normal,
@@ -340,7 +341,15 @@ class FurmanPivi(Model):
     def find_optimal_parameters(
         self, data_matrix: DataMatrix, **kwargs
     ) -> None:
-        """Fit all Furman and Pivi parameters on measurements."""
+        """Fit all Furman and Pivi parameters on measurements.
+
+        Parameters
+        ----------
+        data_matrix :
+            Measurement data to fit. Must contain emission yield and emission
+            energy.
+
+        """
         if not data_matrix.has_all_mandatory_files(self.model_config):
             raise MissingDataError("Files are not all provided.")
 
@@ -364,7 +373,7 @@ class FurmanPivi(Model):
     ) -> None:
         """Orchestrate fitting of all normal emission yields parameters.
 
-        1. Set first estimation for the normal emissino yield parameters.
+        1. Set first estimation for the normal emission yield parameters.
 
            - First estimation: position of max SEEY == position of max TEEY
 
@@ -386,7 +395,7 @@ class FurmanPivi(Model):
             )
         for _teey in teeys:
             self.parameters["normal_e_max_se"].value = _teey.e_max
-            self.parameters["normal_delta_max"].value = _teey.ey_max
+            # self.parameters["normal_delta_max"].value = _teey.ey_max
         se_shares, ebe_shares, ibe_shares = self._decompose_teeys(teeys)
         self._find_normal_seey_parameters(se_shares)
         self._find_normal_ebeey_parameters(ebe_shares)
@@ -596,7 +605,15 @@ class FurmanPivi(Model):
     def _find_energy_distribution_parameters(
         self, distribs: Sequence[AllEmissionEnergyDistribution]
     ) -> None:
-        """Orchestrate fitting of all normal energy distribution parameters."""
+        """Orchestrate fitting of all normal energy distribution parameters.
+
+        1. De-normalize emission energy measurements.
+
+        """
+        for d in distribs:
+            d.norm = 1.0
+            d.normalize()
+
         se_shares, ebe_shares, ibe_shares = (
             self._decompose_energy_distributions(distribs)
         )
@@ -640,8 +657,27 @@ class FurmanPivi(Model):
     def _find_ebe_pdf_parameters(
         self, ebe_shares: Sequence[EBEEmissionEnergyDistribution]
     ) -> None:
+        r"""Fit |EBE| distribution parameter :math:`\sigma_e`.
+
+        Following :cite:`Furman2002` (discussion after Eq. 27): since the
+        analytic |EBE| distribution, Eq. (26), is truncated at :math:`E_0` --
+        exactly where its peak sits -- fitting it directly against measured
+        data would underestimate the peak's contribution to the area (hence to
+        :math:`\eta_e`). The paper compensates by doubling the height of the
+        measured peak before fitting; we do the same here, on a copy of each
+        share so the original (un-doubled) measured data is left intact for
+        plotting/inspection.
+
+        Parameters
+        ----------
+        ebe_shares :
+            Decomposed |EBEEY| shares, one per measured ``"all"`` energy
+            distribution, *cf* :meth:`_decompose_energy_distributions`.
+
+        """
+        doubled_shares = [double_peak(share) for share in ebe_shares]
         fitted = self._fit_energy_distribution(
-            ebe_shares,
+            doubled_shares,
             ebe_energy_distribution,
             EBE_DISTRIB_PARAMETERS,
             extra_kwargs={
