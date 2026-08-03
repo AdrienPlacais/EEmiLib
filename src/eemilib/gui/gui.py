@@ -59,6 +59,7 @@ from eemilib.util.constants import (
     ImplementedEmissionData,
     ImplementedPop,
 )
+from eemilib.util.helper import flatten
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -704,13 +705,22 @@ class MainWindow(QMainWindow):
             return
         data_type_to_plot = model.emission_data_types[0]
 
-        data = data_matrix.get_data(emission_data_type=data_type_to_plot)
-        if not data:
+        all_pop_data = []
+        for pop in IMPLEMENTED_POP:
+            data = data_matrix.get_data(
+                population=pop, emission_data_type=data_type_to_plot
+            )
+            if not data:
+                continue
+            all_pop_data.append(data)
+
+        if not all_pop_data:
             logging.debug(
                 "No valid data, cannot fill energy/angle plotting ranges."
             )
             return
-        data_subset = data[0]
+
+        data_subset = all_pop_data[0]
 
         e_maxi = max(data_subset.energies)
         if e_maxi is not None and not np.isnan(e_maxi):

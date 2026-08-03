@@ -294,18 +294,6 @@ class DataMatrix:
     @overload
     def get_data(
         self,
-        row: int,
-        col: int,
-        population: None = None,
-        emission_data_type: None = None,
-    ) -> Sequence[EmissionData]: ...
-
-    @overload
-    def get_data(
-        self,
-        row: None = None,
-        col: None = None,
-        *,
         population: Literal["SE"],
         emission_data_type: Literal["Emission Yield"],
     ) -> Sequence[SEEY]: ...
@@ -313,9 +301,6 @@ class DataMatrix:
     @overload
     def get_data(
         self,
-        row: None = None,
-        col: None = None,
-        *,
         population: Literal["EBE"],
         emission_data_type: Literal["Emission Yield"],
     ) -> Sequence[EBEEY]: ...
@@ -323,9 +308,6 @@ class DataMatrix:
     @overload
     def get_data(
         self,
-        row: None = None,
-        col: None = None,
-        *,
         population: Literal["IBE"],
         emission_data_type: Literal["Emission Yield"],
     ) -> Sequence[IBEEY]: ...
@@ -333,9 +315,6 @@ class DataMatrix:
     @overload
     def get_data(
         self,
-        row: None = None,
-        col: None = None,
-        *,
         population: Literal["all"],
         emission_data_type: Literal["Emission Yield"],
     ) -> Sequence[TEEY]: ...
@@ -343,9 +322,6 @@ class DataMatrix:
     @overload
     def get_data(
         self,
-        row: None = None,
-        col: None = None,
-        *,
         population: Literal["SE"],
         emission_data_type: Literal["Emission Energy"],
     ) -> Sequence[SEEmissionEnergyDistribution]: ...
@@ -353,9 +329,6 @@ class DataMatrix:
     @overload
     def get_data(
         self,
-        row: None = None,
-        col: None = None,
-        *,
         population: Literal["EBE"],
         emission_data_type: Literal["Emission Energy"],
     ) -> Sequence[EBEEmissionEnergyDistribution]: ...
@@ -363,9 +336,6 @@ class DataMatrix:
     @overload
     def get_data(
         self,
-        row: None = None,
-        col: None = None,
-        *,
         population: Literal["IBE"],
         emission_data_type: Literal["Emission Energy"],
     ) -> Sequence[IBEEmissionEnergyDistribution]: ...
@@ -373,9 +343,6 @@ class DataMatrix:
     @overload
     def get_data(
         self,
-        row: None = None,
-        col: None = None,
-        *,
         population: Literal["all"],
         emission_data_type: Literal["Emission Energy"],
     ) -> Sequence[AllEmissionEnergyDistribution]: ...
@@ -383,64 +350,19 @@ class DataMatrix:
     @overload
     def get_data(
         self,
-        row: None = None,
-        col: None = None,
-        *,
         population: ImplementedPop,
         emission_data_type: Literal["Emission Angle"],
     ) -> Sequence[EmissionAngleDistribution]: ...
 
-    @overload
     def get_data(
         self,
-        row: None = None,
-        col: None = None,
-        population: None = None,
-        emission_data_type: None = None,
-    ) -> Sequence[EmissionData]: ...
-
-    @overload
-    def get_data(
-        self,
-        row: None = None,
-        col: None = None,
-        *,
         population: ImplementedPop,
-        emission_data_type: None = None,
-    ) -> Sequence[EmissionData]: ...
-
-    @overload
-    def get_data(
-        self,
-        row: None = None,
-        col: None = None,
-        *,
-        population: None = None,
         emission_data_type: ImplementedEmissionData,
-    ) -> Sequence[EmissionData]: ...
-
-    def get_data(
-        self,
-        row: int | None = None,
-        col: int | None = None,
-        population: ImplementedPop | None = None,
-        emission_data_type: ImplementedEmissionData | None = None,
     ) -> Sequence[EmissionData]:
-        """Get the file(s) by index or name.
-
-        You can provide ``row`` and ``col`` directly.
-
-        Alternatively, provide ``population`` and ``emission_data_type``. If
-        ``population`` is not given, return valid data corresponding to all
-        populations. If ``emission_data_type`` is not given, return valid
-        data corresponding to all emission data.
+        """Get the file(s) by name.
 
         Parameters
         ----------
-        row :
-            Row index in data matrix.
-        col :
-            Column index in data matrix.
         population :
             Population type.
         emission_data_type :
@@ -452,61 +374,15 @@ class DataMatrix:
             is returned without any error message.
 
         """
-        if population and emission_data_type:
-            row, col = self._natures_to_indexes(
-                population_type=population,
-                emission_data_type=emission_data_type,
-            )
-        if population and emission_data_type is None:
-            single_pop_data = [
-                self.get_data(
-                    population=population, emission_data_type=data_type
-                )
-                for data_type in IMPLEMENTED_EMISSION_DATA
-            ]
-            return cast(
-                list[EmissionData],
-                [d for d in flatten(single_pop_data) if d is not None],
-            )
-
-        if emission_data_type and population is None:
-            emission_data = [
-                self.get_data(
-                    population=pop, emission_data_type=emission_data_type
-                )
-                for pop in IMPLEMENTED_POP
-            ]
-            return cast(
-                list[EmissionData],
-                [d for d in flatten(emission_data) if d is not None],
-            )
-
-        if row is None and col is None:
-            all_data = [
-                [
-                    self.get_data(population=pop, emission_data_type=data_type)
-                    for pop in IMPLEMENTED_POP
-                ]
-                for data_type in IMPLEMENTED_EMISSION_DATA
-            ]
-            return cast(
-                list[EmissionData],
-                [d for d in flatten(all_data) if d is not None],
-            )
-
-        if row is None or col is None:
-            raise ValueError(
-                "You need to provide row and col, or population and "
-                f"emission_data_type.\n{row = }, {col = }, {population = },"
-                f"{emission_data_type = }"
-            )
-
-        stored = self.data_matrix[row][col]
-        if stored is None:
+        row, col = self._natures_to_indexes(
+            population_type=population, emission_data_type=emission_data_type
+        )
+        data = self.data_matrix[row][col]
+        if data is None:
             return []
-        if isinstance(stored, EmissionData):
-            return [stored]
-        return list(stored)
+        if isinstance(data, EmissionData):
+            return [data]
+        return data
 
     def load_data(
         self,
