@@ -48,6 +48,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `energies` argument for `Model.plot` can be `None` if an `axes` is given and
   already contains plotted data. An array of `energies` is inferred from already
   plotted data.
+- If emission yield and emission energy corresponding to the `"all"` population
+  are provided, the emission energies are rescaled so that their integral match
+  emission yield data. This can be deactivated by setting
+  `rescale_energy_distributions_to_yield` to `False` in `DataMatrix.load_data`.
 
 ## [0.1.5] -- 2026-05-22
 

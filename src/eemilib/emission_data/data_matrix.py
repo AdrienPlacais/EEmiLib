@@ -9,11 +9,12 @@ import logging
 from collections.abc import Collection, Sequence
 from typing import Literal, cast, overload
 
+import numpy as np
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data.emission_angle_distribution import (
     EmissionAngleDistribution,
 )
-from eemilib.emission_data.emission_data import EmissionData
+from eemilib.emission_data.emission_data import EmissionData, MissingDataError
 from eemilib.emission_data.emission_energy_distribution import (
     EMISSION_ENERGIES_BY_POP,
     AllEmissionEnergyDistribution,
@@ -37,6 +38,8 @@ from eemilib.util.constants import (
     IMPLEMENTED_POP,
     ImplementedEmissionData,
     ImplementedPop,
+    col_energy,
+    col_normal,
 )
 from eemilib.util.helper import flatten
 
@@ -511,6 +514,7 @@ class DataMatrix:
         e_pes_emission_energies: (
             dict[ImplementedPop, Sequence[float]] | None
         ) = None,
+        rescale_energy_distributions_to_yield: bool = True,
     ) -> None:
         """Load all filepaths in ``files_matrix``.
 
@@ -523,6 +527,10 @@ class DataMatrix:
             in :unit:`eV`. Every value must have the same length as it's
             corresponding file paths. Use it only if the original files do not
             contain this info and/or the :class:`.Loader` cannot infer it.
+        rescale_energy_distributions_to_yield :
+            Rescale ``"all"`` emission distributions so that their integrals
+            match the |TEEY|. Only if emission yield and emission distributions
+            for ``"all"`` population are provided.
 
         """
         for population in IMPLEMENTED_POP:
@@ -567,6 +575,22 @@ class DataMatrix:
                         population=population,
                         emission_data_type=data_type,
                     )  # type: ignore
+        if not rescale_energy_distributions_to_yield:
+            return
+        if not self.teey:
+            return
+        distribs = self.get_data(
+            population="all", emission_data_type="Emission Energy"
+        )
+        if not distribs:
+            return
+        logging.info(
+            "TEEY and emission energy distribution are provided. Rescaling "
+            "distributions so that their integrals match the TEEY. You can "
+            "desactivate this with `rescale_energy_distributions_to_yield = "
+            "False` in `DataMatrix.load_data`"
+        )
+        self.rescale_energy_distributions_to_yield(population="all")
 
     def has_all_mandatory_files(self, model_config: ModelConfig) -> bool:
         """Tell if files defined by :attr:`.Model.model_config` are set."""
@@ -806,3 +830,78 @@ class DataMatrix:
         if len(emission_yield) > 1:
             logging.warning("Several SEEY are stored. Returning first.")
         return emission_yield[0]
+
+    def rescale_energy_distributions_to_yield(
+        self, population: ImplementedPop = "all"
+    ) -> None:
+        r"""Rescale measured energy distributions to match the measured yield.
+
+        Enforces the physical constraint from Eq. (4)/(50) in
+        :cite:`Furman2002`:
+
+        .. math::
+        \int_0^{E_0} \frac{d\delta}{dE}\,dE = \delta(E_0)
+
+        Each measured energy distribution's absolute scale is corrected (via a
+        single multiplicative factor) so that its integral over emission
+        energy matches the independently measured yield at the same impact
+        energy. This compensates for per-file calibration drift (e.g.
+        inconsistent detector settings across measurement files), by anchoring
+        every spectrum to the same, trusted yield measurement.
+
+        Parameters
+        ----------
+        population :
+            Population whose energy distributions should be rescaled.
+
+        """
+        yields = self.get_data(
+            population=population, emission_data_type="Emission Yield"
+        )
+        if not yields:
+            raise MissingDataError(
+                f"Missing emission yield measurement for {population = }, "
+                "needed to rescale energy distributions."
+            )
+        if len(yields) > 1:
+            logging.warning(
+                "Several emission yield measurements found; using the first "
+                "one to rescale energy distributions."
+            )
+        ref_yield = yields[0]
+        yield_energies = np.array(ref_yield.energies)
+        yield_values = ref_yield.data[col_normal].to_numpy()
+
+        distributions = self.get_data(
+            population=population, emission_data_type="Emission Energy"
+        )
+        for distrib in distributions:
+            e_pe = distrib.e_pe
+            if not (yield_energies.min() <= e_pe <= yield_energies.max()):
+                logging.warning(
+                    f"{e_pe = } is outside the measured yield energy range "
+                    f"[{yield_energies.min()}, {yield_energies.max()}]; "
+                    "skipping rescaling for this distribution."
+                )
+                continue
+
+            expected_area = float(
+                np.interp(e_pe, yield_energies, yield_values)
+            )
+            measured_area = float(
+                np.trapezoid(
+                    distrib.data[col_normal].to_numpy(), distrib.energies
+                )
+            )
+            if measured_area <= 0:
+                logging.warning(
+                    f"Measured area is non-positive for {e_pe = }; skipping "
+                    "rescaling for this distribution."
+                )
+                continue
+
+            scale = expected_area / measured_area
+            data_columns = [c for c in distrib.data.columns if c != col_energy]
+            distrib.data[data_columns] *= scale
+            distrib.unnormalized_data[data_columns] *= scale
+        logging.debug("Rescaled emission energies to emission yields.")
