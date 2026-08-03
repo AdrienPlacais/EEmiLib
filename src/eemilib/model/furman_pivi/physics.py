@@ -108,7 +108,9 @@ def at_theta_incidence(
 
     """
     if abs(the) < tol:
-        return float(at_normal)
+        return (
+            at_normal.value if isinstance(at_normal, Parameter) else at_normal
+        )
 
     if abs(the) >= 84.0:
         logging.warning("Relation invalid for angles greater than 84 degrees.")

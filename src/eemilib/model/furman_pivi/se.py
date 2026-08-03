@@ -432,7 +432,8 @@ def se_energy_distribution(
             n, delta, eta_e, eta_i, proba_emit_n_se, normalization
         )
 
-        normalization_term = math.gamma(p_n) * _regularized_incomplete_gamma(
+        gam = math.gamma(p_n.value if isinstance(p_n, Parameter) else p_n)
+        normalization_term = gam * _regularized_incomplete_gamma(
             n * p_n, np.array(e_pe / eps_n)
         )
         shape_term = (emission_energies / eps_n) ** (p_n - 1) * np.exp(
