@@ -8,6 +8,15 @@
     Add description at and of parameters
     Dynamic boxes for Parameters?
 
+.. todo::
+    Allow ``None`` for energies, so that measurements energies are picked up.
+    Idea:
+        - Checkbox "Use energies from measurements".
+        - Clicking it greys out the ``energies`` linspace definition.
+          - May also auto-fill it?
+        - This checkbox is greyed out/unclickable if no data was plotted,
+          *i.e.* if current `Axes` contains no `Line2D`.
+
 """
 
 import importlib

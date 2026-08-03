@@ -4,6 +4,7 @@ import logging
 from typing import Any
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from eemilib.plotter.helper import explicit_column_names
 from eemilib.plotter.plotter import Plotter
@@ -14,6 +15,7 @@ from eemilib.util.constants import (
     md_ylabel,
 )
 from matplotlib.axes import Axes
+from numpy.typing import NDArray
 
 
 class PandasPlotter(Plotter):
@@ -197,3 +199,53 @@ class PandasPlotter(Plotter):
         merged_kwargs.update(self.is_model_styles[is_model])
         merged_kwargs.update(kwargs)
         return merged_kwargs
+
+    def infer_energies(
+        self,
+        axes: Axes | None,
+        emission_data_type: ImplementedEmissionData,
+        n_points: int = 501,
+    ) -> NDArray[np.float64]:
+        """Create array of electrons energies from given axes.
+
+        Used for :class:`.Model` plots, in order to keep measurements maximum
+        energy.
+
+        Parameters
+        ----------
+        axes :
+            Pre-existing axes; should contain measurement data.
+        n_points :
+            Number of points for the x axis.
+
+        Returns
+        -------
+            Array of energies ready to use by a :class:`.Model`. Spans from
+            minimum x-data up to maximum x-data across every
+            :class:`matplotlib.lines.Line2D` in the given |Axes|. If no data
+            was plotted, we use the current ``axes`` limits, though it will
+            generally be meaningless.
+
+        """
+        if emission_data_type == "Emission Angle":
+            raise NotImplementedError(
+                "Currently cannot pick up energies for emission angle "
+                "distribution, because its xdata is not energies but angles."
+            )
+        if axes is None:
+            raise ValueError("Cannot infer energies if ``axes`` is ``None``.")
+        lines = axes.get_lines()
+        if not lines:
+            logging.warning(
+                "Given axes is empty. Its x-limits are probably meaningless. "
+                "Inferring x limits from it anyway."
+            )
+            xmin, xmax = axes.get_xlim()
+
+        else:
+            xmin = min([np.nanmin(line.get_data()[0]) for line in lines])
+            xmax = max([np.nanmax(line.get_data()[0]) for line in lines])
+
+        if xmin < 0:
+            xmin = 0.0
+        return np.linspace(xmin, xmax, n_points)

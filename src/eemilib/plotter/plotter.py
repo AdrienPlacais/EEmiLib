@@ -1,11 +1,14 @@
 """Define the ABC :class:`Plotter` to produce the plots."""
 
 from abc import ABC, abstractmethod
+from typing import Any
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from eemilib.util.constants import ImplementedEmissionData, ImplementedPop
 from eemilib.util.helper import documentation_url
+from numpy.typing import NDArray
 
 _COLORS_LIST = plt.rcParams["axes.prop_cycle"].by_key()["color"]
 
@@ -128,3 +131,31 @@ class Plotter(ABC):
         **kwargs,
     ) -> T:
         """Plot the given emission angles distribution, return Axes object."""
+
+    @abstractmethod
+    def infer_energies(
+        self,
+        axes: Any | None,
+        emission_data_type: ImplementedEmissionData,
+        n_points: int = 501,
+    ) -> NDArray[np.float64]:
+        """Create array of electrons energies from given axes.
+
+        Used for :class:`.Model` plots, in order to keep measurements maximum
+        energy.
+
+        Parameters
+        ----------
+        axes :
+            Pre-existing axes; should contain measurement data.
+        emission_data_type :
+            Type of represented data.
+        n_points :
+            Number of points for the x axis.
+
+        Returns
+        -------
+            Array of energies ready to use by a :class:`.Model`. You should
+            ensure that no negative energy is returned.
+
+        """

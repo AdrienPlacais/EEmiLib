@@ -45,6 +45,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   emission function operating on `float` can operate on `Parameter` with the same
   syntax. Do not hesitate to reach out if you have strange `int` vs `float`
   errors.
+- `energies` argument for `Model.plot` can be `None` if an `axes` is given and
+  already contains plotted data. An array of `energies` is inferred from already
+  plotted data.
 
 ## [0.1.5] -- 2026-05-22
 

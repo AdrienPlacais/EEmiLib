@@ -82,6 +82,7 @@ rst_prolog = """
 .. |SE| replace:: :ref:`SE <SE-link>`
 .. |TEEY| replace:: :ref:`TEEY <notations-link>`
 .. |axplot| replace:: :meth:`matplotlib.axes.Axes.plot`
+.. |Axes| replace:: :class:`matplotlib.axes.Axes`
 .. |dfplot| replace:: :meth:`pandas.DataFrame.plot`
 
 """

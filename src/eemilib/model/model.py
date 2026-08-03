@@ -254,7 +254,7 @@ class Model(ABC):
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
         emission_data_type: ImplementedEmissionData,
-        energies: NDArray[np.float64],
+        energies: NDArray[np.float64] | None,
         angles: NDArray[np.float64],
         axes: T | None = None,
         group_by_pe: Literal[False] = False,
@@ -268,7 +268,7 @@ class Model(ABC):
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
         emission_data_type: Literal["Emission Energy"],
-        energies: NDArray[np.float64],
+        energies: NDArray[np.float64] | None,
         angles: NDArray[np.float64],
         axes: dict[float, T] | None = None,
         group_by_pe: Literal[True] = True,
@@ -281,7 +281,7 @@ class Model(ABC):
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
         emission_data_type: ImplementedEmissionData,
-        energies: NDArray[np.float64],
+        energies: NDArray[np.float64] | None,
         angles: NDArray[np.float64],
         axes: T | dict[float, T] | None = None,
         group_by_pe: bool = False,
@@ -305,7 +305,9 @@ class Model(ABC):
         emission_data_type :
             Type of data to plot.
         energies :
-            Energies at which the model is evaluated.
+            Energies at which the model is evaluated. If omitted, we use the
+            limits of a pre-existing ``axes`` -- ``axes`` should not be None,
+            and should not be empty!
         angles :
             Angles at which the model is evaluated.
         axes :
@@ -383,11 +385,12 @@ class Model(ABC):
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
         emission_data_type: ImplementedEmissionData,
-        energies: NDArray[np.float64],
+        energies: NDArray[np.float64] | None,
         angles: NDArray[np.float64],
         axes: T | None = None,
         e_pe: float | None = None,
         grid: bool = True,
+        n_points: int = 501,
         **kwargs,
     ) -> T | None:
         """Plot model predictions on a single shared axes.
@@ -401,7 +404,9 @@ class Model(ABC):
         emission_data_type :
             Type of data to plot.
         energies :
-            Energies at which the model is evaluated.
+            Energies at which the model is evaluated. If omitted, we use the
+            limits of a pre-existing ``axes`` -- ``axes`` should not be None,
+            and should not be empty!
         angles :
             Angles at which the model is evaluated.
         axes :
@@ -411,6 +416,9 @@ class Model(ABC):
             Energy"``.
         grid :
             Whether grid should appear.
+        n_points :
+            Number of points for x axis; used only if ``energies`` is not
+            given.
         kwargs :
             Other keyword arguments passed to the underlying plotting routine.
 
@@ -435,6 +443,11 @@ class Model(ABC):
                     **kwargs,
                 )
             return axes
+
+        if energies is None:
+            energies = plotter.infer_energies(
+                axes, n_points=n_points, emission_data_type=emission_data_type
+            )
 
         data = self.get_data(
             population=population,
@@ -465,7 +478,7 @@ class Model(ABC):
         self,
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
-        energies: NDArray[np.float64],
+        energies: NDArray[np.float64] | None,
         angles: NDArray[np.float64],
         axes: dict[float, T] | None = None,
         e_pes: Collection[float] | None = None,
@@ -485,7 +498,9 @@ class Model(ABC):
         population :
             One or several populations to plot.
         energies :
-            Energies at which the model is evaluated.
+            Energies at which the model is evaluated. If omitted, we use the
+            limits of a pre-existing ``axes`` -- ``axes`` should not be None,
+            and should not be empty!
         angles :
             Angles at which the model is evaluated.
         axes :
