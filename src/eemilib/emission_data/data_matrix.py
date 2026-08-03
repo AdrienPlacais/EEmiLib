@@ -577,7 +577,10 @@ class DataMatrix:
                     )  # type: ignore
         if not rescale_energy_distributions_to_yield:
             return
-        if not self.teey:
+        teeys = self.get_data(
+            population="all", emission_data_type="Emission Yield"
+        )
+        if not teeys:
             return
         distribs = self.get_data(
             population="all", emission_data_type="Emission Energy"
