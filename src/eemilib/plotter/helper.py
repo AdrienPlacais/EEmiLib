@@ -15,7 +15,7 @@ from eemilib.util.constants import (
 def explicit_column_names(
     columns: Sequence[str],
     population: ImplementedPop | None = None,
-    emission_data_type: ImplementedEmissionData | None = None,
+    data_type: ImplementedEmissionData | None = None,
     e_pe: float | None = None,
     is_model: bool = False,
 ) -> dict[str, str]:
@@ -29,7 +29,7 @@ def explicit_column_names(
         Columns of the data frame to be plotted.
     population :
         Type of emitted electrons in data frame.
-    emission_data_type :
+    data_type :
         Type of data stored in data frame.
     e_pe :
         Energy of |PEs| in :unit:`eV`, if applicable.
@@ -59,10 +59,10 @@ def explicit_column_names(
         else:
             modelled = ""
 
-        if emission_data_type == "Emission Yield":
+        if data_type == "Emission Yield":
             _types_of_data = md_ey
             pe = ""
-        elif emission_data_type == "Emission Energy":
+        elif data_type == "Emission Energy":
             _types_of_data = md_energy_distrib
             pe = f"${e_pe}" + r"\,\mathrm{eV}$" if e_pe is not None else ""
         else:

@@ -64,11 +64,11 @@ def main() -> None:
     population = "all"
     # Case to tick (one value possible); the possible values are in
     # constants.ImplementedEmissionData
-    emission_data_type = "Emission Yield"
+    data_type = "Emission Yield"
 
     # The "Plot measured" button
     axes = data_matrix.plot(
-        plotter, population=population, emission_data_type=emission_data_type
+        plotter, population=population, data_type=data_type
     )
 
     # Energy [eV]: (here start, stop, nstep boxes)
@@ -85,7 +85,7 @@ def main() -> None:
     axes = model.plot(
         plotter,
         population=population,
-        emission_data_type=emission_data_type,
+        data_type=data_type,
         energies=np.linspace(e_start, e_end, n_e),
         angles=np.linspace(theta_start, theta_end, n_theta),
         axes=axes,

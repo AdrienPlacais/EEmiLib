@@ -103,7 +103,7 @@ EMISSION_YIELD_FUNCS: dict[ImplementedPop, Callable] = {
 class FurmanPivi(Model):
     """Define the Furman and Pivi model :cite:`Furman2002,Furman2013`."""
 
-    emission_data_types = ["Emission Yield", "Emission Energy"]
+    data_types = ["Emission Yield", "Emission Energy"]
     populations = ["EBE", "IBE", "SE"]
     considers_energy = True
     is_3d = True
@@ -275,7 +275,7 @@ class FurmanPivi(Model):
     def get_data(
         self,
         population: ImplementedPop,
-        emission_data_type: ImplementedEmissionData,
+        data_type: ImplementedEmissionData,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
         e_pe: float | None = None,
@@ -287,22 +287,22 @@ class FurmanPivi(Model):
         Parameters
         ----------
         e_pe :
-            Only used when ``emission_data_type == "Emission Energy"``. Impact
+            Only used when ``data_type == "Emission Energy"``. Impact
             energy :math:`E_0` at which the emitted-energy spectrum is
             evaluated. If not given, defaults to the last value of ``energy``.
 
         """
-        if emission_data_type == "Emission Angle":
+        if data_type == "Emission Angle":
             return super().get_data(
                 population=population,
-                emission_data_type=emission_data_type,
+                data_type=data_type,
                 energy=energy,
                 theta=theta,
                 *args,
                 **kwargs,
             )
 
-        if emission_data_type == "Emission Energy":
+        if data_type == "Emission Energy":
             data = self._get_energy_distribution_data(
                 population=population, energy=energy, theta=theta, e_pe=e_pe
             )
@@ -310,7 +310,7 @@ class FurmanPivi(Model):
                 return data
             return super().get_data(
                 population=population,
-                emission_data_type=emission_data_type,
+                data_type=data_type,
                 energy=energy,
                 theta=theta,
                 *args,
@@ -321,7 +321,7 @@ class FurmanPivi(Model):
         if ey_func is None:
             return super().get_data(
                 population=population,
-                emission_data_type=emission_data_type,
+                data_type=data_type,
                 energy=energy,
                 theta=theta,
                 *args,
@@ -354,14 +354,14 @@ class FurmanPivi(Model):
             raise MissingDataError("Files are not all provided.")
 
         teeys = data_matrix.get_data(
-            population="all", emission_data_type="Emission Yield"
+            population="all", data_type="Emission Yield"
         )
         self._find_normal_emission_yields_parameters(teeys)
 
         self._find_oblique_emission_yields_parameters(data_matrix)
 
         distribs = data_matrix.get_data(
-            population="all", emission_data_type="Emission Energy"
+            population="all", data_type="Emission Energy"
         )
         self._find_energy_distribution_parameters(distribs)
 

@@ -34,13 +34,13 @@ data_matrix = DataMatrix()
 #
 # - ``population``: the list of allowed values are defined in
 #   :data:`.ImplementedPop`.
-# - ``emission_data_type``: allowed values are in
+# - ``data_type``: allowed values are in
 #   :data:`.ImplementedEmissionData`.
 #
 data_matrix.set_files(
     filepath,  # One or several filepaths
     population="all",  # Type of electrons population
-    emission_data_type="Emission Energy",  # Nature of emission data
+    data_type="Emission Energy",  # Nature of emission data
 )
 
 # %%
@@ -75,7 +75,7 @@ plotter = PandasPlotter()
 # %%
 # Plot the loaded data:
 axes_1 = data_matrix.plot(
-    plotter, population="all", emission_data_type="Emission Energy"
+    plotter, population="all", data_type="Emission Energy"
 )
 plt.show()
 
@@ -99,13 +99,13 @@ model.find_optimal_parameters(data_matrix)
 # want data. Here, we select emission energies in
 # :math:`[0\,\mathrm{eV},\,50\,\mathrm{eV}]` and only at normal incidence.
 axes_2 = data_matrix.plot(
-    plotter, population="all", emission_data_type="Emission Energy"
+    plotter, population="all", data_type="Emission Energy"
 )  # Create new Figure from scratch only for ``sphinx_gallery``
 
 axes_2 = model.plot(
     plotter,
     population="SE",
-    emission_data_type="Emission Energy",
+    data_type="Emission Energy",
     energies=np.linspace(0, 50, 201),
     angles=np.linspace(0, 0, 1),
     axes=axes_2,

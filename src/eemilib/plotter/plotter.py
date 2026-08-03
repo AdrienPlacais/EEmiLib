@@ -63,7 +63,7 @@ class Plotter(ABC):
 
     def plot[T](
         self,
-        emission_data_type: ImplementedEmissionData,
+        data_type: ImplementedEmissionData,
         df: pd.DataFrame,
         axes: T | None = None,
         population: ImplementedPop | None = None,
@@ -79,15 +79,15 @@ class Plotter(ABC):
         :meth:`.plot_emission_angle_distribution`
 
         """
-        if emission_data_type == "Emission Yield":
+        if data_type == "Emission Yield":
             meth = self.plot_emission_yield
-        elif emission_data_type == "Emission Energy":
+        elif data_type == "Emission Energy":
             meth = self.plot_emission_energy_distribution
-        elif emission_data_type == "Emission Angle":
+        elif data_type == "Emission Angle":
             meth = self.plot_emission_angle_distribution
         else:
             raise ValueError(
-                f"{emission_data_type = } should be in {ImplementedEmissionData}."
+                f"{data_type = } should be in {ImplementedEmissionData}."
             )
         return meth(
             df=df,
@@ -136,7 +136,7 @@ class Plotter(ABC):
     def infer_energies(
         self,
         axes: Any | None,
-        emission_data_type: ImplementedEmissionData,
+        data_type: ImplementedEmissionData,
         n_points: int = 501,
     ) -> NDArray[np.float64]:
         """Create array of electrons energies from given axes.
@@ -148,7 +148,7 @@ class Plotter(ABC):
         ----------
         axes :
             Pre-existing axes; should contain measurement data.
-        emission_data_type :
+        data_type :
             Type of represented data.
         n_points :
             Number of points for the x axis.

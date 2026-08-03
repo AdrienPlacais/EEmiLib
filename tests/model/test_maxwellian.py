@@ -85,14 +85,14 @@ def test_modelled_maxwellian_agains_cst(
 
     data_matrix = energy_distrib_data
     expected = data_matrix.get_data(
-        population="all", emission_data_type="Emission Energy"
+        population="all", data_type="Emission Energy"
     )[0]
     emission_energies = np.array(expected.energies)
     theta = np.array(expected.angles)
 
     calculated_df = model.get_data(
         population="SE",
-        emission_data_type="Emission Energy",
+        data_type="Emission Energy",
         energy=emission_energies,
         theta=theta,
         impact_energy=expected.e_pe,
@@ -121,9 +121,7 @@ def test_find_optimal_parameters(
     """Test on several samples that the fit gives expected results."""
     data_matrix = DataMatrix()
     data_matrix.set_files(
-        files=(Path(filepath),),
-        population="all",
-        emission_data_type="Emission Energy",
+        files=(Path(filepath),), population="all", data_type="Emission Energy"
     )
     data_matrix.load_data(PandasLoader())
     model = Maxwellian()

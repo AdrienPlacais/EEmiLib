@@ -36,7 +36,7 @@ class Model(ABC):
 
     Parameters
     ----------
-    emission_data_types :
+    data_types :
         Types of modelled data.
     populations :
         Modelled populations.
@@ -57,7 +57,7 @@ class Model(ABC):
 
     """
 
-    emission_data_types: list[ImplementedEmissionData]
+    data_types: list[ImplementedEmissionData]
     populations: list[ImplementedPop]
     considers_energy: bool
     is_3d: bool
@@ -190,7 +190,7 @@ class Model(ABC):
     def get_data(
         self,
         population: ImplementedPop,
-        emission_data_type: ImplementedEmissionData,
+        data_type: ImplementedEmissionData,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
         e_pe: float | None = None,
@@ -209,7 +209,7 @@ class Model(ABC):
         ----------
         population :
             Type of population you want data from.
-        emission_data_type :
+        data_type :
             Desired type of emission data.
         energy :
             According to the emission data type, this argument can mean
@@ -253,7 +253,7 @@ class Model(ABC):
         self,
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
-        emission_data_type: ImplementedEmissionData,
+        data_type: ImplementedEmissionData,
         energies: NDArray[np.float64] | None,
         angles: NDArray[np.float64],
         axes: T | None = None,
@@ -267,7 +267,7 @@ class Model(ABC):
         self,
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
-        emission_data_type: Literal["Emission Energy"],
+        data_type: Literal["Emission Energy"],
         energies: NDArray[np.float64] | None,
         angles: NDArray[np.float64],
         axes: dict[float, T] | None = None,
@@ -280,7 +280,7 @@ class Model(ABC):
         self,
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
-        emission_data_type: ImplementedEmissionData,
+        data_type: ImplementedEmissionData,
         energies: NDArray[np.float64] | None,
         angles: NDArray[np.float64],
         axes: T | dict[float, T] | None = None,
@@ -302,7 +302,7 @@ class Model(ABC):
             Object realizing the plot.
         population :
             One or several populations to plot.
-        emission_data_type :
+        data_type :
             Type of data to plot.
         energies :
             Energies at which the model is evaluated. If omitted, we use the
@@ -314,7 +314,7 @@ class Model(ABC):
             Axes to re-use if given. A plain ``T`` in the default case; a
             ``dict[float, T]`` keyed by impact energy when ``group_by_pe=True``.
         group_by_pe :
-            Only supported for ``emission_data_type == "Emission Energy"``. If
+            Only supported for ``data_type == "Emission Energy"``. If
             ``True``, one axes is created (or re-used) per impact energy,
             instead of a single shared axes.
         e_pes :
@@ -346,7 +346,7 @@ class Model(ABC):
             return self._plot_single(
                 plotter,
                 population,
-                emission_data_type,
+                data_type,
                 energies,
                 angles,
                 axes=cast(T | None, axes),
@@ -355,9 +355,9 @@ class Model(ABC):
                 **kwargs,
             )
 
-        if emission_data_type != "Emission Energy":
+        if data_type != "Emission Energy":
             raise ValueError(
-                "`group_by_pe=True` is only supported for `emission_data_type="
+                "`group_by_pe=True` is only supported for `data_type="
                 "'Emission Energy'`."
             )
 
@@ -384,7 +384,7 @@ class Model(ABC):
         self,
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
-        emission_data_type: ImplementedEmissionData,
+        data_type: ImplementedEmissionData,
         energies: NDArray[np.float64] | None,
         angles: NDArray[np.float64],
         axes: T | None = None,
@@ -401,7 +401,7 @@ class Model(ABC):
             Object realizing the plot.
         population :
             One or several populations to plot.
-        emission_data_type :
+        data_type :
             Type of data to plot.
         energies :
             Energies at which the model is evaluated. If omitted, we use the
@@ -412,7 +412,7 @@ class Model(ABC):
         axes :
             Axes to re-use if given.
         e_pe :
-            Impact energy, only used when ``emission_data_type == "Emission
+            Impact energy, only used when ``data_type == "Emission
             Energy"``.
         grid :
             Whether grid should appear.
@@ -434,7 +434,7 @@ class Model(ABC):
                 axes = self._plot_single(
                     plotter,
                     pop,
-                    emission_data_type,
+                    data_type,
                     energies,
                     angles,
                     axes=axes,
@@ -446,12 +446,12 @@ class Model(ABC):
 
         if energies is None:
             energies = plotter.infer_energies(
-                axes, n_points=n_points, emission_data_type=emission_data_type
+                axes, n_points=n_points, data_type=data_type
             )
 
         data = self.get_data(
             population=population,
-            emission_data_type=emission_data_type,
+            data_type=data_type,
             energy=energies,
             theta=angles,
             e_pe=e_pe,
@@ -459,12 +459,12 @@ class Model(ABC):
         if data is None:
             logging.info(
                 f"No model data for {population = } and "
-                f"{emission_data_type = }. Skipping this plot."
+                f"{data_type = }. Skipping this plot."
             )
             return axes
 
         return plotter.plot(
-            emission_data_type=emission_data_type,
+            data_type=data_type,
             df=data,
             axes=axes,
             population=population,
@@ -531,7 +531,7 @@ class Model(ABC):
             axes[e_pe] = self._plot_single(
                 plotter,
                 population=population,
-                emission_data_type="Emission Energy",
+                data_type="Emission Energy",
                 energies=energies,
                 angles=angles,
                 axes=axes.get(e_pe),
@@ -616,7 +616,7 @@ class Model(ABC):
         """
         if evaluations is None:
             evaluations = {}
-        if "Emission Yield" in self.emission_data_types and (
+        if "Emission Yield" in self.data_types and (
             "all" in self.populations or "SE" in self.populations
         ):
             evaluations.update(self._evaluate_for_teey_models(data_matrix))

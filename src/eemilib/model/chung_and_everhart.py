@@ -35,7 +35,7 @@ class ChungEverhartParameters(TypedDict):
 class ChungEverhart(Model):
     """Chung and Everhart model, defined in :cite:`Chung1974`."""
 
-    emission_data_types = ["Emission Energy"]
+    data_types = ["Emission Energy"]
     populations = ["SE"]
     considers_energy = True
     is_3d = False
@@ -92,7 +92,7 @@ class ChungEverhart(Model):
     def get_data(
         self,
         population: ImplementedPop,
-        emission_data_type: ImplementedEmissionData,
+        data_type: ImplementedEmissionData,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
         *args,
@@ -107,7 +107,7 @@ class ChungEverhart(Model):
         population :
             Type of population you want data from. Only |SEs| are modelled by
             this model.
-        emission_data_type :
+        data_type :
             Desired type of emission data. Only ``"Emission Energy"`` for this
             model.
         energy :
@@ -126,16 +126,16 @@ class ChungEverhart(Model):
         Returns
         -------
             ``None`` if ``population`` is different from ``"SE"`` and
-            ``emission_data_type`` is not ``"Emission Energy"``. Otherwise, a
+            ``data_type`` is not ``"Emission Energy"``. Otherwise, a
             dataframe where first column ``"Energy [eV]"`` holds emission
             energy, and second column ``"0.0 [deg]"`` the corresponding
             normalized emission energy distribution.
 
         """
-        if population != "SE" or emission_data_type != "Emission Energy":
+        if population != "SE" or data_type != "Emission Energy":
             return super().get_data(
                 population=population,
-                emission_data_type=emission_data_type,
+                data_type=data_type,
                 energy=energy,
                 theta=theta,
                 *args,
@@ -172,7 +172,7 @@ class ChungEverhart(Model):
             raise MissingDataError("Files are not all provided.")
 
         distributions = data_matrix.get_data(
-            population=population, emission_data_type="Emission Energy"
+            population=population, data_type="Emission Energy"
         )
         if not distributions:
             raise MissingDataError(f"Missing emission energy for {population}")

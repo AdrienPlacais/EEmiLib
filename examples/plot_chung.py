@@ -33,9 +33,7 @@ filepaths = (distrib_70eV, distrib_100eV)
 # We associate the filepaths from :mod:`eemilib.data.ag.emission_energy` to
 # the emission energy distribution of |EEs|.
 data_matrix = DataMatrix()
-data_matrix.set_files(
-    filepaths, population="all", emission_data_type="Emission Energy"
-)
+data_matrix.set_files(filepaths, population="all", data_type="Emission Energy")
 
 # %%
 # We create a :class:`.Loader` that supports these files and load the data:
@@ -50,10 +48,7 @@ plotter = PandasPlotter()
 # We set ``group_by_pe=True`` to create one plot per energy distribution file,
 # *i.e.* one per |PE| impact energy:
 axes_1 = data_matrix.plot(
-    plotter,
-    population="all",
-    emission_data_type="Emission Energy",
-    group_by_pe=True,
+    plotter, population="all", data_type="Emission Energy", group_by_pe=True
 )
 plt.show()
 
@@ -73,15 +68,12 @@ model.find_optimal_parameters(data_matrix)
 # %%
 # Plot the modelled emission energy, re-using the previous ``axes``:
 axes_2 = data_matrix.plot(
-    plotter,
-    population="all",
-    emission_data_type="Emission Energy",
-    group_by_pe=True,
+    plotter, population="all", data_type="Emission Energy", group_by_pe=True
 )  # Create new Figure from scratch only for ``sphinx_gallery``
 _ = model.plot(
     plotter,
     population="SE",
-    emission_data_type="Emission Energy",
+    data_type="Emission Energy",
     energies=np.linspace(0, 100, 201),
     angles=np.linspace(0, 0, 1),
     axes=axes_2,
@@ -97,15 +89,12 @@ plt.show()
 #    ``axes`` is then optional.
 #
 axes_3 = data_matrix.plot(
-    plotter,
-    population="all",
-    emission_data_type="Emission Energy",
-    group_by_pe=True,
+    plotter, population="all", data_type="Emission Energy", group_by_pe=True
 )  # Create new Figure from scratch only for ``sphinx_gallery``
 _ = model.plot(
     plotter,
     population="SE",
-    emission_data_type="Emission Energy",
+    data_type="Emission Energy",
     energies=np.linspace(0, 50, 201),
     angles=np.linspace(0, 0, 1),
     axes=axes_3,

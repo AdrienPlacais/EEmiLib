@@ -211,7 +211,7 @@ def test_emission_yields_output_shape(
     theta = np.linspace(0, 80, 3, dtype=np.float64)
     result = furman_pivi_model.get_data(
         population=population,
-        emission_data_type="Emission Yield",
+        data_type="Emission Yield",
         energy=energy,
         theta=theta,
     )
@@ -248,7 +248,7 @@ def test_emission_yields_values(
     data_matrix: MockDataMatrix = request.getfixturevalue(data_fixture)
 
     expected = data_matrix.get_data(
-        population=population, emission_data_type="Emission Yield"
+        population=population, data_type="Emission Yield"
     )[0]
     assert isinstance(expected, EmissionYield)
     energy = np.array(expected.energies)
@@ -256,7 +256,7 @@ def test_emission_yields_values(
 
     calculated = model.get_data(
         population=population,
-        emission_data_type="Emission Yield",
+        data_type="Emission Yield",
         energy=energy,
         theta=theta,
     )
@@ -300,14 +300,14 @@ def test_energy_distribution_values(
     data_matrix: MockDataMatrix = request.getfixturevalue(data_fixture)
 
     expected = data_matrix.get_data(
-        population=population, emission_data_type="Emission Energy"
+        population=population, data_type="Emission Energy"
     )[0]
     emission_energies = np.array(expected.energies)
     theta = np.array(expected.angles)
 
     calculated_df = model.get_data(
         population=population,
-        emission_data_type="Emission Energy",
+        data_type="Emission Energy",
         energy=emission_energies,
         theta=theta,
         impact_energy=expected.e_pe,

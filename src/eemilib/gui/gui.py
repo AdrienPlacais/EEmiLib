@@ -483,7 +483,7 @@ class MainWindow(QMainWindow):
             )
             return
 
-        data_type_to_plot = model.emission_data_types[0]
+        data_type_to_plot = model.data_types[0]
         if self.autofill_data_to_plot:
             index = IMPLEMENTED_EMISSION_DATA.index(data_type_to_plot)
             self.data_checkboxes[index].setChecked(True)
@@ -491,7 +491,7 @@ class MainWindow(QMainWindow):
         if self.autofill_nature_to_plot:
             pop_to_plot = set(
                 model.model_config.mandatory_populations(
-                    emission_data_type=data_type_to_plot
+                    data_type=data_type_to_plot
                 )
                 + list(model.populations)
             )
@@ -579,16 +579,14 @@ class MainWindow(QMainWindow):
         success_pop, populations = self._get_populations_to_plot()
         if not success_pop:
             return
-        success_data, emission_data_type = (
-            self._get_emission_data_type_to_plot()
-        )
+        success_data, data_type = self._get_data_type_to_plot()
         if not success_data:
             return
 
         self.axes = self.data_matrix.plot(
             plotter,
             population=populations,
-            emission_data_type=emission_data_type,
+            data_type=data_type,
             axes=self.axes,
         )
 
@@ -599,9 +597,7 @@ class MainWindow(QMainWindow):
         success_pop, populations = self._get_populations_to_plot()
         if not success_pop:
             return
-        success_data, emission_data_type = (
-            self._get_emission_data_type_to_plot()
-        )
+        success_data, data_type = self._get_data_type_to_plot()
         if not success_data:
             return
         success_ene, energies = self._gen_linspace("energy")
@@ -614,25 +610,25 @@ class MainWindow(QMainWindow):
         self.axes = self.model.plot(
             plotter,
             population=populations,
-            emission_data_type=emission_data_type,
+            data_type=data_type,
             energies=energies,
             angles=angles,
             axes=self.axes,
         )
 
-    def _get_emission_data_type_to_plot(
+    def _get_data_type_to_plot(
         self,
     ) -> tuple[bool, ImplementedEmissionData | None]:
         """Read input to determine the emission data type to plot."""
-        emission_data_type = [
+        data_type = [
             IMPLEMENTED_EMISSION_DATA[i]
             for i, checked in enumerate(self.data_checkboxes)
             if checked.isChecked()
         ]
-        if len(emission_data_type) == 0:
+        if len(data_type) == 0:
             logging.error("Please provide a type of data to plot.")
             return False, None
-        return True, emission_data_type[0]
+        return True, data_type[0]
 
     def _get_populations_to_plot(self) -> tuple[bool, list[ImplementedPop]]:
         """Read input to determine the populations to plot."""
@@ -703,12 +699,12 @@ class MainWindow(QMainWindow):
 
         if not self.autofill_plotting_ranges:
             return
-        data_type_to_plot = model.emission_data_types[0]
+        data_type_to_plot = model.data_types[0]
 
         all_pop_data = []
         for pop in IMPLEMENTED_POP:
             data = data_matrix.get_data(
-                population=pop, emission_data_type=data_type_to_plot
+                population=pop, data_type=data_type_to_plot
             )
             if not data:
                 continue

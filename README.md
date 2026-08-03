@@ -86,7 +86,7 @@ data_matrix = DataMatrix()
 data_matrix.set_files(
     filepath="path/to/a/TEEY/file.csv",
     population="all",
-    emission_data_type="Emission Yield"
+    data_type="Emission Yield"
 )
 
 loader = PandasLoader()
@@ -99,12 +99,12 @@ plotter = PandasPlotter()
 axes = data_matrix.plot(
     plotter=plotter,
     population="all",
-    emission_data_type="Emission Yield"
+    data_type="Emission Yield"
 )
 model.plot(
     plotter=plotter,
     population="all",
-    emission_data_type="Emission Yield",
+    data_type="Emission Yield",
     energies=np.linspace(0, 1000, 1001),
     angles=np.linspace(0, 60, 4),
     axes=axes,

@@ -38,7 +38,7 @@ class Sombrin(Model):
 
     """
 
-    emission_data_types = ["Emission Yield"]
+    data_types = ["Emission Yield"]
     populations = ["all"]
     considers_energy = True
     is_3d = False
@@ -114,7 +114,7 @@ class Sombrin(Model):
     def get_data(
         self,
         population: ImplementedPop,
-        emission_data_type: ImplementedEmissionData,
+        data_type: ImplementedEmissionData,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
         *args,
@@ -125,10 +125,10 @@ class Sombrin(Model):
         Will return a dataframe only if the |TEEY| is asked.
 
         """
-        if population != "all" or emission_data_type != "Emission Yield":
+        if population != "all" or data_type != "Emission Yield":
             return super().get_data(
                 population=population,
-                emission_data_type=emission_data_type,
+                data_type=data_type,
                 energy=energy,
                 theta=theta,
                 *args,

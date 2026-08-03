@@ -77,14 +77,14 @@ class PandasPlotter(Plotter):
         explicit = explicit_column_names(
             df.columns,
             population=population,
-            emission_data_type="Emission Yield",
+            data_type="Emission Yield",
             is_model=is_model,
         )
         updated = df.rename(columns=explicit, inplace=False)
         merged_kwargs = self._merge_kwargs(
             population=population,
             is_model=is_model,
-            emission_data_type="Emission Yield",
+            data_type="Emission Yield",
             kwargs=kwargs,
         )
 
@@ -136,7 +136,7 @@ class PandasPlotter(Plotter):
         explicit = explicit_column_names(
             df.columns,
             population=population,
-            emission_data_type="Emission Energy",
+            data_type="Emission Energy",
             e_pe=e_pe,
             is_model=is_model,
         )
@@ -144,7 +144,7 @@ class PandasPlotter(Plotter):
         merged_kwargs = self._merge_kwargs(
             population=population,
             is_model=is_model,
-            emission_data_type="Emission Energy",
+            data_type="Emission Energy",
             kwargs=kwargs,
         )
         axes = updated.plot(
@@ -174,7 +174,7 @@ class PandasPlotter(Plotter):
         self,
         population: ImplementedPop | None,
         is_model: bool,
-        emission_data_type: ImplementedEmissionData,
+        data_type: ImplementedEmissionData,
         kwargs: dict[str, Any],
     ) -> dict[str, Any]:
         """Resolve plot kwargs.
@@ -183,13 +183,13 @@ class PandasPlotter(Plotter):
 
         """
         merged_kwargs = {}
-        if emission_data_type == "Emission Yield":
+        if data_type == "Emission Yield":
             default_population_style = self.pop_styles_ey
-        elif emission_data_type == "Emission Energy":
+        elif data_type == "Emission Energy":
             default_population_style = self.pop_styles_emission_energy
         else:
             logging.info(
-                f"{emission_data_type = } not implemented. Setting a default "
+                f"{data_type = } not implemented. Setting a default "
                 "population style."
             )
             default_population_style = self.pop_styles_emission_energy
@@ -203,7 +203,7 @@ class PandasPlotter(Plotter):
     def infer_energies(
         self,
         axes: Axes | None,
-        emission_data_type: ImplementedEmissionData,
+        data_type: ImplementedEmissionData,
         n_points: int = 5001,
     ) -> NDArray[np.float64]:
         """Create array of electrons energies from given axes.
@@ -227,7 +227,7 @@ class PandasPlotter(Plotter):
             generally be meaningless.
 
         """
-        if emission_data_type == "Emission Angle":
+        if data_type == "Emission Angle":
             raise NotImplementedError(
                 "Currently cannot pick up energies for emission angle "
                 "distribution, because its xdata is not energies but angles."

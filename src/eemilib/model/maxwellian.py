@@ -34,7 +34,7 @@ class MaxwellianParameters(TypedDict):
 class Maxwellian(Model):
     """Maxwellian distribution."""
 
-    emission_data_types = ["Emission Energy"]
+    data_types = ["Emission Energy"]
     populations = ["SE"]
     considers_energy = True
     is_3d = False
@@ -90,7 +90,7 @@ class Maxwellian(Model):
     def get_data(
         self,
         population: ImplementedPop,
-        emission_data_type: ImplementedEmissionData,
+        data_type: ImplementedEmissionData,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
         *args,
@@ -101,10 +101,10 @@ class Maxwellian(Model):
         Will return a dataframe only if the |SEs| energy distribution is asked.
 
         """
-        if population != "SE" or emission_data_type != "Emission Energy":
+        if population != "SE" or data_type != "Emission Energy":
             return super().get_data(
                 population=population,
-                emission_data_type=emission_data_type,
+                data_type=data_type,
                 energy=energy,
                 theta=theta,
                 *args,
@@ -143,7 +143,7 @@ class Maxwellian(Model):
             raise MissingDataError("Files are not all provided.")
 
         distributions = data_matrix.get_data(
-            population=population, emission_data_type="Emission Energy"
+            population=population, data_type="Emission Energy"
         )
         if not distributions:
             raise MissingDataError(f"Missing emission energy for {population}")

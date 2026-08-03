@@ -46,12 +46,10 @@ from eemilib.util.helper import flatten
 pop_to_row = {pop: i for i, pop in enumerate(IMPLEMENTED_POP)}
 row_to_pop = {val: key for key, val in pop_to_row.items()}
 
-emission_data_type_to_col = {
+data_type_to_col = {
     data_type: j for j, data_type in enumerate(IMPLEMENTED_EMISSION_DATA)
 }
-col_to_emission_data_type = {
-    val: key for key, val in emission_data_type_to_col.items()
-}
+col_to_data_type = {val: key for key, val in data_type_to_col.items()}
 
 n_rows = len(IMPLEMENTED_POP)
 n_cols = len(IMPLEMENTED_EMISSION_DATA)
@@ -73,13 +71,10 @@ class DataMatrix:
     def _natures_to_indexes(
         self,
         population_type: ImplementedPop,
-        emission_data_type: ImplementedEmissionData,
+        data_type: ImplementedEmissionData,
     ) -> tuple[int, int]:
         """Give the desired indexes."""
-        return (
-            pop_to_row[population_type],
-            emission_data_type_to_col[emission_data_type],
-        )
+        return (pop_to_row[population_type], data_type_to_col[data_type])
 
     def _indexes_to_natures(
         self, row: int, col: int
@@ -87,52 +82,20 @@ class DataMatrix:
         """Give the desired natures."""
         population_type = row_to_pop[row]
         assert population_type in IMPLEMENTED_POP
-        emission_data_type = col_to_emission_data_type[col]
-        assert emission_data_type in IMPLEMENTED_EMISSION_DATA
-        return population_type, emission_data_type
+        data_type = col_to_data_type[col]
+        assert data_type in IMPLEMENTED_EMISSION_DATA
+        return population_type, data_type
 
-    @overload
     def set_files(
         self,
         files: DataPath | Collection[DataPath],
-        row: int,
-        col: int,
-        population: None = None,
-        emission_data_type: None = None,
-    ) -> None: ...
-
-    @overload
-    def set_files(
-        self,
-        files: DataPath | Collection[DataPath],
-        row: None = None,
-        col: None = None,
-        *,
         population: ImplementedPop,
-        emission_data_type: ImplementedEmissionData,
-    ) -> None: ...
-
-    def set_files(
-        self,
-        files: DataPath | Collection[DataPath],
-        row: int | None = None,
-        col: int | None = None,
-        population: ImplementedPop | None = None,
-        emission_data_type: ImplementedEmissionData | None = None,
+        data_type: ImplementedEmissionData,
     ) -> None:
         """Set the file(s) by index or name."""
-        if population and emission_data_type:
-            row, col = self._natures_to_indexes(
-                population_type=population,
-                emission_data_type=emission_data_type,
-            )
-
-        if row is None or col is None:
-            raise ValueError(
-                "You need to provide row and col, or population and "
-                f"emission_data_type.\n{row = }, {col = }, {population = },"
-                f"{emission_data_type = }"
-            )
+        row, col = self._natures_to_indexes(
+            population_type=population, data_type=data_type
+        )
 
         if isinstance(files, DataPath):
             self.files_matrix[row][col] = [files]
@@ -146,7 +109,7 @@ class DataMatrix:
         row: int,
         col: int,
         population: None,
-        emission_data_type: None,
+        data_type: None,
     ) -> None: ...
 
     @overload
@@ -156,7 +119,7 @@ class DataMatrix:
         row: None,
         col: None,
         population: ImplementedPop,
-        emission_data_type: Literal["Emission Yield"],
+        data_type: Literal["Emission Yield"],
     ) -> None: ...
 
     @overload
@@ -169,7 +132,7 @@ class DataMatrix:
         row: None,
         col: None,
         population: Literal["SE"],
-        emission_data_type: Literal["Emission Energy"],
+        data_type: Literal["Emission Energy"],
     ) -> None: ...
 
     @overload
@@ -182,7 +145,7 @@ class DataMatrix:
         row: None,
         col: None,
         population: Literal["EBE"],
-        emission_data_type: Literal["Emission Energy"],
+        data_type: Literal["Emission Energy"],
     ) -> None: ...
 
     @overload
@@ -195,7 +158,7 @@ class DataMatrix:
         row: None,
         col: None,
         population: Literal["IBE"],
-        emission_data_type: Literal["Emission Energy"],
+        data_type: Literal["Emission Energy"],
     ) -> None: ...
     @overload
     def set_data(
@@ -207,7 +170,7 @@ class DataMatrix:
         row: None,
         col: None,
         population: Literal["all"],
-        emission_data_type: Literal["Emission Energy"],
+        data_type: Literal["Emission Energy"],
     ) -> None: ...
 
     @overload
@@ -219,7 +182,7 @@ class DataMatrix:
         row: None,
         col: None,
         population: ImplementedPop,
-        emission_data_type: Literal["Emission Angle"],
+        data_type: Literal["Emission Angle"],
     ) -> None: ...
 
     def set_data(
@@ -228,26 +191,25 @@ class DataMatrix:
         row: int | None = None,
         col: int | None = None,
         population: ImplementedPop | None = None,
-        emission_data_type: ImplementedEmissionData | None = None,
+        data_type: ImplementedEmissionData | None = None,
     ) -> None:
         """Set the data by index or name.
 
         .. todo::
            ``population`` is already known if emission_data is given.
-           ``emission_data_type`` could be known if emission_data is given.
+           ``data_type`` could be known if emission_data is given.
 
         """
-        if population and emission_data_type:
+        if population and data_type:
             row, col = self._natures_to_indexes(
-                population_type=population,
-                emission_data_type=emission_data_type,
+                population_type=population, data_type=data_type
             )
 
         if row is None or col is None:
             raise ValueError(
                 "You need to provide row and col, or population and "
-                f"emission_data_type.\n{row = }, {col = }, {population = },"
-                f"{emission_data_type = }"
+                f"data_type.\n{row = }, {col = }, {population = },"
+                f"{data_type = }"
             )
 
         if isinstance(emission_data, EmissionData):
@@ -256,7 +218,7 @@ class DataMatrix:
 
     @overload
     def get_files(
-        self, row: int, col: int, population: None, emission_data_type: None
+        self, row: int, col: int, population: None, data_type: None
     ) -> list[DataPath]: ...
 
     @overload
@@ -265,7 +227,7 @@ class DataMatrix:
         row: None,
         col: None,
         population: ImplementedPop,
-        emission_data_type: ImplementedEmissionData,
+        data_type: ImplementedEmissionData,
     ) -> list[DataPath]: ...
 
     def get_files(
@@ -273,91 +235,70 @@ class DataMatrix:
         row: int | None = None,
         col: int | None = None,
         population: ImplementedPop | None = None,
-        emission_data_type: ImplementedEmissionData | None = None,
+        data_type: ImplementedEmissionData | None = None,
     ) -> list[DataPath]:
         """Get the file(s) by index or name."""
-        if population and emission_data_type:
+        if population and data_type:
             row, col = self._natures_to_indexes(
-                population_type=population,
-                emission_data_type=emission_data_type,
+                population_type=population, data_type=data_type
             )
 
         if row is None or col is None:
             raise ValueError(
                 "You need to provide row and col, or population and "
-                f"emission_data_type.\n{row = }, {col = }, {population = },"
-                f"{emission_data_type = }"
+                f"data_type.\n{row = }, {col = }, {population = },"
+                f"{data_type = }"
             )
 
         return self.files_matrix[row][col]
 
     @overload
     def get_data(
-        self,
-        population: Literal["SE"],
-        emission_data_type: Literal["Emission Yield"],
+        self, population: Literal["SE"], data_type: Literal["Emission Yield"]
     ) -> Sequence[SEEY]: ...
 
     @overload
     def get_data(
-        self,
-        population: Literal["EBE"],
-        emission_data_type: Literal["Emission Yield"],
+        self, population: Literal["EBE"], data_type: Literal["Emission Yield"]
     ) -> Sequence[EBEEY]: ...
 
     @overload
     def get_data(
-        self,
-        population: Literal["IBE"],
-        emission_data_type: Literal["Emission Yield"],
+        self, population: Literal["IBE"], data_type: Literal["Emission Yield"]
     ) -> Sequence[IBEEY]: ...
 
     @overload
     def get_data(
-        self,
-        population: Literal["all"],
-        emission_data_type: Literal["Emission Yield"],
+        self, population: Literal["all"], data_type: Literal["Emission Yield"]
     ) -> Sequence[TEEY]: ...
 
     @overload
     def get_data(
-        self,
-        population: Literal["SE"],
-        emission_data_type: Literal["Emission Energy"],
+        self, population: Literal["SE"], data_type: Literal["Emission Energy"]
     ) -> Sequence[SEEmissionEnergyDistribution]: ...
 
     @overload
     def get_data(
-        self,
-        population: Literal["EBE"],
-        emission_data_type: Literal["Emission Energy"],
+        self, population: Literal["EBE"], data_type: Literal["Emission Energy"]
     ) -> Sequence[EBEEmissionEnergyDistribution]: ...
 
     @overload
     def get_data(
-        self,
-        population: Literal["IBE"],
-        emission_data_type: Literal["Emission Energy"],
+        self, population: Literal["IBE"], data_type: Literal["Emission Energy"]
     ) -> Sequence[IBEEmissionEnergyDistribution]: ...
 
     @overload
     def get_data(
-        self,
-        population: Literal["all"],
-        emission_data_type: Literal["Emission Energy"],
+        self, population: Literal["all"], data_type: Literal["Emission Energy"]
     ) -> Sequence[AllEmissionEnergyDistribution]: ...
 
     @overload
     def get_data(
-        self,
-        population: ImplementedPop,
-        emission_data_type: Literal["Emission Angle"],
+        self, population: ImplementedPop, data_type: Literal["Emission Angle"]
     ) -> Sequence[EmissionAngleDistribution]: ...
 
     def get_data(
-        self,
-        population: ImplementedPop,
-        emission_data_type: ImplementedEmissionData,
+        self, population: ImplementedPop, data_type: ImplementedEmissionData
     ) -> Sequence[EmissionData]:
         """Get the file(s) by name.
 
@@ -365,7 +306,7 @@ class DataMatrix:
         ----------
         population :
             Population type.
-        emission_data_type :
+        data_type :
             Emission data type.
 
         Returns
@@ -375,7 +316,7 @@ class DataMatrix:
 
         """
         row, col = self._natures_to_indexes(
-            population_type=population, emission_data_type=emission_data_type
+            population_type=population, data_type=data_type
         )
         data = self.data_matrix[row][col]
         if data is None:
@@ -412,7 +353,7 @@ class DataMatrix:
         for population in IMPLEMENTED_POP:
             for data_type in IMPLEMENTED_EMISSION_DATA:
                 filepaths = self.get_files(
-                    population=population, emission_data_type=data_type
+                    population=population, data_type=data_type
                 )  # type: ignore
 
                 if not filepaths:
@@ -449,18 +390,14 @@ class DataMatrix:
                     self.set_data(
                         emission_data,
                         population=population,
-                        emission_data_type=data_type,
+                        data_type=data_type,
                     )  # type: ignore
         if not rescale_energy_distributions_to_yield:
             return
-        teeys = self.get_data(
-            population="all", emission_data_type="Emission Yield"
-        )
+        teeys = self.get_data(population="all", data_type="Emission Yield")
         if not teeys:
             return
-        distribs = self.get_data(
-            population="all", emission_data_type="Emission Energy"
-        )
+        distribs = self.get_data(population="all", data_type="Emission Energy")
         if not distribs:
             return
         logging.info(
@@ -473,7 +410,7 @@ class DataMatrix:
 
     def has_all_mandatory_files(self, model_config: ModelConfig) -> bool:
         """Tell if files defined by :attr:`.Model.model_config` are set."""
-        for emission_data_type, corresponding_attribute in zip(
+        for data_type, corresponding_attribute in zip(
             IMPLEMENTED_EMISSION_DATA,
             (
                 "emission_yield_files",
@@ -494,23 +431,21 @@ class DataMatrix:
                     return False
 
                 filepath = self.get_files(
-                    population=mandatory_population,
-                    emission_data_type=emission_data_type,
+                    population=mandatory_population, data_type=data_type
                 )  # type: ignore
                 if filepath is None:
                     logging.error(
-                        f"You must define a {emission_data_type} filepath for"
+                        f"You must define a {data_type} filepath for"
                         f" population {mandatory_population}"
                     )
                     return False
 
                 data_objects = self.get_data(
-                    population=mandatory_population,
-                    emission_data_type=emission_data_type,
+                    population=mandatory_population, data_type=data_type
                 )
                 if not data_objects:
                     logging.error(
-                        f"You must load {emission_data_type} filepath for "
+                        f"You must load {data_type} filepath for "
                         f"population {mandatory_population}"
                     )
                     return False
@@ -521,7 +456,7 @@ class DataMatrix:
         self,
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
-        emission_data_type: ImplementedEmissionData,
+        data_type: ImplementedEmissionData,
         axes: T | None = None,
         group_by_pe: Literal[False] = False,
         **kwargs,
@@ -532,7 +467,7 @@ class DataMatrix:
         self,
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
-        emission_data_type: Literal["Emission Energy"],
+        data_type: Literal["Emission Energy"],
         axes: dict[float, T] | None = None,
         group_by_pe: Literal[True] = True,
         **kwargs,
@@ -542,7 +477,7 @@ class DataMatrix:
         self,
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
-        emission_data_type: ImplementedEmissionData,
+        data_type: ImplementedEmissionData,
         axes: T | dict[float, T] | None = None,
         group_by_pe: bool = False,
         **kwargs,
@@ -562,14 +497,14 @@ class DataMatrix:
         population :
             One or several populations to plot. If several are given, we simply
             recursively call this method. They will share the same axes.
-        emission_data_type :
+        data_type :
             Type of data to plot.
         axes :
             Axes to re-use if given. A plain ``T`` in the default case; a
             ``dict[float, T]`` keyed by impact energy when
             ``group_by_pe=True``.
         group_by_pe :
-            Only supported for ``emission_data_type == "Emission Energy"``. If
+            Only supported for ``data_type == "Emission Energy"``. If
             ``True``, one axes is created (or re-used) per distinct impact
             energy found in the measurements, instead of sharing a single axes
             for everything.
@@ -584,10 +519,10 @@ class DataMatrix:
 
         """
         if group_by_pe:
-            if emission_data_type != "Emission Energy":
+            if data_type != "Emission Energy":
                 raise ValueError(
                     "`group_by_pe=True` is only supported for "
-                    "`emission_data_type='Emission Energy'`."
+                    "`data_type='Emission Energy'`."
                 )
             return self._plot_grouped_by_pe(
                 plotter,
@@ -600,19 +535,17 @@ class DataMatrix:
             population, str
         ):
             for pop in population:
-                axes = self.plot(
-                    plotter, pop, emission_data_type, axes=axes, **kwargs
-                )
+                axes = self.plot(plotter, pop, data_type, axes=axes, **kwargs)
             return axes
 
         emission_data = self.get_data(
-            population=population, emission_data_type=emission_data_type
+            population=population, data_type=data_type
         )
 
         if not emission_data:
             logging.info(
                 f"No measurement found for {population = } and "
-                f"{emission_data_type = }. Skipping this plot."
+                f"{data_type = }. Skipping this plot."
             )
             return axes
 
@@ -670,7 +603,7 @@ class DataMatrix:
             return axes
 
         emission_data = self.get_data(
-            population=population, emission_data_type="Emission Energy"
+            population=population, data_type="Emission Energy"
         )
         if not emission_data:
             logging.info(
@@ -690,7 +623,7 @@ class DataMatrix:
     def teey(self) -> TEEY:
         """Return the |TEEY| directly."""
         emission_yield = self.get_data(
-            population="all", emission_data_type="Emission Yield"
+            population="all", data_type="Emission Yield"
         )
         if not emission_yield:
             raise MissingDataError
@@ -702,7 +635,7 @@ class DataMatrix:
     def seey(self) -> SEEY:
         """Return the |SEEY| directly."""
         emission_yield = self.get_data(
-            population="SE", emission_data_type="Emission Yield"
+            population="SE", data_type="Emission Yield"
         )
         if not emission_yield:
             raise MissingDataError
@@ -735,7 +668,7 @@ class DataMatrix:
 
         """
         yields = self.get_data(
-            population=population, emission_data_type="Emission Yield"
+            population=population, data_type="Emission Yield"
         )
         if not yields:
             raise MissingDataError(
@@ -752,7 +685,7 @@ class DataMatrix:
         yield_values = ref_yield.data[col_normal].to_numpy()
 
         distributions = self.get_data(
-            population=population, emission_data_type="Emission Energy"
+            population=population, data_type="Emission Energy"
         )
         for distrib in distributions:
             e_pe = distrib.e_pe

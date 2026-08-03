@@ -133,7 +133,7 @@ def reference_ag() -> DataMatrix:
     data_matrix.set_files(
         [teey_reference_ag / "K-S8_AG_TECHNICAL_TEEY_REF.csv"],
         population="all",
-        emission_data_type="Emission Yield",
+        data_type="Emission Yield",
     )
     data_matrix.load_data(PandasLoader())
     return data_matrix

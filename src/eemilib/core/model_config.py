@@ -19,15 +19,15 @@ class ModelConfig:
     emission_angle_files: Collection[ImplementedPop]
 
     def mandatory_populations(
-        self, emission_data_type: ImplementedEmissionData
+        self, data_type: ImplementedEmissionData
     ) -> list[ImplementedPop]:
         """Tell which population should be given in files, for a data type."""
-        if emission_data_type == "Emission Yield":
+        if data_type == "Emission Yield":
             return list(self.emission_yield_files)
-        if emission_data_type == "Emission Energy":
+        if data_type == "Emission Energy":
             return list(self.emission_energy_files)
-        if emission_data_type == "Emission Angle":
+        if data_type == "Emission Angle":
             return list(self.emission_angle_files)
         raise RuntimeError(
-            f"{emission_data_type = } is not in {IMPLEMENTED_EMISSION_DATA = }"
+            f"{data_type = } is not in {IMPLEMENTED_EMISSION_DATA = }"
         )

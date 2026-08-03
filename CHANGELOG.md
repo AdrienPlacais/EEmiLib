@@ -20,12 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Exported with CST, you can load them with `CSTLoader`.
 - `DataMatrix.plot` accepts `group_by_pe` argument, defaulting to `False`. When
   it is `True`:
-  - If `emission_data_type` is not `"Emission Energy"`, an error is raised.
+  - If `data_type` is not `"Emission Energy"`, an error is raised.
   - One plot per PE impact energy is created. The returned value is a
     dictionary mapping PE energies to axes objects: `dict[float, Axes]`.
 - `Model.plot` accepts `group_by_pe` argument, defaulting to `False`. When it is
   True:
-  - If `emission_data_type` is not `"Emission Energy"`, an error is raised.
+  - If `data_type` is not `"Emission Energy"`, an error is raised.
   - If `e_pes: list[float]` is given, model is plotted for these impact
     energies.
   - If `axes: dict[float, Axes]` is given, axes are re-used. This `axes` can be
@@ -52,6 +52,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   are provided, the emission energies are rescaled so that their integral match
   emission yield data. This can be deactivated by setting
   `rescale_energy_distributions_to_yield` to `False` in `DataMatrix.load_data`.
+- `emission_data_type` arguments are renamed `data_type`.
+
+### Removed
+
+- `DataMatrix.get_data` do not accept `row` and `col` arguments.
 
 ## [0.1.5] -- 2026-05-22
 
