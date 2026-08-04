@@ -384,7 +384,10 @@ class FurmanPivi(Model):
                 "Method not actually adapted to several TEEY objects"
             )
         for _teey in teeys:
-            self.parameters["normal_e_max_se"].value = _teey.e_max
+            normal_e_max_se = self.parameters["normal_e_max_se"]
+            normal_e_max_se.value = _teey.e_max
+            normal_e_max_se.lower_bound = _teey.e_max - 5.0
+            normal_e_max_se.upper_bound = _teey.e_max + 5.0
 
         self._fit_teey(teeys)
 

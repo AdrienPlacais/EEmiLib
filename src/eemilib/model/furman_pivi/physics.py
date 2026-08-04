@@ -183,7 +183,6 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "value": 310.0,
         "lower_bound": 0.0,
         "description": "Energy where SEEY is maximum at normal incidence.",
-        "is_locked": True,
         "furman_pivi_notation": NORMAL_E_MAX_SE_FP,
     },
     "normal_delta_max": {
