@@ -121,7 +121,7 @@ def set_up_logging(
     console_log_output: str = "stdout",
     console_log_level: str = "INFO",
     console_log_color: bool = True,
-    console_log_line_template: str = "%(color_on)s[%(levelname)-8s] [%(filename)-20s]%(color_off)s %(message)s",
+    console_log_line_template: str = "%(color_on)s[%(levelname)-8s] [%(filename)-35s]%(color_off)s %(message)s",
     logfile_file: Path = Path("eemilib.log"),
     logfile_log_level: str = "INFO",
     logfile_log_color: bool = False,
