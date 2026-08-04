@@ -190,6 +190,11 @@ class Parameter:
     @value.setter
     def value(self, value: float) -> None:
         """Set the value of the parameter."""
+        if not isinstance(value, (float, int)):
+            if isinstance(value, np.ndarray) and len(value) == 1:
+                value = float(value[0])
+            else:
+                raise ValueError(f"Trying to set unsupported {value = }")
         if self._value == value:
             logging.debug(f"{self.name:<52}: is already {value}.")
         else:
