@@ -4,7 +4,8 @@ This is a physical model developed by Dionne :cite:`Lye1957,Dionne1973,
 Dionne1975`.
 
 .. todo::
-   Handle the different implementations like :class:`.FurmanPivi` does.
+   Handle the different implementations like :class:`~eemilib.model.FurmanPivi`
+   does.
 
 """
 

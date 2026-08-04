@@ -562,14 +562,13 @@ class FurmanPivi(Model):
         Specifically:
 
         1. Fit :math:`E_\mathrm{IBE}`, :math:`\eta_{i,\,\mathrm{max}}` and
-           :math:`r` from the exponential law
-           (:func:`.furman_pivi.ibe.ibeey_normal`) on the normal incidence
-           |IBEEY| measurements.
+           :math:`r` from the exponential law (:func:`.ibe.ibeey_normal`) on
+           the normal incidence |IBEEY| measurements.
         2. Fit :math:`r_1` and :math:`r_2` from
            :func:`.furman_pivi.physics.at_theta_incidence` oblique incidence
            |IBEEY| measurements.
-        3. Fit :math:`q` from :func:`.furman_pivi.ibe.ibe_energy_distribution`
-           on all the |IBE| emission energy distribution measurements.
+        3. Fit :math:`q` from :func:`.ibe.ibe_energy_distribution` on all the
+           |IBE| emission energy distribution measurements.
 
         .. note::
             If you do not have specific measurement files for the |IBEEY|, it

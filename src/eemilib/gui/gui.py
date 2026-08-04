@@ -11,11 +11,12 @@
 .. todo::
     Allow ``None`` for energies, so that measurements energies are picked up.
     Ideas:
+
     - Checkbox "Use energies from measurements".
     - Clicking it greys out the ``energies`` linspace definition.
-        - May also auto-fill it?
+      - May also auto-fill it?
     - This checkbox is greyed out/unclickable if no data was plotted,
-        *i.e.* if current `Axes` contains no `Line2D`.
+      *i.e.* if current `Axes` contains no `Line2D`.
 
 """
 

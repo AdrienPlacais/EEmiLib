@@ -57,7 +57,7 @@ def ibeey(
 ) -> float:
     """Compute |IBEEY|.
 
-    First, we compute |IBEEY| at normal incidence using :func:`_ibeey_normal`.
+    First, we compute |IBEEY| at normal incidence using :func:`ibeey_normal`.
     Then, we compute it at provided incidence angle using
     :func:`.at_theta_incidence`.
 
