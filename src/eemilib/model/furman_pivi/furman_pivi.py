@@ -339,8 +339,7 @@ class FurmanPivi(Model):
 
         teeys = data_matrix.get_data("Emission Yield", "all")
         self.find_normal_ey_params(teeys)
-
-        self._find_oblique_emission_yields_parameters(data_matrix)
+        self.find_oblique_ey_params(teeys)
 
         distribs = data_matrix.get_data("Emission Energy", "all")
         self.find_energy_distribution_parameters(distribs)
@@ -368,9 +367,9 @@ class FurmanPivi(Model):
             normal_e_max_se.lower_bound = _teey.e_max - 5.0
             normal_e_max_se.upper_bound = _teey.e_max + 5.0
 
-        self._fit_teey(teeys)
+        self._fit_normal_teey(teeys)
 
-    def _fit_teey(self, teeys: Sequence[TEEY]) -> None:
+    def _fit_normal_teey(self, teeys: Sequence[TEEY]) -> None:
         """Fit |TEEY| parameters."""
 
         def _aggregate_residue(x: NDArray[np.float64]) -> NDArray[np.float64]:
@@ -399,52 +398,47 @@ class FurmanPivi(Model):
     # =========================================================================
     # 2. Find best parameters for emission yield at oblique incidence
     # =========================================================================
-    def _find_oblique_emission_yields_parameters(
-        self, data_matrix: DataMatrix
-    ) -> None:
+    def find_oblique_ey_params(self, teeys: Sequence[TEEY]) -> None:
         """Orchestrate fitting of all oblique emission yields parameters."""
-        logging.info("Skipping oblique incidence fit for now.")
+        if len(teeys) > 1:
+            logging.warning(
+                "Method not actually adapted to several TEEY objects"
+            )
+        self._fit_oblique_teey(teeys)
 
-    def _find_ibe_parameters(self, ibe_shares: Sequence[IBEEY]) -> None:
-        r"""Find the best parameters for |IBE|.
+    def _fit_oblique_teey(self, teeys: Sequence[TEEY]) -> None:
+        r"""Find oblique |TEEY| parameters."""
 
-        Specifically:
+        extra_kwargs = {
+            **{key: self.parameters[key] for key in NORMAL_TEEY_PARAM_KEYS}
+        }
 
-        1. Fit :math:`E_\mathrm{IBE}`, :math:`\eta_{i,\,\mathrm{max}}` and
-           :math:`r` from the exponential law (:func:`.ibe.ibeey_normal`) on
-           the normal incidence |IBEEY| measurements.
-        2. Fit :math:`r_1` and :math:`r_2` from
-           :func:`.furman_pivi.physics.at_theta_incidence` oblique incidence
-           |IBEEY| measurements.
-        3. Fit :math:`q` from :func:`.ibe.ibe_energy_distribution` on all the
-           |IBE| emission energy distribution measurements.
+        def _aggregate_residue(x: NDArray[np.float64]) -> NDArray[np.float64]:
+            kwargs = dict(zip(OBLIQUE_TEEY_PARAM_KEYS, x))
+            residuals = []
+            for _teey in teeys:
+                for theta, measured in zip(
+                    _teey.angles[1:], _teey.oblique_data, strict=True
+                ):
+                    predicted = teey(
+                        _teey.energies, theta, **kwargs, **extra_kwargs
+                    )
+                    residuals.append(measured - predicted)
+            return np.concatenate(residuals)
 
-        .. note::
-            If you do not have specific measurement files for the |IBEEY|, it
-            is important to have at least one |TEEY| measurement at normal
-            incidence and high impact energies. Otherwise, it is hard to
-            discriminate |SEEY| from |IBEEY|.
+        x0 = [self.parameters[key].value for key in OBLIQUE_TEEY_PARAM_KEYS]
+        lower_bounds = [
+            self.parameters[key].lower_bound for key in OBLIQUE_TEEY_PARAM_KEYS
+        ]
+        upper_bounds = [
+            self.parameters[key].upper_bound for key in OBLIQUE_TEEY_PARAM_KEYS
+        ]
 
-        Parameters
-        ----------
-        ibe_shares :
-            Decomposed |IBEEY| shares, one per measured |TEEY|, *cf*
-            :meth:`_decompose_teeys`.
-
-        """
-        fitted = self._fit_normal_yield(
-            ibe_shares, ibeey_normal, NORMAL_IBEEY_PARAM_KEYS
+        lsq = least_squares(
+            fun=_aggregate_residue, x0=x0, bounds=(lower_bounds, upper_bounds)
         )
+        fitted = dict(zip(OBLIQUE_TEEY_PARAM_KEYS, lsq.x))
         self.set_parameters_values(fitted)
-
-        # raise warning if we do not have normal incidence high energy files,
-        # see note in docstring
-
-        oblique_ibeey_parameters = self._fit_oblique_ibeey()
-        self.set_parameters_values(oblique_ibeey_parameters)
-
-        ibe_pdf_parameters = self._fit_ibe_energy_distribution()
-        self.set_parameters_values(ibe_pdf_parameters)
 
     # =========================================================================
     # 3. Find best parameters for emission distribution at normal incidence
