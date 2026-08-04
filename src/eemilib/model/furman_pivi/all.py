@@ -1,16 +1,60 @@
 """Define functions related to 'all' population."""
 
 import numpy as np
-from eemilib.model.furman_pivi.ebe import ebe_energy_distribution, ebeey
-from eemilib.model.furman_pivi.ibe import ibe_energy_distribution, ibeey
+from eemilib.model.furman_pivi.ebe import (
+    ebe_energy_distribution,
+    ebeey,
+    ebeey_normal,
+)
+from eemilib.model.furman_pivi.ibe import (
+    ibe_energy_distribution,
+    ibeey,
+    ibeey_normal,
+)
 from eemilib.model.furman_pivi.physics import NORMALIZATION_T
 from eemilib.model.furman_pivi.se import (
     PROBA_EMIT_N_SE,
     se_energy_distribution,
     seey,
+    seey_normal,
 )
 from eemilib.model.parameter import Parameter
 from numpy.typing import NDArray
+
+
+def teey_normal(
+    ene: float,
+    normal_e_max_se: Parameter | float,
+    normal_delta_max: Parameter | float,
+    s: Parameter | float,
+    normal_e_max_ebe: Parameter | float,
+    eta_e_max: Parameter | float,
+    eta_e_min: Parameter | float,
+    W: Parameter | float,
+    p: Parameter | float,
+    e_ibe: Parameter | float,
+    eta_i_max: Parameter | float,
+    r: Parameter | float,
+    **kwargs,
+) -> float:
+    """Compute |TEEY| at normal incidence."""
+    return (
+        seey_normal(
+            ene,
+            normal_e_max_se=normal_e_max_se,
+            normal_delta_max=normal_delta_max,
+            s=s,
+        )
+        + ebeey_normal(
+            ene,
+            normal_e_max_ebe=normal_e_max_ebe,
+            eta_e_max=eta_e_max,
+            eta_e_min=eta_e_min,
+            W=W,
+            p=p,
+        )
+        + ibeey_normal(ene, e_ibe=e_ibe, eta_i_max=eta_i_max, r=r)
+    )
 
 
 def teey(ene: float, the: float, **kwargs) -> float:
