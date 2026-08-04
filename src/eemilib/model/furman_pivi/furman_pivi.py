@@ -359,7 +359,7 @@ class FurmanPivi(Model):
             raise MissingDataError("Files are not all provided.")
 
         teeys = data_matrix.get_data("Emission Yield", "all")
-        self._find_normal_emission_yields_parameters(teeys)
+        self.find_normal_ey_params(teeys)
 
         self._find_oblique_emission_yields_parameters(data_matrix)
 
@@ -369,19 +369,8 @@ class FurmanPivi(Model):
     # =========================================================================
     # 1. Find best parameters for emission yield at normal incidence
     # =========================================================================
-    def _find_normal_emission_yields_parameters(
-        self, teeys: Sequence[TEEY]
-    ) -> None:
-        """Orchestrate fitting of all normal emission yields parameters.
-
-        1. Set first estimation for the normal emission yield parameters.
-
-           - First estimation: position of max SEEY == position of max TEEY
-
-        2. Using the parameters already set, decompose the |TEEY| into its
-           |SEEY|, |EBEEY| and |IBEEY| components.
-
-        3. Fit every emission yield to match the given shapes.
+    def find_normal_ey_params(self, teeys: Sequence[TEEY]) -> None:
+        """Orchestrate the find of |TEEY| parameters.
 
         Parameters
         ----------
@@ -396,169 +385,34 @@ class FurmanPivi(Model):
             )
         for _teey in teeys:
             self.parameters["normal_e_max_se"].value = _teey.e_max
-            # self.parameters["normal_delta_max"].value = _teey.ey_max
-        self._find_normal_teey_parameters(teeys)
-        # se_shares, ebe_shares, ibe_shares = self._decompose_teeys(teeys)
-        # self._find_normal_seey_parameters(se_shares)
-        # self._find_normal_ebeey_parameters(ebe_shares)
-        # self._find_normal_ibeey_parameters(ibe_shares)
 
-    # Actual finders
-    def _find_normal_seey_parameters(self, se_shares: Sequence[SEEY]) -> None:
-        r"""Fit normal |SEEY| parameters, *ie* :data:`.NORMAL_SEEY_PARAM_KEYS`.
+        self._fit_teey(teeys)
 
-        Jointly fits :func:`.furman_pivi.se.seey_normal` against every
-        decomposed |SEEY| share at once, *cf* Eqs. (31)/(32) in
-        :cite:`Furman2002`.
-
-        Parameters
-        ----------
-        se_shares :
-            Decomposed |SEEY| shares, one per measured |TEEY|, *cf*
-            :meth:`_decompose_teeys`.
-
-        """
-        fitted = self._fit_normal_yield(
-            se_shares, seey_normal, NORMAL_SEEY_PARAM_KEYS
-        )
-        self.set_parameters_values(fitted)
-
-    def _find_normal_ebeey_parameters(
-        self, ebe_shares: Sequence[EBEEY]
-    ) -> None:
-        r"""Fit normal |EBEEY| parameters: :data:`.NORMAL_EBEEY_PARAM_KEYS`.
-
-        Jointly fits :func:`.furman_pivi.ebe.ebeey_normal` against every
-        decomposed |EBEEY| share at once, *cf* Eq. (25) in :cite:`Furman2002`.
-
-        Parameters
-        ----------
-        ebe_shares :
-            Decomposed |EBEEY| shares, one per measured |TEEY|, *cf*
-            :meth:`_decompose_teeys`.
-
-        """
-        fitted = self._fit_normal_yield(
-            ebe_shares, ebeey_normal, NORMAL_EBEEY_PARAM_KEYS
-        )
-        self.set_parameters_values(fitted)
-
-    def _find_normal_ibeey_parameters(
-        self, ibe_shares: Sequence[IBEEY]
-    ) -> None:
-        r"""Fit normal |IBEEY| parameters: :data:`.NORMAL_IBEEY_PARAM_KEYS`.
-
-        Jointly fits :func:`.furman_pivi.ibe.ibeey_normal` against every
-        decomposed |IBEEY| share at once, *cf* Eq. (25) in :cite:`Furman2002`.
-
-        Parameters
-        ----------
-        ibe_shares :
-            Decomposed |IBEEY| shares, one per measured |TEEY|, *cf*
-            :meth:`_decompose_teeys`.
-
-        """
-        fitted = self._fit_normal_yield(
-            ibe_shares, ibeey_normal, NORMAL_IBEEY_PARAM_KEYS
-        )
-        self.set_parameters_values(fitted)
-
-    def _find_normal_teey_parameters(self, teey: Sequence[TEEY]) -> None:
-        """Find the TEEY in one pass. Alternative."""
-        fitted = self._fit_normal_yield(
-            teey, teey_normal, NORMAL_TEEY_PARAM_KEYS
-        )
-        self.set_parameters_values(fitted)
-
-    # Helpers
-    def _decompose_teeys(
-        self, teeys: Sequence[TEEY]
-    ) -> tuple[list[SEEY], list[EBEEY], list[IBEEY]]:
-        """Decompose every measured |TEEY| into |SEEY|/|EBEEY|/|IBEEY| shares.
-
-        Uses the currently-set |SEEY|, |EBEEY|, |IBEEY| parameters as
-        decomposition shapes, *cf* :meth:`.TEEY.decompose`.
-
-        Parameters
-        ----------
-        teeys :
-            All |TEEY| stored in a :class:`.DataMatrix`. *A priori*, there is
-            only one |TEEY| in the list.
-
-        Return
-        ------
-            Three lists (|SEEY|, |EBEEY|, |IBEEY| shares), one entry per
-            measured |TEEY|, in the same order.
-
-        """
-        se_shape = partial(seey_normal, **self.parameters)
-        ebe_shape = partial(ebeey_normal, **self.parameters)
-        ibe_shape = partial(ibeey_normal, **self.parameters)
-
-        se_shares: list[SEEY] = []
-        ebe_shares: list[EBEEY] = []
-        ibe_shares: list[IBEEY] = []
-        for emission_yield in teeys:
-            se_share, ebe_share, ibe_share = emission_yield.decompose(
-                se_shape, ebe_shape, ibe_shape
-            )
-            se_shares.append(se_share)
-            ebe_shares.append(ebe_share)
-            ibe_shares.append(ibe_share)
-
-        return se_shares, ebe_shares, ibe_shares
-
-    def _fit_normal_yield(
-        self,
-        shares: Sequence[EmissionYield],
-        normal_yield_func: Callable[..., NDArray[np.float64]],
-        param_keys: tuple[str, ...],
-    ) -> dict[str, float]:
-        """Jointly fit a normal-incidence yield function's parameters.
-
-        Stacks residuals across every decomposed share (one per measured
-        |TEEY|) into a single least-squares problem, following the same
-        joint-fit approach used for the energy-distribution fits.
-
-        Parameters
-        ----------
-        shares :
-            Decomposed emission yield shares, *cf* :meth:`.TEEY.decompose`.
-            Accepts one share per :class:`.EmissionYield`, even if we will
-            likely have only one per fit.
-        normal_yield_func :
-            Function computing the normal-incidence yield. Takes impact
-            energies as its first positional argument, and the parameters named
-            in ``param_keys`` as keyword arguments.
-        param_keys :
-            Names of ``physics_func``'s keyword parameters to fit, matching
-            keys in :attr:`.FurmanPivi.parameters`. Likely,
-            :data:`.NORMAL_SEEY_PARAM_KEYS`, :data:`.NORMAL_EBEEY_PARAM_KEYS`
-            or  `:data:`.NORMAL_IBEEY_PARAM_KEYS`.
-
-        Return
-        ------
-            Dict mapping each of ``param_keys`` to its fitted value.
-
-        """
+    def _fit_teey(self, teeys: Sequence[TEEY]) -> None:
+        """Fit |TEEY| parameters."""
 
         def _aggregate_residue(x: NDArray[np.float64]) -> NDArray[np.float64]:
-            kwargs = dict(zip(param_keys, x))
+            kwargs = dict(zip(NORMAL_TEEY_PARAM_KEYS, x))
             residuals = []
-            for share in shares:
-                measured = share.data[col_normal].to_numpy()
-                predicted = normal_yield_func(share.energies, **kwargs)
+            for _teey in teeys:
+                measured = _teey.data[col_normal].to_numpy()
+                predicted = teey_normal(_teey.energies, **kwargs)
                 residuals.append(measured - predicted)
             return np.concatenate(residuals)
 
-        x0 = [self.parameters[key].value for key in param_keys]
-        lower_bounds = [self.parameters[key].lower_bound for key in param_keys]
-        upper_bounds = [self.parameters[key].upper_bound for key in param_keys]
+        x0 = [self.parameters[key].value for key in NORMAL_TEEY_PARAM_KEYS]
+        lower_bounds = [
+            self.parameters[key].lower_bound for key in NORMAL_TEEY_PARAM_KEYS
+        ]
+        upper_bounds = [
+            self.parameters[key].upper_bound for key in NORMAL_TEEY_PARAM_KEYS
+        ]
 
         lsq = least_squares(
             fun=_aggregate_residue, x0=x0, bounds=(lower_bounds, upper_bounds)
         )
-        return dict(zip(param_keys, lsq.x))
+        fitted = dict(zip(NORMAL_TEEY_PARAM_KEYS, lsq.x))
+        self.set_parameters_values(fitted)
 
     # =========================================================================
     # 2. Find best parameters for emission yield at oblique incidence
