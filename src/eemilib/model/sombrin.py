@@ -16,10 +16,10 @@ from eemilib.emission_data.emission_data import MissingDataError
 from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
+    COL_ENERGY,
+    COL_NORMAL,
     ImplementedEmissionData,
     ImplementedPop,
-    col_energy,
-    col_normal,
 )
 from eemilib.util.markdown import E_MAX, EC_1, SIGMA_MAX
 from numpy.typing import NDArray
@@ -144,7 +144,7 @@ class Sombrin(Model):
                 E_param=self.E,
             )
 
-        out_dict = {col_energy: energy, col_normal: out}
+        out_dict = {COL_ENERGY: energy, COL_NORMAL: out}
         return pd.DataFrame(out_dict)
 
     def set_parameter_value(self, name: str, value: Any) -> None:

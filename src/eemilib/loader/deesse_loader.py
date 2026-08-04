@@ -8,7 +8,7 @@ from typing import Any, Sequence
 import pandas as pd
 from eemilib.loader.helper import DataPath
 from eemilib.loader.loader import Loader
-from eemilib.util.constants import ImplementedPop, col_energy, col_normal
+from eemilib.util.constants import COL_ENERGY, COL_NORMAL, ImplementedPop
 
 
 class DeesseLoader(Loader):
@@ -52,9 +52,9 @@ class DeesseLoader(Loader):
             full_df = pd.read_csv(file, **kwargs)
             incidence_angle = self._extract_incidence_angle(full_df)
             of_interest_df = full_df[[col1, col2]].rename(
-                columns={col1: col_energy, col2: f"{incidence_angle} [deg]"}
+                columns={col1: COL_ENERGY, col2: f"{incidence_angle} [deg]"}
             )
-            all_df.append(of_interest_df.set_index(col_energy))
+            all_df.append(of_interest_df.set_index(COL_ENERGY))
 
         concatenated = pd.concat(all_df, axis=1)
         logging.info(f"Successfully loaded emission yield file(s) {filepath}")
@@ -157,6 +157,6 @@ class DeesseLoader(Loader):
         else:
             raise RuntimeError(f"Filetype of {filepath} is not supported.")
         df = df[[col1, col2]].rename(
-            columns={col1: col_energy, col2: col_normal}
+            columns={col1: COL_ENERGY, col2: COL_NORMAL}
         )
         return df, e_pe

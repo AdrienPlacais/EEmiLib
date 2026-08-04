@@ -21,9 +21,9 @@ IMPLEMENTED_POP = ("SE", "EBE", "IBE", "all")
 #: Typical column where energy is stored in dataframes.
 #: In emission yield data, this is the energy of |PEs|. In emission energy data,
 #: this is the energy of emitted electrons.
-col_energy = "Energy [eV]"
+COL_ENERGY = "Energy [eV]"
 #: Typical column where normal incidence data is stored in dataframes.
-col_normal = "0.0 [deg]"
+COL_NORMAL = "0.0 [deg]"
 
 md_ey: dict[ImplementedPop, str] = {
     "SE": r"SEEY $\delta$",

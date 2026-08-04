@@ -68,10 +68,10 @@ from eemilib.model.furman_pivi.se import (
 from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
+    COL_ENERGY,
+    COL_NORMAL,
     ImplementedEmissionData,
     ImplementedPop,
-    col_energy,
-    col_normal,
 )
 from numpy.typing import NDArray
 from scipy.optimize import least_squares
@@ -251,7 +251,7 @@ class FurmanPivi(Model):
             )
 
         out_dict = {
-            col_energy: energy,
+            COL_ENERGY: energy,
             **{f"{the} [deg]": out[:, j] for j, the in enumerate(theta)},
         }
         return pd.DataFrame(out_dict)
@@ -317,7 +317,7 @@ class FurmanPivi(Model):
                 out[i, j] = ey_func(ene, the, **self.parameters)
 
         out_dict = {
-            col_energy: energy,
+            COL_ENERGY: energy,
             **{f"{the} [deg]": out[:, j] for j, the in enumerate(theta)},
         }
         return pd.DataFrame(out_dict)

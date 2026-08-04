@@ -30,10 +30,10 @@ from eemilib.emission_data.emission_data import MissingDataError
 from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
+    COL_ENERGY,
+    COL_NORMAL,
     ImplementedEmissionData,
     ImplementedPop,
-    col_energy,
-    col_normal,
 )
 from eemilib.util.markdown import (
     DIFFUSION_LENGTH,
@@ -180,7 +180,7 @@ class Dionne(Model):
         for i, ene in enumerate(energy):
             out[i] = self._func(ene, **self.parameters)
 
-        out_dict = {col_energy: energy, col_normal: out}
+        out_dict = {COL_ENERGY: energy, COL_NORMAL: out}
         return pd.DataFrame(out_dict)
 
     def find_optimal_parameters(
@@ -214,8 +214,8 @@ class Dionne(Model):
             x0=x0,
             bounds=bounds,
             args=(
-                emission_yield.data[col_energy].to_numpy(),
-                emission_yield.data[col_normal].to_numpy(),
+                emission_yield.data[COL_ENERGY].to_numpy(),
+                emission_yield.data[COL_NORMAL].to_numpy(),
             ),
         )
 

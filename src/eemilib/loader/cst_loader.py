@@ -12,7 +12,7 @@ from typing import Any
 import pandas as pd
 from eemilib.loader.helper import read_text
 from eemilib.loader.loader import DataPath, Loader
-from eemilib.util.constants import ImplementedPop, col_energy
+from eemilib.util.constants import COL_ENERGY, ImplementedPop
 
 #: Maps the population name used in CST exports to the project's own
 #: population identifiers.
@@ -187,7 +187,7 @@ class CSTLoader(Loader):
                 continue
             block = blocks[cst_name]
             out[population] = pd.DataFrame(
-                {col_energy: block["x"], f"{angle} [deg]": block["y"]}
+                {COL_ENERGY: block["x"], f"{angle} [deg]": block["y"]}
             )
         return out
 
@@ -269,7 +269,7 @@ class CSTLoader(Loader):
             block = blocks[cst_name]
             e_pe = float(block["x"].iloc[-1])
             df = pd.DataFrame(
-                {col_energy: block["x"], f"{angle} [deg]": block["y"]}
+                {COL_ENERGY: block["x"], f"{angle} [deg]": block["y"]}
             )
             out[population] = (df, e_pe)
         return out

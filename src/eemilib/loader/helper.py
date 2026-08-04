@@ -3,7 +3,7 @@
 from importlib.resources.abc import Traversable
 from pathlib import Path
 
-from eemilib.util.constants import col_energy
+from eemilib.util.constants import COL_ENERGY
 
 #: .. todo::
 #:    All loaders should support Traversable also
@@ -55,7 +55,7 @@ def read_header(
 
 def _format_header(header: list[str]) -> list[str]:
     """Generate default header."""
-    header[0] = col_energy
+    header[0] = COL_ENERGY
     header[1:] = [f"{float(h)} [deg]" for h in header[1:]]
     return header
 

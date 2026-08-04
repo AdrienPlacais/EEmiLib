@@ -21,10 +21,10 @@ from eemilib.emission_data.emission_yield import TEEY
 from eemilib.emission_data.helper import get_ec1, get_max
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
+    COL_ENERGY,
+    COL_NORMAL,
     ImplementedEmissionData,
     ImplementedPop,
-    col_energy,
-    col_normal,
 )
 from eemilib.util.helper import documentation_url
 from eemilib.util.markdown import E_MAX, EC_1, SIGMA, SIGMA_MAX, tex_math
@@ -679,7 +679,7 @@ class Model(ABC):
         theta = np.array([0.0])
         teey = self.teey(energy, theta)
 
-        idx_ec1 = (teey[col_normal] - 1.0).abs().idxmin()
+        idx_ec1 = (teey[COL_NORMAL] - 1.0).abs().idxmin()
         model_ec1 = energy[idx_ec1]
 
         std = math.sqrt((measured_ec1 - model_ec1) ** 2)
@@ -695,13 +695,13 @@ class Model(ABC):
         min_energy = emission_yield.e_c1
         max_energy = emission_yield.e_max
         df = emission_yield.data
-        mask = (df[col_energy] >= min_energy) & (df[col_energy] <= max_energy)
+        mask = (df[COL_ENERGY] >= min_energy) & (df[COL_ENERGY] <= max_energy)
 
-        measured_teey = df.loc[mask, col_normal].to_numpy()
-        measured_energy = df.loc[mask, col_energy].to_numpy()
+        measured_teey = df.loc[mask, COL_NORMAL].to_numpy()
+        measured_energy = df.loc[mask, COL_ENERGY].to_numpy()
         angles = np.array([0.0])
         modelled_teey = self.teey(measured_energy, angles)[
-            col_normal
+            COL_NORMAL
         ].to_numpy()
 
         error = 100.0 * np.std((measured_teey - modelled_teey), ddof=1.0)
@@ -726,7 +726,7 @@ def _dummy_df(
     n_theta = len(theta)
     out = np.zeros((n_energy, n_theta))
     out_dict = {
-        col_energy: energy,
+        COL_ENERGY: energy,
         **{f"{the} [deg]": out[:, j] for j, the in enumerate(theta)},
     }
     return pd.DataFrame(out_dict)

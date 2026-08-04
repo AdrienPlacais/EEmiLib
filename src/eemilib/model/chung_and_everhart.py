@@ -17,10 +17,10 @@ from eemilib.emission_data.emission_data import MissingDataError
 from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
+    COL_ENERGY,
+    COL_NORMAL,
     ImplementedEmissionData,
     ImplementedPop,
-    col_energy,
-    col_normal,
 )
 from eemilib.util.markdown import NORM, W_F
 from numpy.typing import NDArray
@@ -147,7 +147,7 @@ class ChungEverhart(Model):
                 ene, W_f=self.parameters["W_f"], norm=self.parameters["norm"]
             )
 
-        out_dict = {col_energy: energy, col_normal: out}
+        out_dict = {COL_ENERGY: energy, COL_NORMAL: out}
         return pd.DataFrame(out_dict)
 
     def find_optimal_parameters(
@@ -181,8 +181,8 @@ class ChungEverhart(Model):
                 [
                     _residue(
                         w_f,
-                        distribution.data[col_energy].to_numpy(),
-                        distribution.data[col_normal].to_numpy(),
+                        distribution.data[COL_ENERGY].to_numpy(),
+                        distribution.data[COL_NORMAL].to_numpy(),
                     )
                     for distribution in distributions
                 ]

@@ -9,9 +9,9 @@ import pandas as pd
 from eemilib.plotter.helper import explicit_column_names
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
+    COL_ENERGY,
     ImplementedEmissionData,
     ImplementedPop,
-    col_energy,
     md_ylabel,
 )
 from matplotlib.axes import Axes
@@ -90,7 +90,7 @@ class PandasPlotter(Plotter):
 
         axes = updated.plot(
             *args,
-            x=explicit[col_energy],
+            x=explicit[COL_ENERGY],
             ax=axes,
             ylabel=md_ylabel["Emission Yield"],
             **merged_kwargs,
@@ -149,7 +149,7 @@ class PandasPlotter(Plotter):
         )
         axes = updated.plot(
             *args,
-            x=explicit[col_energy],
+            x=explicit[COL_ENERGY],
             ax=axes,
             ylabel=md_ylabel["Emission Energy"],
             **merged_kwargs,

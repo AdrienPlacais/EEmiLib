@@ -11,9 +11,9 @@ from eemilib.loader.helper import DataPath
 from eemilib.loader.loader import Loader
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
+    COL_ENERGY,
+    COL_NORMAL,
     ImplementedPop,
-    col_energy,
-    col_normal,
     md_energy_distrib,
 )
 from numpy.typing import NDArray
@@ -48,9 +48,9 @@ class EmissionEnergyDistribution(EmissionData):
 
         """
         super().__init__(self.population, data)
-        self.energies = data[col_energy].to_numpy()
+        self.energies = data[COL_ENERGY].to_numpy()
         self.angles = [
-            float(col.split()[0]) for col in data.columns if col != col_energy
+            float(col.split()[0]) for col in data.columns if col != COL_ENERGY
         ]
 
         #: Peak distribution in :unit:`eV^{-1}`.
@@ -62,7 +62,7 @@ class EmissionEnergyDistribution(EmissionData):
         #: Energy of |PEs| in :unit:`eV`. If this information is not found in
         #: the file header, we suppose it is the maximum of the input energy
         #: array.
-        self.e_pe = e_pe if e_pe else float(self.data[col_energy].max())
+        self.e_pe = e_pe if e_pe else float(self.data[COL_ENERGY].max())
 
         #: Re-normalization factor of distribution.
         self.norm = norm if norm is not None else self._default_norm()
@@ -210,7 +210,7 @@ class EmissionEnergyDistribution(EmissionData):
         if self.norm is None:
             raise ValueError("Cannot normalize if norm is None")
 
-        data_columns = [c for c in self.data.columns if c != col_energy]
+        data_columns = [c for c in self.data.columns if c != COL_ENERGY]
         self.data[data_columns] = (
             self.unnormalized_data[data_columns] / self.norm
         )
@@ -229,7 +229,7 @@ class EmissionEnergyDistribution(EmissionData):
         former_area = self._emission_yield
         scale = objective_yield / former_area
 
-        data_columns = [c for c in self.data.columns if c != col_energy]
+        data_columns = [c for c in self.data.columns if c != COL_ENERGY]
         self.unnormalized_data[data_columns] *= scale
 
         new_area = self._emission_yield
@@ -262,8 +262,8 @@ class EmissionEnergyDistribution(EmissionData):
             Value of the peak.
 
         """
-        i = self.data[col_normal].argmax()
-        return i, float(self.data.at[i, col_normal])
+        i = self.data[COL_NORMAL].argmax()
+        return i, float(self.data.at[i, COL_NORMAL])
 
     @property
     def _emission_yield(self) -> float:
@@ -278,7 +278,7 @@ class EmissionEnergyDistribution(EmissionData):
         """
         area = float(
             np.trapezoid(
-                self.unnormalized_data[col_normal].to_numpy(), self.energies
+                self.unnormalized_data[COL_NORMAL].to_numpy(), self.energies
             )
         )
         if area <= 0:
@@ -348,19 +348,19 @@ class AllEmissionEnergyDistribution(EmissionEnergyDistribution):
     @property
     def _SE_peak(self) -> tuple[int, float]:
         """Find the |SEs| maximum."""
-        i = int(self.data[: self._se_ebe_limit][col_normal].argmax())
-        return i, float(self.data.at[i, col_normal])
+        i = int(self.data[: self._se_ebe_limit][COL_NORMAL].argmax())
+        return i, float(self.data.at[i, COL_NORMAL])
 
     @property
     def _EBE_peak(self) -> tuple[float, float]:
         """Find the position of the |EBE| peak."""
         raise NotImplementedError("still used?")
         i = (
-            self.data[self._se_ebe_limit :][col_normal].argmax()
+            self.data[self._se_ebe_limit :][COL_NORMAL].argmax()
             + self._se_ebe_limit
         )
-        e_peak_ebe = self.data.at[i, col_energy]
-        return float(e_peak_ebe), float(self.data.at[i, col_normal])
+        e_peak_ebe = self.data.at[i, COL_ENERGY]
+        return float(e_peak_ebe), float(self.data.at[i, COL_NORMAL])
 
     def decompose(
         self,
@@ -430,7 +430,7 @@ class AllEmissionEnergyDistribution(EmissionEnergyDistribution):
             for pop, shape in shapes.items()
         }
 
-        data_columns = [c for c in self.data.columns if c != col_energy]
+        data_columns = [c for c in self.data.columns if c != COL_ENERGY]
         split_data = {
             pop: self.data.assign(
                 **{col: self.data[col] * weight for col in data_columns}

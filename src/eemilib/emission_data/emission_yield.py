@@ -18,9 +18,9 @@ from eemilib.loader.helper import DataPath
 from eemilib.loader.loader import Loader
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
+    COL_ENERGY,
+    COL_NORMAL,
     ImplementedPop,
-    col_energy,
-    col_normal,
     md_ey,
 )
 from numpy.typing import NDArray
@@ -48,9 +48,9 @@ class EmissionYield(EmissionData):
 
         """
         super().__init__(self.population, data)
-        self.energies = data[col_energy].to_numpy()
+        self.energies = data[COL_ENERGY].to_numpy()
         self.angles = [
-            float(col.split()[0]) for col in data.columns if col != col_energy
+            float(col.split()[0]) for col in data.columns if col != COL_ENERGY
         ]
 
     @classmethod
@@ -158,7 +158,7 @@ class SEEY(EmissionYield):
                 "characteristic points."
             )
 
-        normal_ey = self.data[[col_energy, col_normal]]
+        normal_ey = self.data[[COL_ENERGY, COL_NORMAL]]
         assert isinstance(normal_ey, pd.DataFrame)
         normal_ey = resample(normal_ey, n_resample)
 
@@ -322,10 +322,10 @@ class TEEY(SEEY):
             for pop, shape in shapes.items()
         }
 
-        measured = self.data[col_normal].to_numpy()
+        measured = self.data[COL_NORMAL].to_numpy()
         split_data = {
             pop: pd.DataFrame(
-                {col_energy: energies, col_normal: measured * weight}
+                {COL_ENERGY: energies, COL_NORMAL: measured * weight}
             )
             for pop, weight in weights.items()
         }

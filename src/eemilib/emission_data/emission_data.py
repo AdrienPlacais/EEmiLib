@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 from eemilib.loader.loader import Loader
 from eemilib.plotter.plotter import Plotter
-from eemilib.util.constants import ImplementedPop, col_energy, col_normal
+from eemilib.util.constants import COL_ENERGY, COL_NORMAL, ImplementedPop
 from eemilib.util.helper import documentation_url
 from numpy.typing import NDArray
 
@@ -78,13 +78,13 @@ class EmissionData(ABC):
     @property
     def normal_data(self) -> NDArray[np.float64]:
         """Get data stored in the ``col_normal`` column."""
-        return self.data[col_normal].to_numpy()
+        return self.data[COL_NORMAL].to_numpy()
 
     @property
     def _oblique_columns(self) -> list[str]:
         """Get list of columns containing non-normal data."""
         return [
-            c for c in self.data.columns if c not in {col_energy, col_normal}
+            c for c in self.data.columns if c not in {COL_ENERGY, COL_NORMAL}
         ]
 
     @property

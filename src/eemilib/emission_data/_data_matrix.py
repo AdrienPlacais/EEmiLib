@@ -34,12 +34,12 @@ from eemilib.loader.helper import DataPath
 from eemilib.loader.loader import Loader
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
+    COL_ENERGY,
+    COL_NORMAL,
     IMPLEMENTED_EMISSION_DATA,
     IMPLEMENTED_POP,
     ImplementedEmissionData,
     ImplementedPop,
-    col_energy,
-    col_normal,
 )
 
 pop_to_row = {pop: i for i, pop in enumerate(IMPLEMENTED_POP)}
@@ -594,7 +594,7 @@ class DataMatrix:
             )
         ref_yield = yields[0]
         yield_energies = np.array(ref_yield.energies)
-        yield_values = ref_yield.data[col_normal].to_numpy()
+        yield_values = ref_yield.data[COL_NORMAL].to_numpy()
 
         distributions = self.get_data("Emission Energy", population)
         for distrib in distributions:

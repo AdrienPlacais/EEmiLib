@@ -19,9 +19,9 @@ from eemilib.emission_data import DataMatrix
 from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
+    COL_ENERGY,
     ImplementedEmissionData,
     ImplementedPop,
-    col_energy,
 )
 from eemilib.util.markdown import (
     DELTA_E_TR,
@@ -279,7 +279,7 @@ class Vaughan(Model):
                 out[i, j] = self._func(ene, the, **self.parameters)
 
         out_dict = {
-            col_energy: energy,
+            COL_ENERGY: energy,
             **{f"{the} [deg]": out[:, j] for j, the in enumerate(theta)},
         }
         return pd.DataFrame(out_dict)

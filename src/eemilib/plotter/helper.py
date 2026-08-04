@@ -4,9 +4,9 @@ import logging
 from collections.abc import Sequence
 
 from eemilib.util.constants import (
+    COL_ENERGY,
     ImplementedEmissionData,
     ImplementedPop,
-    col_energy,
     md_energy_distrib,
     md_ey,
 )
@@ -50,7 +50,7 @@ def explicit_column_names(
 
     explicit = {}
     for col in columns:
-        if col == col_energy:
+        if col == COL_ENERGY:
             explicit[col] = col
             continue
 
