@@ -113,6 +113,7 @@ def all_energy_distribution(
     eps_ns: list[Parameter | float],
     proba_emit_n_se: PROBA_EMIT_N_SE,
     normalization: NORMALIZATION_T,
+    halve_ebe_contribution: bool = False,
     **kwargs,
 ) -> NDArray[np.float64]:
     r"""Compute the overall emitted-energy spectrum.
@@ -144,6 +145,17 @@ def all_energy_distribution(
         :func:`.se.se_energy_distribution`.
     normalization :
         Selects Eq. (35) or Eq. (43), *cf* :func:`.se.se_energy_distribution`.
+    halve_ebe_contribution :
+        Divide |EBE| contribution by two. Used during the fit in order to
+        preserve height of the peak, cf Ref. :cite:`Furman2002`: "When When
+        fitting the backscattered peak, as seen in Figs. 5 and 7, we
+        deliberately tried to double the height of the experimentally measured
+        peak. The reason is that our fitting curve for
+        :math:`\mathrm{d}\delta/\mathrm{d}E` stops exactly at the maximum of
+        the peak [viz. Eq. (26)], hence by doubling the height we ensure that
+        the area under the peak, which we believe to be a better measure of
+        :math:`\delta_e`, matches the measured value."
+
     kwargs :
         Furman and Pivi |SEEY|, |EBEEY|, |IBEEY|, |EBE| and |IBE| PDF
         parameters.
@@ -153,6 +165,7 @@ def all_energy_distribution(
         Overall emitted-energy spectrum.
 
     """
+    ebe_factor = 1.0 if not halve_ebe_contribution else 0.5
     return (
         se_energy_distribution(
             e_pe=e_pe,
@@ -164,7 +177,8 @@ def all_energy_distribution(
             normalization=normalization,
             **kwargs,
         )
-        + ebe_energy_distribution(
+        + ebe_factor
+        * ebe_energy_distribution(
             e_pe=e_pe, the=the, emission_energies=emission_energies, **kwargs
         )
         + ibe_energy_distribution(
