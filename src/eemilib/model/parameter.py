@@ -200,9 +200,24 @@ class Parameter:
 
     @property
     def lower_bound(self) -> float:
-        """Give the current lower bound of the parameter."""
+        """Give the current lower bound of the parameter.
+
+        - If the parameter is not locked, we return the user-defined value
+          stored in :attr:`.self._lower_bound`.
+        - If it is locked, we return a lower bound that is :attr:`self._tol`
+          lower than currently store value.
+          - Exception : if the user-defined :attr:`._lower_bound` is exactly
+            ``0.0``, we suppose that the value should stay positive. We update
+            the returned lower bound accordingly.
+
+        """
         if self.is_locked:
-            return min(self.value - self._tol, self.value + self._tol)
+            bound = min(self.value - self._tol, self.value + self._tol)
+            if self._lower_bound != 0.0 or abs(bound) >= self._tol:
+                return bound
+            # _lower_bound is exactly 0.0, and calculated bound is very close
+            # to 0: we enforce lower bound to 0.0 to avoid negative values
+            return 0.0
         return self._lower_bound
 
     @lower_bound.setter
