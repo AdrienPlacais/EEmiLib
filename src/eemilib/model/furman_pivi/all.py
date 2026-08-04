@@ -2,17 +2,20 @@
 
 import numpy as np
 from eemilib.model.furman_pivi.ebe import (
+    NORMAL_EBEEY_PARAM_KEYS,
     ebe_energy_distribution,
     ebeey,
     ebeey_normal,
 )
 from eemilib.model.furman_pivi.ibe import (
+    NORMAL_IBEEY_PARAM_KEYS,
     ibe_energy_distribution,
     ibeey,
     ibeey_normal,
 )
 from eemilib.model.furman_pivi.physics import NORMALIZATION_T
 from eemilib.model.furman_pivi.se import (
+    NORMAL_SEEY_PARAM_KEYS,
     PROBA_EMIT_N_SE,
     se_energy_distribution,
     seey,
@@ -20,6 +23,11 @@ from eemilib.model.furman_pivi.se import (
 )
 from eemilib.model.parameter import Parameter
 from numpy.typing import NDArray
+
+#: Parameters used for calculation of |TEEY| at normal incidence.
+NORMAL_TEEY_PARAM_KEYS = (
+    NORMAL_SEEY_PARAM_KEYS + NORMAL_EBEEY_PARAM_KEYS + NORMAL_IBEEY_PARAM_KEYS
+)
 
 
 def teey_normal(
