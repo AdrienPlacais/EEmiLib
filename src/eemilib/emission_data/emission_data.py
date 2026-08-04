@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 from eemilib.loader.loader import Loader
 from eemilib.plotter.plotter import Plotter
-from eemilib.util.constants import ImplementedPop
+from eemilib.util.constants import ImplementedPop, col_normal
 from eemilib.util.helper import documentation_url
 from numpy.typing import NDArray
 
@@ -74,3 +74,8 @@ class EmissionData(ABC):
         self, plotter: Plotter, *args, axes: T | None = None, **kwargs
     ) -> T:
         """Plot the contained data using plotter."""
+
+    @property
+    def normal_data(self) -> NDArray[np.float64]:
+        """Get data stored in the ``col_normal`` column."""
+        return self.data[col_normal].to_numpy()

@@ -377,7 +377,7 @@ class FurmanPivi(Model):
             kwargs = dict(zip(NORMAL_TEEY_PARAM_KEYS, x))
             residuals = []
             for _teey in teeys:
-                measured = _teey.data[col_normal].to_numpy()
+                measured = _teey.normal_data
                 predicted = teey_normal(_teey.energies, **kwargs)
                 residuals.append(measured - predicted)
             return np.concatenate(residuals)
@@ -481,7 +481,7 @@ class FurmanPivi(Model):
             kwargs = dict(zip(ALL_DISTRIB_PARAMETERS, x))
             residuals = []
             for distrib in distribs:
-                measured = distrib.data[col_normal].to_numpy()
+                measured = distrib.normal_data
                 predicted = all_energy_distribution(
                     e_pe=distrib.e_pe,
                     the=0.0,
