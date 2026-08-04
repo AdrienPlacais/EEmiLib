@@ -196,14 +196,15 @@ def double_peak(
         ``share`` except for the doubled peak.
 
     """
-    doubled_data = share.data.copy()
-    data_columns = [c for c in doubled_data.columns if c != col_energy]
     if double_only_peak_value:
+        doubled_data = share.data.copy()
+        data_columns = [c for c in doubled_data.columns if c != col_energy]
         i_peak = share.i_peak
         doubled_data.loc[i_peak, data_columns] *= 2.0
+        return EBEEmissionEnergyDistribution(
+            doubled_data, e_pe=share.e_pe, norm=1.0
+        )
     else:
-        doubled_data.loc[:, data_columns] *= 2.0
-
-    return EBEEmissionEnergyDistribution(
-        doubled_data, e_pe=share.e_pe, norm=1.0
-    )
+        return EBEEmissionEnergyDistribution(
+            share.data, e_pe=share.e_pe, norm=2.0
+        )
