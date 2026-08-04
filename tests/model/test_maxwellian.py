@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 from eemilib import emission_energy_ag
 from eemilib.data.dummy.emission_energy import maxwellian_parameters_values
-from eemilib.emission_data.data_matrix import DataMatrix
+from eemilib.emission_data import DataMatrix
 from eemilib.emission_data.emission_energy_distribution import (
     AllEmissionEnergyDistribution,
 )

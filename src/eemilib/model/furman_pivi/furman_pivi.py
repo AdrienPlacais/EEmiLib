@@ -27,7 +27,7 @@ from typing import Any, cast
 import numpy as np
 import pandas as pd
 from eemilib.core.model_config import ModelConfig
-from eemilib.emission_data.data_matrix import DataMatrix
+from eemilib.emission_data import DataMatrix
 from eemilib.emission_data.emission_data import MissingDataError
 from eemilib.emission_data.emission_energy_distribution import (
     AllEmissionEnergyDistribution,
@@ -381,8 +381,8 @@ class FurmanPivi(Model):
         Parameters
         ----------
         teeys :
-            All |TEEY| stored in a :class:`~eemilib.emission_data.DataMatrix`.
-            *A priori*, there is only one |TEEY| in the list.
+            All |TEEY| stored in a :class:`.DataMatrix`. *A priori*, there is
+            only one |TEEY| in the list.
 
         """
         if len(teeys) > 1:
@@ -469,8 +469,8 @@ class FurmanPivi(Model):
         Parameters
         ----------
         teeys :
-            All |TEEY| stored in a :class:`~eemilib.emission_data.DataMatrix`.
-            *A priori*, there is only one |TEEY| in the list.
+            All |TEEY| stored in a :class:`.DataMatrix`. *A priori*, there is
+            only one |TEEY| in the list.
 
         Return
         ------

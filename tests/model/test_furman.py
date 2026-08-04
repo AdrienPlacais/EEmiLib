@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from eemilib.data import fp_copper, fp_stainless_steel
-from eemilib.emission_data.data_matrix import DataMatrix
+from eemilib.emission_data import DataMatrix
 from eemilib.emission_data.emission_energy_distribution import (
     EMISSION_ENERGIES_BY_POP,
     AllEmissionEnergyDistribution,

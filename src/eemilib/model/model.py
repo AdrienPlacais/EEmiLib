@@ -15,7 +15,7 @@ from typing import Any, ClassVar, Literal, cast, overload
 import numpy as np
 import pandas as pd
 from eemilib.core.model_config import ModelConfig
-from eemilib.emission_data.data_matrix import DataMatrix
+from eemilib.emission_data import DataMatrix
 from eemilib.emission_data.emission_data import MissingDataError
 from eemilib.emission_data.emission_yield import TEEY
 from eemilib.emission_data.helper import get_ec1, get_max

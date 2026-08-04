@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from eemilib import teey_reference_ag
-from eemilib.emission_data.data_matrix import DataMatrix
+from eemilib.emission_data import DataMatrix
 from eemilib.emission_data.emission_yield import TEEY, EmissionYield
 from eemilib.loader.pandas_loader import PandasLoader
 from eemilib.model.vaughan import Vaughan, VaughanImplementation

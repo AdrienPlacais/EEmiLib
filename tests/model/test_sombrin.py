@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from eemilib import teey_reference_ag
-from eemilib.emission_data.data_matrix import DataMatrix
+from eemilib.emission_data import DataMatrix
 from eemilib.emission_data.emission_data import EmissionData
 from eemilib.emission_data.emission_yield import TEEY
 from eemilib.loader.pandas_loader import PandasLoader

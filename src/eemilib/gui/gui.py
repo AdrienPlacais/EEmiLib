@@ -28,7 +28,7 @@ from typing import Callable, Literal
 
 import numpy as np
 from eemilib.core.model_config import ModelConfig
-from eemilib.emission_data.data_matrix import DataMatrix
+from eemilib.emission_data import DataMatrix
 from eemilib.gui.file_selection import file_selection_matrix
 from eemilib.gui.helper import (
     PARAMETER_ATTR_TO_POS,
@@ -59,7 +59,6 @@ from eemilib.util.constants import (
     ImplementedEmissionData,
     ImplementedPop,
 )
-from eemilib.util.helper import flatten
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
