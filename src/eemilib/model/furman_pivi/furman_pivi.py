@@ -31,10 +31,7 @@ from eemilib.emission_data import DataMatrix
 from eemilib.emission_data.emission_data import MissingDataError
 from eemilib.emission_data.emission_energy_distribution import (
     AllEmissionEnergyDistribution,
-    EBEEmissionEnergyDistribution,
     EmissionEnergyDistribution,
-    IBEEmissionEnergyDistribution,
-    SEEmissionEnergyDistribution,
 )
 from eemilib.emission_data.emission_yield import IBEEY, TEEY
 from eemilib.model.furman_pivi.all import (
@@ -45,19 +42,10 @@ from eemilib.model.furman_pivi.all import (
     teey,
     teey_normal,
 )
-from eemilib.model.furman_pivi.ebe import (
-    EBE_DISTRIB_PARAMETERS,
-    NORMAL_EBEEY_PARAM_KEYS,
-    OBLIQUE_EBEEY_PARAM_KEYS,
-    double_peak,
-    ebe_energy_distribution,
-    ebeey,
-)
+from eemilib.model.furman_pivi.ebe import ebe_energy_distribution, ebeey
 from eemilib.model.furman_pivi.helper import add_furman_pivi_notation
 from eemilib.model.furman_pivi.ibe import (
-    IBE_DISTRIB_PARAMETERS,
     NORMAL_IBEEY_PARAM_KEYS,
-    OBLIQUE_IBEEY_PARAM_KEYS,
     ibe_energy_distribution,
     ibeey,
     ibeey_normal,
@@ -72,10 +60,7 @@ from eemilib.model.furman_pivi.physics import (
     FurmanPiviParameters,
 )
 from eemilib.model.furman_pivi.se import (
-    NORMAL_SEEY_PARAM_KEYS,
-    OBLIQUE_SEEY_PARAM_KEYS,
     PROBA_EMIT_N_SE,
-    SE_DISTRIB_PARAMETERS,
     se_energy_distribution,
     seey,
     set_number_of_secondaries_probability_function,
@@ -564,151 +549,6 @@ class FurmanPivi(Model):
             fun=_aggregate_residue, x0=x0, bounds=(lower_bounds, upper_bounds)
         )
         return dict(zip(param_keys, lsq.x))
-
-    # Helpers
-    # Actual finders
-    def _find_se_pdf_parameters(
-        self, se_shares: Sequence[SEEmissionEnergyDistribution]
-    ) -> None:
-        p_ns = [
-            self.parameters[f"p_{i}"] for i in range(1, M_MAX_SECONDARIES + 1)
-        ]
-        eps_ns = [
-            self.parameters[f"eps_{i}"]
-            for i in range(1, M_MAX_SECONDARIES + 1)
-        ]
-        all_normal_yield_keys = (
-            NORMAL_SEEY_PARAM_KEYS
-            + OBLIQUE_SEEY_PARAM_KEYS
-            + NORMAL_EBEEY_PARAM_KEYS
-            + OBLIQUE_EBEEY_PARAM_KEYS
-            + NORMAL_IBEEY_PARAM_KEYS
-            + OBLIQUE_IBEEY_PARAM_KEYS
-        )
-        fitted = self._fit_energy_distribution(
-            se_shares,
-            se_energy_distribution,
-            SE_DISTRIB_PARAMETERS,
-            extra_kwargs={
-                **{key: self.parameters[key] for key in all_normal_yield_keys},
-                "p_ns": p_ns,
-                "eps_ns": eps_ns,
-                "proba_emit_n_se": self._proba_emit_n_se,
-                "normalization": self._normalization,
-            },
-        )
-        self.set_parameters_values(fitted)
-
-    def _find_ebe_pdf_parameters(
-        self, ebe_shares: Sequence[EBEEmissionEnergyDistribution]
-    ) -> None:
-        r"""Fit |EBE| distribution parameter :math:`\sigma_e`.
-
-        Following :cite:`Furman2002` (discussion after Eq. 27): since the
-        analytic |EBE| distribution, Eq. (26), is truncated at :math:`E_0` --
-        exactly where its peak sits -- fitting it directly against measured
-        data would underestimate the peak's contribution to the area (hence to
-        :math:`\eta_e`). The paper compensates by doubling the height of the
-        measured peak before fitting; we do the same here, on a copy of each
-        share so the original (un-doubled) measured data is left intact for
-        plotting/inspection.
-
-        Parameters
-        ----------
-        ebe_shares :
-            Decomposed |EBEEY| shares, one per measured ``"all"`` energy
-            distribution, *cf* :meth:`_decompose_energy_distributions`.
-
-        """
-        doubled_shares = [double_peak(share) for share in ebe_shares]
-        fitted = self._fit_energy_distribution(
-            doubled_shares,
-            ebe_energy_distribution,
-            EBE_DISTRIB_PARAMETERS,
-            extra_kwargs={
-                key: self.parameters[key]
-                for key in NORMAL_EBEEY_PARAM_KEYS + OBLIQUE_EBEEY_PARAM_KEYS
-            },
-        )
-        self.set_parameters_values(fitted)
-
-    def _find_ibe_pdf_parameters(
-        self, ibe_shares: Sequence[IBEEmissionEnergyDistribution]
-    ) -> None:
-        fitted = self._fit_energy_distribution(
-            ibe_shares,
-            ibe_energy_distribution,
-            IBE_DISTRIB_PARAMETERS,
-            extra_kwargs={
-                key: self.parameters[key]
-                for key in NORMAL_IBEEY_PARAM_KEYS + OBLIQUE_IBEEY_PARAM_KEYS
-            },
-        )
-        self.set_parameters_values(fitted)
-
-    def _decompose_energy_distributions(
-        self, all_distrib: Sequence[AllEmissionEnergyDistribution]
-    ) -> tuple[
-        list[SEEmissionEnergyDistribution],
-        list[EBEEmissionEnergyDistribution],
-        list[IBEEmissionEnergyDistribution],
-    ]:
-        """Decompose every measured 'all' energy distribution into shares."""
-        p_ns = [
-            self.parameters[f"p_{i}"] for i in range(1, M_MAX_SECONDARIES + 1)
-        ]
-        eps_ns = [
-            self.parameters[f"eps_{i}"]
-            for i in range(1, M_MAX_SECONDARIES + 1)
-        ]
-
-        se_shares: list[SEEmissionEnergyDistribution] = []
-        ebe_shares: list[EBEEmissionEnergyDistribution] = []
-        ibe_shares: list[IBEEmissionEnergyDistribution] = []
-        for dist in all_distrib:
-
-            def se_shape(
-                energies: NDArray[np.float64], e_pe: float = dist.e_pe
-            ) -> NDArray[np.float64]:
-                return se_energy_distribution(
-                    e_pe=e_pe,
-                    the=0.0,
-                    emission_energies=energies,
-                    p_ns=p_ns,
-                    eps_ns=eps_ns,
-                    proba_emit_n_se=self._proba_emit_n_se,
-                    normalization=self._normalization,
-                    **self.parameters,
-                )
-
-            def ebe_shape(
-                energies: NDArray[np.float64], e_pe: float = dist.e_pe
-            ) -> NDArray[np.float64]:
-                return ebe_energy_distribution(
-                    e_pe=e_pe,
-                    the=0.0,
-                    emission_energies=energies,
-                    **self.parameters,
-                )
-
-            def ibe_shape(
-                energies: NDArray[np.float64], e_pe: float = dist.e_pe
-            ) -> NDArray[np.float64]:
-                return ibe_energy_distribution(
-                    e_pe=e_pe,
-                    the=0.0,
-                    emission_energies=energies,
-                    **self.parameters,
-                )
-
-            se_share, ebe_share, ibe_share = dist.decompose(
-                se_shape, ebe_shape, ibe_shape
-            )
-            se_shares.append(se_share)
-            ebe_shares.append(ebe_share)
-            ibe_shares.append(ibe_share)
-
-        return se_shares, ebe_shares, ibe_shares
 
     # =========================================================================
     # 4. Post
