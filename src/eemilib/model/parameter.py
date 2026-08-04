@@ -193,9 +193,14 @@ class Parameter:
         if self._value == value:
             logging.debug(f"{self.name:<52}: is already {value}.")
         else:
-            logging.debug(
-                f"{self.name:<52}: updating {self._value} -> {value}"
+            debug = (
+                f"{self.name:<52}: updating {self._value:<35} -> {value:<35}"
             )
+            if abs(value - self.lower_bound) < 0.5 * self._tol:
+                debug += " new value very close to lower bound "
+            if abs(value - self.upper_bound) < 0.5 * self._tol:
+                debug += " new value very close to upper bound "
+            logging.debug(debug)
         self._value = value
 
     @property
