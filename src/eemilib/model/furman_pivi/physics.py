@@ -192,7 +192,6 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "value": 1.22,
         "lower_bound": 0.0,
         "description": "Maximum SEEY at normal incidence.",
-        "is_locked": True,
         "furman_pivi_notation": DELTA_MAX_FP,
     },
     "t_1": {
@@ -439,6 +438,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "unit": "1",
         "value": 1.9,
         "lower_bound": 0.1,  # TODO: check min/max values
+        "upper_bound": 10.0,
         "description": "Parameter in EBE PDF function.",
     },
     "eta_e_min": {
