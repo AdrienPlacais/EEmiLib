@@ -44,7 +44,9 @@ from eemilib.emission_data.emission_yield import (
     EmissionYield,
 )
 from eemilib.model.furman_pivi.all import (
+    ALL_DISTRIB_PARAMETERS,
     NORMAL_TEEY_PARAM_KEYS,
+    OBLIQUE_TEEY_PARAM_KEYS,
     all_energy_distribution,
     teey,
     teey_normal,
@@ -364,7 +366,7 @@ class FurmanPivi(Model):
         self._find_oblique_emission_yields_parameters(data_matrix)
 
         distribs = data_matrix.get_data("Emission Energy", "all")
-        self._find_energy_distribution_parameters(distribs)
+        self.find_energy_distribution_parameters(distribs)
 
     # =========================================================================
     # 1. Find best parameters for emission yield at normal incidence
@@ -470,24 +472,21 @@ class FurmanPivi(Model):
     # =========================================================================
     # 3. Find best parameters for emission distribution at normal incidence
     # =========================================================================
-    def _find_energy_distribution_parameters(
+    def find_energy_distribution_parameters(
         self, distribs: Sequence[AllEmissionEnergyDistribution]
     ) -> None:
-        """Orchestrate fitting of all normal energy distribution parameters.
-
-        1. De-normalize emission energy measurements.
-
-        """
+        """Orchestrate fitting of all normal energy distribution parameters."""
         for d in distribs:
             d.norm = 1.0
             d.normalize()
 
-        se_shares, ebe_shares, ibe_shares = (
-            self._decompose_energy_distributions(distribs)
-        )
-        self._find_se_pdf_parameters(se_shares)
-        self._find_ebe_pdf_parameters(ebe_shares)
-        self._find_ibe_pdf_parameters(ibe_shares)
+        self._find_all_pdf_parameters(distribs)
+        # se_shares, ebe_shares, ibe_shares = (
+        #     self._decompose_energy_distributions(distribs)
+        # )
+        # self._find_se_pdf_parameters(se_shares)
+        # self._find_ebe_pdf_parameters(ebe_shares)
+        # self._find_ibe_pdf_parameters(ibe_shares)
 
     # Actual finders
     def _find_se_pdf_parameters(
@@ -565,6 +564,33 @@ class FurmanPivi(Model):
             extra_kwargs={
                 key: self.parameters[key]
                 for key in NORMAL_IBEEY_PARAM_KEYS + OBLIQUE_IBEEY_PARAM_KEYS
+            },
+        )
+        self.set_parameters_values(fitted)
+
+    def _find_all_pdf_parameters(
+        self, distribs: Sequence[EmissionEnergyDistribution]
+    ) -> None:
+        p_ns = [
+            self.parameters[f"p_{i}"] for i in range(1, M_MAX_SECONDARIES + 1)
+        ]
+        eps_ns = [
+            self.parameters[f"eps_{i}"]
+            for i in range(1, M_MAX_SECONDARIES + 1)
+        ]
+        fitted = self._fit_energy_distribution(
+            distribs,
+            all_energy_distribution,
+            ALL_DISTRIB_PARAMETERS,
+            extra_kwargs={
+                **{
+                    key: self.parameters[key]
+                    for key in NORMAL_TEEY_PARAM_KEYS + OBLIQUE_TEEY_PARAM_KEYS
+                },
+                "p_ns": p_ns,
+                "eps_ns": eps_ns,
+                "proba_emit_n_se": self._proba_emit_n_se,
+                "normalization": self._normalization,
             },
         )
         self.set_parameters_values(fitted)
