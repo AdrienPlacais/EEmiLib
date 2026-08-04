@@ -197,28 +197,24 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": T1,
         "unit": "1",
         "value": 0.66,
-        "lower_bound": 0.0,  # TODO: check min/max values
         "description": "Scaling parameter in SEEY impact angle fit.",
     },
     "t_2": {
         "markdown": T2,
         "unit": "1",
         "value": 0.80,
-        "lower_bound": 0.0,  # TODO: check min/max values
         "description": "Exponent parameter in SEEY impact angle fit.",
     },
     "t_3": {
         "markdown": T3,
         "unit": "1",
         "value": 0.70,
-        "lower_bound": 0.0,  # TODO: check min/max values
         "description": "Scaling parameter in SEEY energy impact angle fit.",
     },
     "t_4": {
         "markdown": T4,
         "unit": "1",
         "value": 1.0,
-        "lower_bound": 0.0,  # TODO: check min/max values
         "description": "Exponent parameter in SEEY energy impact angle fit.",
     },
     "s": {
@@ -469,14 +465,12 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": E1,
         "unit": "1",
         "value": 0.26,
-        "lower_bound": 0.0,  # TODO: check min/max values
         "description": "Scaling parameter in EBEEY impact angle fit.",
     },
     "e_2": {
         "markdown": E2,
         "unit": "1",
         "value": 2.0,
-        "lower_bound": 0.0,  # TODO: check min/max values
         "description": "Exponent parameter in EBEEY impact angle fit.",
     },
     # =====================================================================
@@ -514,21 +508,18 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": Q,
         "unit": "1",
         "value": 0.4,
-        "lower_bound": 0.0,  # TODO: check min/max values
         "description": "Parameter in the IBEEY PDF function.",
     },
     "r_1": {
         "markdown": R1,
         "unit": "1",
         "value": 0.26,
-        "lower_bound": 0.0,  # TODO: check min/max values
         "description": "Scaling parameter in IBEEY impact angle fit.",
     },
     "r_2": {
         "markdown": R2,
         "unit": "1",
         "value": 2.0,
-        "lower_bound": 0.0,  # TODO: check min/max values
         "description": "Exponent parameter in IBEEY impact angle fit.",
     },
 }
