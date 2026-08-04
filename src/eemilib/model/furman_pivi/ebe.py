@@ -174,7 +174,7 @@ def ebe_energy_distribution(
 
 
 def double_peak(
-    share: EBEEmissionEnergyDistribution,
+    share: EBEEmissionEnergyDistribution, double_only_peak_value: bool = False
 ) -> EBEEmissionEnergyDistribution:
     r"""Return a copy of ``share`` with its peak height doubled.
 
@@ -196,11 +196,14 @@ def double_peak(
         ``share`` except for the doubled peak.
 
     """
-    return share
-    i_peak = share.i_peak
     doubled_data = share.data.copy()
     data_columns = [c for c in doubled_data.columns if c != col_energy]
-    doubled_data.loc[i_peak, data_columns] *= 2.0
+    if double_only_peak_value:
+        i_peak = share.i_peak
+        doubled_data.loc[i_peak, data_columns] *= 2.0
+    else:
+        doubled_data.loc[:, data_columns] *= 2.0
+
     return EBEEmissionEnergyDistribution(
         doubled_data, e_pe=share.e_pe, norm=1.0
     )

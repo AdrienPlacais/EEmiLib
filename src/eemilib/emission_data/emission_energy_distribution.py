@@ -69,6 +69,9 @@ class EmissionEnergyDistribution(EmissionData):
         self.unnormalized_data = self.data
         self.normalize()
 
+    def __str__(self) -> str:
+        return f"EnergyDistribution of {self.population}, {self.e_pe = }"
+
     @classmethod
     def _from_filepath(
         cls,
@@ -198,13 +201,49 @@ class EmissionEnergyDistribution(EmissionData):
         )
 
     def normalize(self) -> None:
-        """Normalize the distribution by :attr:`norm`."""
+        """Normalize the distribution by :attr:`norm`.
+
+        It alters values in ``self.data``, keeping ``self.unnormalized_data``
+        intact.
+
+        """
         if self.norm is None:
             raise ValueError("Cannot normalize if norm is None")
+
         data_columns = [c for c in self.data.columns if c != col_energy]
         self.data[data_columns] = (
             self.unnormalized_data[data_columns] / self.norm
         )
+        logging.debug(f"{str(self)}: normalized signal by {self.norm}")
+
+    def rescale(
+        self, objective_yield: float, norm: float | None = None
+    ) -> None:
+        """Rescale the un-normalized data by given ``scale``.
+
+        In contrary to :meth:`.normalize`, it alters the stored
+        :attr:`unnormalized_data`. It was made to keep the integral of the
+        signal equal to corresponding emission yield.
+
+        """
+        former_area = self._emission_yield
+        scale = objective_yield / former_area
+
+        data_columns = [c for c in self.data.columns if c != col_energy]
+        self.unnormalized_data[data_columns] *= scale
+
+        new_area = self._emission_yield
+
+        logging.debug(
+            f"{str(self)}: rescaled by {scale:.3f} in order to retrieve an "
+            f"area {objective_yield = :.3f}. {former_area = :.3f} -> "
+            f"{new_area = :.3f}"
+        )
+
+        if norm is None:
+            return
+        self.norm = norm
+        self.normalize()
 
     @property
     def _se_ebe_limit(self) -> int:
@@ -225,6 +264,26 @@ class EmissionEnergyDistribution(EmissionData):
         """
         i = self.data[col_normal].argmax()
         return i, float(self.data.at[i, col_normal])
+
+    @property
+    def _emission_yield(self) -> float:
+        """Integrate signal to have corresponding emission yield.
+
+        If the distribution was not rescaled, the given yield will be probably
+        very off.
+
+        .. warning::
+           Area is calculated from the un-normalized data.
+
+        """
+        area = float(
+            np.trapezoid(
+                self.unnormalized_data[col_normal].to_numpy(), self.energies
+            )
+        )
+        if area <= 0:
+            raise ValueError(f"Measured area is non-positive for {str(self)}")
+        return area
 
 
 class SEEmissionEnergyDistribution(EmissionEnergyDistribution):

@@ -610,20 +610,4 @@ class DataMatrix:
             expected_area = float(
                 np.interp(e_pe, yield_energies, yield_values)
             )
-            measured_area = float(
-                np.trapezoid(
-                    distrib.data[col_normal].to_numpy(), distrib.energies
-                )
-            )
-            if measured_area <= 0:
-                logging.warning(
-                    f"Measured area is non-positive for {e_pe = }; skipping "
-                    "rescaling for this distribution."
-                )
-                continue
-
-            scale = expected_area / measured_area
-            data_columns = [c for c in distrib.data.columns if c != col_energy]
-            distrib.data[data_columns] *= scale
-            distrib.unnormalized_data[data_columns] *= scale
-        logging.debug("Rescaled emission energies to emission yields.")
+            distrib.rescale(objective_yield=expected_area, norm=1.0)

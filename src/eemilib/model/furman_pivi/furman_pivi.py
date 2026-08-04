@@ -36,13 +36,7 @@ from eemilib.emission_data.emission_energy_distribution import (
     IBEEmissionEnergyDistribution,
     SEEmissionEnergyDistribution,
 )
-from eemilib.emission_data.emission_yield import (
-    EBEEY,
-    IBEEY,
-    SEEY,
-    TEEY,
-    EmissionYield,
-)
+from eemilib.emission_data.emission_yield import IBEEY, TEEY
 from eemilib.model.furman_pivi.all import (
     ALL_DISTRIB_PARAMETERS,
     NORMAL_TEEY_PARAM_KEYS,
@@ -58,7 +52,6 @@ from eemilib.model.furman_pivi.ebe import (
     double_peak,
     ebe_energy_distribution,
     ebeey,
-    ebeey_normal,
 )
 from eemilib.model.furman_pivi.helper import add_furman_pivi_notation
 from eemilib.model.furman_pivi.ibe import (
@@ -85,7 +78,6 @@ from eemilib.model.furman_pivi.se import (
     SE_DISTRIB_PARAMETERS,
     se_energy_distribution,
     seey,
-    seey_normal,
     set_number_of_secondaries_probability_function,
 )
 from eemilib.model.model import Model
@@ -476,10 +468,6 @@ class FurmanPivi(Model):
         self, distribs: Sequence[AllEmissionEnergyDistribution]
     ) -> None:
         """Orchestrate fitting of all normal energy distribution parameters."""
-        for d in distribs:
-            d.norm = 1.0
-            d.normalize()
-
         self._find_all_pdf_parameters(distribs)
         # se_shares, ebe_shares, ibe_shares = (
         #     self._decompose_energy_distributions(distribs)
