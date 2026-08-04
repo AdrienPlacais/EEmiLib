@@ -277,9 +277,10 @@ class TEEY(SEEY):
         at that energy:
 
         .. math::
-        \hat\delta_\mathrm{pop}(E) = \sigma_\mathrm{measured}(E) \times
-        \frac{\mathrm{shape}_\mathrm{pop}(E)} {\mathrm{shape}_\mathrm{SE}(E) +
-        \mathrm{shape}_\mathrm{EBE}(E) + \mathrm{shape}_\mathrm{IBE}(E)}
+            \hat\delta_\mathrm{pop}(E) = \sigma_\mathrm{measured}(E) \times
+            \frac{\mathrm{shape}_\mathrm{pop}(E)}
+            {\mathrm{shape}_\mathrm{SE}(E) + \mathrm{shape}_\mathrm{EBE}(E) +
+            \mathrm{shape}_\mathrm{IBE}(E)}
 
         This is a soft decomposition (fractional weights, not a hard cutoff),
         mirroring :meth:`.AllEmissionEnergyDistribution.decompose`. Only the
@@ -293,13 +294,13 @@ class TEEY(SEEY):
             Function returning the expected (unnormalized) |SEEY| at the given
             impact energies. Must already be bound to the relevant parameters
             (e.g. via :func:`functools.partial` applied to
-            :func:`.furman_pivi.seey`).
+            :func:`.furman_pivi.se.seey`).
         ebe_shape :
             Same as ``se_shape``, for |EBEEY| (e.g. bound
-            :func:`.furman_pivi.ebeey`).
+            :func:`.furman_pivi.ebe.ebeey`).
         ibe_shape :
             Same as ``se_shape``, for |IBEEY| (e.g. bound
-            :func:`.furman_pivi.ibeey`).
+            :func:`.furman_pivi.ibe.ibeey`).
 
         Return
         ------

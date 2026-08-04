@@ -142,9 +142,7 @@ class Maxwellian(Model):
         if not data_matrix.has_all_mandatory_files(self.model_config):
             raise MissingDataError("Files are not all provided.")
 
-        distributions = data_matrix.get_data(
-            population=population, data_type="Emission Energy"
-        )
+        distributions = data_matrix.get_data("Emission Energy", population)
         if not distributions:
             raise MissingDataError(f"Missing emission energy for {population}")
 

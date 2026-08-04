@@ -247,9 +247,7 @@ def test_emission_yields_values(
     model: FurmanPivi = request.getfixturevalue(model_fixture)
     data_matrix: MockDataMatrix = request.getfixturevalue(data_fixture)
 
-    expected = data_matrix.get_data(
-        population=population, data_type="Emission Yield"
-    )[0]
+    expected = data_matrix.get_data("Emission Yield", population)[0]
     assert isinstance(expected, EmissionYield)
     energy = np.array(expected.energies)
     theta = np.array(expected.angles)
@@ -299,9 +297,7 @@ def test_energy_distribution_values(
     model: FurmanPivi = request.getfixturevalue(model_fixture)
     data_matrix: MockDataMatrix = request.getfixturevalue(data_fixture)
 
-    expected = data_matrix.get_data(
-        population=population, data_type="Emission Energy"
-    )[0]
+    expected = data_matrix.get_data("Emission Energy", population)[0]
     emission_energies = np.array(expected.energies)
     theta = np.array(expected.angles)
 

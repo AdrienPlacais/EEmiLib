@@ -35,6 +35,7 @@ autodoc_default_options = {
     "private-members": True,
     "special-members": "__post_init__, __str__",
     "undoc-members": True,
+    # "no-index": ["eemilib.emission_data.DataMatrix"],
 }
 
 add_module_names = False

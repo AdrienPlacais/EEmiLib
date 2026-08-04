@@ -84,9 +84,7 @@ def test_modelled_maxwellian_agains_cst(
     model = Maxwellian(parameters_values=maxwellian_parameters_values)
 
     data_matrix = energy_distrib_data
-    expected = data_matrix.get_data(
-        population="all", data_type="Emission Energy"
-    )[0]
+    expected = data_matrix.get_data("Emission Energy", "all")[0]
     emission_energies = np.array(expected.energies)
     theta = np.array(expected.angles)
 

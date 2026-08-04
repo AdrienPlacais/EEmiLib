@@ -11,7 +11,7 @@ class Parameter:
     Actual parameter value is stored in :attr:`.value`, but you can perform
     most float operations directly on the instance:
 
-    .. codeblock:: python
+    .. code-block:: python
 
        param: Parameter(...)
 

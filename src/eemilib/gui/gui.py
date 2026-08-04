@@ -10,12 +10,12 @@
 
 .. todo::
     Allow ``None`` for energies, so that measurements energies are picked up.
-    Idea:
-        - Checkbox "Use energies from measurements".
-        - Clicking it greys out the ``energies`` linspace definition.
-          - May also auto-fill it?
-        - This checkbox is greyed out/unclickable if no data was plotted,
-          *i.e.* if current `Axes` contains no `Line2D`.
+    Ideas:
+    - Checkbox "Use energies from measurements".
+    - Clicking it greys out the ``energies`` linspace definition.
+        - May also auto-fill it?
+    - This checkbox is greyed out/unclickable if no data was plotted,
+        *i.e.* if current `Axes` contains no `Line2D`.
 
 """
 
@@ -703,9 +703,7 @@ class MainWindow(QMainWindow):
 
         all_pop_data = []
         for pop in IMPLEMENTED_POP:
-            data = data_matrix.get_data(
-                population=pop, data_type=data_type_to_plot
-            )
+            data = data_matrix.get_data(data_type_to_plot, pop)
             if not data:
                 continue
             all_pop_data.append(data)

@@ -353,16 +353,12 @@ class FurmanPivi(Model):
         if not data_matrix.has_all_mandatory_files(self.model_config):
             raise MissingDataError("Files are not all provided.")
 
-        teeys = data_matrix.get_data(
-            population="all", data_type="Emission Yield"
-        )
+        teeys = data_matrix.get_data("Emission Yield", "all")
         self._find_normal_emission_yields_parameters(teeys)
 
         self._find_oblique_emission_yields_parameters(data_matrix)
 
-        distribs = data_matrix.get_data(
-            population="all", data_type="Emission Energy"
-        )
+        distribs = data_matrix.get_data("Emission Energy", "all")
         self._find_energy_distribution_parameters(distribs)
 
     # =========================================================================
@@ -385,8 +381,8 @@ class FurmanPivi(Model):
         Parameters
         ----------
         teeys :
-            All |TEEY| stored in a :class:`.DataMatrix`. *A priori*, there is
-            only one |TEEY| in the list.
+            All |TEEY| stored in a :class:`~eemilib.emission_data.DataMatrix`.
+            *A priori*, there is only one |TEEY| in the list.
 
         """
         if len(teeys) > 1:
@@ -405,8 +401,9 @@ class FurmanPivi(Model):
     def _find_normal_seey_parameters(self, se_shares: Sequence[SEEY]) -> None:
         r"""Fit normal |SEEY| parameters, *ie* :data:`.NORMAL_SEEY_PARAM_KEYS`.
 
-        Jointly fits :func:`_seey_normal` against every decomposed |SEEY| share
-        at once, *cf* Eqs. (31)/(32) in :cite:`Furman2002`.
+        Jointly fits :func:`.furman_pivi.se.seey_normal` against every
+        decomposed |SEEY| share at once, *cf* Eqs. (31)/(32) in
+        :cite:`Furman2002`.
 
         Parameters
         ----------
@@ -425,8 +422,8 @@ class FurmanPivi(Model):
     ) -> None:
         r"""Fit normal |EBEEY| parameters: :data:`.NORMAL_EBEEY_PARAM_KEYS`.
 
-        Jointly fits :func:`.furman_pivi.ebeey_normal` against every decomposed
-        |EBEEY| share at once, *cf* Eq. (25) in :cite:`Furman2002`.
+        Jointly fits :func:`.furman_pivi.ebe.ebeey_normal` against every
+        decomposed |EBEEY| share at once, *cf* Eq. (25) in :cite:`Furman2002`.
 
         Parameters
         ----------
@@ -445,8 +442,8 @@ class FurmanPivi(Model):
     ) -> None:
         r"""Fit normal |IBEEY| parameters: :data:`.NORMAL_IBEEY_PARAM_KEYS`.
 
-        Jointly fits :func:`.furman_pivi.ibeey_normal` against every decomposed
-        |IBEEY| share at once, *cf* Eq. (25) in :cite:`Furman2002`.
+        Jointly fits :func:`.furman_pivi.ibe.ibeey_normal` against every
+        decomposed |IBEEY| share at once, *cf* Eq. (25) in :cite:`Furman2002`.
 
         Parameters
         ----------
@@ -464,7 +461,7 @@ class FurmanPivi(Model):
     def _decompose_teeys(
         self, teeys: Sequence[TEEY]
     ) -> tuple[list[SEEY], list[EBEEY], list[IBEEY]]:
-        """Decompose every measured |TEEY| into |SEEY|/|EBEY|/|IBEY| shares.
+        """Decompose every measured |TEEY| into |SEEY|/|EBEEY|/|IBEEY| shares.
 
         Uses the currently-set |SEEY|, |EBEEY|, |IBEEY| parameters as
         decomposition shapes, *cf* :meth:`.TEEY.decompose`.
@@ -472,8 +469,8 @@ class FurmanPivi(Model):
         Parameters
         ----------
         teeys :
-            All |TEEY| stored in a :class:`.DataMatrix`. *A priori*, there is
-            only one |TEEY| in the list.
+            All |TEEY| stored in a :class:`~eemilib.emission_data.DataMatrix`.
+            *A priori*, there is only one |TEEY| in the list.
 
         Return
         ------
@@ -522,7 +519,7 @@ class FurmanPivi(Model):
             in ``param_keys`` as keyword arguments.
         param_keys :
             Names of ``physics_func``'s keyword parameters to fit, matching
-            keys in :attr:`self.parameters`. Likely,
+            keys in :attr:`.FurmanPivi.parameters`. Likely,
             :data:`.NORMAL_SEEY_PARAM_KEYS`, :data:`.NORMAL_EBEEY_PARAM_KEYS`
             or  `:data:`.NORMAL_IBEEY_PARAM_KEYS`.
 
@@ -565,18 +562,20 @@ class FurmanPivi(Model):
         Specifically:
 
         1. Fit :math:`E_\mathrm{IBE}`, :math:`\eta_{i,\,\mathrm{max}}` and
-        :math:`r` from the exponential law (:func:`_ibeey_normal`) on the
-        normal incidence |IBEEY| measurements.
-        2. Fit :math:`r_1` and :math:`r_2` from :func:`at_theta_incidence`
-        oblique incidence |IBEEY| measurements.
-        3. Fit :math:`q` from :func:`ibe_energy_distribution` on all the
-        |IBE| emission energy distribution measurements.
+           :math:`r` from the exponential law
+           (:func:`.furman_pivi.ibe.ibeey_normal`) on the normal incidence
+           |IBEEY| measurements.
+        2. Fit :math:`r_1` and :math:`r_2` from
+           :func:`.furman_pivi.physics.at_theta_incidence` oblique incidence
+           |IBEEY| measurements.
+        3. Fit :math:`q` from :func:`.furman_pivi.ibe.ibe_energy_distribution`
+           on all the |IBE| emission energy distribution measurements.
 
         .. note::
-        If you do not have specific measurement files for the |IBEEY|, it
-        is important to have at least one |TEEY| measurement at normal
-        incidence and high impact energies. Otherwise, it is hard to
-        discriminate |SEEY| from |IBEEY|.
+            If you do not have specific measurement files for the |IBEEY|, it
+            is important to have at least one |TEEY| measurement at normal
+            incidence and high impact energies. Otherwise, it is hard to
+            discriminate |SEEY| from |IBEEY|.
 
         Parameters
         ----------
@@ -778,8 +777,8 @@ class FurmanPivi(Model):
         Stacks residuals across every decomposed share (one per measured
         ``"all"`` energy distribution) into a single least-squares problem.
         Unlike :meth:`_fit_normal_yield`, ``pdf_func`` also needs fixed,
-        non-fitted context (impact energy, incidence angle, emission
-        energies, and — for |SEs| — the truncated-sum machinery), supplied via
+        non-fitted context (impact energy, incidence angle, emission energies,
+        and -- for |SEs| -- the truncated-sum machinery), supplied via
         ``e_pe``/``the``/``emission_energies`` (bound per share) and
         ``extra_kwargs`` (bound once, shared across every share).
 
@@ -795,11 +794,12 @@ class FurmanPivi(Model):
             ``extra_kwargs``.
         param_keys :
             Names of ``pdf_func``'s keyword parameters to fit, matching keys in
-            :attr:`self.parameters`.
+            :attr:`.FurmanPivi.parameters`.
         extra_kwargs :
             Additional fixed keyword arguments ``pdf_func`` needs but that are
             not being fitted (e.g. ``p_ns``, ``eps_ns``, ``proba_emit_n_se``,
-            ``normalization`` for :func:`.se_energy_distribution`).
+            ``normalization`` for
+            :func:`.furman_pivi.se.se_energy_distribution`).
 
         Return
         ------
