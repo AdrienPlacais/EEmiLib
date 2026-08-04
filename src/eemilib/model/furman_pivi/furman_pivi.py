@@ -453,11 +453,12 @@ class FurmanPivi(Model):
         self, distribs: Sequence[AllEmissionEnergyDistribution]
     ) -> None:
         """Orchestrate fitting of all normal energy distribution parameters."""
-        self._find_all_pdf_parameters(distribs)
+        self._fit_energy_distribs(distribs)
 
-    def _find_all_pdf_parameters(
+    def _fit_energy_distribs(
         self, distribs: Sequence[EmissionEnergyDistribution]
     ) -> None:
+        """Fit energy distributions parameters."""
         p_ns = [
             self.parameters[f"p_{i}"] for i in range(1, M_MAX_SECONDARIES + 1)
         ]
@@ -465,75 +466,26 @@ class FurmanPivi(Model):
             self.parameters[f"eps_{i}"]
             for i in range(1, M_MAX_SECONDARIES + 1)
         ]
-        fitted = self._fit_energy_distribution(
-            distribs,
-            all_energy_distribution,
-            ALL_DISTRIB_PARAMETERS,
-            extra_kwargs={
-                **{
-                    key: self.parameters[key]
-                    for key in NORMAL_TEEY_PARAM_KEYS + OBLIQUE_TEEY_PARAM_KEYS
-                },
-                "p_ns": p_ns,
-                "eps_ns": eps_ns,
-                "proba_emit_n_se": self._proba_emit_n_se,
-                "normalization": self._normalization,
+        extra_kwargs = {
+            **{
+                key: self.parameters[key]
+                for key in NORMAL_TEEY_PARAM_KEYS + OBLIQUE_TEEY_PARAM_KEYS
             },
-        )
-        self.set_parameters_values(fitted)
-
-    def _fit_energy_distribution(
-        self,
-        shares: Sequence[EmissionEnergyDistribution],
-        pdf_func: Callable[..., NDArray[np.float64]],
-        param_keys: tuple[str, ...],
-        extra_kwargs: dict[str, Any] | None = None,
-    ) -> dict[str, float]:
-        """Jointly fit an emission energy distribution function's parameters.
-
-        Stacks residuals across every decomposed share (one per measured
-        ``"all"`` energy distribution) into a single least-squares problem.
-        Unlike :meth:`_fit_normal_yield`, ``pdf_func`` also needs fixed,
-        non-fitted context (impact energy, incidence angle, emission energies,
-        and -- for |SEs| -- the truncated-sum machinery), supplied via
-        ``e_pe``/``the``/``emission_energies`` (bound per share) and
-        ``extra_kwargs`` (bound once, shared across every share).
-
-        Parameters
-        ----------
-        shares :
-            Decomposed emission energy distribution shares, *cf*
-            :meth:`.AllEmissionEnergyDistribution.decompose`.
-        pdf_func :
-            Function computing the emission energy distribution. Takes
-            ``e_pe``, ``the``, ``emission_energies`` as keyword arguments, plus
-            the parameters named in ``param_keys``, plus anything in
-            ``extra_kwargs``.
-        param_keys :
-            Names of ``pdf_func``'s keyword parameters to fit, matching keys in
-            :attr:`.FurmanPivi.parameters`.
-        extra_kwargs :
-            Additional fixed keyword arguments ``pdf_func`` needs but that are
-            not being fitted (e.g. ``p_ns``, ``eps_ns``, ``proba_emit_n_se``,
-            ``normalization`` for
-            :func:`.furman_pivi.se.se_energy_distribution`).
-
-        Return
-        ------
-            Dict mapping each of ``param_keys`` to its fitted value.
-
-        """
-        extra_kwargs = extra_kwargs or {}
+            "p_ns": p_ns,
+            "eps_ns": eps_ns,
+            "proba_emit_n_se": self._proba_emit_n_se,
+            "normalization": self._normalization,
+        }
 
         def _aggregate_residue(x: NDArray[np.float64]) -> NDArray[np.float64]:
-            kwargs = dict(zip(param_keys, x))
+            kwargs = dict(zip(ALL_DISTRIB_PARAMETERS, x))
             residuals = []
-            for share in shares:
-                measured = share.data[col_normal].to_numpy()
-                predicted = pdf_func(
-                    e_pe=share.e_pe,
+            for distrib in distribs:
+                measured = distrib.data[col_normal].to_numpy()
+                predicted = all_energy_distribution(
+                    e_pe=distrib.e_pe,
                     the=0.0,
-                    emission_energies=share.energies,
+                    emission_energies=distrib.energies,
                     halve_ebe_contribution=True,
                     **kwargs,
                     **extra_kwargs,
@@ -541,14 +493,19 @@ class FurmanPivi(Model):
                 residuals.append(measured - predicted)
             return np.concatenate(residuals)
 
-        x0 = [self.parameters[key].value for key in param_keys]
-        lower_bounds = [self.parameters[key].lower_bound for key in param_keys]
-        upper_bounds = [self.parameters[key].upper_bound for key in param_keys]
+        x0 = [self.parameters[key].value for key in ALL_DISTRIB_PARAMETERS]
+        lower_bounds = [
+            self.parameters[key].lower_bound for key in ALL_DISTRIB_PARAMETERS
+        ]
+        upper_bounds = [
+            self.parameters[key].upper_bound for key in ALL_DISTRIB_PARAMETERS
+        ]
 
         lsq = least_squares(
             fun=_aggregate_residue, x0=x0, bounds=(lower_bounds, upper_bounds)
         )
-        return dict(zip(param_keys, lsq.x))
+        fitted = dict(zip(ALL_DISTRIB_PARAMETERS, lsq.x))
+        self.set_parameters_values(fitted)
 
     # =========================================================================
     # 4. Post
