@@ -43,7 +43,12 @@ from eemilib.emission_data.emission_yield import (
     TEEY,
     EmissionYield,
 )
-from eemilib.model.furman_pivi.all import all_energy_distribution, teey
+from eemilib.model.furman_pivi.all import (
+    NORMAL_TEEY_PARAM_KEYS,
+    all_energy_distribution,
+    teey,
+    teey_normal,
+)
 from eemilib.model.furman_pivi.ebe import (
     EBE_DISTRIB_PARAMETERS,
     NORMAL_EBEEY_PARAM_KEYS,
@@ -392,10 +397,11 @@ class FurmanPivi(Model):
         for _teey in teeys:
             self.parameters["normal_e_max_se"].value = _teey.e_max
             # self.parameters["normal_delta_max"].value = _teey.ey_max
-        se_shares, ebe_shares, ibe_shares = self._decompose_teeys(teeys)
-        self._find_normal_seey_parameters(se_shares)
-        self._find_normal_ebeey_parameters(ebe_shares)
-        self._find_normal_ibeey_parameters(ibe_shares)
+        self._find_normal_teey_parameters(teeys)
+        # se_shares, ebe_shares, ibe_shares = self._decompose_teeys(teeys)
+        # self._find_normal_seey_parameters(se_shares)
+        # self._find_normal_ebeey_parameters(ebe_shares)
+        # self._find_normal_ibeey_parameters(ibe_shares)
 
     # Actual finders
     def _find_normal_seey_parameters(self, se_shares: Sequence[SEEY]) -> None:
@@ -454,6 +460,13 @@ class FurmanPivi(Model):
         """
         fitted = self._fit_normal_yield(
             ibe_shares, ibeey_normal, NORMAL_IBEEY_PARAM_KEYS
+        )
+        self.set_parameters_values(fitted)
+
+    def _find_normal_teey_parameters(self, teey: Sequence[TEEY]) -> None:
+        """Find the TEEY in one pass. Alternative."""
+        fitted = self._fit_normal_yield(
+            teey, teey_normal, NORMAL_TEEY_PARAM_KEYS
         )
         self.set_parameters_values(fitted)
 
