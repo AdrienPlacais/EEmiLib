@@ -53,13 +53,16 @@ skip-magic-trailing-comma = true
 
 [tool.ruff.lint]
 extend-select = [
-  "UP", # pyupgrade
-  "D",  # pydocstyle
-  # "ANN", # flake8
+  "UP",  # pyupgrade
+  "D",   # pydocstyle
+  "ANN", # flake8
 ]
 ignore = [
-  "LOG015", # TODO: fix LOG015 (use own logger)
+  "ANN002", # Missing type annotation for `*args`
+  "ANN003", # Missing type annotation for `*kwargs`
+  "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
   "BLE001", # Do not catch blind exception: `Exception`
+  "LOG015", # TODO: fix LOG015 (use own logger)
 ]
 
 [tool.ruff.lint.isort]
@@ -67,6 +70,7 @@ split-on-trailing-comma = false
 
 [tool.ruff.lint.per-file-ignores]
 "examples/**" = ["D"]
+"tests/**" = ["ANN"]
 
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib", "--strict-markers"]
