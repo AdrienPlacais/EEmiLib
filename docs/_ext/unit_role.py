@@ -9,7 +9,7 @@ from sphinx.util.typing import ExtensionMetadata
 
 
 class UnitRole(SphinxRole):
-    """A role to display units in math's mathrm format.
+    r"""A role to display units in math's mathrm format.
 
     Note that in order to show units such as Ohm, the omega must be escaped
     twice: :unit:`\\Omega`.
@@ -17,6 +17,7 @@ class UnitRole(SphinxRole):
     """
 
     def run(self) -> tuple[list[nodes.Node], list[nodes.system_message]]:
+        """Format the given string to unit style."""
         text = f"\\mathrm{{{self.text}}}"
         node = nodes.math(text=text)
         return [node], []

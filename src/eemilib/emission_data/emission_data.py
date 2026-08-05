@@ -90,4 +90,5 @@ class EmissionData(ABC):
 
     @property
     def oblique_data(self) -> list[NDArray[np.float64]]:
+        """Get non-normal data."""
         return [self.data[x].to_numpy() for x in self._oblique_columns]

@@ -61,6 +61,8 @@ class PandasLoader(Loader):
             Column delimiter.
         comment :
             Comment character.
+        population :
+            Concerned population. Unused by this loader.
 
         Returns
         -------
@@ -90,6 +92,7 @@ class PandasLoader(Loader):
         return df
 
     def load_emission_angle_distribution(self, *args) -> Any:
+        """Load an emission angle file."""
         raise NotImplementedError
 
     def load_emission_energy_distribution(
@@ -140,6 +143,8 @@ class PandasLoader(Loader):
             Column delimiter.
         comment :
             Comment character.
+        kwargs :
+            Unused by this loader.
 
         Returns
         -------

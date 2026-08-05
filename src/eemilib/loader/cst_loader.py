@@ -205,7 +205,7 @@ class CSTLoader(Loader):
 
         Parameters
         ----------
-        filepath :
+        filepaths :
             Path to files holding data under study.
         population :
             Population to extract from the file.
@@ -228,6 +228,7 @@ class CSTLoader(Loader):
         ]
 
     def load_emission_angle_distribution(self, *args) -> Any:
+        """Load emission angle files."""
         raise NotImplementedError
 
     def load_emission_energy_distributions(
@@ -304,6 +305,8 @@ class CSTLoader(Loader):
             Column delimiter.
         comment :
             Comment character.
+        kwargs :
+            Additional kwargs, ignored.
 
         Returns
         -------

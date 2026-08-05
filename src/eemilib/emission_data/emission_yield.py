@@ -82,6 +82,7 @@ class EmissionYield(EmissionData):
     def from_filepaths(
         cls, loader: Loader, *filepath: DataPath, population: ImplementedPop
     ) -> list[Self]:
+        """Create obect from several files."""
         return [
             cls._from_filepath(loader, fp, population=population)
             for fp in filepath

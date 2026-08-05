@@ -34,6 +34,8 @@ class DeesseLoader(Loader):
         ----------
         filepath :
             Path(s) to file holding data under study.
+        population :
+            Concerned population of electrons. Unused by this loader.
 
         Returns
         -------
@@ -75,6 +77,7 @@ class DeesseLoader(Loader):
         return angle
 
     def load_emission_angle_distribution(self, *args) -> Any:
+        """Load an emission angle file."""
         raise NotImplementedError
 
     def load_emission_energy_distribution(
@@ -95,6 +98,8 @@ class DeesseLoader(Loader):
         e_pes :
             Energy of |PEs| in :unit:`eV`, for every path in ``filepaths``.
             Should be manually provided, as not present in DEESSE files.
+        kwargs :
+            Unused additional arguments.
 
         Returns
         -------
@@ -133,6 +138,8 @@ class DeesseLoader(Loader):
         e_pe :
             Energy of |PEs| in :unit:`eV`. Should be manually provided, as not
             present in DEESSE files.
+        population :
+            Concerned population. Unused by this loader.
 
         Returns
         -------
