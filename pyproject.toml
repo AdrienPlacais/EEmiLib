@@ -60,10 +60,10 @@ ignore = [
   "LOG015", # TODO: fix LOG015 (use own logger)
   "BLE001", # Do not catch blind exception: `Exception`
 ]
-#
-# [tool.ruff.lint.isort]
-# split-on-trailing-comma = false
-#
+
+[tool.ruff.lint.isort]
+split-on-trailing-comma = false
+
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib", "--strict-markers"]
 filterwarnings = ["ignore:.*cKDTree.*:DeprecationWarning"]
