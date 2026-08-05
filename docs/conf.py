@@ -138,6 +138,7 @@ sphinx_gallery_conf = {
             "../examples/plot_maxwellian.py",
             "../examples/plot_chung.py",
             "../examples/plot_vaughan.py",
+            "../examples/plot_furman_pivi.py",
             "*",
         ]
     ),

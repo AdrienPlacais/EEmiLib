@@ -83,7 +83,7 @@ Two alternative implementations for Vaughan are implemented: `CST` and
 GUI
 ***
 
-Select your implementation from the `Parameters` menu.
+Select your implementation from the `Implementations` menu.
 
 API
 ***
