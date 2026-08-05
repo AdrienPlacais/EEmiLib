@@ -323,4 +323,5 @@ def test_find_optimal_parameters(
     pec_cst: MockDataMatrix,
     population: ImplementedPop,
 ) -> None:
+    """Check that optimal parameters can be found."""
     raise NotImplementedError

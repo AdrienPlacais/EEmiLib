@@ -777,6 +777,7 @@ class MainWindow(QMainWindow):
 
 
 def main():
+    """Build the GUI interface."""
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()

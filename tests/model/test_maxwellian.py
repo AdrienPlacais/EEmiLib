@@ -82,6 +82,7 @@ def test_emission_energy_distribution_output_shape(
 def test_modelled_maxwellian_agains_cst(
     energy_distrib_data: MockDataMatrix,
 ) -> None:
+    """Check that this model matches CST results."""
     model = Maxwellian(parameters_values=maxwellian_parameters_values)
 
     data_matrix = energy_distrib_data
