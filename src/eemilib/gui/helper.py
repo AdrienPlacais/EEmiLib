@@ -112,13 +112,13 @@ def setup_linspace_entries(
     layout.addWidget(QLabel(label))
 
     widgets: list[QWidget] = []
-    for label, is_int, x_0, x_max in zip(
+    for button_label, is_int, x_0, x_max in zip(
         ("first", "last", "n_points"),
         (False, False, True),
         initial_values,
         (max_value, max_value, None),
     ):
-        layout.addWidget(QLabel(label))
+        layout.addWidget(QLabel(button_label))
         widgets.append(w := _linspace_entry(is_int, x_0=x_0, x_max=x_max))
         layout.addWidget(w)
 
