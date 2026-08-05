@@ -1,4 +1,4 @@
-"""This module define functions related to |EBEs|."""
+"""Define functions related to |EBEs|."""
 
 import numpy as np
 from numpy.typing import NDArray
@@ -55,6 +55,27 @@ def ebeey_normal(
                   / p
             }
 
+    Parameters
+    ----------
+    ene :
+        Impact energy of the |PE| in :unit:`eV`.
+    normal_e_max_ebe :
+        Furman and Pivi normal |EBEEY| parameter.
+    eta_e_max :
+        Furman and Pivi normal |EBEEY| parameter.
+    eta_e_min :
+        Furman and Pivi normal |EBEEY| parameter.
+    W :
+        Furman and Pivi normal |EBEEY| parameter.
+    p :
+        Furman and Pivi normal |EBEEY| parameter.
+    kwargs :
+        Other unused parameters.
+
+    Returns
+    -------
+        |EBEEY| at normal incidence.
+
     """
     _in_exp = (abs(ene - normal_e_max_ebe) / W) ** p
     return eta_e_min + (eta_e_max - eta_e_min) * np.exp(-_in_exp / p)
@@ -72,11 +93,38 @@ def ebeey(
     e_2: Parameter | float,
     **kwargs,
 ) -> float:
-    """Compute |EBEEY|.
+    r"""Compute |EBEEY|.
 
     First, we compute |EBEEY| at normal incidence using :func:`ebeey_normal`.
     Then, we compute it at provided incidence angle using
     :func:`.physics.at_theta_incidence`.
+
+    Parameters
+    ----------
+    ene :
+        Impact energy of the |PE| in :unit:`eV`.
+    the :
+        Impact angle of the |PE| in :unit:`\degree`.
+    normal_e_max_ebe :
+        Furman and Pivi normal |EBEEY| parameter.
+    eta_e_max :
+        Furman and Pivi normal |EBEEY| parameter.
+    eta_e_min :
+        Furman and Pivi normal |EBEEY| parameter.
+    W :
+        Furman and Pivi normal |EBEEY| parameter.
+    p :
+        Furman and Pivi normal |EBEEY| parameter.
+    e_1 :
+        Furman and Pivi oblique |EBEEY| parameter.
+    e_2 :
+        Furman and Pivi oblique |EBEEY| parameter.
+    kwargs :
+        Other unused parameters.
+
+    Returns
+    -------
+        |EBEEY| at oblique incidence.
 
     """
     return at_theta_incidence(
@@ -123,24 +171,24 @@ def ebe_energy_distribution(
     ----------
     e_pe :
         Impact energy of the |PE| in :unit:`eV`.
-    theta :
+    the :
         Impact angle of the |PE| in :unit:`\degree`.
     emission_energies :
         |EBE| emission energies you want the distribution from.
     normal_e_max_ebe :
-        Furman and Pivi |EBEEY| parameter.
+        Furman and Pivi normal |EBEEY| parameter.
     eta_e_max :
-        Furman and Pivi |EBEEY| parameter.
+        Furman and Pivi normal |EBEEY| parameter.
     eta_e_min :
-        Furman and Pivi |EBEEY| parameter.
+        Furman and Pivi normal |EBEEY| parameter.
     W :
-        Furman and Pivi |EBEEY| parameter.
+        Furman and Pivi normal |EBEEY| parameter.
     p :
-        Furman and Pivi |EBEEY| parameter.
+        Furman and Pivi normal |EBEEY| parameter.
     e_1 :
-        Furman and Pivi |EBEEY| parameter.
+        Furman and Pivi oblique |EBEEY| parameter.
     e_2 :
-        Furman and Pivi |EBEEY| parameter.
+        Furman and Pivi oblique |EBEEY| parameter.
     sigma :
         Furman and Pivi |EBE| PDF parameter.
     kwargs :

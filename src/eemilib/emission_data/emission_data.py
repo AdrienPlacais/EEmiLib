@@ -44,7 +44,7 @@ class EmissionData(ABC):
         self.data = data
         self._n_points = len(self.data)
 
-        self.energies: NDArray[np.float64] | list[float]
+        self.energies: NDArray[np.float64]
         self.angles: NDArray[np.float64] | list[float]
 
     @classmethod

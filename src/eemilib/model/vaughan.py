@@ -319,7 +319,7 @@ class Vaughan(Model):
         self.set_parameter_value("E_0", E_0)
 
     def _E_0_matching(self, *, E_c1: float) -> float:
-        """Fit E_0 to retrieve E_c1 (SPARK3D)"""
+        """Fit E_0 to retrieve E_c1 (SPARK3D)."""
         parameters = self.parameters.copy()
 
         def _to_minimize(E_0: float) -> float:

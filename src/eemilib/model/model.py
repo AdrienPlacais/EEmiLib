@@ -68,7 +68,9 @@ class Model(ABC):
     implementation_choices: ClassVar[dict[str, tuple[str, ...]]] = {}
 
     def __init__(
-        self, *args, parameters_values: dict[str, Any] | None = None, **kwargs
+        self,
+        parameters_values: dict[str, Any] | None = None,
+        url_doc_override: str | None = None,
     ) -> None:
         """Instantiate the object.
 
@@ -77,14 +79,18 @@ class Model(ABC):
         parameters_values :
             Contains name of parameters and associated value. If provided, will
             override the default values set in ``initial_parameters``.
+        url_doc_override :
+            Override default URL in documentation.
 
         """
-        self.doc_url = documentation_url(self, **kwargs)
+        self.doc_url = documentation_url(
+            self, url_doc_override=url_doc_override
+        )
         #: A :class:`.TypedDict` specific to every :class:`.model.Model`. Keys
         #: are parameters names, values are :class:`.Parameter`.
         self.parameters: Any
-        #: Maps each axis name (see :attr:`.Model.implementation_choices`) to the
-        #: currently selected option.
+        #: Maps each axis name (see :attr:`.Model.implementation_choices`) to
+        #: the currently selected option.
         self.current_implementations: dict[str, str] = {}
 
     @classmethod
@@ -315,6 +321,8 @@ class Model(ABC):
             energies to plot at, only used when ``axes`` is not given (nothing
             to infer impact energies from otherwise). If ``axes`` is given,
             its keys are used instead and ``e_pes`` is ignored.
+        grid :
+            Whether a grid should be drawn.
         kwargs :
             Other keyword arguments passed to the underlying plotting routine.
 
@@ -594,9 +602,13 @@ class Model(ABC):
         ----------
         data_matrix :
             Holds all measured electron emission data.
+        args :
+            Additional unused arguments.
         evaluations :
             Maps names of quality criterions with their actual value. If given,
             it will be preserved and additional evaluations may be added.
+        kwargs :
+            Additional unused kwargs.
 
         Returns
         -------

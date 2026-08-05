@@ -58,6 +58,8 @@ class Loader(ABC):
         e_pes :
             |PEs| energies, if the loader cannot find them in the given files.
             Must have the same length as ``filepaths``.
+        kwargs :
+            Additional keyword arguments.
 
         Returns
         -------

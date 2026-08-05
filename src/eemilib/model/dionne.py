@@ -339,6 +339,8 @@ def generation(
     excitation_energy :
         Energy required to excite a secondary electron in the material in
         :unit:`eV`.
+    atol :
+        Absolute tolerance to reject ranges too close to 0.
 
     Returns
     -------

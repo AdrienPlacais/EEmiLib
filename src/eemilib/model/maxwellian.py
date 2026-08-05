@@ -133,6 +133,8 @@ class Maxwellian(Model):
             Population on which data should be fitted. Even if the model is
             about |SEs|, we fit on ``"all"`` population by default because in
             general we measure the distribution energy of all electrons.
+        kwargs :
+            Unused additional kwargs.
 
         """
         if not data_matrix.has_all_mandatory_files(self.model_config):

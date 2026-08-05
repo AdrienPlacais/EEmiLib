@@ -267,10 +267,22 @@ class FurmanPivi(Model):
 
         Parameters
         ----------
+        population :
+            Type of electrons to data from.
+        data_type :
+            Type of data to get.
+        energy :
+            Energies at which you want data.
+        theta :
+            Angles at which you want data.
         e_pe :
             Only used when ``data_type == "Emission Energy"``. Impact
             energy :math:`E_0` at which the emitted-energy spectrum is
             evaluated. If not given, defaults to the last value of ``energy``.
+        args :
+            Other arguments passed to mother method.
+        kwargs :
+            Other arguments passed to mother method.
 
         """
         if data_type == "Emission Angle":
@@ -314,6 +326,8 @@ class FurmanPivi(Model):
         data_matrix :
             Measurement data to fit. Must contain emission yield and emission
             energy.
+        kwargs :
+            Unused kwargs.
 
         """
         if not data_matrix.has_all_mandatory_files(self.model_config):

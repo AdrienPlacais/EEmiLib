@@ -72,6 +72,7 @@ class EmissionEnergyDistribution(EmissionData):
         self.normalize()
 
     def __str__(self) -> str:
+        """Print concise info on current object."""
         return f"EnergyDistribution of {self.population}, {self.e_pe = }"
 
     @classmethod
@@ -145,6 +146,8 @@ class EmissionEnergyDistribution(EmissionData):
         e_pes :
             |PEs| energies, if the loader cannot find them in the given files.
             Must have the same length as ``filepaths``.
+        norms :
+            Norm for every ``filepath``.
 
         Return
         ------

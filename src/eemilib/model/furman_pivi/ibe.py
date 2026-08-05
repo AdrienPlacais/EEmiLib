@@ -1,4 +1,4 @@
-"""This module holds everything |IBE| related."""
+"""Define everything |IBE| related."""
 
 import numpy as np
 from numpy.typing import NDArray
@@ -42,6 +42,23 @@ def ibeey_normal(
             }
             \right)
 
+    Parameters
+    ----------
+    ene :
+        Impact energy of the |PE| in :unit:`eV`.
+    e_ibe :
+        Furman and Pivi normal |IBEEY| parameter.
+    eta_i_max :
+        Furman and Pivi normal |IBEEY| parameter.
+    r :
+        Furman and Pivi normal |IBEEY| parameter.
+    kwargs :
+        Additional unused kwargs.
+
+    Returns
+    -------
+        |IBEEY| at normal incidence.
+
     """
     return eta_i_max * (1 - np.exp(-((ene / e_ibe) ** r)))
 
@@ -56,11 +73,40 @@ def ibeey(
     r_2: Parameter | float,
     **kwargs,
 ) -> float:
-    """Compute |IBEEY|.
+    r"""Compute |IBEEY|.
 
     First, we compute |IBEEY| at normal incidence using :func:`ibeey_normal`.
     Then, we compute it at provided incidence angle using
     :func:`.at_theta_incidence`.
+
+    Parameters
+    ----------
+    ene :
+        Impact energy of the |PE| in :unit:`eV`.
+    the :
+        Impact angle of the |PE| in :unit:`\degree`.
+    e_ibe :
+        Furman and Pivi normal |IBEEY| parameter.
+    eta_i_max :
+        Furman and Pivi normal |IBEEY| parameter.
+    r :
+        Furman and Pivi normal |IBEEY| parameter.
+    e_ibe :
+        Furman and Pivi normal |IBEEY| parameter.
+    eta_i_max :
+        Furman and Pivi normal |IBEEY| parameter.
+    r :
+        Furman and Pivi normal |IBEEY| parameter.
+    r_1 :
+        Furman and Pivi oblique |IBEEY| parameter.
+    r_2 :
+        Furman and Pivi oblique |IBEEY| parameter.
+    kwargs :
+        Additional unused kwargs.
+
+    Returns
+    -------
+        |IBEEY| at oblique incidence.
 
     """
     return at_theta_incidence(
@@ -98,22 +144,24 @@ def ibe_energy_distribution(
     ----------
     e_pe :
         Impact energy of the |PE| in :unit:`eV`.
-    theta :
+    the :
         Impact angle of the |PE| in :unit:`\degree`.
     emission_energies :
         |IBE| emission energies you want the distribution from.
     e_ibe :
-        Furman and Pivi |IBEEY| parameter.
+        Furman and Pivi normal |IBEEY| parameter.
     eta_i_max :
-        Furman and Pivi |IBEEY| parameter.
+        Furman and Pivi normal |IBEEY| parameter.
     r :
-        Furman and Pivi |IBEEY| parameter.
+        Furman and Pivi normal |IBEEY| parameter.
     r_1 :
-        Furman and Pivi |IBEEY| parameter.
+        Furman and Pivi oblique |IBEEY| parameter.
     r_2 :
-        Furman and Pivi |IBEEY| parameter.
+        Furman and Pivi oblique |IBEEY| parameter.
     q :
         Furman and Pivi |IBE| PDF parameter.
+    kwargs :
+        Additional unused kwargs.
 
     Returns
     -------

@@ -190,6 +190,8 @@ class PandasLoader(Loader):
             Column delimiter.
         comment :
             Comment character.
+        population :
+            Unused.
 
         Returns
         -------

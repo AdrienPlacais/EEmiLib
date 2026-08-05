@@ -162,6 +162,8 @@ class ChungEverhart(Model):
             Population on which data should be fitted. Even if the model is
             about |SEs|, we fit on ``"all"`` population by default because in
             general we measure the distribution energy of all electrons.
+        kwargs :
+            Additional unused parameters.
 
         """
         if not data_matrix.has_all_mandatory_files(self.model_config):
@@ -176,9 +178,7 @@ class ChungEverhart(Model):
             return np.concatenate(
                 [
                     _residue(
-                        w_f,
-                        distribution.data[COL_ENERGY].to_numpy(),
-                        distribution.data[COL_NORMAL].to_numpy(),
+                        w_f, distribution.energies, distribution.normal_data
                     )
                     for distribution in distributions
                 ]

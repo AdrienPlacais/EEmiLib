@@ -101,6 +101,8 @@ def at_theta_incidence(
         Exponent parameter.
     tol :
         Angle limit under which we consider incidence angle to be normal.
+    kwargs :
+        Additional unused kwargs.
 
     Return
     ------

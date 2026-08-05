@@ -51,13 +51,13 @@ class Plotter(ABC):
         DEFAULT_IS_MODEL_STYLES
     )
 
-    def __init__(self, *args, gui: bool = False, **kwargs) -> None:
+    def __init__(self, gui: bool = False) -> None:
         """Instantiate the object.
 
         Parameters
         ----------
         gui :
-            Can be used if using the GUI, eg to activate interactive mode.
+            Activates interactive plotting if using GUI.
 
         """
         self.doc_url = documentation_url(self)
