@@ -88,7 +88,7 @@ class LoaderSettingsDialog(QDialog):
             )
         )
 
-        def on_ok():
+        def on_ok() -> None:
             self.apply()
             self.accept()
 
