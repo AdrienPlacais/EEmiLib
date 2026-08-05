@@ -336,7 +336,6 @@ def set_number_of_secondaries_probability_function(
         probability to emit this number of |SEs|.
 
     """
-
     if model == "Binomial":
 
         def probability(seey: float, n: int) -> float:

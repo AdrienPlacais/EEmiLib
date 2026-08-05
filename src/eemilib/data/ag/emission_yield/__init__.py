@@ -1,5 +1,4 @@
-"""
-Emission yield measurements realized at ONERA, Toulouse, France using the
+"""Emission yield measurements realized at ONERA, Toulouse, France using the
 DEESSE test facility from 2018-05-29 to 2018-05-30.
 
 This is an Ag sample that was heated at 200 celsius during 2 hours. It is

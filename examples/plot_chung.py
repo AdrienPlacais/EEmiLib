@@ -1,5 +1,4 @@
-"""
-Chung and Everhart
+"""Chung and Everhart
 ==================
 
 This script showcases:

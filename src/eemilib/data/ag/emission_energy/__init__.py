@@ -1,5 +1,4 @@
-"""
-Emission energy measurements realized at ONERA, Toulouse, France using the
+"""Emission energy measurements realized at ONERA, Toulouse, France using the
 DEESSE test facility on 2018-05-30.
 
 This is an Ag sample that was heated at 200 celsius during 2 hours. It is

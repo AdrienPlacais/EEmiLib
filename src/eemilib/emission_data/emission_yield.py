@@ -181,6 +181,7 @@ class SEEY(EmissionYield):
         Returns
         -------
             :math:`E_{max}` and :math:`\sigma_{max}`.
+
         """
         e_max, sigma_max = get_emax_eymax(normal_ey)
         if abs(e_max - self.energies[-1]) < tol_energy:

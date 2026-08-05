@@ -86,7 +86,6 @@ class DeesseLoader(Loader):
     ) -> dict[DataPath, tuple[pd.DataFrame, float | None]]:
         """Load and format several emission energy files from DEESSE.
 
-
         Parameters
         ----------
         filepaths :

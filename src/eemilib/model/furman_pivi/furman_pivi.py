@@ -390,7 +390,6 @@ class FurmanPivi(Model):
 
     def _fit_oblique_teey(self, teeys: Sequence[TEEY]) -> None:
         r"""Find oblique |TEEY| parameters."""
-
         extra_kwargs = {
             **{key: self.parameters[key] for key in NORMAL_TEEY_PARAM_KEYS}
         }

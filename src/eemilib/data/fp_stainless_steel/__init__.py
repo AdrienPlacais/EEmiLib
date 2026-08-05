@@ -19,7 +19,7 @@ Quoting Furman and Pivi :cite:`Furman2002`:
 Parameters are taken from Tab. 1 and 2 in Furman and Pivi paper
 :cite:`Furman2002` (stainless steel). Data generated using CST.
 
-Note
+Note:
 ----
 These settings are the default in CST when selecting Furman and Pivi model.
 

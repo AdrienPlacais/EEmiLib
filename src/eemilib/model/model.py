@@ -476,8 +476,7 @@ class Model(ABC):
         grid: bool = True,
         **kwargs,
     ) -> dict[float, T]:
-        """
-        Plot ``"Emission Energy"`` model predictions, one axes per |PE| energy.
+        """Plot ``"Emission Energy"`` model predictions, one axes per |PE| energy.
 
         If ``axes`` is given, its keys determine which impact energies to plot
         at (and their axes are re-used). Otherwise, ``e_pes`` must be given.

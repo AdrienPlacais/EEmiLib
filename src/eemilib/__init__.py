@@ -1,5 +1,4 @@
-"""
-EEmiLib (Electron EMIssion Library) holds several electron emission models and
+"""EEmiLib (Electron EMIssion Library) holds several electron emission models and
 offers a simple way to fit the on electron emission data.
 
 """
