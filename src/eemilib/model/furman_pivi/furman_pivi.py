@@ -81,8 +81,8 @@ EMISSION_YIELD_FUNCS: dict[ImplementedPop, Callable] = {
 class FurmanPivi(Model):
     """Define the Furman and Pivi model :cite:`Furman2002,Furman2013`."""
 
-    data_types = ["Emission Yield", "Emission Energy"]
-    populations = ["EBE", "IBE", "SE"]
+    data_types = ("Emission Yield", "Emission Energy")
+    populations = ("EBE", "IBE", "SE")
     considers_energy = True
     is_3d = True
     is_dielectrics_compatible = False

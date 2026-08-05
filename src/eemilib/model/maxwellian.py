@@ -34,8 +34,8 @@ class MaxwellianParameters(TypedDict):
 class Maxwellian(Model):
     """Maxwellian distribution."""
 
-    data_types = ["Emission Energy"]
-    populations = ["SE"]
+    data_types = ("Emission Energy",)
+    populations = ("SE",)
     considers_energy = True
     is_3d = False
     is_dielectrics_compatible = False

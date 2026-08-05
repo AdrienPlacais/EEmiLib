@@ -57,8 +57,8 @@ class VaughanParameters(TypedDict):
 class Vaughan(Model):
     """Define the classic Vaughan model."""
 
-    data_types = ["Emission Yield"]
-    populations = ["all"]
+    data_types = ("Emission Yield",)
+    populations = ("all",)
     considers_energy = True
     is_3d = True
     is_dielectrics_compatible = False

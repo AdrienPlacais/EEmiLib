@@ -57,8 +57,8 @@ class Model(ABC):
 
     """
 
-    data_types: list[ImplementedEmissionData]
-    populations: list[ImplementedPop]
+    data_types: tuple[ImplementedEmissionData, ...]
+    populations: tuple[ImplementedPop, ...]
     considers_energy: bool
     is_3d: bool
     is_dielectrics_compatible: bool

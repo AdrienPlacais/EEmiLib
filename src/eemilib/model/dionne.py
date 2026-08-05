@@ -62,8 +62,8 @@ class DionneParameters(TypedDict):
 class Dionne(Model):
     """Define the Dionne model :cite:`Lye1957,Dionne1973,Dionne1975`."""
 
-    data_types = ["Emission Yield"]
-    populations = ["SE"]
+    data_types = ("Emission Yield",)
+    populations = ("SE",)
     considers_energy = True
     is_3d = False
     is_dielectrics_compatible = False
