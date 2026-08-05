@@ -55,6 +55,7 @@ skip-magic-trailing-comma = true
 extend-select = [
   "UP", # pyupgrade
   "D",  # pydocstyle
+  # "ANN", # flake8
 ]
 ignore = [
   "LOG015", # TODO: fix LOG015 (use own logger)
@@ -64,7 +65,7 @@ ignore = [
 [tool.ruff.lint.isort]
 split-on-trailing-comma = false
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "examples/**" = ["D"]
 
 [tool.pytest.ini_options]

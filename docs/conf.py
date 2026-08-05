@@ -1,3 +1,5 @@
+"""Define configuration for Sphinx doc builder."""
+
 import os
 import sys
 
