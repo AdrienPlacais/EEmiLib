@@ -217,7 +217,7 @@ class MainWindow(QMainWindow):
         )
         self.loader_classes = classes
         dropdown.currentIndexChanged.connect(self._setup_loader)
-        dropdown.setCurrentText
+        _ = dropdown.setCurrentText
         self.dropdowns["Loader"] = dropdown
         self.loader_help_button = buttons[0]
         self._data_model_layout.addLayout(layout)
