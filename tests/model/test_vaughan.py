@@ -12,7 +12,6 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_array_almost_equal
 from numpy.typing import NDArray
-from pytest import approx
 
 from eemilib import teey_reference_ag
 from eemilib.emission_data import DataMatrix
@@ -70,7 +69,7 @@ def test_teey_output_shape(vaughan_model: Vaughan) -> None:
 
 # fmt: off
 @pytest.mark.parametrize(
-    "emission_yield,expected",
+    ("emission_yield", "expected"),
     [
         pytest.param(
             TEEY(
@@ -156,13 +155,19 @@ def test_find_optimal_parameters(
     found_parameters = {
         name: val.value for name, val in vaughan_model.parameters.items()
     }
-    assert expected == approx(found_parameters)
+    assert expected == pytest.approx(found_parameters)
 # fmt: on
 
 
 # fmt: off
 @pytest.mark.parametrize(
-    "vaughan_parameters,vaughan_implementation,energy,theta,expected",
+    (
+        "vaughan_parameters",
+        "vaughan_implementation",
+        "energy",
+        "theta",
+        "expected",
+    ),
     [
         pytest.param(
             {
@@ -270,7 +275,7 @@ def test_error_ec1(vaughan_model: Vaughan, reference_ag: DataMatrix) -> None:
     vaughan_model.find_optimal_parameters(reference_ag)
     returned = vaughan_model._error_ec1(reference_ag.teey)
     expected = 23.4
-    assert returned == approx(expected, abs=1e-2)
+    assert returned == pytest.approx(expected, abs=1e-2)
 
 
 @pytest.mark.xfail
@@ -283,4 +288,4 @@ def test_error_teey(vaughan_model: Vaughan, reference_ag: DataMatrix) -> None:
     vaughan_model.find_optimal_parameters(reference_ag)
     returned = vaughan_model._error_teey(reference_ag.teey)
     expected = 3.1
-    assert returned == approx(expected, abs=1e-3)
+    assert returned == pytest.approx(expected, abs=1e-3)

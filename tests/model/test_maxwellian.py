@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
-from pytest import approx
 
 from eemilib import emission_energy_ag
 from eemilib.data.dummy.emission_energy import maxwellian_parameters_values
@@ -106,7 +105,7 @@ def test_modelled_maxwellian_agains_cst(
 
 
 @pytest.mark.parametrize(
-    "filepath,expected",
+    ("filepath", "expected"),
     [
         pytest.param(
             emission_energy_ag / "corrected_cleanAg0_150eV_2018.05.30.csv",
@@ -129,4 +128,4 @@ def test_find_optimal_parameters(
     found_parameters = {
         name: val.value for name, val in model.parameters.items()
     }
-    assert found_parameters == approx(expected)
+    assert found_parameters == pytest.approx(expected)

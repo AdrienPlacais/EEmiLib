@@ -53,9 +53,10 @@ skip-magic-trailing-comma = true
 
 [tool.ruff.lint]
 extend-select = [
-  "UP",  # pyupgrade
-  "D",   # pydocstyle
   "ANN", # flake8
+  "D",   # pydocstyle
+  "PT",  # pytest
+  "UP",  # pyupgrade
 ]
 ignore = [
   "ANN002", # Missing type annotation for `*args`

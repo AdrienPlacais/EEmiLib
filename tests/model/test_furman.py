@@ -221,7 +221,7 @@ def test_emission_yields_output_shape(
 
 
 @pytest.mark.parametrize(
-    "model_fixture, data_fixture",
+    ("model_fixture", "data_fixture"),
     [
         pytest.param(
             "furman_pivi_ss", "emission_data_ss", id="Stainless steel"
@@ -264,7 +264,7 @@ def test_emission_yields_values(
 
 
 @pytest.mark.parametrize(
-    "model_fixture, data_fixture",
+    ("model_fixture", "data_fixture"),
     [
         pytest.param(
             "furman_pivi_ss", "energy_distrib_data_ss", id="Stainless steel"
