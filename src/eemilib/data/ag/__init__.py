@@ -1,4 +1,6 @@
-"""Measurements performed at ONERA, Toulouse, France using the DEESSE test
+"""Ag |TEEY| and emission distribution.
+
+Measurements performed at ONERA, Toulouse, France using the DEESSE test
 facility from 2018-05-28 to 2018-06-04.
 
 This is an Ag sample that was heated at 200 celsius during 2 hours. It is
