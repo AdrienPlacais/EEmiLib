@@ -27,6 +27,8 @@ from eemilib.util.markdown import E_MAX, EC_1, SIGMA_MAX
 
 
 class SombrinParameters(TypedDict):
+    """Parameters for :class:`.Sombrin`."""
+
     E_max: Parameter
     teey_max: Parameter
     E_c1: Parameter

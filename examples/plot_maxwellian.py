@@ -1,4 +1,5 @@
-"""Maxwellian
+"""
+Maxwellian
 ==========
 
 This script showcases the basics of loading data and fitting a model.

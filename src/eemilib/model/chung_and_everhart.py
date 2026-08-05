@@ -29,6 +29,8 @@ from eemilib.util.markdown import NORM, W_F
 
 
 class ChungEverhartParameters(TypedDict):
+    """Parameters for :class:`.ChungEverhart`."""
+
     W_f: Parameter
     norm: Parameter
 

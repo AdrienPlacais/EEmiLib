@@ -45,6 +45,8 @@ E_0_SPARK3D = 10.0
 
 
 class VaughanParameters(TypedDict):
+    """Parameters for :class:`.Vaughan`."""
+
     E_0: Parameter
     E_max: Parameter
     delta_E_transition: Parameter

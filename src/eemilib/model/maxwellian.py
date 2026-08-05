@@ -28,6 +28,8 @@ from eemilib.util.markdown import NORM, TEMPERATURE
 
 
 class MaxwellianParameters(TypedDict):
+    """Parameters for :class:`.Maxwellian`."""
+
     temperature: Parameter
     norm: Parameter
 

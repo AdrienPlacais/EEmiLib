@@ -121,6 +121,8 @@ def at_theta_incidence(
 
 
 class FurmanPiviParameters(TypedDict):
+    """Parameters for :class:`.FurmanPivi`."""
+
     # =========================================================================
     # True secondary emission
     # =========================================================================

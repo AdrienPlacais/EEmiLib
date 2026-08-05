@@ -53,6 +53,8 @@ ENERGY_LOSS_MODELS = ("Power law", "CSDA", "Inguimbert")
 
 
 class DionneParameters(TypedDict):
+    """Parameters for :class:`.Dionne`."""
+
     excitation_energy: Parameter
     diffusion_length: Parameter
     escape_probability: Parameter

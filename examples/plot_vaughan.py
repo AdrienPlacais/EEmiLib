@@ -1,4 +1,5 @@
-"""Vaughan
+"""
+Vaughan
 =======
 
 This script showcases:
