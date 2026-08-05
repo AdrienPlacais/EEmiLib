@@ -64,6 +64,9 @@ ignore = [
 [tool.ruff.lint.isort]
 split-on-trailing-comma = false
 
+[tool.ruff.per-file-ignores]
+"examples/**" = ["D"]
+
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib", "--strict-markers"]
 filterwarnings = ["ignore:.*cKDTree.*:DeprecationWarning"]
