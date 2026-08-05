@@ -9,9 +9,9 @@ import logging
 import re
 
 import matplotlib.pyplot as plt
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QEvent, Qt
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QLabel
+from PyQt5.QtWidgets import QLabel, QWidget
 
 TITLE_STYLE = "QGroupBox { font-size: 14px; font-weight: bold; }"
 FILE_LIST_MAX_HEIGHT = 40
@@ -200,7 +200,7 @@ class MathTextLabel(QLabel):
         units: str,
         fontsize: int = MATH_LABEL_FONTSIZE,
         dpi: int = MATH_LABEL_DPI,
-        parent=None,
+        parent: QWidget | None = None,
     ) -> None:
         """Init object."""
         super().__init__(parent)
@@ -216,7 +216,7 @@ class MathTextLabel(QLabel):
         # not blank before the first layout pass.
         self._render(MATH_LABEL_DEFAULT_WIDTH_PX)
 
-    def resizeEvent(self, event) -> None:
+    def resizeEvent(self, event: QEvent) -> None:
         """Re-render the pixmap whenever the widget width changes."""
         super().resizeEvent(event)
         new_width = event.size().width()
