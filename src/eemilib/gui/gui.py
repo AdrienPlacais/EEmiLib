@@ -776,7 +776,7 @@ class MainWindow(QMainWindow):
             set_dropdown_value(self.dropdowns[key], self._defaults[key])
 
 
-def main():
+def main() -> None:
     """Build the GUI interface."""
     app = QApplication(sys.argv)
     window = MainWindow()

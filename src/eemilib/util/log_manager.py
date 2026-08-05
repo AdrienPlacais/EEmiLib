@@ -160,7 +160,7 @@ def set_up_logging(
     return True
 
 
-def main():
+def main() -> int:
     """Set up logging."""
     if not set_up_logging(
         package_name="EEmiLib",
