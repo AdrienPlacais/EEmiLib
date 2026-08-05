@@ -1,8 +1,9 @@
 import os
 import sys
 
-import eemilib
 from sphinx_gallery.sorting import ExplicitOrder
+
+import eemilib
 
 project = "EEmiLib"
 copyright = "2025, Adrien Plaçais"

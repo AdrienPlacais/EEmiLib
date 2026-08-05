@@ -24,11 +24,29 @@ import importlib
 import logging
 import sys
 from abc import ABCMeta
+from collections.abc import Callable
 from types import ModuleType
 from typing import Literal
-from collections.abc import Callable
 
 import numpy as np
+from PyQt5.QtWidgets import (
+    QApplication,
+    QCheckBox,
+    QComboBox,
+    QGroupBox,
+    QHeaderView,
+    QLineEdit,
+    QListWidget,
+    QMainWindow,
+    QPushButton,
+    QRadioButton,
+    QTableWidget,
+    QTableWidgetItem,
+    QTabWidget,
+    QVBoxLayout,
+    QWidget,
+)
+
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
 from eemilib.gui.file_selection import file_selection_matrix
@@ -60,23 +78,6 @@ from eemilib.util.constants import (
     IMPLEMENTED_POP,
     ImplementedEmissionData,
     ImplementedPop,
-)
-from PyQt5.QtWidgets import (
-    QApplication,
-    QCheckBox,
-    QComboBox,
-    QGroupBox,
-    QHeaderView,
-    QLineEdit,
-    QListWidget,
-    QMainWindow,
-    QPushButton,
-    QRadioButton,
-    QTableWidget,
-    QTableWidgetItem,
-    QTabWidget,
-    QVBoxLayout,
-    QWidget,
 )
 
 DROPDOWNS = ("Loader", "Model", "Plotter")

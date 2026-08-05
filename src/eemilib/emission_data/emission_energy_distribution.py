@@ -2,11 +2,13 @@
 
 import logging
 from abc import abstractmethod
-from typing import Self
 from collections.abc import Callable, Sequence
+from typing import Self
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
+
 from eemilib.emission_data.emission_data import EmissionData
 from eemilib.loader.helper import DataPath
 from eemilib.loader.loader import Loader
@@ -17,7 +19,6 @@ from eemilib.util.constants import (
     ImplementedPop,
     md_energy_distrib,
 )
-from numpy.typing import NDArray
 
 
 class EmissionEnergyDistribution(EmissionData):

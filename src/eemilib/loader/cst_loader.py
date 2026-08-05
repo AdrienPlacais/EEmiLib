@@ -10,6 +10,7 @@ import re
 from typing import Any
 
 import pandas as pd
+
 from eemilib.loader.helper import read_text
 from eemilib.loader.loader import DataPath, Loader
 from eemilib.util.constants import COL_ENERGY, ImplementedPop

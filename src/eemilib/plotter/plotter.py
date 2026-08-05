@@ -6,9 +6,10 @@ from typing import Any
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
+
 from eemilib.util.constants import ImplementedEmissionData, ImplementedPop
 from eemilib.util.helper import documentation_url
-from numpy.typing import NDArray
 
 _COLORS_LIST = plt.rcParams["axes.prop_cycle"].by_key()["color"]
 

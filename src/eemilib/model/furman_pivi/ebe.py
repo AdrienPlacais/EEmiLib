@@ -1,11 +1,12 @@
 """This module define functions related to |EBEs|."""
 
 import numpy as np
+from numpy.typing import NDArray
+from scipy.special import erf
+
 from eemilib.model.furman_pivi.helper import remove_extrema
 from eemilib.model.furman_pivi.physics import at_theta_incidence
 from eemilib.model.parameter import Parameter
-from numpy.typing import NDArray
-from scipy.special import erf
 
 #: Parameters used for calculation of |EBEEY| at normal incidence.
 NORMAL_EBEEY_PARAM_KEYS = (

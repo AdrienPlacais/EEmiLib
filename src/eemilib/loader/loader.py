@@ -1,10 +1,10 @@
 """Define the ABC for the :class:`Loader`."""
 
 from abc import ABC, abstractmethod
-from collections.abc import Collection
-from collections.abc import Sequence
+from collections.abc import Collection, Sequence
 
 import pandas as pd
+
 from eemilib.loader.helper import DataPath
 from eemilib.util.constants import ImplementedPop
 from eemilib.util.helper import documentation_url

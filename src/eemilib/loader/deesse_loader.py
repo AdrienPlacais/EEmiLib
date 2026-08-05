@@ -1,12 +1,13 @@
 """Define a loader adapted to DEESSE (ONERA, Toulouse) file format."""
 
 import logging
+from collections.abc import Sequence
 from importlib.resources.abc import Traversable
 from pathlib import Path
 from typing import Any
-from collections.abc import Sequence
 
 import pandas as pd
+
 from eemilib.loader.helper import DataPath
 from eemilib.loader.loader import Loader
 from eemilib.util.constants import COL_ENERGY, COL_NORMAL, ImplementedPop

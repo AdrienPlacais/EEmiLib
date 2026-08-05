@@ -10,9 +10,6 @@
 
 import logging
 
-from eemilib.gui.helper import PARAMETER_ATTR_TO_POS
-from eemilib.gui.styles import TITLE_STYLE
-from eemilib.model.model import Model
 from PyQt5.QtGui import QWindow
 from PyQt5.QtWidgets import (
     QComboBox,
@@ -24,6 +21,10 @@ from PyQt5.QtWidgets import (
     QTableWidget,
     QVBoxLayout,
 )
+
+from eemilib.gui.helper import PARAMETER_ATTR_TO_POS
+from eemilib.gui.styles import TITLE_STYLE
+from eemilib.model.model import Model
 
 
 def model_configuration() -> tuple[QGroupBox, QTableWidget]:

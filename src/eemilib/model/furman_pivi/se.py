@@ -5,6 +5,10 @@ import math
 from collections.abc import Callable
 
 import numpy as np
+from numpy.typing import NDArray
+from scipy.special import gammainc
+from scipy.stats import binom, poisson
+
 from eemilib.model.furman_pivi.ebe import ebeey
 from eemilib.model.furman_pivi.helper import remove_extrema
 from eemilib.model.furman_pivi.ibe import ibeey
@@ -15,9 +19,6 @@ from eemilib.model.furman_pivi.physics import (
     at_theta_incidence,
 )
 from eemilib.model.parameter import Parameter
-from numpy.typing import NDArray
-from scipy.special import gammainc
-from scipy.stats import binom, poisson
 
 #: Probability to emit ``n`` electrons, given the |SEEY| and ``n``.
 PROBA_EMIT_N_SE = Callable[[float, int], float]

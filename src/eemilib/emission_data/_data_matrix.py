@@ -10,6 +10,7 @@ from collections.abc import Collection, Sequence
 from typing import Literal, cast, overload
 
 import numpy as np
+
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data.emission_angle_distribution import (
     EmissionAngleDistribution,

@@ -6,8 +6,6 @@ from collections.abc import Collection
 from functools import partial
 from typing import Any, Literal, overload
 
-from eemilib.model.parameter import Parameter
-from eemilib.util.helper import get_classes
 from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtGui import QDesktopServices, QDoubleValidator, QIntValidator
 from PyQt5.QtWidgets import (
@@ -20,6 +18,9 @@ from PyQt5.QtWidgets import (
     QRadioButton,
     QWidget,
 )
+
+from eemilib.model.parameter import Parameter
+from eemilib.util.helper import get_classes
 
 
 def setup_dropdown(

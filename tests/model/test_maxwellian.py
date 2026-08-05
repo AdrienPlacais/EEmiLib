@@ -5,6 +5,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+from pandas.testing import assert_frame_equal
+from pytest import approx
+
 from eemilib import emission_energy_ag
 from eemilib.data.dummy.emission_energy import maxwellian_parameters_values
 from eemilib.emission_data import DataMatrix
@@ -13,8 +16,6 @@ from eemilib.emission_data.emission_energy_distribution import (
 )
 from eemilib.loader import PandasLoader
 from eemilib.model import Maxwellian
-from pandas.testing import assert_frame_equal
-from pytest import approx
 
 
 @pytest.fixture

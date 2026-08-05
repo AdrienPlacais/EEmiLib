@@ -12,11 +12,12 @@ from typing import Self
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
+
 from eemilib.loader.loader import Loader
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import COL_ENERGY, COL_NORMAL, ImplementedPop
 from eemilib.util.helper import documentation_url
-from numpy.typing import NDArray
 
 
 class MissingDataError(ValueError):

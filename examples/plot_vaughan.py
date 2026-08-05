@@ -17,6 +17,7 @@ This script showcases:
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 from eemilib.data.cu.emission_yield import teey_cu_1_eroded as filepath
 from eemilib.emission_data import DataMatrix
 from eemilib.loader import PandasLoader

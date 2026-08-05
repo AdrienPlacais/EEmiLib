@@ -1,10 +1,11 @@
 """This module holds everything |IBE| related."""
 
 import numpy as np
+from numpy.typing import NDArray
+
 from eemilib.model.furman_pivi.helper import remove_extrema
 from eemilib.model.furman_pivi.physics import at_theta_incidence
 from eemilib.model.parameter import Parameter
-from numpy.typing import NDArray
 
 #: Parameters used for calculation of |IBEEY| at normal incidence.
 NORMAL_IBEEY_PARAM_KEYS = ("e_ibe", "eta_i_max", "r")

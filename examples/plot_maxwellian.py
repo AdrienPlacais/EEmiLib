@@ -12,6 +12,7 @@ This script showcases the basics of loading data and fitting a model.
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 from eemilib.data.ag.emission_energy import distrib_70eV
 from eemilib.emission_data import DataMatrix
 from eemilib.loader import PandasLoader

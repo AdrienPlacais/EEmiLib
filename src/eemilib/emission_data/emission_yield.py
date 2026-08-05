@@ -6,6 +6,8 @@ from typing import Self
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
+
 from eemilib.emission_data.emission_data import EmissionData, MissingDataError
 from eemilib.emission_data.helper import (
     get_crossover_energies,
@@ -21,7 +23,6 @@ from eemilib.util.constants import (
     ImplementedPop,
     md_ey,
 )
-from numpy.typing import NDArray
 
 
 class MissingNormalEmissionYieldError(MissingDataError):

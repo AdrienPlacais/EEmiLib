@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Self
 
 import pandas as pd
+
 from eemilib.emission_data.emission_data import EmissionData
 from eemilib.loader.loader import Loader
 from eemilib.util.constants import ImplementedPop

@@ -6,6 +6,9 @@ from typing import Any
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.axes import Axes
+from numpy.typing import NDArray
+
 from eemilib.plotter.helper import explicit_column_names
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
@@ -14,8 +17,6 @@ from eemilib.util.constants import (
     ImplementedPop,
     md_ylabel,
 )
-from matplotlib.axes import Axes
-from numpy.typing import NDArray
 
 
 class PandasPlotter(Plotter):

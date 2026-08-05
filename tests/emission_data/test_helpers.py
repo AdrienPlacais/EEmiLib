@@ -2,6 +2,7 @@
 
 import numpy as np
 import pandas as pd
+
 from eemilib.emission_data.helper import resample, trim
 from eemilib.util.constants import COL_ENERGY, COL_NORMAL
 

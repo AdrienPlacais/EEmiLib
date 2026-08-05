@@ -2,8 +2,6 @@
 
 from collections.abc import Callable
 
-from eemilib.gui.styles import FILE_LIST_MAX_HEIGHT, TITLE_STYLE
-from eemilib.util.constants import IMPLEMENTED_EMISSION_DATA, IMPLEMENTED_POP
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
     QFileDialog,
@@ -15,6 +13,9 @@ from PyQt5.QtWidgets import (
     QMainWindow,
     QPushButton,
 )
+
+from eemilib.gui.styles import FILE_LIST_MAX_HEIGHT, TITLE_STYLE
+from eemilib.util.constants import IMPLEMENTED_EMISSION_DATA, IMPLEMENTED_POP
 
 
 def file_selection_matrix(

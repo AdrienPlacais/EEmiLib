@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import numpy as np
+
 from eemilib.emission_data import DataMatrix
 from eemilib.loader.pandas_loader import PandasLoader
 from eemilib.model.vaughan import Vaughan

@@ -20,11 +20,13 @@ Dionne1975`.
 #         "before proceeding to the fit."
 #     )
 
-from typing import ClassVar
-from typing import Any, Literal, TypedDict, cast
+from typing import Any, ClassVar, Literal, TypedDict, cast
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
+from scipy.optimize import Bounds, least_squares
+
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
 from eemilib.emission_data.emission_data import MissingDataError
@@ -43,8 +45,6 @@ from eemilib.util.markdown import (
     POWER_LAW_EXPONENT,
     POWER_LAW_SCALE,
 )
-from numpy.typing import NDArray
-from scipy.optimize import Bounds, least_squares
 
 #: Models for the energy loss of |PEs| in the material. See
 #: :func:`.dionne.range_func` for more information.

@@ -8,6 +8,8 @@
 import numpy as np
 import pandas as pd
 import pytest
+from pandas.testing import assert_frame_equal
+
 from eemilib.data import fp_copper, fp_stainless_steel
 from eemilib.emission_data import DataMatrix
 from eemilib.emission_data.emission_energy_distribution import (
@@ -26,7 +28,6 @@ from eemilib.emission_data.emission_yield import (
 )
 from eemilib.model import FurmanPivi
 from eemilib.util.constants import ImplementedPop
-from pandas.testing import assert_frame_equal
 
 
 @pytest.fixture

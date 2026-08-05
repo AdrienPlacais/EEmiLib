@@ -1,6 +1,5 @@
 """Define interface related to :class:`.Loader` in GUI."""
 
-from eemilib.loader.loader import Loader
 from PyQt5.QtGui import QWindow
 from PyQt5.QtWidgets import (
     QDialog,
@@ -9,6 +8,8 @@ from PyQt5.QtWidgets import (
     QLineEdit,
     QVBoxLayout,
 )
+
+from eemilib.loader.loader import Loader
 
 
 class LoaderSettingsDialog(QDialog):

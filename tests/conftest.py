@@ -2,6 +2,7 @@
 
 import pandas as pd
 import pytest
+
 from eemilib.data import fp_copper, fp_stainless_steel
 from eemilib.data.dummy.emission_energy import maxwellian
 from eemilib.data.spark3d import ecss_ag, ecss_al, ecss_cu

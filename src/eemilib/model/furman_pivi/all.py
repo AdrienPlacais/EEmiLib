@@ -1,6 +1,8 @@
 """Define functions related to 'all' population."""
 
 import numpy as np
+from numpy.typing import NDArray
+
 from eemilib.model.furman_pivi.ebe import (
     EBE_DISTRIB_PARAMETERS,
     NORMAL_EBEEY_PARAM_KEYS,
@@ -28,7 +30,6 @@ from eemilib.model.furman_pivi.se import (
     seey_normal,
 )
 from eemilib.model.parameter import Parameter
-from numpy.typing import NDArray
 
 #: Parameters used for calculation of |TEEY| at normal incidence.
 NORMAL_TEEY_PARAM_KEYS = (

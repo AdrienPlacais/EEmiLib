@@ -48,6 +48,9 @@ Homepage = "https://github.com/AdrienPlacais/EEmiLib"
 [tool.ruff]
 line-length = 79
 
+# [tool.ruff.format]
+# skip-magic-trailing-comma = true
+#
 [tool.ruff.lint]
 extend-select = [
   # "UP", # pyupgrade
@@ -55,10 +58,13 @@ extend-select = [
 ]
 ignore = [
   "LOG015", # TODO: fix LOG015 (use own logger)
-  "I001",   # Use isort instead
+  # "I001",   # Use isort instead
   "BLE001", # Do not catch blind exception: `Exception`
 ]
-
+#
+# [tool.ruff.lint.isort]
+# split-on-trailing-comma = false
+#
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib", "--strict-markers"]
 filterwarnings = ["ignore:.*cKDTree.*:DeprecationWarning"]
