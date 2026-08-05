@@ -90,6 +90,7 @@ class LogFormatter(logging.Formatter):
     RESET_CODE = "\033[0m"
 
     def __init__(self, color: bool, *args, **kwargs) -> None:
+        """Init object."""
         self.COLOR_CODES = {
             # bright/bold magenta
             logging.CRITICAL: "\033[1;35m",
@@ -106,6 +107,7 @@ class LogFormatter(logging.Formatter):
         self.color = color
 
     def format(self, record: logging.LogRecord, *args, **kwargs) -> str:
+        """Format record."""
         if self.color and record.levelno in self.COLOR_CODES:
             record.color_on = self.COLOR_CODES[record.levelno]
             record.color_off = self.RESET_CODE
@@ -159,7 +161,7 @@ def set_up_logging(
 
 
 def main():
-    """Main function."""
+    """Set up logging."""
     if not set_up_logging(
         package_name="EEmiLib",
         console_log_output="stdout",

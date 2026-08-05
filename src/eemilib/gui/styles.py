@@ -202,6 +202,7 @@ class MathTextLabel(QLabel):
         dpi: int = MATH_LABEL_DPI,
         parent=None,
     ) -> None:
+        """Init object."""
         super().__init__(parent)
         self._body = body
         self._units = units
@@ -238,7 +239,7 @@ class MathTextLabel(QLabel):
 def math_text_label_from_key(
     key: str, fontsize: int = MATH_LABEL_FONTSIZE, dpi: int = MATH_LABEL_DPI
 ) -> tuple[QLabel, QLabel]:
-    """Convenience wrapper: parse *key* then render it.
+    """Parse *key* then render it.
 
     Parameters
     ----------
