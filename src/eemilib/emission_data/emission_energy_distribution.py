@@ -68,6 +68,16 @@ class EmissionEnergyDistribution(EmissionData):
 
         #: Re-normalization factor of distribution.
         self.norm = norm if norm is not None else self._default_norm()
+        #: Un-normalized data.
+        #:
+        #: .. warning::
+        #:    This data can be **rescaled** in order to have integral of the
+        #:    signal matching the |TEEY|.
+        #:
+        #:    .. seealso::
+        #:       :meth:`.DataMatrix.load_data` (with
+        #:       `rescale_energy_distributions_to_teey=True`)
+        #:
         self.unnormalized_data = self.data
         self.normalize()
 

@@ -262,6 +262,13 @@ class DataMatrix:
     ) -> None:
         """Load all filepaths in ``files_matrix``.
 
+        .. important::
+           If ``rescale_energy_distributions_to_yield`` is set to ``True``
+           (which is the default) and both emission yield and emission energy
+           distribution for ``"all"`` population are provided, the emissision
+           energy distribution will be rescaled so that it's integral match
+           corresponding |TEEY|.
+
         Parameters
         ----------
         loader :

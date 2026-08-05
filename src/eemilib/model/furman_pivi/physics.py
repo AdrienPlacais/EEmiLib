@@ -56,7 +56,7 @@ from eemilib.util.markdown import (
 
 #: Distribution for the number of emitted |SEs| at a given |SEEY|.
 FURMAN_PIVI_DISTRIBUTIONS = ("Poisson", "Binomial")
-#: Probability normalization, *cf* Eqs. (35) and (36) in :cite:`Furman2002`.
+#: Probability normalization, *cf* Eqs. (35) to (46) :cite:`Furman2002`.
 FURMAN_PIVI_NORMALIZATIONS = ("incident", "penetrated")
 
 NORMALIZATION_T = Literal["incident", "penetrated"]
@@ -121,7 +121,7 @@ def at_theta_incidence(
 
 
 class FurmanPiviParameters(TypedDict):
-    """Parameters for :class:`.FurmanPivi`."""
+    """Parameters for :class:`~.furman_pivi.furman_pivi.FurmanPivi`."""
 
     # =========================================================================
     # True secondary emission

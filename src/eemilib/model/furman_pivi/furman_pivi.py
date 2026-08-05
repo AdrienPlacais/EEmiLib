@@ -103,7 +103,7 @@ class FurmanPivi(Model):
     def __init__(
         self,
         distribution: DISTRIBUTION_T = "Poisson",
-        normalization: NORMALIZATION_T = "incident",
+        normalization: NORMALIZATION_T = "penetrated",
         parameters_values: dict[str, Any] | None = None,
     ) -> None:
         r"""Instantiate the object.

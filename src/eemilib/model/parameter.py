@@ -30,6 +30,7 @@ class Parameter:
 
     """
 
+    #: How much the variable can move when :attr:`.is_locked` is ``True``.
     _tol: float = 1e-10
 
     #: This tricky ass attribute tells numpy to always defer to Python's
@@ -75,9 +76,20 @@ class Parameter:
         self.markdown = markdown
         self.unit = unit
         self._value = value
+        #: Raw lower bound for fitting, as provided by the user. The
+        #: actual :attr:`lower_bound` may be different if :attr:`.is_locked` is
+        #: ``True``, because in this case the bounds are tightly set around
+        #: current value.
         self._lower_bound = lower_bound
         self._upper_bound = upper_bound
         self.description = description
+        #: Whether the parameter is allowed to change values during the fit.
+        #: Concretely, setting this to ``True`` sets very tight lower and upper
+        #: bounds around current value during the fit.
+        #:
+        #: .. todo::
+        #:    It would be cleaner to remove the concerned parameter from the
+        #:    variables list...
         self.is_locked = is_locked
 
     def __repr__(self) -> str:
@@ -213,9 +225,10 @@ class Parameter:
         """Give the current lower bound of the parameter.
 
         - If the parameter is not locked, we return the user-defined value
-          stored in :attr:`.self._lower_bound`.
-        - If it is locked, we return a lower bound that is :attr:`self._tol`
-          lower than currently store value.
+          stored in :attr:`._lower_bound`.
+        - If it is locked, we return a lower bound that is :attr:`._tol` lower
+          than currently store value.
+
           - Exception : if the user-defined :attr:`._lower_bound` is exactly
             ``0.0``, we suppose that the value should stay positive. We update
             the returned lower bound accordingly.
