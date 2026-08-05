@@ -32,7 +32,7 @@ class PandasPlotter(Plotter):
         """
         if gui:
             plt.ion()
-        return super().__init__(*args, gui=gui, **kwargs)
+        super().__init__(*args, gui=gui, **kwargs)
 
     def plot_emission_yield(
         self,
