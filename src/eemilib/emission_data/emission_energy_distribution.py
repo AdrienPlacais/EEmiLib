@@ -189,7 +189,7 @@ class EmissionEnergyDistribution(EmissionData):
 
         """
         return plotter.plot_emission_energy_distribution(
-            df=self.data,
+            self.data,
             *args,
             axes=axes,
             marker=marker,

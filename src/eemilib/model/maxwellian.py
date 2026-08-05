@@ -103,12 +103,7 @@ class Maxwellian(Model):
         """
         if population != "SE" or data_type != "Emission Energy":
             return super().get_data(
-                population=population,
-                data_type=data_type,
-                energy=energy,
-                theta=theta,
-                *args,
-                **kwargs,
+                population, data_type, energy, theta, *args, **kwargs
             )
         out = np.zeros(len(energy))
         for i, ene in enumerate(energy):

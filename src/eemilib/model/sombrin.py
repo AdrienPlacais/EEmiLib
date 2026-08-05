@@ -127,12 +127,7 @@ class Sombrin(Model):
         """
         if population != "all" or data_type != "Emission Yield":
             return super().get_data(
-                population=population,
-                data_type=data_type,
-                energy=energy,
-                theta=theta,
-                *args,
-                **kwargs,
+                population, data_type, energy, theta, *args, **kwargs
             )
         out = np.zeros(len(energy))
         for i, ene in enumerate(energy):

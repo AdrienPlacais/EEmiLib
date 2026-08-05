@@ -272,12 +272,7 @@ class FurmanPivi(Model):
         """
         if data_type == "Emission Angle":
             return super().get_data(
-                population=population,
-                data_type=data_type,
-                energy=energy,
-                theta=theta,
-                *args,
-                **kwargs,
+                population, data_type, energy, theta, *args, **kwargs
             )
 
         if data_type == "Emission Energy":
@@ -287,23 +282,13 @@ class FurmanPivi(Model):
             if data is not None:
                 return data
             return super().get_data(
-                population=population,
-                data_type=data_type,
-                energy=energy,
-                theta=theta,
-                *args,
-                **kwargs,
+                population, data_type, energy, theta, *args, **kwargs
             )
 
         ey_func = EMISSION_YIELD_FUNCS.get(population)
         if ey_func is None:
             return super().get_data(
-                population=population,
-                data_type=data_type,
-                energy=energy,
-                theta=theta,
-                *args,
-                **kwargs,
+                population, data_type, energy, theta, *args, **kwargs
             )
         out = np.zeros((len(energy), len(theta)))
         for i, ene in enumerate(energy):

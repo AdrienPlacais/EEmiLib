@@ -128,12 +128,7 @@ class Model(ABC):
 
         """
         teey = self.get_data(
-            "all",
-            "Emission Yield",
-            energy=energy,
-            theta=theta,
-            *args,
-            **kwargs,
+            "all", "Emission Yield", energy, theta, *args, **kwargs
         )
         if teey is not None:
             return teey
@@ -153,7 +148,7 @@ class Model(ABC):
 
         """
         seey = self.get_data(
-            "SE", "Emission Yield", energy=energy, theta=theta, *args, **kwargs
+            "SE", "Emission Yield", energy, theta, *args, **kwargs
         )
         if seey is not None:
             return seey
@@ -173,12 +168,7 @@ class Model(ABC):
 
         """
         se_distrib = self.get_data(
-            "SE",
-            "Emission Energy",
-            energy=energy,
-            theta=theta,
-            *args,
-            **kwargs,
+            "SE", "Emission Energy", energy, theta, *args, **kwargs
         )
         if se_distrib is not None:
             return se_distrib
