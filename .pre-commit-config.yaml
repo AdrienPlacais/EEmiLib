@@ -32,5 +32,5 @@ repos:
     rev: v0.16.1
     hooks:
       - id: ruff-check
-        args: [--fix, --show-fixes]
+        args: [--fix, --show-fixes] #, --select, "D100"]
       - id: ruff-format
