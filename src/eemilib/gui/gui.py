@@ -530,7 +530,7 @@ class MainWindow(QMainWindow):
             for attr, attr_name in zip(
                 (first, last, points), ("first", "last", "points")
             ):
-                setattr(self, "_".join((qty, attr_name)), attr)
+                setattr(self, f"{qty}_{attr_name}", attr)
 
         self.energy_angle_group.setLayout(self.energy_angle_layout)
         self._plot_layout.addWidget(self.energy_angle_group)
@@ -651,7 +651,7 @@ class MainWindow(QMainWindow):
         success = True
         linspace_args = []
         for box in ("first", "last", "points"):
-            line_name = "_".join((variable, box))
+            line_name = f"{variable}_{box}"
             qline_edit = getattr(self, line_name, None)
             if qline_edit is None:
                 logging.error(f"The attribute {line_name} is not defined.")
@@ -736,7 +736,7 @@ class MainWindow(QMainWindow):
         dropdown = self.dropdowns.get(name, None)
         assert dropdown is not None, f" The dropdown {name} is not defined."
 
-        module_names_to_paths = "_".join((name.lower(), "classes"))
+        module_names_to_paths = f"{name.lower()}_classes"
         module_name_to_path = getattr(self, module_names_to_paths, None)
         assert module_name_to_path is not None, (
             f"The dictionary {module_names_to_paths}, linking every module"

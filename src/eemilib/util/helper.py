@@ -50,7 +50,7 @@ def documentation_url(
 
     """
     if url_doc_override is not None:
-        return "/".join((DOC_URL, url_doc_override)) + ".html"
+        return f"{DOC_URL}/{url_doc_override}" + ".html"
     module = obj.__class__.__module__
     package = module.split(".")[0]
     parts = (DOC_URL, package, module)
