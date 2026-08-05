@@ -331,7 +331,7 @@ class DataMatrix:
             "desactivate this with `rescale_energy_distributions_to_yield = "
             "False` in `DataMatrix.load_data`"
         )
-        self.rescale_energy_distributions_to_teey()
+        self._rescale_energy_distributions_to_teey()
 
     def has_all_mandatory_files(self, model_config: ModelConfig) -> bool:
         """Tell if files defined by :attr:`.Model.model_config` are set."""
@@ -555,7 +555,7 @@ class DataMatrix:
             logging.warning("Several SEEY are stored. Returning first.")
         return emission_yield[0]
 
-    def rescale_energy_distributions_to_teey(self) -> None:
+    def _rescale_energy_distributions_to_teey(self) -> None:
         r"""Rescale measured energy distributions to match the measured |TEEY|.
 
         Enforces the physical constraint from Eq. (4)/(50) in
