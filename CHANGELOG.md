@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Furman and Pivi model.
   - Several implementations are provided, following Furman and Pivi paper.
-  - [ ] Fit.
+  - [x] Fit.
   - [ ] Doc.
   - [ ] Emission angle distribution.
 - `CSTLoader` to load `ASCII Export`-ed emission yield files.
@@ -33,8 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - When both `e_pes` and `axes` are returned, we use `e_pes` energies, re-use
     corresponding `Axes` in `axes` if they are present, create new ones
     otherwise.
-- TODO:
-  - [ ] To incorporate in the GUI.
+  - TODO:
+    - [ ] To incorporate in the GUI.
 
 ### Changed
 
