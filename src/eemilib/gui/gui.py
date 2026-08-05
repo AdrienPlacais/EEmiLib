@@ -224,7 +224,7 @@ class MainWindow(QMainWindow):
         self._data_model_layout.addLayout(layout)
 
     def _setup_loader(self) -> None:
-        """Setup new loader whenever the dropdown menu is changed."""
+        """Set up new loader whenever the dropdown menu is changed."""
         self.loader = self._dropdown_to_class("Loader")()
         set_help_button_action(self.loader_help_button, self.loader)
 
@@ -403,7 +403,7 @@ class MainWindow(QMainWindow):
     # Tab 1 - Model evaluation
     # =========================================================================
     def _setup_model_evaluation(self) -> None:
-        """Setup display of model evaluators."""
+        """Set up display of model evaluators."""
         self.evaluators_group = QGroupBox("Model evaluations")
         self.evaluators_group.setStyleSheet(TITLE_STYLE)
         self.evaluators_layout = QVBoxLayout()
