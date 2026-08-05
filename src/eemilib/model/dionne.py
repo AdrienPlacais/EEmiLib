@@ -20,6 +20,7 @@ Dionne1975`.
 #         "before proceeding to the fit."
 #     )
 
+from typing import ClassVar
 from typing import Any, Literal, TypedDict, cast
 
 import numpy as np
@@ -72,7 +73,7 @@ class Dionne(Model):
         emission_energy_files=(),
         emission_angle_files=(),
     )
-    initial_parameters = {
+    initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = {
         "excitation_energy": {
             "markdown": EXCITATION_ENERGY,
             "unit": "eV",

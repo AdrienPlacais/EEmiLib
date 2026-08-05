@@ -10,11 +10,14 @@ r"""Create the Vaughan model, to compute |TEEY|.
 
 import logging
 import math
-from typing import Any, Literal, TypedDict, cast
 from collections.abc import Callable
+from typing import Any, ClassVar, Literal, TypedDict, cast
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
+from scipy.optimize import least_squares
+
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
 from eemilib.model.model import Model
@@ -35,8 +38,6 @@ from eemilib.util.markdown import (
     SIGMA_MAX,
     rst_math,
 )
-from numpy.typing import NDArray
-from scipy.optimize import least_squares
 
 VaughanImplementation = Literal["original", "CST", "SPARK3D"]
 VAUGHAN_IMPLEMENTATIONS = ("original", "CST", "SPARK3D")
@@ -67,7 +68,7 @@ class Vaughan(Model):
         emission_energy_files=(),
         emission_angle_files=(),
     )
-    initial_parameters = {
+    initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = {
         "E_0": {
             "markdown": E_0,
             "unit": "eV",
@@ -137,7 +138,9 @@ class Vaughan(Model):
             "is_locked": False,
         },
     }
-    implementation_choices = {"implementation": VAUGHAN_IMPLEMENTATIONS}
+    implementation_choices: ClassVar[dict[str, tuple[str, ...]]] = {
+        "implementation": VAUGHAN_IMPLEMENTATIONS
+    }
 
     def __init__(
         self,

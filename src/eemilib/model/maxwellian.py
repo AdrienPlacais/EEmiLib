@@ -5,10 +5,14 @@ You will need to provide emission energy distribution measurements.
 """
 
 import math
-from typing import Any, Literal, TypedDict, cast, overload
+from typing import Any, ClassVar, Literal, TypedDict, cast, overload
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
+from scipy.constants import pi
+from scipy.optimize import Bounds, least_squares
+
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
 from eemilib.emission_data.emission_data import MissingDataError
@@ -21,9 +25,6 @@ from eemilib.util.constants import (
     ImplementedPop,
 )
 from eemilib.util.markdown import NORM, TEMPERATURE
-from numpy.typing import NDArray
-from scipy.constants import pi
-from scipy.optimize import Bounds, least_squares
 
 
 class MaxwellianParameters(TypedDict):
@@ -44,7 +45,7 @@ class Maxwellian(Model):
         emission_energy_files=("all",),
         emission_angle_files=(),
     )
-    initial_parameters = {
+    initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = {
         "temperature": {
             "markdown": TEMPERATURE,
             "unit": "eV",

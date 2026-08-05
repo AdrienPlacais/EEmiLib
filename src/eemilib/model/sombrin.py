@@ -6,10 +6,12 @@ incident angle into account.
 """
 
 import math
-from typing import Any, TypedDict, cast
+from typing import Any, ClassVar, TypedDict, cast
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
+
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
 from eemilib.emission_data.emission_data import MissingDataError
@@ -22,7 +24,6 @@ from eemilib.util.constants import (
     ImplementedPop,
 )
 from eemilib.util.markdown import E_MAX, EC_1, SIGMA_MAX
-from numpy.typing import NDArray
 
 
 class SombrinParameters(TypedDict):
@@ -48,7 +49,7 @@ class Sombrin(Model):
         emission_energy_files=(),
         emission_angle_files=(),
     )
-    initial_parameters = {
+    initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = {
         "E_max": {
             "markdown": E_MAX,
             "unit": "eV",

@@ -22,10 +22,13 @@ This is an empirical model developed by Dionne :cite:`Furman2002,Furman2013`.
 import logging
 from collections.abc import Callable, Sequence
 from functools import partial
-from typing import Any, cast
+from typing import Any, ClassVar, cast
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
+from scipy.optimize import least_squares
+
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
 from eemilib.emission_data.emission_data import MissingDataError
@@ -67,8 +70,6 @@ from eemilib.util.constants import (
     ImplementedEmissionData,
     ImplementedPop,
 )
-from numpy.typing import NDArray
-from scipy.optimize import least_squares
 
 EMISSION_YIELD_FUNCS: dict[ImplementedPop, Callable] = {
     "SE": seey,
@@ -91,8 +92,10 @@ class FurmanPivi(Model):
         emission_energy_files=("all",),
         emission_angle_files=(),
     )
-    initial_parameters = INITIAL_FURMAN_PIVI_PARAMETERS
-    implementation_choices = {
+    initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = (
+        INITIAL_FURMAN_PIVI_PARAMETERS
+    )
+    implementation_choices: ClassVar[dict[str, tuple[str, ...]]] = {
         "distribution": FURMAN_PIVI_DISTRIBUTIONS,
         "normalization": FURMAN_PIVI_NORMALIZATIONS,
     }

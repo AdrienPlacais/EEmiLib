@@ -7,10 +7,13 @@ You will need to provide emission energy distribution measurements.
 
 """
 
-from typing import Any, Literal, TypedDict, cast
+from typing import Any, ClassVar, Literal, TypedDict, cast
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
+from scipy.optimize import Bounds, least_squares
+
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
 from eemilib.emission_data.emission_data import MissingDataError
@@ -23,8 +26,6 @@ from eemilib.util.constants import (
     ImplementedPop,
 )
 from eemilib.util.markdown import NORM, W_F
-from numpy.typing import NDArray
-from scipy.optimize import Bounds, least_squares
 
 
 class ChungEverhartParameters(TypedDict):
@@ -45,7 +46,7 @@ class ChungEverhart(Model):
         emission_energy_files=("all",),
         emission_angle_files=(),
     )
-    initial_parameters = {
+    initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = {
         "W_f": {
             "markdown": W_F,
             "unit": "eV",

@@ -14,6 +14,8 @@ from typing import Any, ClassVar, Literal, cast, overload
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
+
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
 from eemilib.emission_data.emission_data import MissingDataError
@@ -28,7 +30,6 @@ from eemilib.util.constants import (
 )
 from eemilib.util.helper import documentation_url
 from eemilib.util.markdown import E_MAX, EC_1, SIGMA, SIGMA_MAX, tex_math
-from numpy.typing import NDArray
 
 
 class Model(ABC):
@@ -57,12 +58,12 @@ class Model(ABC):
 
     """
 
-    data_types: tuple[ImplementedEmissionData, ...]
-    populations: tuple[ImplementedPop, ...]
+    data_types: ClassVar[tuple[ImplementedEmissionData, ...]]
+    populations: ClassVar[tuple[ImplementedPop, ...]]
     considers_energy: bool
     is_3d: bool
     is_dielectrics_compatible: bool
-    initial_parameters: dict[str, dict[str, str | float | bool]]
+    initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = {}
     model_config: ModelConfig
     implementation_choices: ClassVar[dict[str, tuple[str, ...]]] = {}
 
