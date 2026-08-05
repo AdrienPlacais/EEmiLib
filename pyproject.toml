@@ -53,7 +53,7 @@ skip-magic-trailing-comma = true
 
 [tool.ruff.lint]
 extend-select = [
-  # "UP", # pyupgrade
+  "UP", # pyupgrade
   # "D",   # pydocstyle
 ]
 ignore = [
