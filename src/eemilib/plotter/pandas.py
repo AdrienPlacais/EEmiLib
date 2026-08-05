@@ -189,8 +189,7 @@ class PandasPlotter(Plotter):
             default_population_style = self.pop_styles_emission_energy
         else:
             logging.info(
-                f"{data_type = } not implemented. Setting a default "
-                "population style."
+                f"{data_type = } not implemented. Setting a default population style."
             )
             default_population_style = self.pop_styles_emission_energy
 

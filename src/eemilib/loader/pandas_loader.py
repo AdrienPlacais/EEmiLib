@@ -7,7 +7,6 @@ formats.
 """
 
 import logging
-from pathlib import Path
 from typing import Any
 
 import pandas as pd
@@ -238,7 +237,6 @@ class PandasLoader(Loader):
             return df, None
 
         logging.info(
-            "Successfully loaded emission energy distribution file(s) "
-            f"{filepath}"
+            f"Successfully loaded emission energy distribution file(s) {filepath}"
         )
         return df, e_pe

@@ -45,19 +45,30 @@ eemilib-gui = "eemilib.gui.gui:main"
 Documentation = "https://adrienplacais.github.io/EEmiLib/"
 Homepage = "https://github.com/AdrienPlacais/EEmiLib"
 
-[tool.black]
-line-length = 79
-skip-magic-trailing-comma = true
-target-version = ["py312"]
+# [tool.black]
+# line-length = 79
+# skip-magic-trailing-comma = true
+# target-version = ["py312"]
 
-[tool.isort]
-line_length = 79
-profile = "black"
-src_paths = ["./eemilib/"]
+# [tool.isort]
+# line_length = 79
+# profile = "black"
+# src_paths = ["./eemilib/"]
+
+[tool.ruff]
+line-length = 79
 
 [tool.ruff.lint]
-ignore = ["LOG015"]
-# TODO: fix LOG015 (use own logger)
+extend-select = [
+  # "UP", # pyupgrade
+  # "D",   # pydocstyle
+]
+ignore = [
+  "LOG015", # TODO: fix LOG015 (use own logger)
+  "I001",   # Use isort instead
+  "BLE001", # Do not catch blind exception: `Exception`
+]
+
 
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib", "--strict-markers"]

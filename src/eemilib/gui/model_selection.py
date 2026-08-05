@@ -63,7 +63,7 @@ class ModelImplementationsDialog(QDialog):
         super().__init__(parent=parent)
         self._model = model
 
-        self.setWindowTitle(f"{str(model.__class__.__name__)} implementations")
+        self.setWindowTitle(f"{model.__class__.__name__!s} implementations")
 
         self._layout = QVBoxLayout(self)
 

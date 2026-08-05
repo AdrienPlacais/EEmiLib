@@ -33,7 +33,7 @@ from eemilib.emission_data.emission_energy_distribution import (
     AllEmissionEnergyDistribution,
     EmissionEnergyDistribution,
 )
-from eemilib.emission_data.emission_yield import IBEEY, TEEY
+from eemilib.emission_data.emission_yield import TEEY
 from eemilib.model.furman_pivi.all import (
     ALL_DISTRIB_PARAMETERS,
     NORMAL_TEEY_PARAM_KEYS,
@@ -44,12 +44,7 @@ from eemilib.model.furman_pivi.all import (
 )
 from eemilib.model.furman_pivi.ebe import ebe_energy_distribution, ebeey
 from eemilib.model.furman_pivi.helper import add_furman_pivi_notation
-from eemilib.model.furman_pivi.ibe import (
-    NORMAL_IBEEY_PARAM_KEYS,
-    ibe_energy_distribution,
-    ibeey,
-    ibeey_normal,
-)
+from eemilib.model.furman_pivi.ibe import ibe_energy_distribution, ibeey
 from eemilib.model.furman_pivi.physics import (
     DISTRIBUTION_T,
     FURMAN_PIVI_DISTRIBUTIONS,
@@ -69,7 +64,6 @@ from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
     COL_ENERGY,
-    COL_NORMAL,
     ImplementedEmissionData,
     ImplementedPop,
 )
@@ -206,7 +200,7 @@ class FurmanPivi(Model):
                 f"     - {name}",
                 f"     - :unit:`{kwargs.get('unit', '')}`",
                 f"     - :math:`{kwargs.get('value', '')}`",
-                f"     - {kwargs.get("description","")}",
+                f"     - {kwargs.get('description', '')}",
             ]
             doc_lines += doc
         return "\n".join(doc_lines)

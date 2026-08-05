@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from collections.abc import Collection
-from typing import Sequence
+from collections.abc import Sequence
 
 import pandas as pd
 from eemilib.loader.helper import DataPath

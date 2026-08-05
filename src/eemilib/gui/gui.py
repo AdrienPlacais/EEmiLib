@@ -25,7 +25,8 @@ import logging
 import sys
 from abc import ABCMeta
 from types import ModuleType
-from typing import Callable, Literal
+from typing import Literal
+from collections.abc import Callable
 
 import numpy as np
 from eemilib.core.model_config import ModelConfig
@@ -684,16 +685,14 @@ class MainWindow(QMainWindow):
             model = self.model
         except AttributeError as e:
             logging.debug(
-                "Model is not set, cannot fill energy/angle plotting ranges. "
-                f"\n{e}"
+                f"Model is not set, cannot fill energy/angle plotting ranges. \n{e}"
             )
             return
         try:
             data_matrix = self.data_matrix
         except AttributeError as e:
             logging.debug(
-                "DataMatrix is not set, cannot fill energy/angle plotting "
-                f"ranges.\n{e}"
+                f"DataMatrix is not set, cannot fill energy/angle plotting ranges.\n{e}"
             )
             return
 

@@ -10,7 +10,8 @@ r"""Create the Vaughan model, to compute |TEEY|.
 
 import logging
 import math
-from typing import Any, Callable, Literal, TypedDict, cast
+from typing import Any, Literal, TypedDict, cast
+from collections.abc import Callable
 
 import numpy as np
 import pandas as pd
@@ -211,8 +212,7 @@ class Vaughan(Model):
         implementation_update = current is not None
         if implementation_update:
             logging.info(
-                f"Changing Vaughan implementation: {current} to "
-                f"{implementation}."
+                f"Changing Vaughan implementation: {current} to {implementation}."
             )
 
         self.current_implementations["implementation"] = implementation
@@ -319,7 +319,6 @@ class Vaughan(Model):
 
         E_0 = self._E_0_matching(E_c1=self.parameters["E_c1"].value)
         self.set_parameter_value("E_0", E_0)
-        return
 
     def _E_0_matching(self, *, E_c1: float) -> float:
         """Fit E_0 to retrieve E_c1 (SPARK3D)"""

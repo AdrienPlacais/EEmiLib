@@ -87,22 +87,21 @@ def _file_handler(
 class LogFormatter(logging.Formatter):
     """Logging formatter supporting colorized output."""
 
-    COLOR_CODES = {
-        # bright/bold magenta
-        logging.CRITICAL: "\033[1;35m",
-        # bright/bold red
-        logging.ERROR: "\033[1;31m",
-        # bright/bold yellow
-        logging.WARNING: "\033[1;33m",
-        # white / light gray
-        logging.INFO: "\033[0;37m",
-        # bright/bold black / dark gray
-        logging.DEBUG: "\033[1;30m",
-    }
-
     RESET_CODE = "\033[0m"
 
     def __init__(self, color: bool, *args, **kwargs) -> None:
+        self.COLOR_CODES = {
+            # bright/bold magenta
+            logging.CRITICAL: "\033[1;35m",
+            # bright/bold red
+            logging.ERROR: "\033[1;31m",
+            # bright/bold yellow
+            logging.WARNING: "\033[1;33m",
+            # white / light gray
+            logging.INFO: "\033[0;37m",
+            # bright/bold black / dark gray
+            logging.DEBUG: "\033[1;30m",
+        }
         super().__init__(*args, **kwargs)
         self.color = color
 

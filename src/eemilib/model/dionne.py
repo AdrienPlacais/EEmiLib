@@ -79,8 +79,7 @@ class Dionne(Model):
             "value": 4.6,
             "lower_bound": 0.0,
             "description": (
-                "Energy required to excite a secondary electron in the "
-                "material."
+                "Energy required to excite a secondary electron in the material."
             ),
             "is_locked": True,
         },

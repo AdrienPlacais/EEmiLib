@@ -48,7 +48,8 @@ data_matrix.set_files(
 # :class:`.loader.PandasLoader` documentation for the actual expected format,
 # but this one should work for most ``CSV``-like files.
 loader = PandasLoader(
-    sep=",", comment="#"  # Columns separator, comments marker
+    sep=",",
+    comment="#",  # Columns separator, comments marker
 )
 # %%
 #

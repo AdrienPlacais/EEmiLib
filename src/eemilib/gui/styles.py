@@ -215,7 +215,7 @@ class MathTextLabel(QLabel):
         # not blank before the first layout pass.
         self._render(MATH_LABEL_DEFAULT_WIDTH_PX)
 
-    def resizeEvent(self, event) -> None:  # noqa: N802
+    def resizeEvent(self, event) -> None:
         """Re-render the pixmap whenever the widget width changes."""
         super().resizeEvent(event)
         new_width = event.size().width()

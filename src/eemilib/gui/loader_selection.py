@@ -19,7 +19,7 @@ class LoaderSettingsDialog(QDialog):
         super().__init__(parent=parent)
         self._loader = loader
 
-        self.setWindowTitle(f"{str(loader.__class__.__name__)} settings")
+        self.setWindowTitle(f"{loader.__class__.__name__!s} settings")
 
         self._layout = QVBoxLayout(self)
 

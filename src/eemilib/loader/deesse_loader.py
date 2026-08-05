@@ -3,7 +3,8 @@
 import logging
 from importlib.resources.abc import Traversable
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
+from collections.abc import Sequence
 
 import pandas as pd
 from eemilib.loader.helper import DataPath

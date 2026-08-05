@@ -7,9 +7,6 @@ Furman and Pivi
    :maxdepth: 4
    :hidden:
 
-.. todo::
-   To implement.
-
 Presentation
 ------------
 
@@ -20,6 +17,11 @@ Model.
 Input files
 -----------
 
+This model needs experimental |TEEY| at several incidence angles as well as emission energy distribution measurements.
+
+.. note::
+   When |TEEY| and 
+
 +-----------------------------+---------------+-----------------------------+---------------------------+
 |                             |Emission Yield |Emission energy distribution |Emission angle distribution|
 +=============================+===============+=============================+===========================+
@@ -29,7 +31,7 @@ Input files
 +-----------------------------+---------------+-----------------------------+---------------------------+
 | Inelastically backscattered | ❌            | ❌                          | ❌                        |
 +-----------------------------+---------------+-----------------------------+---------------------------+
-| Total                       | ❌            | ❌                          | ❌                        |
+| Total                       | ✅            | ✅                          | ❌                        |
 +-----------------------------+---------------+-----------------------------+---------------------------+
 
 

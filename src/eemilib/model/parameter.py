@@ -234,7 +234,6 @@ class Parameter:
     def lower_bound(self, lower_bound: float) -> None:
         """Set the lower bound of the parameter."""
         self._lower_bound = lower_bound
-        return
 
     @property
     def upper_bound(self) -> float:
@@ -247,7 +246,6 @@ class Parameter:
     def upper_bound(self, upper_bound: float) -> None:
         """Set the upper bound of the parameter."""
         self._upper_bound = upper_bound
-        return
 
     def lock(self) -> None:
         """Set the parameter to its current value."""

@@ -39,9 +39,9 @@ def test_example_runs_without_error_or_warning(
     """Check that the example script runs and logs nothing above WARNING."""
     module_name = f"examples.{script_path.stem}"
     spec = importlib.util.spec_from_file_location(module_name, script_path)
-    assert (
-        spec is not None and spec.loader is not None
-    ), f"Could not build an import spec for {script_path}."
+    assert spec is not None and spec.loader is not None, (
+        f"Could not build an import spec for {script_path}."
+    )
     module = importlib.util.module_from_spec(spec)
 
     with caplog.at_level(logging.WARNING), patch("matplotlib.pyplot.show"):
@@ -55,6 +55,6 @@ def test_example_runs_without_error_or_warning(
     messages = "\n".join(
         f"\t[{rec.levelname}] {rec.message}" for rec in problematic_records
     )
-    assert (
-        not problematic_records
-    ), f"{script_path} logged at WARNING level or above:\n{messages}"
+    assert not problematic_records, (
+        f"{script_path} logged at WARNING level or above:\n{messages}"
+    )

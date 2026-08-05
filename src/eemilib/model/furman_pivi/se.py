@@ -2,7 +2,7 @@
 
 import logging
 import math
-from typing import Callable
+from collections.abc import Callable
 
 import numpy as np
 from eemilib.model.furman_pivi.ebe import ebeey
@@ -28,8 +28,26 @@ OBLIQUE_SEEY_PARAM_KEYS = ("t_1", "t_2", "t_3", "t_4")
 #: Additional parameters used for energy distribution calculation.
 SE_DISTRIB_PARAMETERS = (
     # fmt: off
-    "eps_1", "eps_2", "eps_3", "eps_4", "eps_5", "eps_6", "eps_7", "eps_8", "eps_9", "eps_10",
-    "p_1", "p_2", "p_3", "p_4", "p_5", "p_6", "p_7", "p_8", "p_9", "p_10",
+    "eps_1",
+    "eps_2",
+    "eps_3",
+    "eps_4",
+    "eps_5",
+    "eps_6",
+    "eps_7",
+    "eps_8",
+    "eps_9",
+    "eps_10",
+    "p_1",
+    "p_2",
+    "p_3",
+    "p_4",
+    "p_5",
+    "p_6",
+    "p_7",
+    "p_8",
+    "p_9",
+    "p_10",
     # fmt: on
 )
 

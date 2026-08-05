@@ -96,7 +96,6 @@ def main() -> None:
     # Evaluate
     evaluations = model.evaluate(data_matrix)
     print(evaluations)
-    return
 
 
 if __name__ == "__main__":

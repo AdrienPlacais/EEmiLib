@@ -1,13 +1,9 @@
 """This module define functions related to |EBEs|."""
 
 import numpy as np
-from eemilib.emission_data.emission_energy_distribution import (
-    EBEEmissionEnergyDistribution,
-)
 from eemilib.model.furman_pivi.helper import remove_extrema
 from eemilib.model.furman_pivi.physics import at_theta_incidence
 from eemilib.model.parameter import Parameter
-from eemilib.util.constants import COL_ENERGY
 from numpy.typing import NDArray
 from scipy.special import erf
 

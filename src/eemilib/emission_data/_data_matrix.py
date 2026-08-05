@@ -34,8 +34,6 @@ from eemilib.loader.helper import DataPath
 from eemilib.loader.loader import Loader
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
-    COL_ENERGY,
-    COL_NORMAL,
     IMPLEMENTED_EMISSION_DATA,
     IMPLEMENTED_POP,
     ImplementedEmissionData,
@@ -332,7 +330,7 @@ class DataMatrix:
             "desactivate this with `rescale_energy_distributions_to_yield = "
             "False` in `DataMatrix.load_data`"
         )
-        self.rescale_energy_distributions_to_yield(population="all")
+        self.rescale_energy_distributions_to_teey(population="all")
 
     def has_all_mandatory_files(self, model_config: ModelConfig) -> bool:
         """Tell if files defined by :attr:`.Model.model_config` are set."""
@@ -351,8 +349,7 @@ class DataMatrix:
             for mandatory_population in mandatory_populations:
                 if mandatory_population not in IMPLEMENTED_POP:
                     logging.error(
-                        f"{mandatory_population = } not in "
-                        f"{IMPLEMENTED_POP = }"
+                        f"{mandatory_population = } not in {IMPLEMENTED_POP = }"
                     )
                     return False
 
@@ -557,10 +554,8 @@ class DataMatrix:
             logging.warning("Several SEEY are stored. Returning first.")
         return emission_yield[0]
 
-    def rescale_energy_distributions_to_yield(
-        self, population: ImplementedPop = "all"
-    ) -> None:
-        r"""Rescale measured energy distributions to match the measured yield.
+    def rescale_energy_distributions_to_teey(self, x: float) -> None:
+        r"""Rescale measured energy distributions to match the measured |TEEY|.
 
         Enforces the physical constraint from Eq. (4)/(50) in
         :cite:`Furman2002`:
@@ -575,39 +570,32 @@ class DataMatrix:
         inconsistent detector settings across measurement files), by anchoring
         every spectrum to the same, trusted yield measurement.
 
-        Parameters
-        ----------
-        population :
-            Population whose energy distributions should be rescaled.
-
         """
-        yields = self.get_data("Emission Yield", population)
-        if not yields:
+        teeys = self.get_data("Emission Yield", "all")
+        if not teeys:
             raise MissingDataError(
-                f"Missing emission yield measurement for {population = }, "
-                "needed to rescale energy distributions."
+                "Missing TEEY measurement, needed to rescale energy distributions."
             )
-        if len(yields) > 1:
+        if len(teeys) > 1:
             logging.warning(
                 "Several emission yield measurements found; using the first "
                 "one to rescale energy distributions."
             )
-        ref_yield = yields[0]
-        yield_energies = np.array(ref_yield.energies)
-        yield_values = ref_yield.data[COL_NORMAL].to_numpy()
+        ref_teey = teeys[0]
+        energies = np.array(ref_teey.energies)
 
-        distributions = self.get_data("Emission Energy", population)
+        distributions = self.get_data("Emission Energy", "all")
         for distrib in distributions:
             e_pe = distrib.e_pe
-            if not (yield_energies.min() <= e_pe <= yield_energies.max()):
+            if not (energies.min() <= e_pe <= energies.max()):
                 logging.warning(
                     f"{e_pe = } is outside the measured yield energy range "
-                    f"[{yield_energies.min()}, {yield_energies.max()}]; "
+                    f"[{energies.min()}, {energies.max()}]; "
                     "skipping rescaling for this distribution."
                 )
                 continue
 
             expected_area = float(
-                np.interp(e_pe, yield_energies, yield_values)
+                np.interp(e_pe, energies, ref_teey.normal_data)
             )
             distrib.rescale(objective_yield=expected_area, norm=1.0)

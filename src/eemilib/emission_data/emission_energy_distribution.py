@@ -2,7 +2,8 @@
 
 import logging
 from abc import abstractmethod
-from typing import Callable, Self, Sequence
+from typing import Self
+from collections.abc import Callable, Sequence
 
 import numpy as np
 import pandas as pd
@@ -214,7 +215,7 @@ class EmissionEnergyDistribution(EmissionData):
         self.data[data_columns] = (
             self.unnormalized_data[data_columns] / self.norm
         )
-        logging.debug(f"{str(self)}: normalized signal by {self.norm}")
+        logging.debug(f"{self!s}: normalized signal by {self.norm}")
 
     def rescale(
         self, objective_yield: float, norm: float | None = None
@@ -235,7 +236,7 @@ class EmissionEnergyDistribution(EmissionData):
         new_area = self._emission_yield
 
         logging.debug(
-            f"{str(self)}: rescaled by {scale:.3f} in order to retrieve an "
+            f"{self!s}: rescaled by {scale:.3f} in order to retrieve an "
             f"area {objective_yield = :.3f}. {former_area = :.3f} -> "
             f"{new_area = :.3f}"
         )
@@ -282,7 +283,7 @@ class EmissionEnergyDistribution(EmissionData):
             )
         )
         if area <= 0:
-            raise ValueError(f"Measured area is non-positive for {str(self)}")
+            raise ValueError(f"Measured area is non-positive for {self!s}")
         return area
 
 

@@ -37,9 +37,9 @@ def verified_ss_emission_yields(cst_loader: CSTLoader) -> dict:
     )
 
     expected_keys = {"SE", "EBE", "IBE", "all"}
-    assert (
-        set(yields.keys()) == expected_keys
-    ), f"Expected populations {expected_keys}, got {set(yields.keys())}"
+    assert set(yields.keys()) == expected_keys, (
+        f"Expected populations {expected_keys}, got {set(yields.keys())}"
+    )
 
     ebe_df = yields["EBE"]
     assert ebe_df["Energy [eV]"].iloc[0] == 0.0
@@ -67,9 +67,9 @@ def verified_ss_energy_distributions(cst_loader: CSTLoader) -> dict:
     )
 
     expected_keys = {"SE", "EBE", "IBE", "all"}
-    assert (
-        set(distributions.keys()) == expected_keys
-    ), f"Expected populations {expected_keys}, got {set(distributions.keys())}"
+    assert set(distributions.keys()) == expected_keys, (
+        f"Expected populations {expected_keys}, got {set(distributions.keys())}"
+    )
 
     ebe_df, ebe_e_pe = distributions["EBE"]
     assert ebe_df["Energy [eV]"].iloc[0] == 0.0
@@ -98,9 +98,9 @@ def verified_cu_emission_yields(cst_loader: CSTLoader) -> dict:
     yields = cst_loader.load_emission_yields(fp_copper.cst_emission_yields)
 
     expected_keys = {"SE", "EBE", "IBE", "all"}
-    assert (
-        set(yields.keys()) == expected_keys
-    ), f"Expected populations {expected_keys}, got {set(yields.keys())}"
+    assert set(yields.keys()) == expected_keys, (
+        f"Expected populations {expected_keys}, got {set(yields.keys())}"
+    )
 
     ebe_df = yields["EBE"]
     assert ebe_df["Energy [eV]"].iloc[0] == 0.0
@@ -128,9 +128,9 @@ def verified_cu_energy_distributions(cst_loader: CSTLoader) -> dict:
     )
 
     expected_keys = {"SE", "EBE", "IBE", "all"}
-    assert (
-        set(distributions.keys()) == expected_keys
-    ), f"Expected populations {expected_keys}, got {set(distributions.keys())}"
+    assert set(distributions.keys()) == expected_keys, (
+        f"Expected populations {expected_keys}, got {set(distributions.keys())}"
+    )
 
     ebe_df, ebe_e_pe = distributions["EBE"]
     assert ebe_df["Energy [eV]"].iloc[0] == 0.0
@@ -159,9 +159,9 @@ def verified_maxwellian_distribution(cst_loader: CSTLoader) -> dict:
     distributions = cst_loader.load_emission_energy_distributions(maxwellian)
 
     expected_keys = {"SE"}
-    assert (
-        set(distributions.keys()) == expected_keys
-    ), f"Expected populations {expected_keys}, got {set(distributions.keys())}"
+    assert set(distributions.keys()) == expected_keys, (
+        f"Expected populations {expected_keys}, got {set(distributions.keys())}"
+    )
 
     se_df, se_e_pe = distributions["SE"]
     assert se_df["0.0 [deg]"].iloc[1] == pytest.approx(0.0035416216123849)
