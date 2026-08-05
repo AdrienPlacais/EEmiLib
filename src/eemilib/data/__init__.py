@@ -1,1 +1,1 @@
-"""This module provides data for example and testing purposes."""
+"""Define data for example and testing purposes."""

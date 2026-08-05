@@ -1,4 +1,4 @@
-r"""This is data for niobium.
+r"""Provide data for niobium.
 
 It was manually extracted from following papers:
 - :math:`300\,\mathrm{\degrees}` baked out niobium: :cite:`Piel1988`.

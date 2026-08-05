@@ -85,7 +85,7 @@ Dropdowns = Literal["Loader", "Model", "Plotter"]
 
 
 class MainWindow(QMainWindow):
-    """This object holds the GUI."""
+    """GUI."""
 
     #: Whether selecting Model in dropdown should automatically fill the
     #: appropriate data to plot checkbox.
