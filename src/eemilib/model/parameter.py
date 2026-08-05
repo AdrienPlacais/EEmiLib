@@ -97,43 +97,43 @@ class Parameter:
         """
         return self.value
 
-    def __add__(self, other) -> float:
+    def __add__(self, other: float) -> float:
         """Allow ``self + other`` operation."""
         return self.value + other
 
-    def __radd__(self, other):
+    def __radd__(self, other: float) -> float:
         """Allow ``other + self `` operation."""
         return other + self.value
 
-    def __sub__(self, other):
+    def __sub__(self, other: float) -> float:
         """Allow ``self - other`` operation."""
         return self.value - other
 
-    def __rsub__(self, other):
+    def __rsub__(self, other: float) -> float:
         """Allow ``other - self `` operation."""
         return other - self.value
 
-    def __mul__(self, other):
+    def __mul__(self, other: float) -> float:
         """Allow ``self * other`` operation."""
         return self.value * other
 
-    def __rmul__(self, other):
+    def __rmul__(self, other: float) -> float:
         """Allow ``other * self `` operation."""
         return other * self.value
 
-    def __truediv__(self, other):
+    def __truediv__(self, other: float) -> float:
         """Allow ``self / other`` operation."""
         return self.value / other
 
-    def __rtruediv__(self, other):
+    def __rtruediv__(self, other: float) -> float:
         """Allow ``other / self `` operation."""
         return other / self.value
 
-    def __pow__(self, other):
+    def __pow__(self, other: float) -> float:
         """Allow ``self ** other`` operation."""
         return self.value**other
 
-    def __rpow__(self, other):
+    def __rpow__(self, other: float) -> float:
         """Allow ``other ** self `` operation."""
         return other**self.value
 
@@ -145,35 +145,35 @@ class Parameter:
         """Allow ``abs(self)`` operation."""
         return abs(self.value)
 
-    def __lt__(self, other):
+    def __lt__(self, other: float) -> bool:
         """Allow ``self < other`` operation."""
         return self.value < other
 
-    def __rlt__(self, other):
+    def __rlt__(self, other: float) -> bool:
         """Allow ``other < self `` operation."""
         return other < self.value
 
-    def __le__(self, other):
+    def __le__(self, other: float) -> bool:
         """Allow ``self <= other`` operation."""
         return self.value <= other
 
-    def __rle__(self, other):
+    def __rle__(self, other: float) -> bool:
         """Allow ``other <= self `` operation."""
         return other <= self.value
 
-    def __gt__(self, other):
+    def __gt__(self, other: float) -> bool:
         """Allow ``self > other`` operation."""
         return self.value > other
 
-    def __rgt__(self, other):
+    def __rgt__(self, other: float) -> bool:
         """Allow ``other > self `` operation."""
         return other > self.value
 
-    def __ge__(self, other):
+    def __ge__(self, other: float) -> bool:
         """Allow ``self >= other`` operation."""
         return self.value >= other
 
-    def __rge__(self, other):
+    def __rge__(self, other: float) -> bool:
         """Allow ``other >= self `` operation."""
         return other >= self.value
 
