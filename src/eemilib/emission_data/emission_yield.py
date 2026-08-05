@@ -2,8 +2,6 @@
 
 import logging
 from collections.abc import Callable
-from pathlib import Path
-from re import L
 from typing import Self
 
 import numpy as np
@@ -110,7 +108,7 @@ class EmissionYield(EmissionData):
 
         """
         return plotter.plot_emission_yield(
-            df=self.data,
+            self.data,
             *args,
             axes=axes,
             marker=marker,

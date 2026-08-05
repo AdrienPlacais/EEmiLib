@@ -55,6 +55,10 @@ line_length = 79
 profile = "black"
 src_paths = ["./eemilib/"]
 
+[tool.ruff.lint]
+ignore = ["LOG015"]
+# TODO: fix LOG015 (use own logger)
+
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib", "--strict-markers"]
 filterwarnings = ["ignore:.*cKDTree.*:DeprecationWarning"]
