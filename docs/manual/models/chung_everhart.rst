@@ -11,11 +11,16 @@ Presentation
 This is a model for emission energy distribution of |SEs| :cite:`Chung1974`.
 It does not take into account incidence angle of |PEs|.
 
+.. seealso::
+   :ref:`This example script <sphx_glr_auto_examples_plot_chung.py>` shows how
+   this model can be used in a script.
+
 Input files
 -----------
 
 You must provide an emission energy distribution at normal incidence.
-Currently, the fitting on several emission distribution files at different |PE| energies is not supported.
+Currently, the fitting on several emission distribution files at different |PE|
+energies is not supported.
 
 +-----------------------------+---------------+-----------------------------+---------------------------+
 |                             |Emission Yield |Emission energy distribution |Emission angle distribution|
@@ -45,11 +50,11 @@ In order to set it's maximum to unity, we scale it by :math:`256W_f/27`.
 Model parameters
 ----------------
 
-The parameters list is dynamically created here: :py:mod:`Chung and Everhart API documentation<.chung_and_everhart>`.
+The parameters list is dynamically created here: :py:mod:`Chung and Everhart
+API documentation<.chung_and_everhart>`.
 
 To-do list
 ----------
 
 .. todo::
-   - Allow fitting on several distribution files with different |PE| energy.
    - Set up tests.

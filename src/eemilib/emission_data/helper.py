@@ -2,13 +2,12 @@
 
 import numpy as np
 import pandas as pd
-from eemilib.util.constants import col_energy, col_normal
+
+from eemilib.util.constants import COL_ENERGY, COL_NORMAL
 
 
 def trim(
-    normal_ey: pd.DataFrame,
-    min_e: float = -1.0,
-    max_e: float = -1.0,
+    normal_ey: pd.DataFrame, min_e: float = -1.0, max_e: float = -1.0
 ) -> pd.DataFrame:
     """Remove EY outside of given energy range (if provided).
 
@@ -33,11 +32,11 @@ def trim(
 
     """
     if min_e >= 0:
-        trimed = normal_ey[normal_ey[col_energy] >= min_e]
+        trimed = normal_ey[normal_ey[COL_ENERGY] >= min_e]
         assert isinstance(trimed, pd.DataFrame)
         normal_ey = trimed
     if max_e >= 0:
-        trimed = normal_ey[normal_ey[col_energy] <= max_e]
+        trimed = normal_ey[normal_ey[COL_ENERGY] <= max_e]
         assert isinstance(trimed, pd.DataFrame)
         normal_ey = trimed
 
@@ -49,17 +48,15 @@ def resample(ey: pd.DataFrame, n_interp: int = -1) -> pd.DataFrame:
     if n_interp < 0:
         return ey
     new_ey = {
-        col_energy: np.linspace(
-            ey[col_energy].min(), ey[col_energy].max(), n_interp
+        COL_ENERGY: np.linspace(
+            ey[COL_ENERGY].min(), ey[COL_ENERGY].max(), n_interp
         )
     }
     for col_name in ey.columns:
-        if col_name == col_energy:
+        if col_name == COL_ENERGY:
             continue
         new_ey[col_name] = np.interp(
-            x=new_ey[col_energy],
-            xp=ey[col_energy],
-            fp=ey[col_name],
+            x=new_ey[COL_ENERGY], xp=ey[COL_ENERGY], fp=ey[col_name]
         )
 
     return pd.DataFrame(new_ey)
@@ -67,9 +64,9 @@ def resample(ey: pd.DataFrame, n_interp: int = -1) -> pd.DataFrame:
 
 def get_emax_eymax(normal_ey: pd.DataFrame) -> tuple[float, float]:
     """Get energy and max emission yields."""
-    ser_max = normal_ey.loc[normal_ey[col_normal].idxmax()]
-    e_max = ser_max[col_energy]
-    ey_max = ser_max[col_normal]
+    ser_max = normal_ey.loc[normal_ey[COL_NORMAL].idxmax()]
+    e_max = ser_max[COL_ENERGY]
+    ey_max = ser_max[COL_NORMAL]
     return e_max, ey_max
 
 
@@ -100,22 +97,22 @@ def get_crossover_energies(
 
     """
     first_half = trim(normal_ey, min_e=min_e, max_e=e_max)
-    ser_ec1 = first_half.loc[(first_half[col_normal] - 1.0).abs().idxmin()]
-    ec1 = ser_ec1[col_energy]
-    ey_ec1 = ser_ec1[col_normal]
+    ser_ec1 = first_half.loc[(first_half[COL_NORMAL] - 1.0).abs().idxmin()]
+    ec1 = ser_ec1[COL_ENERGY]
+    ey_ec1 = ser_ec1[COL_NORMAL]
 
     second_half = trim(normal_ey, min_e=e_max)
-    ser_ec2 = second_half.loc[(second_half[col_normal] - 1.0).abs().idxmin()]
-    ec2 = ser_ec2[col_energy]
-    ey_ec2 = ser_ec2[col_normal]
+    ser_ec2 = second_half.loc[(second_half[COL_NORMAL] - 1.0).abs().idxmin()]
+    ec2 = ser_ec2[COL_ENERGY]
+    ey_ec2 = ser_ec2[COL_NORMAL]
 
     return (ec1, ey_ec1), (ec2, ey_ec2)
 
 
 def get_ec1(normal_ey: pd.DataFrame, **kwargs) -> float:
     """Interpolate the energy vs teey array and give the E_c1."""
-    energy = normal_ey[col_energy].to_numpy()
-    teey = normal_ey[col_normal].to_numpy()
+    energy = normal_ey[COL_ENERGY].to_numpy()
+    teey = normal_ey[COL_NORMAL].to_numpy()
     idx = np.argmin(np.abs(teey - 1.0))
     ec1 = energy[idx]
     return ec1
@@ -123,7 +120,7 @@ def get_ec1(normal_ey: pd.DataFrame, **kwargs) -> float:
 
 def get_max(normal_ey: pd.DataFrame, **kwargs) -> tuple[float, float]:
     """Interpolate the energy vs teey array and give the E and sigma max."""
-    energy = normal_ey[col_energy].to_numpy()
-    teey = normal_ey[col_normal].to_numpy()
+    energy = normal_ey[COL_ENERGY].to_numpy()
+    teey = normal_ey[COL_NORMAL].to_numpy()
     idx = np.argmax(teey)
     return energy[idx], teey[idx]

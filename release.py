@@ -9,11 +9,11 @@ Usage:
 
 """
 
+import datetime
 import re
 import subprocess
 import sys
 from collections.abc import Sequence
-from datetime import date
 from pathlib import Path
 
 import yaml
@@ -28,6 +28,12 @@ def run(
     ----------
     cmd :
         The command and its arguments to run.
+    check :
+        Whether a ``CalledProcessError`` should be raised in case of error.
+    text :
+        Whether text or binary mode should be used.
+    kwargs :
+        Additional kwargs passed to `subprocess.run`.
 
     Returns
     -------
@@ -109,7 +115,7 @@ def update_files(version: str) -> None:
         The version string to set in the files.
 
     """
-    today = date.today().isoformat()
+    today = datetime.datetime.now(tz=datetime.UTC).date().isoformat()
     # _update_citation(version, today)
     _update_changelog(version, today)
 
@@ -160,9 +166,7 @@ def _extract_changelog_section(
         if not found.
 
     """
-    pattern = rf"^## \[{re.escape(
-        version
-    )}\](?: -- (unreleased|\d{{4}}-\d{{2}}-\d{{2}}))?$"
+    pattern = rf"^## \[{re.escape(version)}\](?: -- (unreleased|\d{{4}}-\d{{2}}-\d{{2}}))?$"
     lines = content.splitlines()
     for i, line in enumerate(lines):
         if match := re.match(pattern, line, re.IGNORECASE):
@@ -245,7 +249,7 @@ def _update_changelog(version: str, today: str) -> None:
     if matched_date_or_flag is None:
         print(f"No date yet, appending today's date to version {version}.")
     elif matched_date_or_flag.lower() == "unreleased":
-        print(f"'unreleased' found, replacing it with today's date.")
+        print("'unreleased' found, replacing it with today's date.")
     elif matched_date_or_flag != today:
         print(
             f"Version {version} already has date {matched_date_or_flag}, but "
@@ -254,8 +258,7 @@ def _update_changelog(version: str, today: str) -> None:
         ask_user_to_continue()
     else:
         print(
-            "CHANGELOG.md already contains correct date for version "
-            f"{version}."
+            f"CHANGELOG.md already contains correct date for version {version}."
         )
         return
 
@@ -310,8 +313,7 @@ def main() -> None:
 
     if not git_clean():
         print(
-            "Git working directory is not clean. Maybe there are uncommited "
-            "changes."
+            "Git working directory is not clean. Maybe there are uncommited changes."
         )
         ask_user_to_continue()
 

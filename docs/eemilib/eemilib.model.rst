@@ -6,6 +6,14 @@ model package
    :show-inheritance:
    :undoc-members:
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 5
+
+   eemilib.model.furman_pivi
+
 Submodules
 ----------
 

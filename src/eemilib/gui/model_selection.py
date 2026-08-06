@@ -1,10 +1,15 @@
-"""Define the model related interface in the GUI."""
+"""Define the model related interface in the GUI.
+
+.. todo::
+   Find a way to display more info in the `Implementations` dialog.
+
+   - A help button redirecting to the doc?
+   - Text/hovering text for each `implementation_choices` entry?
+
+"""
 
 import logging
 
-from eemilib.gui.helper import PARAMETER_ATTR_TO_POS
-from eemilib.gui.styles import TITLE_STYLE
-from eemilib.model.model import Model
 from PyQt5.QtGui import QWindow
 from PyQt5.QtWidgets import (
     QComboBox,
@@ -16,6 +21,10 @@ from PyQt5.QtWidgets import (
     QTableWidget,
     QVBoxLayout,
 )
+
+from eemilib.gui.helper import PARAMETER_ATTR_TO_POS
+from eemilib.gui.styles import TITLE_STYLE
+from eemilib.model.model import Model
 
 
 def model_configuration() -> tuple[QGroupBox, QTableWidget]:
@@ -47,67 +56,57 @@ def model_configuration() -> tuple[QGroupBox, QTableWidget]:
     return group, model_table
 
 
-class ModelSettingsDialog(QDialog):
-    """Define an interactive window for :class:`.Model` settings."""
+class ModelImplementationsDialog(QDialog):
+    """Define an interactive window for :class:`.Model` implementations."""
 
     def __init__(self, parent: QWindow, model: Model) -> None:
         """Instantiate the window and its parameters."""
         super().__init__(parent=parent)
         self._model = model
 
-        self.setWindowTitle(f"{str(model.__class__.__name__)} settings")
+        self.setWindowTitle(f"{model.__class__.__name__!s} implementations")
 
         self._layout = QVBoxLayout(self)
 
-        self._implementation_dropdown: QComboBox | None = None
-        args = self._implementation_selector()
-        if args is not None:
-            label, dropdown = args
+        self._implementation_dropdowns: dict[str, QComboBox] = {}
+        for label, dropdown in self._implementation_selectors():
             self._layout.addWidget(label)
             self._layout.addWidget(dropdown)
 
         buttons = self._buttons()
         self._layout.addWidget(buttons)
 
-    def _implementation_selector(self) -> tuple[QLabel, QComboBox] | None:
-        """Create implementation selection dropdown menu."""
-        implementations = getattr(
-            self._model.__class__, "implementations", None
+    def _implementation_selectors(self) -> list[tuple[QLabel, QComboBox]]:
+        """Create one dropdown per implementation entry."""
+        choices = getattr(
+            self._model.__class__, "implementation_choices", None
         )
-        if not implementations:
-            return
-
-        current = getattr(self._model, "current_implementation", None)
-        if not current:
-            logging.error(
-                f"{self._model} has no `current_implementation` attribute. Delete its "
-                "`implementations` attribute, or set a `current_implementation`."
-            )
-            return
+        if not choices:
+            return []
 
         set_implementation = getattr(self._model, "set_implementation", None)
-        if not set_implementation:
+        if not callable(set_implementation):
             logging.error(
-                f"{self._model} has no `set_implementation` method. Delete its "
-                "`implementations` attribute, or set a `set_implementation`."
+                f"{self._model} defines `implementation_choices` but has no"
+                " `set_implementation` method."
             )
-            return
+            return []
 
-        label = QLabel("Implementation")
+        current = getattr(self._model, "current_implementations", {})
 
-        implementation_dropdown = QComboBox()
-        implementation_dropdown.addItems(implementations)
-        implementation_dropdown.setCurrentText(current)
+        selectors = []
+        for name, options in choices.items():
+            label = QLabel(name.replace("_", " ").capitalize())
 
-        self._implementation_dropdown = implementation_dropdown
-        return label, implementation_dropdown
+            dropdown = QComboBox()
+            dropdown.addItems(options)
+            current_value = current.get(name)
+            if current_value:
+                dropdown.setCurrentText(current_value)
 
-    @property
-    def selected_implementation(self) -> str | None:
-        """Return current implementation."""
-        if not self._implementation_dropdown:
-            return
-        return self._implementation_dropdown.currentText()
+            self._implementation_dropdowns[name] = dropdown
+            selectors.append((label, dropdown))
+        return selectors
 
     def _buttons(self) -> QDialogButtonBox:
         """Create OK/Cancel buttons."""
@@ -117,7 +116,7 @@ class ModelSettingsDialog(QDialog):
             )
         )
 
-        def on_ok():
+        def on_ok() -> None:
             self.apply()
             self.accept()
 
@@ -127,9 +126,8 @@ class ModelSettingsDialog(QDialog):
 
     def apply(self) -> None:
         """Apply the settings to the :class:`.Model`."""
-        if self.selected_implementation:
-            set_implementation = getattr(
-                self._model, "set_implementation", None
-            )
-            if callable(set_implementation):
-                set_implementation(self.selected_implementation)
+        set_implementation = getattr(self._model, "set_implementation", None)
+        if not callable(set_implementation):
+            return
+        for name, dropdown in self._implementation_dropdowns.items():
+            set_implementation(name, dropdown.currentText())

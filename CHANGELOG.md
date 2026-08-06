@@ -5,6 +5,55 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] -- 2026-08-06
+
+### Added
+
+- Furman and Pivi model.
+  - Several implementations are provided, following Furman and Pivi paper.
+  - Emission angle distribution is yet to be implemented.
+- `CSTLoader` to load `ASCII Export`-ed emission yield files.
+- Emission yield and energy distributions for Stainless Steel and Copper files.
+  - Modelled with Furman and Pivi, data taken from their paper.
+  - Exported with CST, you can load them with `CSTLoader`.
+- `DataMatrix.plot` accepts `group_by_pe` argument, defaulting to `False`. When
+  it is `True`:
+  - If `data_type` is not `"Emission Energy"`, an error is raised.
+  - One plot per PE impact energy is created. The returned value is a
+    dictionary mapping PE energies to axes objects: `dict[float, Axes]`.
+- `Model.plot` accepts `group_by_pe` argument, defaulting to `False`. When it is
+  True:
+  - If `data_type` is not `"Emission Energy"`, an error is raised.
+  - If `e_pes: list[float]` is given, model is plotted for these impact
+    energies.
+  - If `axes: dict[float, Axes]` is given, axes are re-used. This `axes` can be
+    returned by `Model.plot`.
+  - When both `e_pes` and `axes` are returned, we use `e_pes` energies, re-use
+    corresponding `Axes` in `axes` if they are present, create new ones
+    otherwise.
+
+### Changed
+
+- The GUI `Plot` section is in a new tab to avoid overloading the main tab.
+- Both `ChungEverhart` and `Maxwellian` energy distribution models can be fitted
+  on SEs or all electrons emission energy distribution files.
+- Internal but tricky: added `Parameter` dunder methods so that any electron
+  emission function operating on `float` can operate on `Parameter` with the same
+  syntax. Do not hesitate to reach out if you have strange `int` vs `float`
+  errors.
+- `energies` argument for `Model.plot` can be `None` if an `axes` is given and
+  already contains plotted data. An array of `energies` is inferred from already
+  plotted data.
+- If emission yield and emission energy corresponding to the `"all"` population
+  are provided, the emission energies are rescaled so that their integral match
+  emission yield data. This can be deactivated by setting
+  `rescale_energy_distributions_to_yield` to `False` in `DataMatrix.load_data`.
+- `emission_data_type` arguments are renamed `data_type`.
+
+### Removed
+
+- `DataMatrix.get_data` do not accept `row` and `col` arguments.
+
 ## [0.1.5] -- 2026-05-22
 
 ### Added

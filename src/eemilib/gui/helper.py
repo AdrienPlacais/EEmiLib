@@ -6,8 +6,6 @@ from collections.abc import Collection
 from functools import partial
 from typing import Any, Literal, overload
 
-from eemilib.model.parameter import Parameter
-from eemilib.util.helper import get_classes
 from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtGui import QDesktopServices, QDoubleValidator, QIntValidator
 from PyQt5.QtWidgets import (
@@ -21,11 +19,12 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
+from eemilib.model.parameter import Parameter
+from eemilib.util.helper import get_classes
+
 
 def setup_dropdown(
-    module_name: str,
-    base_class: ABCMeta,
-    buttons_args: dict[str, Any],
+    module_name: str, base_class: ABCMeta, buttons_args: dict[str, Any]
 ) -> tuple[dict[str, str], QHBoxLayout, QComboBox, list[QPushButton]]:
     """Set up interface with a dropdown menu and a button next to it.
 
@@ -114,13 +113,13 @@ def setup_linspace_entries(
     layout.addWidget(QLabel(label))
 
     widgets: list[QWidget] = []
-    for label, is_int, x_0, x_max in zip(
+    for button_label, is_int, x_0, x_max in zip(
         ("first", "last", "n_points"),
         (False, False, True),
         initial_values,
         (max_value, max_value, None),
     ):
-        layout.addWidget(QLabel(label))
+        layout.addWidget(QLabel(button_label))
         widgets.append(w := _linspace_entry(is_int, x_0=x_0, x_max=x_max))
         layout.addWidget(w)
 
@@ -144,9 +143,7 @@ def _linspace_entry(
     return entry
 
 
-def setup_lock_checkbox(
-    parameter: Parameter,
-) -> QWidget:
+def setup_lock_checkbox(parameter: Parameter) -> QWidget:
     """Create the checkbox for the Lock button."""
     checkbox = QCheckBox()
     checkbox.setChecked(parameter.is_locked)

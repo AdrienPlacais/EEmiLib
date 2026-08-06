@@ -25,18 +25,12 @@ repos:
       - id: trailing-whitespace
         types_or: [python, toml]
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.21.1
+    rev: v3.21.2
     hooks:
-    -   id: pyupgrade
-  - repo: https://github.com/pycqa/isort  # args set in pyproject.toml
-    rev: 9.0.0a3
+      - id: pyupgrade
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.1
     hooks:
-      - id: isort
-        name: isort (python)
-      - id: isort
-        name: isort (cython)
-        types: [cython]
-  - repo: https://github.com/psf/black-pre-commit-mirror  # args set in pyproject.toml
-    rev: 26.5.0
-    hooks:
-      - id: black
+      - id: ruff-check
+        args: [--fix, --show-fixes] #, --select, "PT006"]
+      - id: ruff-format

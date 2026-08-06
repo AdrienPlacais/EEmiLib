@@ -10,15 +10,23 @@ r"""Create the Vaughan model, to compute |TEEY|.
 
 import logging
 import math
-from typing import Any, Callable, Literal, TypedDict
+from collections.abc import Callable
+from typing import Any, ClassVar, Literal, TypedDict, cast
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
+from scipy.optimize import least_squares
+
 from eemilib.core.model_config import ModelConfig
-from eemilib.emission_data.data_matrix import DataMatrix
+from eemilib.emission_data import DataMatrix
 from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
-from eemilib.util.constants import ImplementedEmissionData, ImplementedPop
+from eemilib.util.constants import (
+    COL_ENERGY,
+    ImplementedEmissionData,
+    ImplementedPop,
+)
 from eemilib.util.markdown import (
     DELTA_E_TR,
     E_0,
@@ -30,8 +38,6 @@ from eemilib.util.markdown import (
     SIGMA_MAX,
     rst_math,
 )
-from numpy.typing import NDArray
-from scipy.optimize import least_squares
 
 VaughanImplementation = Literal["original", "CST", "SPARK3D"]
 VAUGHAN_IMPLEMENTATIONS = ("original", "CST", "SPARK3D")
@@ -39,6 +45,8 @@ E_0_SPARK3D = 10.0
 
 
 class VaughanParameters(TypedDict):
+    """Parameters for :class:`.Vaughan`."""
+
     E_0: Parameter
     E_max: Parameter
     delta_E_transition: Parameter
@@ -52,8 +60,8 @@ class VaughanParameters(TypedDict):
 class Vaughan(Model):
     """Define the classic Vaughan model."""
 
-    emission_data_types = ["Emission Yield"]
-    populations = ["all"]
+    data_types = ("Emission Yield",)
+    populations = ("all",)
     considers_energy = True
     is_3d = True
     is_dielectrics_compatible = False
@@ -62,7 +70,7 @@ class Vaughan(Model):
         emission_energy_files=(),
         emission_angle_files=(),
     )
-    initial_parameters = {
+    initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = {
         "E_0": {
             "markdown": E_0,
             "unit": "eV",
@@ -132,7 +140,9 @@ class Vaughan(Model):
             "is_locked": False,
         },
     }
-    implementations = VAUGHAN_IMPLEMENTATIONS
+    implementation_choices: ClassVar[dict[str, tuple[str, ...]]] = {
+        "implementation": VAUGHAN_IMPLEMENTATIONS
+    }
 
     def __init__(
         self,
@@ -158,21 +168,22 @@ class Vaughan(Model):
 
         """
         super().__init__(url_doc_override="manual/models/vaughan")
-        self.parameters: VaughanParameters = {  # type: ignore
-            name: Parameter(**kwargs)  # type: ignore
-            for name, kwargs in self.initial_parameters.items()
-        }
+        self.parameters = cast(
+            VaughanParameters,
+            {
+                name: Parameter(**cast(dict, kwargs))
+                for name, kwargs in self.initial_parameters.items()
+            },
+        )
         self._generate_parameter_docs()
         if parameters_values is not None:
             self.set_parameters_values(parameters_values)
 
         self._func: Callable
         self.current_implementation: VaughanImplementation
-        self.set_implementation(implementation)
+        self.set_implementation("implementation", implementation)
 
-    def set_implementation(
-        self, implementation: VaughanImplementation
-    ) -> None:
+    def set_implementation(self, name: str, value: str) -> None:
         r"""Update some parameters to reproduce a specific implementation.
 
         Vaughan CST:
@@ -193,20 +204,25 @@ class Vaughan(Model):
            ``parameters_values`` argument of ``__init__`` method.
 
         """
-        current_implementation = getattr(self, "current_implementation", None)
-        if current_implementation == implementation:
+        if name != "implementation":
+            logging.error(
+                f"Unknown implementation axis {name = } for Vaughan."
+            )
             return
-        implementation_update = current_implementation is not None
+
+        implementation = cast(VaughanImplementation, value)
+        current = self.current_implementations.get("implementation")
+        if current == implementation:
+            return
+        implementation_update = current is not None
         if implementation_update:
             logging.info(
-                f"Changing Vaughan implementation: {current_implementation} to"
-                f" {implementation}."
+                f"Changing Vaughan implementation: {current} to {implementation}."
             )
 
-        self.current_implementation = implementation
+        self.current_implementations["implementation"] = implementation
         if implementation == "original":
             self._func = vaughan_func
-
             if implementation_update:
                 self.reset_parameters_values(
                     "teey_low", "delta_E_transition", "E_0"
@@ -216,7 +232,6 @@ class Vaughan(Model):
 
         if implementation == "CST":
             self._func = vaughan_func
-
             if implementation_update:
                 self.reset_parameters_values("delta_E_transition", "E_0")
             self.set_parameter_value("teey_low", 0.0)
@@ -225,23 +240,22 @@ class Vaughan(Model):
 
         if implementation == "SPARK3D":
             self._func = vaughan_spark3d
-
             self.set_parameters_values(
                 {"teey_low": 0.0, "delta_E_transition": 2.0}
             )
             self.parameters["E_0"].unlock()
-
-            E_0 = self._E_0_matching(E_c1=self.parameters["E_c1"].value)
-            if np.isnan(E_0):
+            e_0 = self._E_0_matching(E_c1=self.parameters["E_c1"])
+            if np.isnan(e_0):
                 return
-            self.set_parameter_value("E_0", E_0)
+            self.set_parameter_value("E_0", e_0)
             return
+
         logging.error(f"{implementation = } not in {VaughanImplementation}")
 
     def get_data(
         self,
         population: ImplementedPop,
-        emission_data_type: ImplementedEmissionData,
+        data_type: ImplementedEmissionData,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
         *args,
@@ -255,22 +269,19 @@ class Vaughan(Model):
             This method could be so much simpler and efficient.
 
         """
-        if population != "all" or emission_data_type != "Emission Yield":
+        if population != "all" or data_type != "Emission Yield":
             return super().get_data(
-                population=population,
-                emission_data_type=emission_data_type,
-                energy=energy,
-                theta=theta,
-                *args,
-                **kwargs,
+                population, data_type, energy, theta, *args, **kwargs
             )
         out = np.zeros((len(energy), len(theta)))
         for i, ene in enumerate(energy):
             for j, the in enumerate(theta):
                 out[i, j] = self._func(ene, the, **self.parameters)
 
-        out_dict = {f"{the} [deg]": out[:, j] for j, the in enumerate(theta)}
-        out_dict["Energy [eV]"] = energy
+        out_dict = {
+            COL_ENERGY: energy,
+            **{f"{the} [deg]": out[:, j] for j, the in enumerate(theta)},
+        }
         return pd.DataFrame(out_dict)
 
     def find_optimal_parameters(
@@ -289,10 +300,7 @@ class Vaughan(Model):
         assert emission_yield.population == "all"
 
         self.set_parameters_values(
-            {
-                "E_max": emission_yield.e_max,
-                "teey_max": emission_yield.ey_max,
-            }
+            {"E_max": emission_yield.e_max, "teey_max": emission_yield.ey_max}
         )
         if not self.parameters["E_c1"].is_locked:
             self.set_parameter_value("E_c1", emission_yield.e_c1)
@@ -311,10 +319,9 @@ class Vaughan(Model):
 
         E_0 = self._E_0_matching(E_c1=self.parameters["E_c1"].value)
         self.set_parameter_value("E_0", E_0)
-        return
 
     def _E_0_matching(self, *, E_c1: float) -> float:
-        """Fit E_0 to retrieve E_c1 (SPARK3D)"""
+        """Fit E_0 to retrieve E_c1 (SPARK3D)."""
         parameters = self.parameters.copy()
 
         def _to_minimize(E_0: float) -> float:
@@ -339,26 +346,24 @@ class Vaughan(Model):
 def vaughan_func(
     ene: float,
     the: float,
-    E_0: Parameter,
-    E_max: Parameter,
-    teey_max: Parameter,
-    teey_low: Parameter,
-    k_se: Parameter,
-    k_s: Parameter,
-    delta_E_transition: Parameter,
+    E_0: Parameter | float,
+    E_max: Parameter | float,
+    teey_max: Parameter | float,
+    teey_low: Parameter | float,
+    k_se: Parameter | float,
+    k_s: Parameter | float,
+    delta_E_transition: Parameter | float,
     **parameters,
 ) -> float | NDArray[np.float64]:
     """Compute the |TEEY| for incident energy E."""
-    mod_e_max = E_max.value * (
-        1.0 + k_se.value * math.radians(the) ** 2 / (2.0 * math.pi)
+    mod_e_max = E_max * (1.0 + k_se * math.radians(the) ** 2 / (2.0 * math.pi))
+    mod_teey_max = teey_max * (
+        1.0 + k_s * math.radians(the) ** 2 / (2.0 * math.pi)
     )
-    mod_teey_max = teey_max.value * (
-        1.0 + k_s.value * math.radians(the) ** 2 / (2.0 * math.pi)
-    )
-    if ene < E_0.value:
-        return teey_low.value
+    if ene < E_0:
+        return float(teey_low)
 
-    xi = (ene - E_0.value) / (mod_e_max - E_0.value)
+    xi = (ene - E_0) / (mod_e_max - E_0)
 
     if xi <= 1.0:
         k = 0.56

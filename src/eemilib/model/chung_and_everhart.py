@@ -2,28 +2,35 @@
 
 You will need to provide emission energy distribution measurements.
 
+.. todo::
+    Let usr choose from GUI if we should fit on SEs or all.
+
 """
 
-from typing import Any, TypedDict
+from typing import Any, ClassVar, Literal, TypedDict, cast
 
 import numpy as np
 import pandas as pd
-from eemilib.core.model_config import ModelConfig
-from eemilib.emission_data.data_matrix import DataMatrix
-from eemilib.model.model import Model
-from eemilib.model.parameter import Parameter
-from eemilib.util.constants import (
-    ImplementedEmissionData,
-    ImplementedPop,
-    col_energy,
-    col_normal,
-)
-from eemilib.util.markdown import NORM, W_F
 from numpy.typing import NDArray
 from scipy.optimize import Bounds, least_squares
 
+from eemilib.core.model_config import ModelConfig
+from eemilib.emission_data import DataMatrix
+from eemilib.emission_data.emission_data import MissingDataError
+from eemilib.model.model import Model
+from eemilib.model.parameter import Parameter
+from eemilib.util.constants import (
+    COL_ENERGY,
+    COL_NORMAL,
+    ImplementedEmissionData,
+    ImplementedPop,
+)
+from eemilib.util.markdown import NORM, W_F
+
 
 class ChungEverhartParameters(TypedDict):
+    """Parameters for :class:`.ChungEverhart`."""
+
     W_f: Parameter
     norm: Parameter
 
@@ -31,8 +38,8 @@ class ChungEverhartParameters(TypedDict):
 class ChungEverhart(Model):
     """Chung and Everhart model, defined in :cite:`Chung1974`."""
 
-    emission_data_types = ["Emission Energy"]
-    populations = ["SE"]
+    data_types = ("Emission Energy",)
+    populations = ("SE",)
     considers_energy = True
     is_3d = False
     is_dielectrics_compatible = False
@@ -41,7 +48,7 @@ class ChungEverhart(Model):
         emission_energy_files=("all",),
         emission_angle_files=(),
     )
-    initial_parameters = {
+    initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = {
         "W_f": {
             "markdown": W_F,
             "unit": "eV",
@@ -71,10 +78,14 @@ class ChungEverhart(Model):
 
         """
         super().__init__(url_doc_override="manual/models/chung_and_everhart")
-        self.parameters: ChungEverhartParameters = {  # type: ignore
-            name: Parameter(**kwargs)  # type: ignore
-            for name, kwargs in self.initial_parameters.items()
-        }
+        self.parameters = cast(
+            ChungEverhartParameters,
+            {
+                name: Parameter(**cast(dict, kwargs))
+                for name, kwargs in self.initial_parameters.items()
+            },
+        )
+
         self._generate_parameter_docs()
         if parameters_values is not None:
             self.set_parameters_values(parameters_values)
@@ -84,25 +95,49 @@ class ChungEverhart(Model):
     def get_data(
         self,
         population: ImplementedPop,
-        emission_data_type: ImplementedEmissionData,
+        data_type: ImplementedEmissionData,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
         *args,
         **kwargs,
     ) -> pd.DataFrame | None:
-        """Return desired data according to current model.
+        r"""Return desired data according to current model.
 
         Will return a dataframe only if the |SEs| energy distribution is asked.
 
+        Parameters
+        ----------
+        population :
+            Type of population you want data from. Only |SEs| are modelled by
+            this model.
+        data_type :
+            Desired type of emission data. Only ``"Emission Energy"`` for this
+            model.
+        energy :
+            Array of |SEs| emission energies in :unit:`eV`. By convention, the
+            last element of the array is the impact energy of the |PE|. It is
+            not used in this model, allowing unphysical |SEs| with energy
+            higher than the |PE|.
+        theta :
+            Array of |PE| electrons impact angle in :unit:`\degree`. Will be
+            ignored, as this model models only normal incidence impact.
+        args :
+            Other arguments passed to model functions.
+        kwargs :
+            Other arguments passed to model functions.
+
+        Returns
+        -------
+            ``None`` if ``population`` is different from ``"SE"`` and
+            ``data_type`` is not ``"Emission Energy"``. Otherwise, a
+            dataframe where first column ``"Energy [eV]"`` holds emission
+            energy, and second column ``"0.0 [deg]"`` the corresponding
+            normalized emission energy distribution.
+
         """
-        if population != "SE" or emission_data_type != "Emission Energy":
+        if population != "SE" or data_type != "Emission Energy":
             return super().get_data(
-                population=population,
-                emission_data_type=emission_data_type,
-                energy=energy,
-                theta=theta,
-                *args,
-                **kwargs,
+                population, data_type, energy, theta, *args, **kwargs
             )
         out = np.zeros(len(energy))
         for i, ene in enumerate(energy):
@@ -110,29 +145,52 @@ class ChungEverhart(Model):
                 ene, W_f=self.parameters["W_f"], norm=self.parameters["norm"]
             )
 
-        out_dict = {col_normal: out, col_energy: energy}
+        out_dict = {COL_ENERGY: energy, COL_NORMAL: out}
         return pd.DataFrame(out_dict)
 
     def find_optimal_parameters(
-        self, data_matrix: DataMatrix, **kwargs
+        self,
+        data_matrix: DataMatrix,
+        population: Literal["SE", "all"] = "all",
+        **kwargs,
     ) -> None:
-        """Fit model parameters on measurements."""
-        if not data_matrix.has_all_mandatory_files(self.model_config):
-            raise ValueError("Files are not all provided.")
+        """Fit model parameters on measurements.
 
-        distribution = data_matrix.all_energy_distribution
-        assert distribution.population == "all"
+        Parameters
+        ----------
+        data_matrix :
+            Object holding measurements.
+        population :
+            Population on which data should be fitted. Even if the model is
+            about |SEs|, we fit on ``"all"`` population by default because in
+            general we measure the distribution energy of all electrons.
+        kwargs :
+            Additional unused parameters.
+
+        """
+        if not data_matrix.has_all_mandatory_files(self.model_config):
+            raise MissingDataError("Files are not all provided.")
+
+        distributions = data_matrix.get_data("Emission Energy", population)
+        if not distributions:
+            raise MissingDataError(f"Missing emission energy for {population}")
+
+        def _aggregate_residue(w_f: float) -> NDArray[np.float64]:
+            """Compute residues on all distributions."""
+            return np.concatenate(
+                [
+                    _residue(
+                        w_f, distribution.energies, distribution.normal_data
+                    )
+                    for distribution in distributions
+                ]
+            )
 
         param = self.parameters["W_f"]
-
         lsq = least_squares(
-            fun=_residue,
-            x0=param.value,
+            fun=_aggregate_residue,
+            x0=param,
             bounds=Bounds(param.lower_bound, param.upper_bound),
-            args=(
-                distribution.data[col_energy].to_numpy(),
-                distribution.data[col_normal].to_numpy(),
-            ),
         )
         w_f = lsq.x[0]
         self.set_parameters_values(
@@ -140,30 +198,29 @@ class ChungEverhart(Model):
         )
 
 
-def _chung_everhart_norm(w_f: float) -> float:
+def _chung_everhart_norm(W_f: Parameter | float) -> float:
     """Return norm value to have distribution maximum to unity."""
-    return 256.0 * w_f**3 / 27.0
+    return 256.0 * W_f**3 / 27.0
 
 
 def chung_everhart_func(
     ene: float | NDArray[np.float64],
     W_f: Parameter | float,
-    norm: Parameter | None = None,
+    norm: Parameter | float | None = None,
     **parameters,
 ) -> float | NDArray[np.float64]:
     """Compute the energy distribution."""
-    w_f_value = W_f.value if isinstance(W_f, Parameter) else W_f
-    norm_value = (
-        norm.value if norm is not None else _chung_everhart_norm(w_f_value)
-    )
-    return norm_value * ene / (ene + w_f_value) ** 4
+    norm = norm if norm is not None else _chung_everhart_norm(W_f)
+    return norm * ene / (ene + W_f) ** 4
 
 
 def _residue(
-    w_f: float, ene: NDArray[np.float64], measured: NDArray[np.float64]
+    W_f: Parameter | float,
+    ene: NDArray[np.float64],
+    measured: NDArray[np.float64],
 ) -> NDArray[np.float64]:
     """Compute array of residues between model and measurements."""
-    return chung_everhart_func(ene, w_f) - measured
+    return chung_everhart_func(ene, W_f) - measured
 
 
 # Append dynamically generated docs to the module docstring

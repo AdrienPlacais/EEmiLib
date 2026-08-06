@@ -1,36 +1,44 @@
 """Define an object to store an emission yield."""
 
 import logging
-from pathlib import Path
+from collections.abc import Callable
 from typing import Self
 
+import numpy as np
 import pandas as pd
-from eemilib.emission_data.emission_data import EmissionData
+from numpy.typing import NDArray
+
+from eemilib.emission_data.emission_data import EmissionData, MissingDataError
 from eemilib.emission_data.helper import (
     get_crossover_energies,
     get_emax_eymax,
     resample,
 )
+from eemilib.loader.helper import DataPath
 from eemilib.loader.loader import Loader
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
+    COL_ENERGY,
+    COL_NORMAL,
     ImplementedPop,
-    col_energy,
-    col_normal,
     md_ey,
 )
+
+
+class MissingNormalEmissionYieldError(MissingDataError):
+    """Error raised when emission yield at normal incidence would be needed."""
 
 
 class EmissionYield(EmissionData):
     """An emission yield."""
 
-    def __init__(self, population: ImplementedPop, data: pd.DataFrame) -> None:
+    population: ImplementedPop
+
+    def __init__(self, data: pd.DataFrame) -> None:
         """Instantiate the data.
 
         Parameters
         ----------
-        population :
-            The concerned population of electrons.
         data :
             Structure holding the data. Must have an ``Energy (eV)`` column
             holding |PEs| energy. And one or several columns ``theta [deg]``,
@@ -38,31 +46,15 @@ class EmissionYield(EmissionData):
             corresponding emission yield.
 
         """
-        super().__init__(population, data)
-        self.energies = data[col_energy].to_numpy()
+        super().__init__(self.population, data)
+        self.energies = data[COL_ENERGY].to_numpy()
         self.angles = [
-            float(col.split()[0]) for col in data.columns if col != col_energy
+            float(col.split()[0]) for col in data.columns if col != COL_ENERGY
         ]
-        #: Energy at the maximum emission yield in :unit:`eV`. Not defined for
-        #: BEs.
-        self.e_max: float
-        #: Maximum emission yield. Not defined for BEs.
-        self.ey_max: float
-        #: First cross-over enrergy in :unit:`eV`. Not defined for BEs.
-        self.e_c1: float
-        #: Second cross-over enrergy in :unit:`eV`. Not defined for BEs.
-        self.e_c2: float | None
-        if self.population in ("SE", "all"):
-            self.e_max, self.ey_max, self.e_c1, self.e_c2 = self._parameters(
-                n_resample=1000
-            )
 
     @classmethod
-    def from_filepath(
-        cls,
-        population: ImplementedPop,
-        loader: Loader,
-        *filepath: str | Path,
+    def _from_filepath(
+        cls, loader: Loader, *filepath: DataPath, population: ImplementedPop
     ) -> Self:
         """Instantiate the data from files.
 
@@ -76,22 +68,97 @@ class EmissionYield(EmissionData):
             Path(s) to file holding data under study.
 
         """
-        data = loader.load_emission_yield(*filepath)
-        return cls(population, data)
+        if population != cls.population:
+            logging.warning(
+                f"{cls.__name__} always represents population {cls.population}"
+                f", but {population = } was given. The returned object will "
+                f"still hold {cls.population} data; the mismatched argument is"
+                " ignored."
+            )
+        data = loader.load_emission_yield(*filepath, population=cls.population)
+        return cls(data=data)
+
+    @classmethod
+    def from_filepaths(
+        cls, loader: Loader, *filepath: DataPath, population: ImplementedPop
+    ) -> list[Self]:
+        """Create obect from several files."""
+        return [
+            cls._from_filepath(loader, fp, population=population)
+            for fp in filepath
+        ]
 
     @property
     def label(self) -> str:
         """Print nature of data (markdown)."""
         return md_ey[self.population]
 
-    def _parameters(
+    def plot[T](
         self,
-        n_resample: int = -1,
+        plotter: Plotter,
+        *args,
+        marker: str | None = "+",
+        axes: T | None = None,
+        grid: bool = True,
+        population: ImplementedPop | None = None,
+        **kwargs,
+    ) -> T:
+        """Plot the contained data using plotter.
+
+        This wrapper simply calls the :meth:`.Plotter.plot_emission_yield`
+        method.
+
+        """
+        return plotter.plot_emission_yield(
+            self.data,
+            *args,
+            axes=axes,
+            marker=marker,
+            grid=grid,
+            label=self.label,
+            population=population,
+            is_model=False,
+            **kwargs,
+        )
+
+
+class SEEY(EmissionYield):
+    """|SEEY|.
+
+    In addition to the other emission yields, has characteristic points:
+    cross-over energies, maximum yield, energy at maximum yield.
+
+    """
+
+    population = "SE"
+
+    def __init__(self, data: pd.DataFrame) -> None:
+        """Compute characteristic parameters."""
+        super().__init__(data)
+
+        #: Energy at the maximum emission yield in :unit:`eV`.
+        self.e_max: float
+        #: Maximum emission yield.
+        self.ey_max: float
+        #: First cross-over energy in :unit:`eV`.
+        self.e_c1: float
+        #: Second cross-over energy in :unit:`eV`.
+        self.e_c2: float | None
+        self.e_max, self.ey_max, self.e_c1, self.e_c2 = self._parameters(
+            n_resample=1000
+        )
+
+    def _parameters(
+        self, n_resample: int = -1
     ) -> tuple[float, float, float, float | None]:
         """Compute the characteristics of the emission yield."""
-        assert 0.0 in self.angles, "Need the normal incidence measurements."
+        if 0.0 not in self.angles:
+            raise MissingNormalEmissionYieldError(
+                "We need normal incidence measurements to compute "
+                "characteristic points."
+            )
 
-        normal_ey = self.data[[col_energy, col_normal]]
+        normal_ey = self.data[[COL_ENERGY, COL_NORMAL]]
         assert isinstance(normal_ey, pd.DataFrame)
         normal_ey = resample(normal_ey, n_resample)
 
@@ -115,6 +182,7 @@ class EmissionYield(EmissionData):
         Returns
         -------
             :math:`E_{max}` and :math:`\sigma_{max}`.
+
         """
         e_max, sigma_max = get_emax_eymax(normal_ey)
         if abs(e_max - self.energies[-1]) < tol_energy:
@@ -174,31 +242,107 @@ class EmissionYield(EmissionData):
 
         return ec1, ec2
 
-    def plot[T](
-        self,
-        plotter: Plotter,
-        *args,
-        lw: float | None = 0.0,
-        marker: str | None = "+",
-        axes: T | None = None,
-        grid: bool = True,
-        population: ImplementedPop | None = None,
-        **kwargs,
-    ) -> T:
-        """Plot the contained data using plotter.
 
-        This wrapper simply calls the :meth:`.Plotter.plot_emission_yield`
-        method.
+class EBEEY(EmissionYield):
+    """|EBEEY|."""
+
+    population = "EBE"
+
+
+class IBEEY(EmissionYield):
+    """|IBEEY|."""
+
+    population = "IBE"
+
+
+class TEEY(SEEY):
+    """|TEEY|.
+
+    Inherits from :class:`SEEY` to keep the same characteristic points:
+    cross-over energies, maximum yield, energy at maximum yield.
+
+    """
+
+    population = "all"
+
+    def decompose(
+        self,
+        se_shape: Callable[[NDArray[np.float64]], NDArray[np.float64]],
+        ebe_shape: Callable[[NDArray[np.float64]], NDArray[np.float64]],
+        ibe_shape: Callable[[NDArray[np.float64]], NDArray[np.float64]],
+    ) -> tuple[SEEY, EBEEY, IBEEY]:
+        r"""Split the measured |TEEY| into |SEEY|/|EBEEY|/|IBEEY| shares.
+
+        At normal incidence, and at each impact energy :math:`E`, the measured
+        total yield is split proportionally to each population's expected shape
+        at that energy:
+
+        .. math::
+            \hat\delta_\mathrm{pop}(E) = \sigma_\mathrm{measured}(E) \times
+            \frac{\mathrm{shape}_\mathrm{pop}(E)}
+            {\mathrm{shape}_\mathrm{SE}(E) + \mathrm{shape}_\mathrm{EBE}(E) +
+            \mathrm{shape}_\mathrm{IBE}(E)}
+
+        This is a soft decomposition (fractional weights, not a hard cutoff),
+        mirroring :meth:`.AllEmissionEnergyDistribution.decompose`. Only the
+        normal-incidence column is considered; oblique-incidence fitting is a
+        separate, later step (angular parameters are independent of the
+        normal-incidence ones).
+
+        Parameters
+        ----------
+        se_shape :
+            Function returning the expected (unnormalized) |SEEY| at the given
+            impact energies. Must already be bound to the relevant parameters
+            (e.g. via :func:`functools.partial` applied to
+            :func:`.furman_pivi.se.seey`).
+        ebe_shape :
+            Same as ``se_shape``, for |EBEEY| (e.g. bound
+            :func:`.furman_pivi.ebe.ebeey`).
+        ibe_shape :
+            Same as ``se_shape``, for |IBEEY| (e.g. bound
+            :func:`.furman_pivi.ibe.ibeey`).
+
+        Return
+        ------
+            The |SEEY|, |EBEEY|, |IBEEY| shares of this |TEEY|, at normal
+            incidence.
 
         """
-        return plotter.plot_emission_yield(
-            df=self.data,
-            *args,
-            axes=axes,
-            lw=lw,
-            marker=marker,
-            grid=grid,
-            label=self.label,
-            population=population,
-            **kwargs,
+        energies = np.asarray(self.energies, dtype=np.float64)
+
+        shapes = {
+            "SE": se_shape(energies),
+            "EBE": ebe_shape(energies),
+            "IBE": ibe_shape(energies),
+        }
+        total_shape = sum(shapes.values())
+        has_signal = total_shape > 0
+        weights = {
+            pop: np.where(has_signal, shape / total_shape, 0.0)
+            for pop, shape in shapes.items()
+        }
+
+        measured = self.data[COL_NORMAL].to_numpy()
+        split_data = {
+            pop: pd.DataFrame(
+                {COL_ENERGY: energies, COL_NORMAL: measured * weight}
+            )
+            for pop, weight in weights.items()
+        }
+
+        return (
+            SEEY(split_data["SE"]),
+            EBEEY(split_data["EBE"]),
+            IBEEY(split_data["IBE"]),
         )
+
+
+#: Maps populations to their appropriate :class:`.EmissionYield`
+#: subclass.
+EMISSION_YIELDS_BY_POP: dict[ImplementedPop, type[EmissionYield]] = {
+    "SE": SEEY,
+    "EBE": EBEEY,
+    "IBE": IBEEY,
+    "all": TEEY,
+}

@@ -4,9 +4,9 @@ import logging
 from collections.abc import Sequence
 
 from eemilib.util.constants import (
+    COL_ENERGY,
     ImplementedEmissionData,
     ImplementedPop,
-    col_energy,
     md_energy_distrib,
     md_ey,
 )
@@ -15,7 +15,9 @@ from eemilib.util.constants import (
 def explicit_column_names(
     columns: Sequence[str],
     population: ImplementedPop | None = None,
-    emission_data_type: ImplementedEmissionData | None = None,
+    data_type: ImplementedEmissionData | None = None,
+    e_pe: float | None = None,
+    is_model: bool = False,
 ) -> dict[str, str]:
     """Explicit column names for the plot.
 
@@ -27,12 +29,15 @@ def explicit_column_names(
         Columns of the data frame to be plotted.
     population :
         Type of emitted electrons in data frame.
-    emission_data_type :
+    data_type :
         Type of data stored in data frame.
+    e_pe :
+        Energy of |PEs| in :unit:`eV`, if applicable.
+    is_model :
+        If data is modelled.
 
     Returns
     -------
-    dict[str, str]
         Mapping to easily rename the data frame.
 
     """
@@ -43,30 +48,32 @@ def explicit_column_names(
         )
         return {col: col for col in columns}
 
-    if emission_data_type == "Emission Yield":
-        explicit = {
-            col: (
-                f"{md_ey[population]} @{col}"
-                if col != col_energy
-                else "PEs energy [eV]"
-            )
-            for col in columns
-        }
-        return explicit
+    explicit = {}
+    for col in columns:
+        if col == COL_ENERGY:
+            explicit[col] = col
+            continue
 
-    if emission_data_type == "Emission Energy":
-        explicit = {
-            col: (
-                f"{md_energy_distrib[population]} @{col}"
-                if col != col_energy
-                else col_energy
-            )
-            for col in columns
-        }
-        return explicit
+        if is_model:
+            modelled = "Modelled"
+        else:
+            modelled = ""
 
-    logging.info(
-        f"Explicit column names not implemented for {emission_data_type = }. "
-        "Keeping original."
-    )
-    return {col: col for col in columns}
+        if data_type == "Emission Yield":
+            _types_of_data = md_ey
+            pe = ""
+        elif data_type == "Emission Energy":
+            _types_of_data = md_energy_distrib
+            pe = f"${e_pe}" + r"\,\mathrm{eV}$" if e_pe is not None else ""
+        else:
+            raise ValueError(
+                "Plotting implemented for Emission Yield and Emission Energy only."
+            )
+
+        type_of_data = _types_of_data[population]
+        _angles = col.split()
+        angle = f"@${_angles[0]}" + r"\,\mathrm{" + _angles[1][1:-1] + r"}$"
+
+        info = (key for key in (modelled, type_of_data, angle, pe) if key)
+        explicit[col] = " ".join(info)
+    return explicit

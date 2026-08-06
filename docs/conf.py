@@ -1,5 +1,9 @@
+"""Define configuration for Sphinx doc builder."""
+
 import os
 import sys
+
+from sphinx_gallery.sorting import ExplicitOrder
 
 import eemilib
 
@@ -24,6 +28,7 @@ extensions = [
     "sphinx_rtd_theme",  # ReadTheDocs theme
     "sphinxcontrib.bibtex",
     "unit_role",
+    "sphinx_gallery.gen_gallery",
 ]
 
 autodoc_default_options = {
@@ -47,17 +52,11 @@ bibtex_bibfiles = ["references.bib"]
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
-html_sidebars = {
-    "**": [
-        "versions.html",
-    ],
-}
+html_sidebars = {"**": ["versions.html"]}
 
 # -- Check that there is no broken link --------------------------------------
 nitpicky = True
-nitpick_ignore = [
-    ("py:class", "numpy.float64"),
-]
+nitpick_ignore = [("py:class", "numpy.float64")]
 intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
@@ -71,20 +70,23 @@ intersphinx_mapping = {
 }
 
 rst_prolog = """
-.. |axplot| replace:: :meth:`matplotlib.axes.Axes.plot`
-.. |dfplot| replace:: :meth:`pandas.DataFrame.plot`
-.. |SE| replace:: :ref:`SE <SE-link>`
-.. |SEs| replace:: :ref:`SEs <SE-link>`
-.. |SEEY| replace:: :ref:`SEEY <SE-link>`
-.. |IBE| replace:: :ref:`IBE <IBE-link>`
-.. |IBEs| replace:: :ref:`IBEs <IBE-link>`
-.. |IBEEY| replace:: :ref:`IBEEY <IBE-link>`
-.. |EBE| replace:: :ref:`EBE <EBE-link>`
-.. |EBEs| replace:: :ref:`EBEs <EBE-link>`
 .. |EBEEY| replace:: :ref:`EBEEY <EBE-link>`
-.. |PE| replace:: :ref:`PE <notations-link>`
+.. |EBEs| replace:: :ref:`EBEs <EBE-link>`
+.. |EBE| replace:: :ref:`EBE <EBE-link>`
+.. |EEs| replace:: :ref:`PEs <notations-link>`
+.. |EE| replace:: :ref:`PE <notations-link>`
+.. |IBEEY| replace:: :ref:`IBEEY <IBE-link>`
+.. |IBEs| replace:: :ref:`IBEs <IBE-link>`
+.. |IBE| replace:: :ref:`IBE <IBE-link>`
 .. |PEs| replace:: :ref:`PEs <notations-link>`
+.. |PE| replace:: :ref:`PE <notations-link>`
+.. |SEEY| replace:: :ref:`SEEY <SE-link>`
+.. |SEs| replace:: :ref:`SEs <SE-link>`
+.. |SE| replace:: :ref:`SE <SE-link>`
 .. |TEEY| replace:: :ref:`TEEY <notations-link>`
+.. |axplot| replace:: :meth:`matplotlib.axes.Axes.plot`
+.. |Axes| replace:: :class:`matplotlib.axes.Axes`
+.. |dfplot| replace:: :meth:`pandas.DataFrame.plot`
 
 """
 
@@ -92,6 +94,8 @@ intersphinx_aliases = {
     "np.float64": "numpy.float64",
     "NDArray": "numpy.typing.NDArray",
 }
+
+mathjax3_config = {"tex": {"macros": {"degree": r"{^{\circ}}"}}}
 
 # -- Parameters for sphinx-autodoc-typehints ----------------------------------
 typehints_fully_qualified = False
@@ -123,3 +127,19 @@ typehints_use_signature_return = False
 
 # MyST parser to include markdown files
 myst_gfm_only = True  # interpret markdown with github styling
+
+
+# -- Parameters sphinx-gallery ------------------------------------------------
+sphinx_gallery_conf = {
+    "examples_dirs": "../examples",  # path to your example scripts
+    "gallery_dirs": "auto_examples",  # path to where to save gallery generated output
+    "within_subsection_order": ExplicitOrder(
+        [
+            "../examples/plot_maxwellian.py",
+            "../examples/plot_chung.py",
+            "../examples/plot_vaughan.py",
+            "../examples/plot_furman_pivi.py",
+            "*",
+        ]
+    ),
+}

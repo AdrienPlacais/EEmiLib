@@ -27,15 +27,16 @@ requires-python = ">=3.12"
 
 [project.optional-dependencies]
 docs = [
-  "sphinx>=8.2,<9",
-  "myst-parser>=4,<5",
-  "sphinx-rtd-theme>=3,<4",
-  "sphinxcontrib-bibtex>=2.6,<3",
-  "sphinx-autodoc-typehints>=3.5,<4",
-  "sphinx-qt-documentation>=0.4,<1",
   "linkify-it-py>=2,<3",
+  "myst-parser>=4,<5",
+  "sphinx-autodoc-typehints>=3.5,<4",
+  "sphinx-gallery>=0.21,<1",
+  "sphinx-qt-documentation>=0.4,<1",
+  "sphinx-rtd-theme>=3,<4",
+  "sphinx>=8.2,<9",
+  "sphinxcontrib-bibtex>=2.6,<3",
 ]
-test = ["pytest>=8.3.2,<9"]
+test = ["pytest>=8.3.2,<9", "sphinx-gallery>=0.21,<1"]
 
 [project.scripts]
 eemilib-gui = "eemilib.gui.gui:main"
@@ -44,20 +45,42 @@ eemilib-gui = "eemilib.gui.gui:main"
 Documentation = "https://adrienplacais.github.io/EEmiLib/"
 Homepage = "https://github.com/AdrienPlacais/EEmiLib"
 
-[tool.black]
+[tool.ruff]
 line-length = 79
-target-version = ["py312"]
 
-[tool.isort]
-line_length = 79
-profile = "black"
-src_paths = ["./eemilib/"]
+[tool.ruff.format]
+skip-magic-trailing-comma = true
+
+[tool.ruff.lint]
+extend-select = [
+  "ANN", # flake8
+  "D",   # pydocstyle
+  "PT",  # pytest
+  "UP",  # pyupgrade
+]
+ignore = [
+  "ANN002", # Missing type annotation for `*args`
+  "ANN003", # Missing type annotation for `*kwargs`
+  "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
+  "BLE001", # Do not catch blind exception: `Exception`
+  "D203",   # No blank line before docstring
+  "D213",   # Do not necessarily keep first line with just `###`
+  "LOG015", # TODO: fix LOG015 (use own logger)
+]
+
+[tool.ruff.lint.isort]
+split-on-trailing-comma = false
+
+[tool.ruff.lint.per-file-ignores]
+"examples/**" = ["D"]
+"tests/**" = ["ANN"]
 
 [tool.pytest.ini_options]
 addopts = ["--import-mode=importlib", "--strict-markers"]
 filterwarnings = ["ignore:.*cKDTree.*:DeprecationWarning"]
 markers = [
   "implementation: mark tests/functionalities currently under implementation",
+  "example: example scripts",
   "slow: mark a test as slow (deselect with '-m \"not slow\"')",
   "smoke: mark quick and critical tests (select with '-m smoke')",
 ]

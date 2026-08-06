@@ -8,6 +8,7 @@ BUILDDIR      = _build
 SRC_DIR	      = ../src
 EXCLUDE_DIR   = ../src/eemilib/experimental/*
 APIDOC_DIR    = eemilib
+GALLERY_DIR   = ./auto_examples/
 
 .PHONY: help clean apidoc html
 .DEFAULT_GOAL := help
@@ -25,6 +26,7 @@ clean:
 	@echo "Cleaning build artifacts..."
 	@rm -rf "$(BUILDDIR)"
 	@if [ -d "$(APIDOC_DIR)" ]; then rm -rf "$(APIDOC_DIR)"/*; fi
+	@if [ -d "$(GALLERY_DIR)" ]; then rm -rf "$(GALLERY_DIR)"/*; fi
 
 apidoc:
 	@echo "Generating API documentation..."

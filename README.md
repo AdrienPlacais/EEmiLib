@@ -1,12 +1,13 @@
 # EEmiLib
 
-**EEmiLib** (Electron EMIssion Library) provides several electron emission models and
-a simple interface to fit them to experimental data.
-It includes both a _graphical user interface_ (GUI) for ease of use and a
-**Python API** for advanced users.
+**EEmiLib** (Electron EMIssion Library) provides several electron emission
+models and a simple interface to fit them to experimental data. It includes
+both a _graphical user interface_ (GUI) for ease of use and a **Python API**
+for advanced users.
 
-The library focuses on electron emission models relevant to multipactor simulations,
-_i.e._ for impinging energies ranging from a few eV to several hundred eV.
+The library focuses on electron emission models relevant to multipactor
+simulations, _i.e._ for impinging energies ranging from a few eV to several
+hundred eV.
 
 This project is still under active development.
 I maintain it in my free time, but I'll do my best to answer any questions you
@@ -72,58 +73,64 @@ is not activated.
 
 ### Python API
 
+A typical script would look like:
+
 ```python
 import numpy as np
 from eemilib.emission_data import DataMatrix
 from eemilib.loader import PandasLoader
 from eemilib.model import Vaughan
 from eemilib.plotter import PandasPlotter
-from eemilib import teey_cu
 
-
-filepath = [teey_cu / "measured_TEEY_Cu_1_eroded.csv"]
-
-# Object holding filepaths
 data_matrix = DataMatrix()
-# Indicate that this is TEEY file
 data_matrix.set_files(
-    filepath, population="all", emission_data_type="Emission Yield"
-)
-data_matrix.load_data(PandasLoader())
-
-# Plot experimental data
-plotter = PandasPlotter()
-axes = data_matrix.plot(
-    plotter, population="all", emission_data_type="Emission Yield"
+    filepath="path/to/a/TEEY/file.csv",
+    population="all",
+    data_type="Emission Yield"
 )
 
-# Select model and fit
+loader = PandasLoader()
+data_matrix.load_data(loader)
+
 model = Vaughan()
 model.find_optimal_parameters(data_matrix)
 
-# Plot fitted data
-model.plot(
-    plotter,
+plotter = PandasPlotter()
+axes = data_matrix.plot(
+    plotter=plotter,
     population="all",
-    emission_data_type="Emission Yield",
+    data_type="Emission Yield"
+)
+model.plot(
+    plotter=plotter,
+    population="all",
+    data_type="Emission Yield",
     energies=np.linspace(0, 1000, 1001),
     angles=np.linspace(0, 60, 4),
     axes=axes,
 )
 ```
 
+Complete examples are available in [the
+documentation](https://eemilib.readthedocs.io/en/latest/auto_examples/index.html).
+
 ## Roadmap/To-Do
 
 - [x] Document abbreviations
 - GUI:
   - [ ] Better handling of multiple `Plot data` and `Plot model` buttons push.
+    - [ ] Let user choose `group_by_pe` and `e_pes` for `"Emission Energy"`
+          plots.
   - [x] Display quantitative criteria to assess model quality (e.g., Nicolas
         Fil's criterion)
-  - [x] Display derived quantities such as crossover energies, maximum TEEY, etc.
+  - [x] Display derived quantities such as crossover energies, maximum TEEY,
+        etc.
+  - [ ] Let user load and plot files that are not needed for current `Model`, so
+        they can compare `Model` data with tabulated data easily.
 - CI:
   - [x] `PyPI` release.
   - [x] Update installation instructions.
-  - ? Allow execution on online Docker, or make executable?
+  - [ ] Allow execution on online Docker ?
 - [ ] `Export` buttons
   - [ ] Tabulated model data.
   - [ ] Model parameters value (makes sense along with an `Import` button).
@@ -137,9 +144,11 @@ model.plot(
 - API:
   - [x] `Model.display_parameters()` method for nice printing.
   - [ ] Import/export model configuration with a `TOML`.
+  - [ ] Make `Model` store its data in a `DataMatrix`?
+  - [ ] Should every `Model` be fitted on `all` population?
 - If it proves useful:
   - [ ] Handle experimental data with error bars
   - [ ] Add control over interpolation of loaded experimental data
   - [ ] Optional smoothing of measured data
-  - [ ] Different line styles/colors for different populations.
+  - [x] Different line styles/colors for different populations.
   - [ ] Ready-to-use interface for PIC codes.

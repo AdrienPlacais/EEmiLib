@@ -9,9 +9,9 @@ import logging
 import re
 
 import matplotlib.pyplot as plt
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QEvent, Qt
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QLabel
+from PyQt5.QtWidgets import QLabel, QWidget
 
 TITLE_STYLE = "QGroupBox { font-size: 14px; font-weight: bold; }"
 FILE_LIST_MAX_HEIGHT = 40
@@ -83,15 +83,15 @@ def _render_to_pixmap(
 
     Parameters
     ----------
-    text:
-        Fully composed mathtext string (output of :func:`compose_mathtext`).
-    width_px:
+    text :
+        Fully composed mathtext string (output of :func:`_compose_mathtext`).
+    width_px :
         Available horizontal space in pixels.  The figure is sized to this
         width so that matplotlib's ``wrap=True`` breaks lines at the correct
         point.
-    fontsize:
+    fontsize :
         Font size in points.
-    dpi:
+    dpi :
         Rasterisation resolution.
 
     Returns
@@ -182,14 +182,14 @@ class MathTextLabel(QLabel):
 
     Parameters
     ----------
-    body:
+    body :
         Mixed plain/math string (may contain any number of ``$…$``
         environments).
-    units:
+    units :
         Unit string without brackets (may be empty).
-    fontsize:
+    fontsize :
         Font size in points passed to matplotlib.
-    dpi:
+    dpi :
         Rasterisation resolution.
 
     """
@@ -200,8 +200,9 @@ class MathTextLabel(QLabel):
         units: str,
         fontsize: int = MATH_LABEL_FONTSIZE,
         dpi: int = MATH_LABEL_DPI,
-        parent=None,
+        parent: QWidget | None = None,
     ) -> None:
+        """Init object."""
         super().__init__(parent)
         self._body = body
         self._units = units
@@ -215,7 +216,7 @@ class MathTextLabel(QLabel):
         # not blank before the first layout pass.
         self._render(MATH_LABEL_DEFAULT_WIDTH_PX)
 
-    def resizeEvent(self, event) -> None:  # noqa: N802
+    def resizeEvent(self, event: QEvent) -> None:
         """Re-render the pixmap whenever the widget width changes."""
         super().resizeEvent(event)
         new_width = event.size().width()
@@ -236,11 +237,9 @@ class MathTextLabel(QLabel):
 
 
 def math_text_label_from_key(
-    key: str,
-    fontsize: int = MATH_LABEL_FONTSIZE,
-    dpi: int = MATH_LABEL_DPI,
+    key: str, fontsize: int = MATH_LABEL_FONTSIZE, dpi: int = MATH_LABEL_DPI
 ) -> tuple[QLabel, QLabel]:
-    """Convenience wrapper: parse *key* then render it.
+    """Parse *key* then render it.
 
     Parameters
     ----------

@@ -1,25 +1,102 @@
 """Define the ABC :class:`Plotter` to produce the plots."""
 
 from abc import ABC, abstractmethod
+from typing import Any
 
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
-from eemilib.util.constants import ImplementedPop
+from numpy.typing import NDArray
+
+from eemilib.util.constants import ImplementedEmissionData, ImplementedPop
 from eemilib.util.helper import documentation_url
+
+_COLORS_LIST = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+
+#: Maps populations to their plotting style for emission yield plots.
+POP_STYLES_EY: dict[ImplementedPop, dict[str, str | float]] = {
+    "all": {"ls": "-"},
+    "SE": {"ls": "--"},
+    "EBE": {"ls": "-."},
+    "IBE": {"ls": ":"},
+}
+#: Maps populations to their plotting style for emission energy plots.
+POP_STYLES_EMISSION_ENERGY: dict[ImplementedPop, dict[str, str | float]] = {
+    "all": {"ls": "-", "color": _COLORS_LIST[0]},
+    "SE": {"ls": "--", "color": _COLORS_LIST[1]},
+    "EBE": {"ls": "-.", "color": _COLORS_LIST[2]},
+    "IBE": {"ls": ":", "color": _COLORS_LIST[3]},
+}
+
+
+DEFAULT_IS_MODEL_STYLES: dict[bool, dict[str, str | float]] = {
+    False: {"marker": "+", "lw": 0},
+    True: {"marker": "", "lw": 1.0},
+}
 
 
 class Plotter(ABC):
     """A generic object to plot distributions, emission yields, etc."""
 
-    def __init__(self, *args, gui: bool = False, **kwargs) -> None:
+    #: Determine plot styles according to population nature for emission yield
+    #: plots.
+    pop_styles_ey: dict[ImplementedPop, dict[str, str | float]] = POP_STYLES_EY
+    #: Determine plot styles according to population nature for emission
+    #: energy plots.
+    pop_styles_emission_energy: dict[
+        ImplementedPop, dict[str, str | float]
+    ] = POP_STYLES_EMISSION_ENERGY
+    #: Determine plot styles according to whether data is modelled or measured.
+    is_model_styles: dict[bool, dict[str, str | float]] = (
+        DEFAULT_IS_MODEL_STYLES
+    )
+
+    def __init__(self, gui: bool = False) -> None:
         """Instantiate the object.
 
         Parameters
         ----------
         gui :
-            Can be used if using the GUI, eg to activate interactive mode.
+            Activates interactive plotting if using GUI.
 
         """
         self.doc_url = documentation_url(self)
+
+    def plot[T](
+        self,
+        data_type: ImplementedEmissionData,
+        df: pd.DataFrame,
+        axes: T | None = None,
+        population: ImplementedPop | None = None,
+        is_model: bool = True,
+        **kwargs,
+    ) -> T:
+        """Call the appropriate plot method.
+
+        See Also
+        --------
+        :meth:`.plot_emission_yield`
+        :meth:`.plot_emission_energy_distribution`
+        :meth:`.plot_emission_angle_distribution`
+
+        """
+        if data_type == "Emission Yield":
+            meth = self.plot_emission_yield
+        elif data_type == "Emission Energy":
+            meth = self.plot_emission_energy_distribution
+        elif data_type == "Emission Angle":
+            meth = self.plot_emission_angle_distribution
+        else:
+            raise ValueError(
+                f"{data_type = } should be in {ImplementedEmissionData}."
+            )
+        return meth(
+            df=df,
+            axes=axes,
+            population=population,
+            is_model=is_model,
+            **kwargs,
+        )
 
     @abstractmethod
     def plot_emission_yield[T](
@@ -27,6 +104,8 @@ class Plotter(ABC):
         df: pd.DataFrame,
         axes: T | None = None,
         population: ImplementedPop | None = None,
+        is_model: bool = True,
+        e_pe: float | None = None,
         **kwargs,
     ) -> T:
         """Plot emission yield data."""
@@ -37,6 +116,8 @@ class Plotter(ABC):
         df: pd.DataFrame,
         axes: T | None = None,
         population: ImplementedPop | None = None,
+        is_model: bool = True,
+        e_pe: float | None = None,
         **kwargs,
     ) -> T:
         """Plot the given emission energy distribution, return Axes object."""
@@ -47,6 +128,35 @@ class Plotter(ABC):
         df: pd.DataFrame,
         axes: T | None = None,
         population: ImplementedPop | None = None,
+        is_model: bool = True,
         **kwargs,
     ) -> T:
         """Plot the given emission angles distribution, return Axes object."""
+
+    @abstractmethod
+    def infer_energies(
+        self,
+        axes: Any | None,
+        data_type: ImplementedEmissionData,
+        n_points: int = 501,
+    ) -> NDArray[np.float64]:
+        """Create array of electrons energies from given axes.
+
+        Used for :class:`.Model` plots, in order to keep measurements maximum
+        energy.
+
+        Parameters
+        ----------
+        axes :
+            Pre-existing axes; should contain measurement data.
+        data_type :
+            Type of represented data.
+        n_points :
+            Number of points for the x axis.
+
+        Returns
+        -------
+            Array of energies ready to use by a :class:`.Model`. You should
+            ensure that no negative energy is returned.
+
+        """

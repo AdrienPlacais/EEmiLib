@@ -14,12 +14,15 @@ Welcome to EEmiLib's documentation!
 
    manual/quick_start
    manual/notations
+   Example scripts <./auto_examples/index.rst>
    manual/models
    manual/bibliography
    API reference <eemilib/modules>
 
 .. include:: ../README.md
    :parser: myst_parser.sphinx_
+
+
 
 
 Indices and tables

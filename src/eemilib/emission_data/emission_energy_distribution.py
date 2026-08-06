@@ -1,16 +1,22 @@
 """Define an object to store an emission energy distribution."""
 
-from pathlib import Path
+import logging
+from abc import abstractmethod
+from collections.abc import Callable, Sequence
 from typing import Self
 
+import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
+
 from eemilib.emission_data.emission_data import EmissionData
+from eemilib.loader.helper import DataPath
 from eemilib.loader.loader import Loader
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
+    COL_ENERGY,
+    COL_NORMAL,
     ImplementedPop,
-    col_energy,
-    col_normal,
     md_energy_distrib,
 )
 
@@ -18,9 +24,10 @@ from eemilib.util.constants import (
 class EmissionEnergyDistribution(EmissionData):
     """An emission energy distribution."""
 
+    population: ImplementedPop
+
     def __init__(
         self,
-        population: ImplementedPop,
         data: pd.DataFrame,
         e_pe: float | None = None,
         norm: float | None = None,
@@ -29,8 +36,6 @@ class EmissionEnergyDistribution(EmissionData):
 
         Parameters
         ----------
-        population :
-            The concerned population of electrons.
         data :
             Structure holding the data. Must have a ``Energy (eV)`` column
             holding ``population`` energy. And one or several columns
@@ -39,62 +44,141 @@ class EmissionEnergyDistribution(EmissionData):
         e_pe :
             Energy of primary electrons in :unit:`eV`.
         norm :
-            To specify re-normalization constant. If not provided, we try to
-            set the maximum of |SEs| to unity. Provide ``1.0`` to avoid any
-            normalization.
+            Re-normalization constant. If not provided, defaults to
+            :meth:`_default_norm`, which each subclass defines according to its
+            own population. Pass ``1.0`` explicitly to disable normalization.
 
         """
-        super().__init__(population, data)
-        self.energies = data[col_energy].to_numpy()
+        super().__init__(self.population, data)
+        self.energies = data[COL_ENERGY].to_numpy()
         self.angles = [
-            float(col.split()[0]) for col in data.columns if col != col_energy
+            float(col.split()[0]) for col in data.columns if col != COL_ENERGY
         ]
 
-        #: Energy at the maximum of |SEs| in :unit:`eV`. Defined for |SEs| and
-        #: distribution of all electrons.
-        self.e_peak_se: float
-        i_peak_se, self.e_peak_se = self._find_SE_peak()
-        #: Energy at the maximum of |EBEs| in :unit:`eV`. Defined for |EBEs|
-        #: and distribution of all electrons.
-        self.e_peak_ebe: float
-        #: Position of |EBE| peak.
-        self.i_peak_ebe: int
-        self.i_peak_ebe, self.e_peak_ebe = self._find_EBE_peak()
+        #: Peak distribution in :unit:`eV^{-1}`.
+        self.peak_value: float
+        #: Index of peak.
+        self.i_peak: int
+        self.i_peak, self.peak_value = self._peak
 
         #: Energy of |PEs| in :unit:`eV`. If this information is not found in
-        #: the file header, we set it to the value of ``self.e_peak_ebe``.
-        self.e_pe: float
-        if e_pe:
-            self.e_pe = e_pe
-        self.e_pe = e_pe if e_pe else self.e_peak_ebe
+        #: the file header, we suppose it is the maximum of the input energy
+        #: array.
+        self.e_pe = e_pe if e_pe else float(self.data[COL_ENERGY].max())
 
         #: Re-normalization factor of distribution.
-        self.norm: float = (
-            norm if norm else self.data.at[i_peak_se, col_normal]
-        )
-        self._normalize()
+        self.norm = norm if norm is not None else self._default_norm()
+        #: Un-normalized data.
+        #:
+        #: .. warning::
+        #:    This data can be **rescaled** in order to have integral of the
+        #:    signal matching the |TEEY|.
+        #:
+        #:    .. seealso::
+        #:       :meth:`.DataMatrix.load_data` (with
+        #:       `rescale_energy_distributions_to_teey=True`)
+        #:
+        self.unnormalized_data = self.data
+        self.normalize()
+
+    def __str__(self) -> str:
+        """Print concise info on current object."""
+        return f"EnergyDistribution of {self.population}, {self.e_pe = }"
 
     @classmethod
-    def from_filepath(
+    def _from_filepath(
         cls,
-        population: ImplementedPop,
         loader: Loader,
-        *filepath: str | Path,
+        *filepath: DataPath,
+        population: ImplementedPop,
+        e_pes: Sequence[float] | float | None = None,
     ) -> Self:
         """Instantiate the data from files.
+
+        Currently unused.
 
         Parameters
         ----------
         loader :
             The object that will load the data.
+        *filepath :
+            Path(s) to file holding data under study. Only the first result is
+            used; if you have several measurement files, prefer
+            :meth:`from_filepaths`.
         population :
             The concerned population of electrons.
-        *filepath :
-            Path(s) to file holding data under study.
+        e_pes :
+            |PEs| energies, if the loader cannot find them in the given files.
+            Must have the same length as ``filepaths``. Can be a single float
+            if only file is to be loaded.
 
         """
-        data, e_pe = loader.load_emission_energy_distribution(*filepath)
-        return cls(population, data, e_pe=e_pe)
+        if isinstance(e_pes, (float, int)):
+            e_pes = [e_pes]
+        if population != cls.population:
+            logging.warning(
+                f"{cls.__name__} always represents population {cls.population}"
+                f", but {population = } was given. The returned object will "
+                f"still hold {cls.population} data; the mismatched argument is"
+                " ignored."
+            )
+        results = loader.load_emission_energy_distribution(
+            *filepath, population=cls.population, e_pes=e_pes
+        )
+        if len(results) != 1:
+            raise ValueError(
+                f"Expected exactly one loaded distribution, got {len(results)}. "
+                "Use `from_filepaths` to load several files at once."
+            )
+        data, e_pe = next(iter(results.values()))
+        return cls(data=data, e_pe=e_pe)
+
+    @classmethod
+    def from_filepaths(
+        cls,
+        loader: Loader,
+        *filepath: DataPath,
+        population: ImplementedPop,
+        e_pes: Sequence[float] | None = None,
+        norms: Sequence[float | None] | None = None,
+    ) -> Sequence[Self]:
+        """Instantiate one instance per given file.
+
+        Parameters
+        ----------
+        loader :
+            The object that will load the data.
+        *filepath :
+            Path(s) to file(s) holding data under study, one measurement per
+            file (in particular: taken at different |PEs| energies).
+        population :
+            The concerned population of electrons.
+        e_pes :
+            |PEs| energies, if the loader cannot find them in the given files.
+            Must have the same length as ``filepaths``.
+        norms :
+            Norm for every ``filepath``.
+
+        Return
+        ------
+            One instance per successfully loaded file.
+
+        """
+        results = loader.load_emission_energy_distribution(
+            *filepath, population=cls.population, e_pes=e_pes
+        )
+        if norms is None:
+            norms = [None for _ in results]
+        return [cls(data, e_pe=e_pe) for data, e_pe in results.values()]
+
+    @abstractmethod
+    def _default_norm(self) -> float:
+        """Compute the default normalization constant for this population.
+
+        Subclasses should override this to define population-specific behavior
+        (e.g. normalizing by this population's own peak value).
+
+        """
 
     @property
     def label(self) -> str:
@@ -105,7 +189,6 @@ class EmissionEnergyDistribution(EmissionData):
         self,
         plotter: Plotter,
         *args,
-        lw: float | None = 0.0,
         marker: str | None = "+",
         axes: T | None = None,
         grid: bool = True,
@@ -120,38 +203,276 @@ class EmissionEnergyDistribution(EmissionData):
 
         """
         return plotter.plot_emission_energy_distribution(
-            df=self.data,
+            self.data,
             *args,
             axes=axes,
-            lw=lw,
             marker=marker,
             grid=grid,
             label=self.label,
             population=population,
+            is_model=False,
+            e_pe=self.e_pe,
             **kwargs,
         )
 
-    def _normalize(self) -> None:
-        """Normalize the distribution."""
-        data_columns = [c for c in self.data.columns if c != col_energy]
-        self.data[data_columns] /= self.norm
+    def normalize(self) -> None:
+        """Normalize the distribution by :attr:`norm`.
+
+        It alters values in ``self.data``, keeping ``self.unnormalized_data``
+        intact.
+
+        """
+        if self.norm is None:
+            raise ValueError("Cannot normalize if norm is None")
+
+        data_columns = [c for c in self.data.columns if c != COL_ENERGY]
+        self.data[data_columns] = (
+            self.unnormalized_data[data_columns] / self.norm
+        )
+        logging.debug(f"{self!s}: normalized signal by {self.norm}")
+
+    def rescale(
+        self, objective_yield: float, norm: float | None = None
+    ) -> None:
+        """Rescale the un-normalized data by given ``scale``.
+
+        In contrary to :meth:`.normalize`, it alters the stored
+        :attr:`unnormalized_data`. It was made to keep the integral of the
+        signal equal to corresponding emission yield.
+
+        """
+        former_area = self._emission_yield
+        scale = objective_yield / former_area
+
+        data_columns = [c for c in self.data.columns if c != COL_ENERGY]
+        self.unnormalized_data[data_columns] *= scale
+
+        new_area = self._emission_yield
+
+        logging.debug(
+            f"{self!s}: rescaled by {scale:.3f} in order to retrieve an "
+            f"area {objective_yield = :.3f}. {former_area = :.3f} -> "
+            f"{new_area = :.3f}"
+        )
+
+        if norm is None:
+            return
+        self.norm = norm
+        self.normalize()
 
     @property
     def _se_ebe_limit(self) -> int:
         """Arbitrary index limit between |SEs| and |EBEs|."""
         return int(self._n_points / 4)
 
-    def _find_SE_peak(self) -> tuple[int, float]:
-        """Find the |SEs| maximum."""
-        i = self.data[: self._se_ebe_limit][col_normal].argmax()
-        e_peak_se = self.data.at[i, col_energy]
-        return int(i), float(e_peak_se)
+    @property
+    def _peak(self) -> tuple[int, float]:
+        """Find maximum of PDF.
 
-    def _find_EBE_peak(self) -> tuple[int, float]:
+        Returns
+        -------
+        float
+            Index of the peak.
+        float
+            Value of the peak.
+
+        """
+        i = self.data[COL_NORMAL].argmax()
+        return i, float(self.data.at[i, COL_NORMAL])
+
+    @property
+    def _emission_yield(self) -> float:
+        """Integrate signal to have corresponding emission yield.
+
+        If the distribution was not rescaled, the given yield will be probably
+        very off.
+
+        .. warning::
+           Area is calculated from the un-normalized data.
+
+        """
+        area = float(
+            np.trapezoid(
+                self.unnormalized_data[COL_NORMAL].to_numpy(), self.energies
+            )
+        )
+        if area <= 0:
+            raise ValueError(f"Measured area is non-positive for {self!s}")
+        return area
+
+
+class SEEmissionEnergyDistribution(EmissionEnergyDistribution):
+    """Emission energy distribution of |SEs|."""
+
+    population = "SE"
+
+    def _default_norm(self) -> float:
+        """Compute the default normalization constant for this population.
+
+        Subclasses should override this to define population-specific behavior
+        (e.g. normalizing by this population's own peak value).
+
+        """
+        return self.peak_value
+
+
+class EBEEmissionEnergyDistribution(EmissionEnergyDistribution):
+    """Emission energy distribution of |EBEs|."""
+
+    population = "EBE"
+
+    def _default_norm(self) -> float:
+        """Compute the default normalization constant for this population.
+
+        Subclasses should override this to define population-specific behavior
+        (e.g. normalizing by this population's own peak value).
+
+        """
+        logging.warning(
+            "Default norm was not overriden. Returning default value of 1.0"
+        )
+        return 1.0
+
+
+class IBEEmissionEnergyDistribution(EmissionEnergyDistribution):
+    """Emission energy distribution of |EBEs|."""
+
+    population = "IBE"
+
+    def _default_norm(self) -> float:
+        """Compute the default normalization constant for this population.
+
+        Subclasses should override this to define population-specific behavior
+        (e.g. normalizing by this population's own peak value).
+
+        """
+        logging.warning(
+            "Default norm was not overriden. Returning default value of 1.0"
+        )
+        return 1.0
+
+
+class AllEmissionEnergyDistribution(EmissionEnergyDistribution):
+    """Emission energy distribution of all populations."""
+
+    population = "all"
+
+    def _default_norm(self) -> float:
+        return self._SE_peak[1]
+
+    @property
+    def _SE_peak(self) -> tuple[int, float]:
+        """Find the |SEs| maximum."""
+        i = int(self.data[: self._se_ebe_limit][COL_NORMAL].argmax())
+        return i, float(self.data.at[i, COL_NORMAL])
+
+    @property
+    def _EBE_peak(self) -> tuple[float, float]:
         """Find the position of the |EBE| peak."""
+        raise NotImplementedError("still used?")
         i = (
-            self.data[self._se_ebe_limit :][col_normal].argmax()
+            self.data[self._se_ebe_limit :][COL_NORMAL].argmax()
             + self._se_ebe_limit
         )
-        e_peak_ebe = self.data.at[i, col_energy]
-        return int(i), float(e_peak_ebe)
+        e_peak_ebe = self.data.at[i, COL_ENERGY]
+        return float(e_peak_ebe), float(self.data.at[i, COL_NORMAL])
+
+    def decompose(
+        self,
+        se_shape: Callable[[NDArray[np.float64]], NDArray[np.float64]],
+        ebe_shape: Callable[[NDArray[np.float64]], NDArray[np.float64]],
+        ibe_shape: Callable[[NDArray[np.float64]], NDArray[np.float64]],
+    ) -> tuple[
+        SEEmissionEnergyDistribution,
+        EBEEmissionEnergyDistribution,
+        IBEEmissionEnergyDistribution,
+    ]:
+        r"""Split total energy distribution into |SE|/|EBE|/|IBE| shares.
+
+        At each emission energy :math:`E`, the measured total value is split
+        proportionally to each population's expected shape at that energy:
+
+        .. math::
+            f_\mathrm{pop}(E) = f_\mathrm{all}(E) \times
+                    \frac{
+                        \mathrm{shape}_\mathrm{pop}(E)
+                    }{
+                        \mathrm{shape}_\mathrm{SE}(E)
+                        + \mathrm{shape}_\mathrm{EBE}(E)
+                        + \mathrm{shape}_\mathrm{IBE}(E)
+                    }
+
+        This is a soft decomposition (fractional weights, not a hard cutoff): a
+        given energy can be mostly SE and partly EBE, for instance.
+
+        Parameters
+        ----------
+        se_shape :
+            Function returning the expected (unnormalized) |SE| shape at the
+            given emission energies. Must already be bound to the relevant
+            impact energy and incidence angle (e.g. via
+            :func:`functools.partial` applied to
+            :func:`.se_energy_distribution`).
+        ebe_shape :
+            Same as ``se_shape``, for |EBEs| (e.g. bound
+            :func:`.ebe_energy_distribution`).
+        ibe_shape :
+            Same as ``se_shape``, for |IBEs| (e.g. bound
+            :func:`.ibe_energy_distribution`).
+
+        Return
+        ------
+            The |SE|, |EBE|, |IBE| shares of ``self``, each as their respective
+            :class:`.EmissionEnergyDistribution` subclass. Values are
+            constructed with ``norm=1.0`` (no further re-normalization), since
+            they are already consistently scaled with ``self``.
+
+        """
+        energies = np.array(self.energies)
+        e_pe = self.e_pe
+
+        shapes = {
+            "SE": se_shape(energies),
+            "EBE": ebe_shape(energies),
+            "IBE": ibe_shape(energies),
+        }
+        total_shape = sum(shapes.values())
+        has_signal = total_shape > 0
+        weights = {
+            pop: np.divide(
+                shape, total_shape, out=np.zeros_like(shape), where=has_signal
+            )
+            for pop, shape in shapes.items()
+        }
+
+        data_columns = [c for c in self.data.columns if c != COL_ENERGY]
+        split_data = {
+            pop: self.data.assign(
+                **{col: self.data[col] * weight for col in data_columns}
+            )
+            for pop, weight in weights.items()
+        }
+
+        return (
+            SEEmissionEnergyDistribution(
+                split_data["SE"], e_pe=e_pe, norm=1.0
+            ),
+            EBEEmissionEnergyDistribution(
+                split_data["EBE"], e_pe=e_pe, norm=1.0
+            ),
+            IBEEmissionEnergyDistribution(
+                split_data["IBE"], e_pe=e_pe, norm=1.0
+            ),
+        )
+
+
+#: Maps populations to their appropriate :class:`.EmissionEnergyDistribution`
+#: subclass.
+EMISSION_ENERGIES_BY_POP: dict[
+    ImplementedPop, type[EmissionEnergyDistribution]
+] = {
+    "SE": SEEmissionEnergyDistribution,
+    "EBE": EBEEmissionEnergyDistribution,
+    "IBE": IBEEmissionEnergyDistribution,
+    "all": AllEmissionEnergyDistribution,
+}

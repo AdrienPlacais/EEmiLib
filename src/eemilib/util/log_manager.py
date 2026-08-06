@@ -87,26 +87,27 @@ def _file_handler(
 class LogFormatter(logging.Formatter):
     """Logging formatter supporting colorized output."""
 
-    COLOR_CODES = {
-        # bright/bold magenta
-        logging.CRITICAL: "\033[1;35m",
-        # bright/bold red
-        logging.ERROR: "\033[1;31m",
-        # bright/bold yellow
-        logging.WARNING: "\033[1;33m",
-        # white / light gray
-        logging.INFO: "\033[0;37m",
-        # bright/bold black / dark gray
-        logging.DEBUG: "\033[1;30m",
-    }
-
     RESET_CODE = "\033[0m"
 
     def __init__(self, color: bool, *args, **kwargs) -> None:
+        """Init object."""
+        self.COLOR_CODES = {
+            # bright/bold magenta
+            logging.CRITICAL: "\033[1;35m",
+            # bright/bold red
+            logging.ERROR: "\033[1;31m",
+            # bright/bold yellow
+            logging.WARNING: "\033[1;33m",
+            # white / light gray
+            logging.INFO: "\033[0;37m",
+            # bright/bold black / dark gray
+            logging.DEBUG: "\033[1;30m",
+        }
         super().__init__(*args, **kwargs)
         self.color = color
 
     def format(self, record: logging.LogRecord, *args, **kwargs) -> str:
+        """Format record."""
         if self.color and record.levelno in self.COLOR_CODES:
             record.color_on = self.COLOR_CODES[record.levelno]
             record.color_off = self.RESET_CODE
@@ -121,7 +122,7 @@ def set_up_logging(
     console_log_output: str = "stdout",
     console_log_level: str = "INFO",
     console_log_color: bool = True,
-    console_log_line_template: str = "%(color_on)s[%(levelname)-8s] [%(filename)-20s]%(color_off)s %(message)s",
+    console_log_line_template: str = "%(color_on)s[%(levelname)-8s] [%(filename)-35s]%(color_off)s %(message)s",
     logfile_file: Path = Path("eemilib.log"),
     logfile_log_level: str = "INFO",
     logfile_log_color: bool = False,
@@ -159,8 +160,8 @@ def set_up_logging(
     return True
 
 
-def main():
-    """Main function."""
+def main() -> int:
+    """Set up logging."""
     if not set_up_logging(
         package_name="EEmiLib",
         console_log_output="stdout",

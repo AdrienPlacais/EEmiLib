@@ -6,25 +6,29 @@ incident angle into account.
 """
 
 import math
-from typing import Any, TypedDict
+from typing import Any, ClassVar, TypedDict, cast
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
+
 from eemilib.core.model_config import ModelConfig
-from eemilib.emission_data.data_matrix import DataMatrix
+from eemilib.emission_data import DataMatrix
+from eemilib.emission_data.emission_data import MissingDataError
 from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
+    COL_ENERGY,
+    COL_NORMAL,
     ImplementedEmissionData,
     ImplementedPop,
-    col_energy,
-    col_normal,
 )
 from eemilib.util.markdown import E_MAX, EC_1, SIGMA_MAX
-from numpy.typing import NDArray
 
 
 class SombrinParameters(TypedDict):
+    """Parameters for :class:`.Sombrin`."""
+
     E_max: Parameter
     teey_max: Parameter
     E_c1: Parameter
@@ -37,8 +41,8 @@ class Sombrin(Model):
 
     """
 
-    emission_data_types = ["Emission Yield"]
-    populations = ["all"]
+    data_types = ("Emission Yield",)
+    populations = ("all",)
     considers_energy = True
     is_3d = False
     is_dielectrics_compatible = False
@@ -47,7 +51,7 @@ class Sombrin(Model):
         emission_energy_files=(),
         emission_angle_files=(),
     )
-    initial_parameters = {
+    initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = {
         "E_max": {
             "markdown": E_MAX,
             "unit": "eV",
@@ -84,10 +88,13 @@ class Sombrin(Model):
 
         """
         super().__init__(url_doc_override="manual/models/sombrin")
-        self.parameters: SombrinParameters = {  # type: ignore
-            name: Parameter(**kwargs)  # type: ignore
-            for name, kwargs in self.initial_parameters.items()
-        }
+        self.parameters = cast(
+            SombrinParameters,
+            {
+                name: Parameter(**cast(dict, kwargs))
+                for name, kwargs in self.initial_parameters.items()
+            },
+        )
         self._generate_parameter_docs()
         if parameters_values is not None:
             self.set_parameters_values(parameters_values)
@@ -110,7 +117,7 @@ class Sombrin(Model):
     def get_data(
         self,
         population: ImplementedPop,
-        emission_data_type: ImplementedEmissionData,
+        data_type: ImplementedEmissionData,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
         *args,
@@ -121,14 +128,9 @@ class Sombrin(Model):
         Will return a dataframe only if the |TEEY| is asked.
 
         """
-        if population != "all" or emission_data_type != "Emission Yield":
+        if population != "all" or data_type != "Emission Yield":
             return super().get_data(
-                population=population,
-                emission_data_type=emission_data_type,
-                energy=energy,
-                theta=theta,
-                *args,
-                **kwargs,
+                population, data_type, energy, theta, *args, **kwargs
             )
         out = np.zeros(len(energy))
         for i, ene in enumerate(energy):
@@ -140,7 +142,7 @@ class Sombrin(Model):
                 E_param=self.E,
             )
 
-        out_dict = {col_normal: out, col_energy: energy}
+        out_dict = {COL_ENERGY: energy, COL_NORMAL: out}
         return pd.DataFrame(out_dict)
 
     def set_parameter_value(self, name: str, value: Any) -> None:
@@ -154,7 +156,7 @@ class Sombrin(Model):
     ) -> None:
         """Extract main |TEEY| curve parameters from measure."""
         if not data_matrix.has_all_mandatory_files(self.model_config):
-            raise ValueError("Files are not all provided.")
+            raise MissingDataError("Files are not all provided.")
 
         emission_yield = data_matrix.teey
         assert emission_yield.population == "all"
@@ -178,27 +180,29 @@ class Sombrin(Model):
 
 def sombrin_func(
     ene: float | NDArray[np.float64],
-    E_max: Parameter,
-    teey_max: Parameter,
-    E_c1: Parameter,
+    E_max: Parameter | float,
+    teey_max: Parameter | float,
+    E_c1: Parameter | float,
     E_param: float | None,
     **parameters,
 ) -> float | NDArray[np.float64]:
     """Compute the |TEEY| for incident energy E."""
     if E_param is None:
         E_param = _e_parameter(teey_max, E_max, E_c1)
-    num = 2 * teey_max.value * (ene / E_max.value) ** E_param
-    denom = 1 + (ene / E_max.value) ** (2 * E_param)
+    num = 2 * teey_max * (ene / E_max) ** E_param
+    denom = 1 + (ene / E_max) ** (2 * E_param)
     return num / denom
 
 
 def _e_parameter(
-    sigma_max: Parameter, E_max: Parameter, E_c1: Parameter
+    sigma_max: Parameter | float,
+    E_max: Parameter | float,
+    E_c1: Parameter | float,
 ) -> float:
     """Compute parameter ``E`` in Sombrin model."""
-    E_param = math.log(
-        sigma_max.value - math.sqrt(sigma_max.value**2 - 1)
-    ) / math.log(E_c1.value / E_max.value)
+    E_param = math.log(sigma_max - math.sqrt(sigma_max**2 - 1)) / math.log(
+        E_c1 / E_max
+    )
     return E_param
 
 

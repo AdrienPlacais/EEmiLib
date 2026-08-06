@@ -3,6 +3,10 @@ r"""Create the Dionne model, to compute |SEEY|.
 This is a physical model developed by Dionne :cite:`Lye1957,Dionne1973,
 Dionne1975`.
 
+.. todo::
+   Handle the different implementations like :class:`~eemilib.model.FurmanPivi`
+   does.
+
 """
 
 # work_function :
@@ -16,20 +20,23 @@ Dionne1975`.
 #         "before proceeding to the fit."
 #     )
 
-from functools import partial
-from typing import Any, Literal, TypedDict
+from typing import Any, ClassVar, Literal, TypedDict, cast
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
+from scipy.optimize import Bounds, least_squares
+
 from eemilib.core.model_config import ModelConfig
-from eemilib.emission_data.data_matrix import DataMatrix
+from eemilib.emission_data import DataMatrix
+from eemilib.emission_data.emission_data import MissingDataError
 from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
+    COL_ENERGY,
+    COL_NORMAL,
     ImplementedEmissionData,
     ImplementedPop,
-    col_energy,
-    col_normal,
 )
 from eemilib.util.markdown import (
     DIFFUSION_LENGTH,
@@ -38,8 +45,6 @@ from eemilib.util.markdown import (
     POWER_LAW_EXPONENT,
     POWER_LAW_SCALE,
 )
-from numpy.typing import NDArray
-from scipy.optimize import Bounds, least_squares
 
 #: Models for the energy loss of |PEs| in the material. See
 #: :func:`.dionne.range_func` for more information.
@@ -48,6 +53,8 @@ ENERGY_LOSS_MODELS = ("Power law", "CSDA", "Inguimbert")
 
 
 class DionneParameters(TypedDict):
+    """Parameters for :class:`.Dionne`."""
+
     excitation_energy: Parameter
     diffusion_length: Parameter
     escape_probability: Parameter
@@ -58,8 +65,8 @@ class DionneParameters(TypedDict):
 class Dionne(Model):
     """Define the Dionne model :cite:`Lye1957,Dionne1973,Dionne1975`."""
 
-    emission_data_types = ["Emission Yield"]
-    populations = ["SE"]
+    data_types = ("Emission Yield",)
+    populations = ("SE",)
     considers_energy = True
     is_3d = False
     is_dielectrics_compatible = False
@@ -68,15 +75,14 @@ class Dionne(Model):
         emission_energy_files=(),
         emission_angle_files=(),
     )
-    initial_parameters = {
+    initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = {
         "excitation_energy": {
             "markdown": EXCITATION_ENERGY,
             "unit": "eV",
             "value": 4.6,
             "lower_bound": 0.0,
             "description": (
-                "Energy required to excite a secondary electron in the "
-                "material."
+                "Energy required to excite a secondary electron in the material."
             ),
             "is_locked": True,
         },
@@ -134,10 +140,14 @@ class Dionne(Model):
         """
         super().__init__(url_doc_override="manual/models/dionne")
         self._energy_loss_model: EnergyLossModel = energy_loss_model
-        self.parameters: DionneParameters = {  # type: ignore
-            name: Parameter(**kwargs)  # type: ignore
-            for name, kwargs in self.initial_parameters.items()
-        }
+
+        self.parameters = cast(
+            DionneParameters,
+            {
+                name: Parameter(**cast(dict, kwargs))
+                for name, kwargs in self.initial_parameters.items()
+            },
+        )
         self._generate_parameter_docs()
         if parameters_values is not None:
             self.set_parameters_values(parameters_values)
@@ -147,7 +157,7 @@ class Dionne(Model):
     def get_data(
         self,
         population: ImplementedPop,
-        emission_data_type: ImplementedEmissionData,
+        data_type: ImplementedEmissionData,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
         *args,
@@ -158,21 +168,16 @@ class Dionne(Model):
         Will return a dataframe only if the |TEEY| is asked.
 
         """
-        if population != "SE" or emission_data_type != "Emission Yield":
+        if population != "SE" or data_type != "Emission Yield":
             return super().get_data(
-                population=population,
-                emission_data_type=emission_data_type,
-                energy=energy,
-                theta=theta,
-                *args,
-                **kwargs,
+                population, data_type, energy, theta, *args, **kwargs
             )
         out = np.zeros(len(energy))
 
         for i, ene in enumerate(energy):
             out[i] = self._func(ene, **self.parameters)
 
-        out_dict = {col_normal: out, col_energy: energy}
+        out_dict = {COL_ENERGY: energy, COL_NORMAL: out}
         return pd.DataFrame(out_dict)
 
     def find_optimal_parameters(
@@ -180,7 +185,7 @@ class Dionne(Model):
     ) -> None:
         """Extract main |SEEY| curve parameters from measure."""
         if not data_matrix.has_all_mandatory_files(self.model_config):
-            raise ValueError("Files are not all provided.")
+            raise MissingDataError("Files are not all provided.")
 
         emission_yield = data_matrix.seey
         assert emission_yield.population == "SE"
@@ -194,20 +199,20 @@ class Dionne(Model):
             "power_law_exponent",
         )
         params = [self.parameters[k] for k in keys]
-        x0 = [param.value for param in params]
+        x0 = [float(param) for param in params]
         bounds = Bounds(
             np.array([param.lower_bound for param in params]),
             np.array([param.upper_bound for param in params]),
         )
-        fun = partial(_residue, energy_loss_model=self._energy_loss_model)
+        # fun = partial(_residue, energy_loss_model=self._energy_loss_model)
 
         lsq = least_squares(
             fun=_residue,
             x0=x0,
             bounds=bounds,
             args=(
-                emission_yield.data[col_energy].to_numpy(),
-                emission_yield.data[col_normal].to_numpy(),
+                emission_yield.data[COL_ENERGY].to_numpy(),
+                emission_yield.data[COL_NORMAL].to_numpy(),
             ),
         )
 
@@ -229,8 +234,9 @@ def dionne_func(
     diffusion_length: Parameter | float,
     escape_probability: Parameter | float,
     energy_loss_model: EnergyLossModel = "Power law",
-    power_law_scale: Parameter | float | None = None,
-    power_law_exponent: Parameter | float | None = None,
+    *,
+    power_law_scale: Parameter | float,
+    power_law_exponent: Parameter | float,
     **parameters,
 ) -> float | NDArray[np.float64]:
     r"""Compute the |SEEY| for incident energy E.
@@ -240,9 +246,9 @@ def dionne_func(
     .. math::
        \delta = G \cdot T \cdot S
 
-    where :math:`G` is the mean number of |SEs| generated by the |PE|. :math:`T` is
-    their probability to reach the surface. :math:`S` is their probability to
-    cross the surface.
+    where :math:`G` is the mean number of |SEs| generated by the |PE|.
+    :math:`T` is their probability to reach the surface. :math:`S` is their
+    probability to cross the surface.
 
     """
     R = range_func(
@@ -254,19 +260,16 @@ def dionne_func(
     )
     G = generation(ene, R, excitation_energy)
     T = transport(R, diffusion_length)
-    S = (
-        escape_probability.value
-        if isinstance(escape_probability, Parameter)
-        else escape_probability
-    )
+    S = escape_probability
     return G * T * S
 
 
 def range_func(
     ene: float | NDArray[np.float64],
     energy_loss_model: EnergyLossModel = "Power law",
-    power_law_scale: Parameter | float | None = None,
-    power_law_exponent: Parameter | float | None = None,
+    *,
+    power_law_scale: Parameter | float,
+    power_law_exponent: Parameter | float,
     **kwargs,
 ) -> float | NDArray[np.float64]:
     r"""Compute penetration depth of |PE|.
@@ -312,21 +315,7 @@ def range_func(
         raise NotImplementedError(
             "The only PE energy loss model is the power law."
         )
-    if not power_law_scale:
-        raise RuntimeError("Power law model needs `A` parameter.")
-    if not power_law_exponent:
-        raise RuntimeError("Power law model needs `n` parameter.")
-    n_value = (
-        power_law_exponent.value
-        if isinstance(power_law_exponent, Parameter)
-        else power_law_exponent
-    )
-    A_value = (
-        power_law_scale.value
-        if isinstance(power_law_scale, Parameter)
-        else power_law_scale
-    )
-    return ene**n_value / (A_value * n_value)
+    return ene**power_law_exponent / (power_law_scale * power_law_exponent)
 
 
 def generation(
@@ -352,23 +341,20 @@ def generation(
     excitation_energy :
         Energy required to excite a secondary electron in the material in
         :unit:`eV`.
+    atol :
+        Absolute tolerance to reject ranges too close to 0.
 
     Returns
     -------
         Probabiliy for an electron to generate secondary electrons.
 
     """
-    xi_value = (
-        excitation_energy.value
-        if isinstance(excitation_energy, Parameter)
-        else excitation_energy
-    )
     ene = np.asarray(ene, dtype=np.float64)
     range = np.asarray(range, dtype=np.float64)
     valid = ~np.isclose(range, 0, atol=atol)
 
     result = np.zeros_like(range, dtype=float)
-    result[valid] = ene[valid] / (range[valid] * xi_value)
+    result[valid] = ene[valid] / (range[valid] * excitation_energy)
 
     if np.isscalar(ene) and np.isscalar(range):
         return float(result)
@@ -377,8 +363,7 @@ def generation(
 
 
 def transport(
-    range: float | NDArray[np.float64],
-    diffusion_length: Parameter | float,
+    range: float | NDArray[np.float64], diffusion_length: Parameter | float
 ) -> float | NDArray[np.float64]:
     r"""Compute the transport term.
 
@@ -401,12 +386,7 @@ def transport(
         Probabiliy for a |SE| to reach the surface.
 
     """
-    d_value = (
-        diffusion_length.value
-        if isinstance(diffusion_length, Parameter)
-        else diffusion_length
-    )
-    return d_value * (1 - np.exp(-range / d_value))
+    return diffusion_length * (1 - np.exp(-range / diffusion_length))
 
 
 def _residue(

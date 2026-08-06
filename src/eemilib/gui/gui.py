@@ -8,48 +8,27 @@
     Add description at and of parameters
     Dynamic boxes for Parameters?
 
+.. todo::
+    Allow ``None`` for energies, so that measurements energies are picked up.
+    Ideas:
+
+    - Checkbox "Use energies from measurements".
+    - Clicking it greys out the ``energies`` linspace definition.
+      - May also auto-fill it?
+    - This checkbox is greyed out/unclickable if no data was plotted,
+      *i.e.* if current `Axes` contains no `Line2D`.
+
 """
 
 import importlib
 import logging
 import sys
 from abc import ABCMeta
+from collections.abc import Callable
 from types import ModuleType
-from typing import Callable, Literal
+from typing import Literal
 
 import numpy as np
-from eemilib.core.model_config import ModelConfig
-from eemilib.emission_data.data_matrix import DataMatrix
-from eemilib.gui.file_selection import file_selection_matrix
-from eemilib.gui.helper import (
-    PARAMETER_ATTR_TO_POS,
-    PARAMETER_POS_TO_ATTR,
-    set_dropdown_value,
-    set_help_button_action,
-    setup_dropdown,
-    setup_linspace_entries,
-    setup_lock_checkbox,
-    to_plot_checkboxes,
-)
-from eemilib.gui.loader_selection import LoaderSettingsDialog
-from eemilib.gui.model_selection import (
-    ModelSettingsDialog,
-    model_configuration,
-)
-from eemilib.gui.styles import (
-    TITLE_STYLE,
-    format_number,
-    math_text_label_from_key,
-)
-from eemilib.loader.loader import Loader
-from eemilib.model.model import Model
-from eemilib.plotter.plotter import Plotter
-from eemilib.util.constants import (
-    IMPLEMENTED_EMISSION_DATA,
-    IMPLEMENTED_POP,
-    ImplementedEmissionData,
-    ImplementedPop,
-)
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -68,21 +47,54 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
+from eemilib.core.model_config import ModelConfig
+from eemilib.emission_data import DataMatrix
+from eemilib.gui.file_selection import file_selection_matrix
+from eemilib.gui.helper import (
+    PARAMETER_ATTR_TO_POS,
+    PARAMETER_POS_TO_ATTR,
+    set_dropdown_value,
+    set_help_button_action,
+    setup_dropdown,
+    setup_linspace_entries,
+    setup_lock_checkbox,
+    to_plot_checkboxes,
+)
+from eemilib.gui.loader_selection import LoaderSettingsDialog
+from eemilib.gui.model_selection import (
+    ModelImplementationsDialog,
+    model_configuration,
+)
+from eemilib.gui.styles import (
+    TITLE_STYLE,
+    format_number,
+    math_text_label_from_key,
+)
+from eemilib.loader.loader import Loader
+from eemilib.model.model import Model
+from eemilib.plotter.plotter import Plotter
+from eemilib.util.constants import (
+    IMPLEMENTED_EMISSION_DATA,
+    IMPLEMENTED_POP,
+    ImplementedEmissionData,
+    ImplementedPop,
+)
+
 DROPDOWNS = ("Loader", "Model", "Plotter")
 Dropdowns = Literal["Loader", "Model", "Plotter"]
 
 
 class MainWindow(QMainWindow):
-    """This object holds the GUI."""
+    """GUI."""
 
-    #: If selecting Model in dropdown should automatically fill the appopriate
-    #: data to plot checkbox
+    #: Whether selecting Model in dropdown should automatically fill the
+    #: appropriate data to plot checkbox.
     autofill_data_to_plot = True
-    #: If selecting Model in dropdown should automatically fill the appopriate
-    #: emission data checkbox
+    #: Whether selecting Model in dropdown should automatically fill the
+    #: appropriate emission data checkbox.
     autofill_nature_to_plot = True
-    #: If loading data should automatically fill the energy/angle ranges with
-    #: their maximum values
+    #: Whether loading data should automatically fill the energy/angle ranges
+    #: with their maximum values.
     autofill_plotting_ranges = True
 
     def __init__(
@@ -206,13 +218,13 @@ class MainWindow(QMainWindow):
         )
         self.loader_classes = classes
         dropdown.currentIndexChanged.connect(self._setup_loader)
-        dropdown.setCurrentText
+        _ = dropdown.setCurrentText
         self.dropdowns["Loader"] = dropdown
         self.loader_help_button = buttons[0]
         self._data_model_layout.addLayout(layout)
 
     def _setup_loader(self) -> None:
-        """Setup new loader whenever the dropdown menu is changed."""
+        """Set up new loader whenever the dropdown menu is changed."""
         self.loader = self._dropdown_to_class("Loader")()
         set_help_button_action(self.loader_help_button, self.loader)
 
@@ -259,7 +271,9 @@ class MainWindow(QMainWindow):
         Assign the ``model_classes`` and ``model_dropdown``.
 
         """
-        settings_label, settings_action = self._setup_model_settings_dialog()
+        settings_label, settings_action = (
+            self._setup_model_implementations_dialog()
+        )
         classes, layout, dropdown, buttons = setup_dropdown(
             module_name="eemilib.model",
             base_class=Model,
@@ -278,16 +292,19 @@ class MainWindow(QMainWindow):
         dropdown.currentIndexChanged.connect(
             self._fill_plot_nature_and_population
         )
+        dropdown.currentIndexChanged.connect(
+            self._populate_parameters_table_values
+        )
 
         self.model_help_button = buttons[0]
         self._data_model_layout.addLayout(layout)
 
-    def _setup_model_settings_dialog(self) -> tuple[str, Callable]:
+    def _setup_model_implementations_dialog(self) -> tuple[str, Callable]:
         """Give arguments to setup the model setttings button."""
-        settings_label = "⚙️ Settings"
+        settings_label = "⚙️ Implementations"
 
         def settings_action() -> int:
-            code = ModelSettingsDialog(self, self.model).exec()
+            code = ModelImplementationsDialog(self, self.model).exec()
             self._populate_parameters_table_values()
             self._populate_parameters_table_constants()
             return code
@@ -386,7 +403,7 @@ class MainWindow(QMainWindow):
     # Tab 1 - Model evaluation
     # =========================================================================
     def _setup_model_evaluation(self) -> None:
-        """Setup display of model evaluators."""
+        """Set up display of model evaluators."""
         self.evaluators_group = QGroupBox("Model evaluations")
         self.evaluators_group.setStyleSheet(TITLE_STYLE)
         self.evaluators_layout = QVBoxLayout()
@@ -468,7 +485,7 @@ class MainWindow(QMainWindow):
             )
             return
 
-        data_type_to_plot = model.emission_data_types[0]
+        data_type_to_plot = model.data_types[0]
         if self.autofill_data_to_plot:
             index = IMPLEMENTED_EMISSION_DATA.index(data_type_to_plot)
             self.data_checkboxes[index].setChecked(True)
@@ -476,7 +493,7 @@ class MainWindow(QMainWindow):
         if self.autofill_nature_to_plot:
             pop_to_plot = set(
                 model.model_config.mandatory_populations(
-                    emission_data_type=data_type_to_plot
+                    data_type=data_type_to_plot
                 )
                 + list(model.populations)
             )
@@ -502,9 +519,7 @@ class MainWindow(QMainWindow):
             quantities, labels, initial_values, max_values
         ):
             layout, first, last, points = setup_linspace_entries(
-                label,
-                initial_values=initial,
-                max_value=max_val,
+                label, initial_values=initial, max_value=max_val
             )
             self.energy_angle_layout.addLayout(layout)
             if qty == ("energy"):
@@ -516,7 +531,7 @@ class MainWindow(QMainWindow):
             for attr, attr_name in zip(
                 (first, last, points), ("first", "last", "points")
             ):
-                setattr(self, "_".join((qty, attr_name)), attr)
+                setattr(self, f"{qty}_{attr_name}", attr)
 
         self.energy_angle_group.setLayout(self.energy_angle_layout)
         self._plot_layout.addWidget(self.energy_angle_group)
@@ -554,9 +569,7 @@ class MainWindow(QMainWindow):
     def _set_up_population_to_plot_checkboxes(self) -> None:
         """Add checkbox to select which population should be plotted."""
         layout, checkboxes = to_plot_checkboxes(
-            "Population to plot:",
-            IMPLEMENTED_POP,
-            several_can_be_checked=True,
+            "Population to plot:", IMPLEMENTED_POP, several_can_be_checked=True
         )
         self._plot_layout.addLayout(layout)
         self.population_checkboxes = checkboxes
@@ -568,16 +581,14 @@ class MainWindow(QMainWindow):
         success_pop, populations = self._get_populations_to_plot()
         if not success_pop:
             return
-        success_data, emission_data_type = (
-            self._get_emission_data_type_to_plot()
-        )
+        success_data, data_type = self._get_data_type_to_plot()
         if not success_data:
             return
 
         self.axes = self.data_matrix.plot(
             plotter,
             population=populations,
-            emission_data_type=emission_data_type,
+            data_type=data_type,
             axes=self.axes,
         )
 
@@ -588,9 +599,7 @@ class MainWindow(QMainWindow):
         success_pop, populations = self._get_populations_to_plot()
         if not success_pop:
             return
-        success_data, emission_data_type = (
-            self._get_emission_data_type_to_plot()
-        )
+        success_data, data_type = self._get_data_type_to_plot()
         if not success_data:
             return
         success_ene, energies = self._gen_linspace("energy")
@@ -603,25 +612,25 @@ class MainWindow(QMainWindow):
         self.axes = self.model.plot(
             plotter,
             population=populations,
-            emission_data_type=emission_data_type,
+            data_type=data_type,
             energies=energies,
             angles=angles,
             axes=self.axes,
         )
 
-    def _get_emission_data_type_to_plot(
+    def _get_data_type_to_plot(
         self,
     ) -> tuple[bool, ImplementedEmissionData | None]:
         """Read input to determine the emission data type to plot."""
-        emission_data_type = [
+        data_type = [
             IMPLEMENTED_EMISSION_DATA[i]
             for i, checked in enumerate(self.data_checkboxes)
             if checked.isChecked()
         ]
-        if len(emission_data_type) == 0:
+        if len(data_type) == 0:
             logging.error("Please provide a type of data to plot.")
             return False, None
-        return True, emission_data_type[0]
+        return True, data_type[0]
 
     def _get_populations_to_plot(self) -> tuple[bool, list[ImplementedPop]]:
         """Read input to determine the populations to plot."""
@@ -643,7 +652,7 @@ class MainWindow(QMainWindow):
         success = True
         linspace_args = []
         for box in ("first", "last", "points"):
-            line_name = "_".join((variable, box))
+            line_name = f"{variable}_{box}"
             qline_edit = getattr(self, line_name, None)
             if qline_edit is None:
                 logging.error(f"The attribute {line_name} is not defined.")
@@ -677,30 +686,35 @@ class MainWindow(QMainWindow):
             model = self.model
         except AttributeError as e:
             logging.debug(
-                "Model is not set, cannot fill energy/angle plotting ranges. "
-                f"\n{e}"
+                f"Model is not set, cannot fill energy/angle plotting ranges. \n{e}"
             )
             return
         try:
             data_matrix = self.data_matrix
         except AttributeError as e:
             logging.debug(
-                "DataMatrix is not set, cannot fill energy/angle plotting "
-                f"ranges.\n{e}"
+                f"DataMatrix is not set, cannot fill energy/angle plotting ranges.\n{e}"
             )
             return
 
         if not self.autofill_plotting_ranges:
             return
-        data_type_to_plot = model.emission_data_types[0]
+        data_type_to_plot = model.data_types[0]
 
-        data = data_matrix.get_data(emission_data_type=data_type_to_plot)
-        if len(data) == 0:
+        all_pop_data = []
+        for pop in IMPLEMENTED_POP:
+            data = data_matrix.get_data(data_type_to_plot, pop)
+            if not data:
+                continue
+            all_pop_data.append(data)
+
+        if not all_pop_data:
             logging.debug(
                 "No valid data, cannot fill energy/angle plotting ranges."
             )
             return
-        data_subset = data[0]
+
+        data_subset = all_pop_data[0]
 
         e_maxi = max(data_subset.energies)
         if e_maxi is not None and not np.isnan(e_maxi):
@@ -723,7 +737,7 @@ class MainWindow(QMainWindow):
         dropdown = self.dropdowns.get(name, None)
         assert dropdown is not None, f" The dropdown {name} is not defined."
 
-        module_names_to_paths = "_".join((name.lower(), "classes"))
+        module_names_to_paths = f"{name.lower()}_classes"
         module_name_to_path = getattr(self, module_names_to_paths, None)
         assert module_name_to_path is not None, (
             f"The dictionary {module_names_to_paths}, linking every module"
@@ -762,7 +776,8 @@ class MainWindow(QMainWindow):
             set_dropdown_value(self.dropdowns[key], self._defaults[key])
 
 
-def main():
+def main() -> None:
+    """Build the GUI interface."""
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()

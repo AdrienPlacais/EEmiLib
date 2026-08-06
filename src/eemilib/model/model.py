@@ -10,24 +10,26 @@ import math
 from abc import ABC, abstractmethod
 from collections.abc import Collection
 from pprint import pformat
-from typing import Any
+from typing import Any, ClassVar, Literal, cast, overload
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
+
 from eemilib.core.model_config import ModelConfig
-from eemilib.emission_data.data_matrix import DataMatrix, MissingDataError
-from eemilib.emission_data.emission_yield import EmissionYield
+from eemilib.emission_data import DataMatrix
+from eemilib.emission_data.emission_data import MissingDataError
+from eemilib.emission_data.emission_yield import TEEY
 from eemilib.emission_data.helper import get_ec1, get_max
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
+    COL_ENERGY,
+    COL_NORMAL,
     ImplementedEmissionData,
     ImplementedPop,
-    col_energy,
-    col_normal,
 )
 from eemilib.util.helper import documentation_url
 from eemilib.util.markdown import E_MAX, EC_1, SIGMA, SIGMA_MAX, tex_math
-from numpy.typing import NDArray
 
 
 class Model(ABC):
@@ -35,7 +37,7 @@ class Model(ABC):
 
     Parameters
     ----------
-    emission_data_types :
+    data_types :
         Types of modelled data.
     populations :
         Modelled populations.
@@ -49,23 +51,26 @@ class Model(ABC):
         List the :class:`.Parameter` kwargs.
     model_config :
         List the files that the model needs to know in order to work.
-    implementations :
-        List of different implementations for the same :class:`.Model`. See
-        for example :class:`.vaughan.Vaughan`.
+    implementation_choices :
+        Maps each independent implementation axis to its allowed options. Empty
+        by default -- models with a single fixed implementation don't need to
+        define this.
 
     """
 
-    emission_data_types: list[ImplementedEmissionData]
-    populations: list[ImplementedPop]
+    data_types: ClassVar[tuple[ImplementedEmissionData, ...]]
+    populations: ClassVar[tuple[ImplementedPop, ...]]
     considers_energy: bool
     is_3d: bool
     is_dielectrics_compatible: bool
-    initial_parameters: dict[str, dict[str, str | float | bool]]
+    initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = {}
     model_config: ModelConfig
-    implementations: tuple[str, ...] | None = None
+    implementation_choices: ClassVar[dict[str, tuple[str, ...]]] = {}
 
     def __init__(
-        self, *args, parameters_values: dict[str, Any] | None = None, **kwargs
+        self,
+        parameters_values: dict[str, Any] | None = None,
+        url_doc_override: str | None = None,
     ) -> None:
         """Instantiate the object.
 
@@ -74,12 +79,19 @@ class Model(ABC):
         parameters_values :
             Contains name of parameters and associated value. If provided, will
             override the default values set in ``initial_parameters``.
+        url_doc_override :
+            Override default URL in documentation.
 
         """
-        self.doc_url = documentation_url(self, **kwargs)
+        self.doc_url = documentation_url(
+            self, url_doc_override=url_doc_override
+        )
         #: A :class:`.TypedDict` specific to every :class:`.model.Model`. Keys
         #: are parameters names, values are :class:`.Parameter`.
         self.parameters: Any
+        #: Maps each axis name (see :attr:`.Model.implementation_choices`) to
+        #: the currently selected option.
+        self.current_implementations: dict[str, str] = {}
 
     @classmethod
     def _generate_parameter_docs(cls) -> str:
@@ -117,14 +129,13 @@ class Model(ABC):
         *args,
         **kwargs,
     ) -> pd.DataFrame:
-        r"""Compute |TEEY| :math:`\sigma`."""
+        r"""Compute |TEEY| :math:`\sigma`.
+
+        Under the hood, it calls :meth:`get_data`.
+
+        """
         teey = self.get_data(
-            "all",
-            "Emission Yield",
-            energy=energy,
-            theta=theta,
-            *args,
-            **kwargs,
+            "all", "Emission Yield", energy, theta, *args, **kwargs
         )
         if teey is not None:
             return teey
@@ -138,9 +149,13 @@ class Model(ABC):
         *args,
         **kwargs,
     ) -> pd.DataFrame:
-        r"""Compute |SEEY| :math:`\delta`."""
+        r"""Compute |SEEY| :math:`\delta`.
+
+        Under the hood, it calls :meth:`get_data`.
+
+        """
         seey = self.get_data(
-            "SE", "Emission Yield", energy=energy, theta=theta, *args, **kwargs
+            "SE", "Emission Yield", energy, theta, *args, **kwargs
         )
         if seey is not None:
             return seey
@@ -154,14 +169,13 @@ class Model(ABC):
         *args,
         **kwargs,
     ) -> pd.DataFrame:
-        r"""Compute |SEs| emission energy distribution."""
+        r"""Compute |SEs| emission energy distribution.
+
+        Under the hood, it calls :meth:`get_data`.
+
+        """
         se_distrib = self.get_data(
-            "SE",
-            "Emission Energy",
-            energy=energy,
-            theta=theta,
-            *args,
-            **kwargs,
+            "SE", "Emission Energy", energy, theta, *args, **kwargs
         )
         if se_distrib is not None:
             return se_distrib
@@ -173,19 +187,54 @@ class Model(ABC):
     def get_data(
         self,
         population: ImplementedPop,
-        emission_data_type: ImplementedEmissionData,
+        data_type: ImplementedEmissionData,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
+        e_pe: float | None = None,
         *args,
         **kwargs,
     ) -> pd.DataFrame | None:
-        """Return desired data according to current model.
+        r"""Return desired data according to current model.
 
         You should override this method for each :class:`.Model` subclass.
         When desired data is not found, a ``None`` is returned. If you want a
-        dummy dataframe instead, call the specific methods for every quantity:
-        :meth:`.Model.teey`, :meth:`.Model.seey`,
+        dummy dataframe instead, call the specific methods for every
+        quantity: :meth:`.Model.teey`, :meth:`.Model.seey`,
         :meth:`.Model.se_energy_distribution`.
+
+        Parameters
+        ----------
+        population :
+            Type of population you want data from.
+        data_type :
+            Desired type of emission data.
+        energy :
+            According to the emission data type, this argument can mean
+            several things:
+
+            - ``"Emission Yield"``: array of |PEs| impact energy in
+              :unit:`eV`.
+            - ``"Emission Energy"``: array of |EEs| emission energy in
+              :unit:`eV`. By convention, if ``e_pe`` is not provided, the
+              impact energy of the |PE| is also the last value of ``energy``.
+
+        theta :
+            Array of |PE| electrons impact angle in :unit:`\degrees`.
+        e_pe :
+            Energy of |PEs| in :unit:`eV`, if applicable.
+        args :
+            Other arguments passed to model functions.
+        kwargs :
+            Other arguments passed to model functions.
+
+        Returns
+        -------
+            ``None`` if data is not modelled. Otherwise, a dataframe where
+            the first column is called ``"Energy [eV]"`` and holds energy.
+            Data is stored in the following columns, called ``"0.0 [deg]"``,
+            ``"20.0 [deg]"`` (according to the values of ``theta``). The
+            only column guaranteed to be present is the normal incidence
+            one.
 
         """
         return None
@@ -196,98 +245,299 @@ class Model(ABC):
     ) -> None:
         """Find the best parameters for the current model."""
 
+    @overload
     def plot[T](
         self,
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
-        emission_data_type: ImplementedEmissionData,
-        energies: NDArray[np.float64],
+        data_type: ImplementedEmissionData,
+        energies: NDArray[np.float64] | None,
         angles: NDArray[np.float64],
         axes: T | None = None,
+        group_by_pe: Literal[False] = False,
+        e_pes: float | None = None,
+        **kwargs,
+    ) -> T | None: ...
+
+    @overload
+    def plot[T](
+        self,
+        plotter: Plotter,
+        population: ImplementedPop | Collection[ImplementedPop],
+        data_type: Literal["Emission Energy"],
+        energies: NDArray[np.float64] | None,
+        angles: NDArray[np.float64],
+        axes: dict[float, T] | None = None,
+        group_by_pe: Literal[True] = True,
+        e_pes: Collection[float] | None = None,
+        **kwargs,
+    ) -> dict[float, T]: ...
+
+    def plot[T](
+        self,
+        plotter: Plotter,
+        population: ImplementedPop | Collection[ImplementedPop],
+        data_type: ImplementedEmissionData,
+        energies: NDArray[np.float64] | None,
+        angles: NDArray[np.float64],
+        axes: T | dict[float, T] | None = None,
+        group_by_pe: bool = False,
+        e_pes: float | Collection[float] | None = None,
         grid: bool = True,
         **kwargs,
-    ) -> T | None:
-        """Plot desired modelled data using ``plotter``.
+    ) -> T | dict[float, T] | None:
+        """Plot model predictions using ``plotter``.
 
-        This method uses :meth:`.Model.get_data` to compute the modelled data
-        matching ``population`` and ``emission_data_type``. Then it calls the
-        :meth:`.Model.plot` method.
+        This method is an orchestrator: it decides which underlying routine
+        handles the request, and delegates the actual plotting to
+        :meth:`_plot_single` (single-axes case) or :meth:`_plot_grouped_by_pe`
+        (``group_by_pe=True`` case).
 
         Parameters
         ----------
         plotter :
-            Object realizing the plot. We transfer it to the
-            :meth:`.Model.plot` method.
+            Object realizing the plot.
         population :
-            One or several populations to plot. If several are given, we simply
-            recursively call this method.
-        emission_data_type :
+            One or several populations to plot.
+        data_type :
             Type of data to plot.
         energies :
-            Energies in :unit:`eV` for which model should be plotted.
+            Energies at which the model is evaluated. If omitted, we use the
+            limits of a pre-existing ``axes`` -- ``axes`` should not be None,
+            and should not be empty!
         angles :
-            Angles in :unit:`deg` for which model should be plotted.
+            Angles at which the model is evaluated.
         axes :
-            Axes to re-use if given.
+            Axes to re-use if given. A plain ``T`` in the default case; a
+            ``dict[float, T]`` keyed by impact energy when ``group_by_pe=True``.
+        group_by_pe :
+            Only supported for ``data_type == "Emission Energy"``. If
+            ``True``, one axes is created (or re-used) per impact energy,
+            instead of a single shared axes.
+        e_pes :
+            |PE| energy/energies. In the single-axes case
+            (``group_by_pe=False``), a single ``float`` (or ``None``). In the
+            grouped case (``group_by_pe=True``), one or several impact
+            energies to plot at, only used when ``axes`` is not given (nothing
+            to infer impact energies from otherwise). If ``axes`` is given,
+            its keys are used instead and ``e_pes`` is ignored.
         grid :
-            If grid should be plotted.
+            Whether a grid should be drawn.
         kwargs :
-            Other keyword arguments passed to the :meth:`.Model.plot`
-            method.
+            Other keyword arguments passed to the underlying plotting routine.
 
         Returns
         -------
-            Created axes object, or ``None`` if no plot was created.
+            Created axes object (or ``dict`` of axes if ``group_by_pe=True``),
+            can be empty if no plot was created.
+
+        """
+        if not group_by_pe:
+            if isinstance(axes, dict):
+                logging.error(
+                    "Given axes is a dictionary, but should be a singles Axes "
+                    "instance or `None`. A dictionary is expected only when "
+                    "`group_by_pe=True`. Setting `axes=None` and trying to "
+                    f"continue... Given axes was:\n{pformat(axes)}"
+                )
+                axes = None
+            e_pe = cast(float | None, e_pes)
+            return self._plot_single(
+                plotter,
+                population,
+                data_type,
+                energies,
+                angles,
+                axes=cast(T | None, axes),
+                e_pe=e_pe,
+                grid=grid,
+                **kwargs,
+            )
+
+        if data_type != "Emission Energy":
+            raise ValueError(
+                "`group_by_pe=True` is only supported for `data_type="
+                "'Emission Energy'`."
+            )
+
+        e_pes_collection: Collection[float] | None
+        if e_pes is None:
+            e_pes_collection = None
+        elif isinstance(e_pes, (int, float)):
+            e_pes_collection = (float(e_pes),)
+        else:
+            e_pes_collection = e_pes
+
+        return self._plot_grouped_by_pe(
+            plotter,
+            population,
+            energies,
+            angles,
+            axes=cast(dict[float, T] | None, axes),
+            e_pes=e_pes_collection,
+            grid=grid,
+            **kwargs,
+        )
+
+    def _plot_single[T](
+        self,
+        plotter: Plotter,
+        population: ImplementedPop | Collection[ImplementedPop],
+        data_type: ImplementedEmissionData,
+        energies: NDArray[np.float64] | None,
+        angles: NDArray[np.float64],
+        axes: T | None = None,
+        e_pe: float | None = None,
+        grid: bool = True,
+        n_points: int = 501,
+        **kwargs,
+    ) -> T | None:
+        """Plot model predictions on a single shared axes.
+
+        Parameters
+        ----------
+        plotter :
+            Object realizing the plot.
+        population :
+            One or several populations to plot.
+        data_type :
+            Type of data to plot.
+        energies :
+            Energies at which the model is evaluated. If omitted, we use the
+            limits of a pre-existing ``axes`` -- ``axes`` should not be None,
+            and should not be empty!
+        angles :
+            Angles at which the model is evaluated.
+        axes :
+            Axes to re-use if given.
+        e_pe :
+            Impact energy, only used when ``data_type == "Emission
+            Energy"``.
+        grid :
+            Whether grid should appear.
+        n_points :
+            Number of points for x axis; used only if ``energies`` is not
+            given.
+        kwargs :
+            Other keyword arguments passed to the underlying plotting routine.
+
+        Return
+        ------
+            Created axes object, can be ``None`` if no plot was created.
 
         """
         if isinstance(population, Collection) and not isinstance(
             population, str
         ):
             for pop in population:
-                axes = self.plot(
+                axes = self._plot_single(
                     plotter,
                     pop,
-                    emission_data_type,
+                    data_type,
                     energies,
                     angles,
                     axes=axes,
+                    e_pe=e_pe,
                     grid=grid,
                     **kwargs,
                 )
             return axes
 
-        to_plot = self.get_data(
+        if energies is None:
+            energies = plotter.infer_energies(
+                axes, n_points=n_points, data_type=data_type
+            )
+
+        data = self.get_data(
             population=population,
-            emission_data_type=emission_data_type,
+            data_type=data_type,
             energy=energies,
             theta=angles,
+            e_pe=e_pe,
         )
-        if to_plot is None:
+        if data is None:
             logging.info(
-                f"No modelled data found for {population = } and "
-                f"{emission_data_type = }. Skipping this plot."
+                f"No model data for {population = } and "
+                f"{data_type = }. Skipping this plot."
             )
             return axes
 
-        if emission_data_type == "Emission Yield":
-            return plotter.plot_emission_yield(
-                to_plot,
-                axes=axes,
-                ls="--",
-                grid=grid,
+        return plotter.plot(
+            data_type=data_type,
+            df=data,
+            axes=axes,
+            population=population,
+            e_pe=e_pe,
+            grid=grid,
+            is_model=True,
+            **kwargs,
+        )
+
+    def _plot_grouped_by_pe[T](
+        self,
+        plotter: Plotter,
+        population: ImplementedPop | Collection[ImplementedPop],
+        energies: NDArray[np.float64] | None,
+        angles: NDArray[np.float64],
+        axes: dict[float, T] | None = None,
+        e_pes: Collection[float] | None = None,
+        grid: bool = True,
+        **kwargs,
+    ) -> dict[float, T]:
+        """Plot ``"Emission Energy"`` model predictions, one axes per |PE| energy.
+
+        If ``axes`` is given, its keys determine which impact energies to plot
+        at (and their axes are re-used). Otherwise, ``e_pes`` must be given.
+
+        Parameters
+        ----------
+        plotter :
+            Object realizing the plot.
+        population :
+            One or several populations to plot.
+        energies :
+            Energies at which the model is evaluated. If omitted, we use the
+            limits of a pre-existing ``axes`` -- ``axes`` should not be None,
+            and should not be empty!
+        angles :
+            Angles at which the model is evaluated.
+        axes :
+            Existing ``e_pe``-keyed axes to re-use, if any. If ``e_pes`` is
+            given, these energies will be used rather than ``axes`` keys.
+        e_pes :
+            Impact energies to plot at. Required if ``axes`` is not given.
+        grid :
+            Whether grid should be plotted.
+        kwargs :
+            Other keyword arguments passed to the underlying plotting routine.
+
+        Return
+        ------
+            Axes, keyed by impact energy.
+
+        """
+        axes = axes or {}
+        e_pes = e_pes or list(axes.keys())
+
+        if not e_pes:
+            raise ValueError(
+                "You must provide either `axes` (to plot at its existing "
+                "impact energies) or `e_pes` (to plot at new impact energies)."
+            )
+
+        for e_pe in e_pes:
+            axes[e_pe] = self._plot_single(
+                plotter,
                 population=population,
+                data_type="Emission Energy",
+                energies=energies,
+                angles=angles,
+                axes=axes.get(e_pe),
+                e_pe=e_pe,
+                grid=grid,
                 **kwargs,
             )
-        if emission_data_type == "Emission Energy":
-            return plotter.plot_emission_energy_distribution(
-                to_plot,
-                axes=axes,
-                ls="--",
-                grid=grid,
-                population=population,
-                **kwargs,
-            )
-        raise NotImplementedError
+        return axes
 
     def set_parameter_value(self, name: str, value: Any) -> None:
         """Give the parameter named ``name`` the value ``value``."""
@@ -327,6 +577,15 @@ class Model(ABC):
         for name in names:
             self.reset_parameter_value(name)
 
+    def set_implementation(self, name: str, value: str) -> None:
+        """Update one implementation axis.
+
+        Subclasses defining :attr:`implementation_choices` must override
+        this to apply the effect of switching ``name`` to ``value``.
+
+        """
+        raise NotImplementedError
+
     def evaluate(
         self,
         data_matrix: DataMatrix,
@@ -343,9 +602,13 @@ class Model(ABC):
         ----------
         data_matrix :
             Holds all measured electron emission data.
+        args :
+            Additional unused arguments.
         evaluations :
             Maps names of quality criterions with their actual value. If given,
             it will be preserved and additional evaluations may be added.
+        kwargs :
+            Additional unused kwargs.
 
         Returns
         -------
@@ -355,7 +618,7 @@ class Model(ABC):
         """
         if evaluations is None:
             evaluations = {}
-        if "Emission Yield" in self.emission_data_types and (
+        if "Emission Yield" in self.data_types and (
             "all" in self.populations or "SE" in self.populations
         ):
             evaluations.update(self._evaluate_for_teey_models(data_matrix))
@@ -377,21 +640,18 @@ class Model(ABC):
         evaluations = self._main_teey_parameters()
 
         try:
-            emission_yield = data_matrix.teey
+            teey = data_matrix.teey
         except MissingDataError:
-            logging.error(
-                "Emission yield mandatory in order to perform evaluations was "
-                "not found."
-            )
+            logging.error("TEEY is mandatory in order to perform evaluations.")
             return evaluations
 
         evaluations.update(
             {
                 rf"Relative error over {tex_math(EC_1)} [\%]": self._error_ec1(
-                    emission_yield
+                    teey
                 ),
                 f"{tex_math(SIGMA)} deviation between {tex_math(EC_1)} and "
-                rf"{tex_math(E_MAX)} [\%]": self._error_teey(emission_yield),
+                rf"{tex_math(E_MAX)} [\%]": self._error_teey(teey),
             }
         )
         return evaluations
@@ -414,21 +674,21 @@ class Model(ABC):
             f"Modelled {tex_math(SIGMA_MAX)}": sigma_max,
         }
 
-    def _error_ec1(self, emission_yield: EmissionYield) -> float:
+    def _error_ec1(self, emission_yield: TEEY) -> float:
         """Compute relative error over first crossover energy in :unit:`%`."""
         measured_ec1 = emission_yield.e_c1
         energy = np.linspace(0, 1.5 * measured_ec1, 10001, dtype=np.float64)
         theta = np.array([0.0])
         teey = self.teey(energy, theta)
 
-        idx_ec1 = (teey[col_normal] - 1.0).abs().idxmin()
+        idx_ec1 = (teey[COL_NORMAL] - 1.0).abs().idxmin()
         model_ec1 = energy[idx_ec1]
 
         std = math.sqrt((measured_ec1 - model_ec1) ** 2)
         error = 100.0 * std / measured_ec1
         return float(error)
 
-    def _error_teey(self, emission_yield: EmissionYield) -> float:
+    def _error_teey(self, emission_yield: TEEY) -> float:
         """Compute |TEEY| relative error between $E_{c1}$ and $E_{max}$.
 
         Returned value is in :unit:`%`.
@@ -437,13 +697,13 @@ class Model(ABC):
         min_energy = emission_yield.e_c1
         max_energy = emission_yield.e_max
         df = emission_yield.data
-        mask = (df[col_energy] >= min_energy) & (df[col_energy] <= max_energy)
+        mask = (df[COL_ENERGY] >= min_energy) & (df[COL_ENERGY] <= max_energy)
 
-        measured_teey = df.loc[mask, col_normal].to_numpy()
-        measured_energy = df.loc[mask, col_energy].to_numpy()
+        measured_teey = df.loc[mask, COL_NORMAL].to_numpy()
+        measured_energy = df.loc[mask, COL_ENERGY].to_numpy()
         angles = np.array([0.0])
         modelled_teey = self.teey(measured_energy, angles)[
-            col_normal
+            COL_NORMAL
         ].to_numpy()
 
         error = 100.0 * np.std((measured_teey - modelled_teey), ddof=1.0)
@@ -467,6 +727,8 @@ def _dummy_df(
     n_energy = len(energy)
     n_theta = len(theta)
     out = np.zeros((n_energy, n_theta))
-    out_dict = {f"{the} [deg]": out[:, j] for the, j in enumerate(theta)}
-    out_dict["Energy [eV]"] = energy
+    out_dict = {
+        COL_ENERGY: energy,
+        **{f"{the} [deg]": out[:, j] for j, the in enumerate(theta)},
+    }
     return pd.DataFrame(out_dict)

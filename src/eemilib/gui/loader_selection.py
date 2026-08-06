@@ -1,6 +1,5 @@
 """Define interface related to :class:`.Loader` in GUI."""
 
-from eemilib.loader.loader import Loader
 from PyQt5.QtGui import QWindow
 from PyQt5.QtWidgets import (
     QDialog,
@@ -9,6 +8,8 @@ from PyQt5.QtWidgets import (
     QLineEdit,
     QVBoxLayout,
 )
+
+from eemilib.loader.loader import Loader
 
 
 class LoaderSettingsDialog(QDialog):
@@ -19,7 +20,7 @@ class LoaderSettingsDialog(QDialog):
         super().__init__(parent=parent)
         self._loader = loader
 
-        self.setWindowTitle(f"{str(loader.__class__.__name__)} settings")
+        self.setWindowTitle(f"{loader.__class__.__name__!s} settings")
 
         self._layout = QVBoxLayout(self)
 
@@ -87,7 +88,7 @@ class LoaderSettingsDialog(QDialog):
             )
         )
 
-        def on_ok():
+        def on_ok() -> None:
             self.apply()
             self.accept()
 

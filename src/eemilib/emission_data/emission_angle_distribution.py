@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Self
 
 import pandas as pd
+
 from eemilib.emission_data.emission_data import EmissionData
 from eemilib.loader.loader import Loader
 from eemilib.util.constants import ImplementedPop
@@ -26,30 +27,27 @@ class EmissionAngleDistribution(EmissionData):
             corresponding emission angle.
 
         """
-        super().__init__(population, data)
+        super().__init__(population=population, data=data)
         raise NotImplementedError
 
     @classmethod
     def from_filepath(
-        cls,
-        population: ImplementedPop,
-        loader: Loader,
-        *filepath: str | Path,
+        cls, loader: Loader, *filepath: str | Path, population: ImplementedPop
     ) -> Self:
         """Instantiate the data from files.
 
         Parameters
         ----------
-        population :
-            The concerned population of electrons.
         loader :
             The object that will load the data.
         *filepath :
             Path(s) to file holding data under study.
+        population :
+            The concerned population of electrons.
 
         """
         data = loader.load_emission_angle_distribution(*filepath)
-        return cls(population, data)
+        return cls(population=population, data=data)
 
     @property
     def label(self) -> str:

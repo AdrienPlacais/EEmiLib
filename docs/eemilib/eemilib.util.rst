@@ -15,3 +15,4 @@ Submodules
    eemilib.util.constants
    eemilib.util.helper
    eemilib.util.log_manager
+   eemilib.util.markdown
