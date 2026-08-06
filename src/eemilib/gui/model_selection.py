@@ -13,8 +13,6 @@ import logging
 from PyQt5.QtGui import QWindow
 from PyQt5.QtWidgets import (
     QComboBox,
-    QDialog,
-    QDialogButtonBox,
     QGroupBox,
     QHeaderView,
     QLabel,
@@ -22,6 +20,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
 )
 
+from eemilib.gui.dialogs import SettingsDialog
 from eemilib.gui.helper import PARAMETER_ATTR_TO_POS
 from eemilib.gui.styles import TITLE_STYLE
 from eemilib.model.model import Model
@@ -56,25 +55,22 @@ def model_configuration() -> tuple[QGroupBox, QTableWidget]:
     return group, model_table
 
 
-class ModelImplementationsDialog(QDialog):
+class ModelImplementationsDialog(SettingsDialog):
     """Define an interactive window for :class:`.Model` implementations."""
 
     def __init__(self, parent: QWindow, model: Model) -> None:
         """Instantiate the window and its parameters."""
-        super().__init__(parent=parent)
+        super().__init__(
+            parent, f"{model.__class__.__name__!s} implementations"
+        )
         self._model = model
-
-        self.setWindowTitle(f"{model.__class__.__name__!s} implementations")
-
-        self._layout = QVBoxLayout(self)
 
         self._implementation_dropdowns: dict[str, QComboBox] = {}
         for label, dropdown in self._implementation_selectors():
             self._layout.addWidget(label)
             self._layout.addWidget(dropdown)
 
-        buttons = self._buttons()
-        self._layout.addWidget(buttons)
+        self._finalize()
 
     def _implementation_selectors(self) -> list[tuple[QLabel, QComboBox]]:
         """Create one dropdown per implementation entry."""
@@ -107,22 +103,6 @@ class ModelImplementationsDialog(QDialog):
             self._implementation_dropdowns[name] = dropdown
             selectors.append((label, dropdown))
         return selectors
-
-    def _buttons(self) -> QDialogButtonBox:
-        """Create OK/Cancel buttons."""
-        buttons = QDialogButtonBox(
-            QDialogButtonBox.StandardButtons(
-                QDialogButtonBox.Ok | QDialogButtonBox.Cancel
-            )
-        )
-
-        def on_ok() -> None:
-            self.apply()
-            self.accept()
-
-        buttons.accepted.connect(on_ok)
-        buttons.rejected.connect(self.reject)
-        return buttons
 
     def apply(self) -> None:
         """Apply the settings to the :class:`.Model`."""
