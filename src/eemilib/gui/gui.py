@@ -26,7 +26,7 @@ import sys
 from abc import ABCMeta
 from collections.abc import Callable
 from types import ModuleType
-from typing import Literal
+from typing import Literal, cast
 
 import numpy as np
 from PyQt5.QtWidgets import (
@@ -49,6 +49,7 @@ from PyQt5.QtWidgets import (
 
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
+from eemilib.emission_data.emission_data import EmissionData
 from eemilib.gui.file_selection import file_selection_matrix
 from eemilib.gui.helper import (
     PARAMETER_ATTR_TO_POS,
@@ -79,6 +80,7 @@ from eemilib.util.constants import (
     ImplementedEmissionData,
     ImplementedPop,
 )
+from eemilib.util.helper import flatten
 
 DROPDOWNS = ("Loader", "Model", "Plotter")
 Dropdowns = Literal["Loader", "Model", "Plotter"]
@@ -240,15 +242,17 @@ class MainWindow(QMainWindow):
 
     def load_data(self) -> None:
         """Load all the files set in GUI."""
-        for i in range(len(IMPLEMENTED_POP)):
-            for j in range(len(IMPLEMENTED_EMISSION_DATA)):
+        for i, pop in enumerate(IMPLEMENTED_POP):
+            for j, data in enumerate(IMPLEMENTED_EMISSION_DATA):
                 file_list_widget = self.file_lists[i][j]
                 if file_list_widget is not None:
                     file_names = [
                         file_list_widget.item(k).text()
                         for k in range(file_list_widget.count())
                     ]
-                    self.data_matrix.set_files(file_names, row=i, col=j)
+                    self.data_matrix.set_files(
+                        file_names, data_type=data, population=pop
+                    )
 
         try:
             self.data_matrix.load_data(self.loader)
@@ -581,9 +585,11 @@ class MainWindow(QMainWindow):
         success_pop, populations = self._get_populations_to_plot()
         if not success_pop:
             return
+        cast(list[ImplementedPop], populations)
         success_data, data_type = self._get_data_type_to_plot()
         if not success_data:
             return
+        cast(ImplementedEmissionData, data_type)
 
         self.axes = self.data_matrix.plot(
             plotter,
@@ -686,43 +692,53 @@ class MainWindow(QMainWindow):
             model = self.model
         except AttributeError as e:
             logging.debug(
-                f"Model is not set, cannot fill energy/angle plotting ranges. \n{e}"
+                "Model is not set, cannot fill energy/angle plotting ranges."
+                f"\n{e}"
             )
             return
         try:
             data_matrix = self.data_matrix
         except AttributeError as e:
             logging.debug(
-                f"DataMatrix is not set, cannot fill energy/angle plotting ranges.\n{e}"
+                "DataMatrix is not set, cannot fill energy/angle plotting "
+                f"ranges.\n{e}"
             )
             return
 
         if not self.autofill_plotting_ranges:
             return
-        data_type_to_plot = model.data_types[0]
 
-        all_pop_data = []
-        for pop in IMPLEMENTED_POP:
-            data = data_matrix.get_data(data_type_to_plot, pop)
-            if not data:
-                continue
-            all_pop_data.append(data)
+        data = list(
+            cast(
+                list[EmissionData],
+                flatten(
+                    [
+                        data_matrix.get_data(data_type, IMPLEMENTED_POP)
+                        for data_type in model.data_types
+                    ]
+                ),
+            )
+        )
 
-        if not all_pop_data:
+        if not data:
             logging.debug(
                 "No valid data, cannot fill energy/angle plotting ranges."
             )
             return
 
-        data_subset = all_pop_data[0]
-
-        e_maxi = max(data_subset.energies)
+        e_maxi = max([max(d.energies) for d in data])
         if e_maxi is not None and not np.isnan(e_maxi):
             logging.debug(f"Setting {e_maxi = }")
             self.last_energy_widget.setText(str(e_maxi))
 
-        theta_maxi = max(data_subset.angles)
-        n_theta = len(data_subset.angles)
+        theta_maxi = 0.0
+        n_theta = 1
+        for d in data:
+            _theta_max = max(d.angles)
+            if _theta_max < theta_maxi:
+                continue
+            theta_maxi = _theta_max
+            n_theta = len(d.angles)
         if theta_maxi is not None and not np.isnan(theta_maxi):
             logging.debug(f"Setting {theta_maxi = }")
             self.last_theta_widget.setText(str(theta_maxi))
