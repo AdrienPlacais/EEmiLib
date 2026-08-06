@@ -164,6 +164,7 @@ def _toggle_lock(state: Any, parameter: Parameter) -> None:
     """Activate/deactivate lock."""
     if state == Qt.Checked:
         parameter.lock()
+        return
     parameter.unlock()
 
 
