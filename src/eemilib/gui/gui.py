@@ -207,7 +207,7 @@ class MainWindow(QMainWindow):
     def _setup_loader_dropdown(self) -> None:
         """Set the :class:`.Loader` related interface."""
         settings_label, settings_action = self._setup_loader_settings_dialog()
-        classes, layout, dropdown, buttons = setup_dropdown(
+        setup = setup_dropdown(
             module_name="eemilib.loader",
             base_class=Loader,
             buttons_args={
@@ -216,12 +216,12 @@ class MainWindow(QMainWindow):
                 settings_label: settings_action,
             },
         )
-        self.loader_classes = classes
-        dropdown.currentIndexChanged.connect(self._setup_loader)
-        _ = dropdown.setCurrentText
-        self.dropdowns["Loader"] = dropdown
-        self.loader_help_button = buttons[0]
-        self._data_model_layout.addLayout(layout)
+        self.loader_classes = setup.classes
+        setup.dropdown.currentIndexChanged.connect(self._setup_loader)
+        _ = setup.dropdown.setCurrentText
+        self.dropdowns["Loader"] = setup.dropdown
+        self.loader_help_button = setup.buttons[0]
+        self._data_model_layout.addLayout(setup.layout)
 
     def _setup_loader(self) -> None:
         """Set up new loader whenever the dropdown menu is changed."""
@@ -274,7 +274,7 @@ class MainWindow(QMainWindow):
         settings_label, settings_action = (
             self._setup_model_implementations_dialog()
         )
-        classes, layout, dropdown, buttons = setup_dropdown(
+        setup = setup_dropdown(
             module_name="eemilib.model",
             base_class=Model,
             buttons_args={
@@ -283,21 +283,21 @@ class MainWindow(QMainWindow):
                 settings_label: settings_action,
             },
         )
-        self.model_classes = classes
-        self.dropdowns["Model"] = dropdown
-        dropdown.currentIndexChanged.connect(self._setup_model)
-        dropdown.currentIndexChanged.connect(
+        self.model_classes = setup.classes
+        self.dropdowns["Model"] = setup.dropdown
+        setup.dropdown.currentIndexChanged.connect(self._setup_model)
+        setup.dropdown.currentIndexChanged.connect(
             self._deactivate_unnecessary_file_widgets
         )
-        dropdown.currentIndexChanged.connect(
+        setup.dropdown.currentIndexChanged.connect(
             self._fill_plot_nature_and_population
         )
-        dropdown.currentIndexChanged.connect(
+        setup.dropdown.currentIndexChanged.connect(
             self._populate_parameters_table_values
         )
 
-        self.model_help_button = buttons[0]
-        self._data_model_layout.addLayout(layout)
+        self.model_help_button = setup.buttons[0]
+        self._data_model_layout.addLayout(setup.layout)
 
     def _setup_model_implementations_dialog(self) -> tuple[str, Callable]:
         """Give arguments to setup the model setttings button."""
@@ -541,7 +541,7 @@ class MainWindow(QMainWindow):
         self._set_up_data_to_plot_checkboxes()
         self._set_up_population_to_plot_checkboxes()
 
-        classes, layout, dropdown, buttons = setup_dropdown(
+        setup = setup_dropdown(
             module_name="eemilib.plotter",
             base_class=Plotter,
             buttons_args={
@@ -550,11 +550,11 @@ class MainWindow(QMainWindow):
                 "Create new figure": lambda _: setattr(self, "axes", None),
             },
         )
-        self.plotter_classes = classes
-        self._plot_layout.addLayout(layout)
-        self.dropdowns["Plotter"] = dropdown
-        self.plot_measured_button = buttons[0]
-        self.plot_model_button = buttons[1]
+        self.plotter_classes = setup.classes
+        self._plot_layout.addLayout(setup.layout)
+        self.dropdowns["Plotter"] = setup.dropdown
+        self.plot_measured_button = setup.buttons[0]
+        self.plot_model_button = setup.buttons[1]
 
     def _set_up_data_to_plot_checkboxes(self) -> None:
         """Add checkbox to select which data should be plotted."""

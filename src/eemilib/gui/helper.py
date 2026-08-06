@@ -4,7 +4,7 @@ import logging
 from abc import ABCMeta
 from collections.abc import Collection
 from functools import partial
-from typing import Any, Literal, overload
+from typing import Any, Literal, NamedTuple, overload
 
 from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtGui import QDesktopServices, QDoubleValidator, QIntValidator
@@ -23,9 +23,23 @@ from eemilib.model.parameter import Parameter
 from eemilib.util.helper import get_classes
 
 
+class DropdownSetup(NamedTuple):
+    """Named values returned by :func:`.setup_dropdown`."""
+
+    #: Keys are the name of the objects inheriting from ``base_class`` found
+    #: in ``module_name``. Values are the path leading to them.
+    classes: dict[str, str]
+    #: Layout holding together ``dropdown`` and ``button``.
+    layout: QHBoxLayout
+    #: Dropdown menu holding the keys of ``classes``.
+    dropdown: QComboBox
+    #: The buttons next to the dropdown menu.
+    buttons: list[QPushButton]
+
+
 def setup_dropdown(
     module_name: str, base_class: ABCMeta, buttons_args: dict[str, Any]
-) -> tuple[dict[str, str], QHBoxLayout, QComboBox, list[QPushButton]]:
+) -> DropdownSetup:
     """Set up interface with a dropdown menu and a button next to it.
 
     Parameters
@@ -42,15 +56,7 @@ def setup_dropdown(
 
     Returns
     -------
-    dict[str, str]
-        Keys are the name of the objects inheriting from ``base_class`` found
-        in ``module_name``. Values are the path leading to them.
-    QHBoxLayout
-        Layout holding together ``dropdown`` and ``button``.
-    QComboBox
-        Dropdown menu holding the keys of ``classes``.
-    list[QPushButton]
-        The buttons next to the dropdown menu.
+        Define the full dropdown menu.
 
     """
     classes = get_classes(module_name, base_class)
@@ -72,7 +78,7 @@ def setup_dropdown(
         layout.addWidget(button)
         buttons.append(button)
 
-    return classes, layout, dropdown, buttons
+    return DropdownSetup(classes, layout, dropdown, buttons)
 
 
 def set_dropdown_value(
@@ -87,9 +93,6 @@ def set_dropdown_value(
     value :
         Name of class or class object you want to select in the dropdown. If
         unset, we do not do anything.
-    allowed_values :
-        Dict used for the ``dropdown`` creation; links name of class objects
-        to their import path.
 
     """
     if value is None:
