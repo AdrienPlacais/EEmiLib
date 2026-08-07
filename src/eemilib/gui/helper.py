@@ -103,7 +103,11 @@ def set_dropdown_value(
     if index == -1:
         logging.info(f"{value = } not found in {dropdown = } items.")
         return
-    dropdown.setCurrentIndex(index)
+    current_index = dropdown.currentIndex()
+    if current_index != index:
+        dropdown.setCurrentIndex(index)
+    else:
+        dropdown.currentIndexChanged.emit(index)
 
 
 class LinspaceEntries(NamedTuple):
