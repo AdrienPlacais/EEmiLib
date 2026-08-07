@@ -17,6 +17,13 @@
     - This checkbox is greyed out/unclickable if no data was plotted,
       *i.e.* if current `Axes` contains no `Line2D`.
 
+.. todo::
+   Switch to ``@property`` for the dropdowns values?
+
+.. todo::
+   Integrate the `dropdown.currentIndexChanged` logic to the `setup_dropdown`
+   helper?
+
 """
 
 import importlib
@@ -28,6 +35,7 @@ from types import ModuleType
 from typing import Literal, cast
 
 import numpy as np
+from matplotlib.axes import Axes
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -112,9 +120,10 @@ class MainWindow(QMainWindow):
         }
         # EEmiLib attributes
         self.data_matrix = DataMatrix()
-        self.loader: Loader
         self.model: Model
-        self.axes = None
+        self.loader: Loader
+        self.plotter: Plotter
+        self.axes: Axes | None = None
 
         super().__init__()
         self.setWindowTitle("EEmiLib")
@@ -513,7 +522,6 @@ class MainWindow(QMainWindow):
         self.energy_angle_group = QGroupBox("Plot configuration")
         self.energy_angle_group.setStyleSheet(TITLE_STYLE)
         self.energy_angle_layout = QVBoxLayout()
-
         quantities = ("energy", "angle")
         labels = ("Energy [eV]", "Angle [deg]")
         initial_values = ((0.0, 500.0, 501), (0.0, 60.0, 4))
@@ -530,7 +538,6 @@ class MainWindow(QMainWindow):
             elif qty == ("angle"):
                 self.last_theta_widget = setup.last
                 self.n_theta_widget = setup.n_points
-
             for attr, attr_name in zip(
                 (setup.first, setup.last, setup.n_points),
                 ("first", "last", "points"),
@@ -555,10 +562,15 @@ class MainWindow(QMainWindow):
             },
         )
         self.plotter_classes = setup.classes
+        setup.dropdown.currentIndexChanged.connect(self._setup_plotter)
         self._plot_layout.addLayout(setup.layout)
         self.dropdowns["Plotter"] = setup.dropdown
         self.plot_measured_button = setup.buttons[0]
         self.plot_model_button = setup.buttons[1]
+
+    def _setup_plotter(self) -> None:
+        """Set up new plotter when the dropdown menu is changed."""
+        self.plotter = self._dropdown_to_class("Plotter")(gui=True)
 
     def _set_up_data_to_plot_checkboxes(self) -> None:
         """Add checkbox to select which data should be plotted."""
@@ -580,8 +592,6 @@ class MainWindow(QMainWindow):
 
     def plot_measured(self) -> None:
         """Plot the desired data, as imported."""
-        plotter = self._dropdown_to_class("Plotter")(gui=True)
-
         success_pop, populations = self._get_populations_to_plot()
         if not success_pop:
             return
@@ -592,7 +602,7 @@ class MainWindow(QMainWindow):
         cast(ImplementedEmissionData, data_type)
 
         self.axes = self.data_matrix.plot(
-            plotter,
+            self.plotter,
             population=populations,
             data_type=data_type,
             axes=self.axes,
@@ -600,8 +610,6 @@ class MainWindow(QMainWindow):
 
     def plot_model(self) -> None:
         """Plot the desired data, as modelled."""
-        plotter = self._dropdown_to_class("Plotter")(gui=True)
-
         success_pop, populations = self._get_populations_to_plot()
         if not success_pop:
             return
@@ -616,7 +624,7 @@ class MainWindow(QMainWindow):
             return
 
         self.axes = self.model.plot(
-            plotter,
+            self.plotter,
             population=populations,
             data_type=data_type,
             energies=energies,
