@@ -134,6 +134,10 @@ class Plotter(ABC):
         """Plot the given emission angles distribution, return Axes object."""
 
     @abstractmethod
+    def can_infer_energies(self, axes: Any | None) -> bool:
+        """Check if energies can be inferred from given ``axes``."""
+
+    @abstractmethod
     def infer_energies(
         self,
         axes: Any | None,

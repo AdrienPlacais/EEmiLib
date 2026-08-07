@@ -200,6 +200,10 @@ class PandasPlotter(Plotter):
         merged_kwargs.update(kwargs)
         return merged_kwargs
 
+    def can_infer_energies(self, axes: Any | None) -> bool:
+        """Check if energies can be inferred from given ``axes``."""
+        return axes is not None and len(axes.get_lines()) > 0
+
     def infer_energies(
         self,
         axes: Axes | None,
@@ -234,19 +238,16 @@ class PandasPlotter(Plotter):
                 "Currently cannot pick up energies for emission angle "
                 "distribution, because its xdata is not energies but angles."
             )
-        if axes is None:
-            raise ValueError("Cannot infer energies if ``axes`` is ``None``.")
-        lines = axes.get_lines()
-        if not lines:
-            logging.warning(
-                "Given axes is empty. Its x-limits are probably meaningless. "
-                "Inferring x limits from it anyway."
+        if not self.can_infer_energies(axes):
+            raise ValueError(
+                f"Cannot infer energies from given {axes = }, because it does "
+                "not exist or nothing is drawn on it."
             )
-            xmin, xmax = axes.get_xlim()
+        assert axes is not None
+        lines = axes.get_lines()
 
-        else:
-            xmin = min([np.nanmin(line.get_data()[0]) for line in lines])
-            xmax = max([np.nanmax(line.get_data()[0]) for line in lines])
+        xmin = min([np.nanmin(line.get_data()[0]) for line in lines])
+        xmax = max([np.nanmax(line.get_data()[0]) for line in lines])
 
         if xmin < 0:
             xmin = 0.0
