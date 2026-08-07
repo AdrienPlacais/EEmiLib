@@ -106,11 +106,24 @@ def set_dropdown_value(
     dropdown.setCurrentIndex(index)
 
 
+class LinspaceEntries(NamedTuple):
+    """Named values returned by ``setup_linspace_entries``."""
+
+    #: Layout object
+    layout: QHBoxLayout
+    #: Start of the linspace
+    first: QWidget
+    #: End of the linspace
+    last: QWidget
+    #: Number of linspace points
+    n_points: QWidget
+
+
 def setup_linspace_entries(
     label: str,
     initial_values: tuple[float, float, int],
     max_value: float | None = None,
-) -> tuple[QHBoxLayout, QLineEdit, QLineEdit, QLineEdit]:
+) -> LinspaceEntries:
     """Create an input to call np.linspace."""
     layout = QHBoxLayout()
     layout.addWidget(QLabel(label))
@@ -126,7 +139,7 @@ def setup_linspace_entries(
         widgets.append(w := _linspace_entry(is_int, x_0=x_0, x_max=x_max))
         layout.addWidget(w)
 
-    return layout, widgets[0], widgets[1], widgets[2]
+    return LinspaceEntries(layout, *widgets)
 
 
 def _linspace_entry(

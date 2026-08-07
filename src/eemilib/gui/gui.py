@@ -14,7 +14,6 @@
 
     - Checkbox "Use energies from measurements".
     - Clicking it greys out the ``energies`` linspace definition.
-      - May also auto-fill it?
     - This checkbox is greyed out/unclickable if no data was plotted,
       *i.e.* if current `Axes` contains no `Line2D`.
 
@@ -522,18 +521,19 @@ class MainWindow(QMainWindow):
         for qty, label, initial, max_val in zip(
             quantities, labels, initial_values, max_values
         ):
-            layout, first, last, points = setup_linspace_entries(
+            setup = setup_linspace_entries(
                 label, initial_values=initial, max_value=max_val
             )
-            self.energy_angle_layout.addLayout(layout)
+            self.energy_angle_layout.addLayout(setup.layout)
             if qty == ("energy"):
-                self.last_energy_widget = last
+                self.last_energy_widget = setup.last
             elif qty == ("angle"):
-                self.last_theta_widget = last
-                self.n_theta_widget = points
+                self.last_theta_widget = setup.last
+                self.n_theta_widget = setup.n_points
 
             for attr, attr_name in zip(
-                (first, last, points), ("first", "last", "points")
+                (setup.first, setup.last, setup.n_points),
+                ("first", "last", "points"),
             ):
                 setattr(self, f"{qty}_{attr_name}", attr)
 
