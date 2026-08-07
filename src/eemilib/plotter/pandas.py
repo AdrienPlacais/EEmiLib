@@ -208,8 +208,9 @@ class PandasPlotter(Plotter):
         self,
         axes: Axes | None,
         data_type: ImplementedEmissionData,
+        linspace_args: bool = False,
         n_points: int = 5001,
-    ) -> NDArray[np.float64]:
+    ) -> NDArray[np.float64] | tuple[float, float, int]:
         """Create array of electrons energies from given axes.
 
         Used for :class:`.Model` plots, in order to keep measurements maximum
@@ -221,16 +222,22 @@ class PandasPlotter(Plotter):
             Pre-existing axes; should contain measurement data.
         data_type :
             Type of plotted data.
+        linspace_args :
+            Whether method should return ``np.linspace`` arguments instead of
+            the array (minimum, maximum, number of points).
         n_points :
             Number of points for the x axis.
 
         Returns
         -------
+        NDArray[np.float64]
             Array of energies ready to use by a :class:`.Model`. Spans from
             minimum x-data up to maximum x-data across every
             :class:`matplotlib.lines.Line2D` in the given |Axes|. If no data
             was plotted, we use the current ``axes`` limits, though it will
             generally be meaningless.
+        tuple[float, float, int]
+            Minimum and maximum values, number of points.
 
         """
         if data_type == "Emission Angle":
@@ -251,4 +258,6 @@ class PandasPlotter(Plotter):
 
         if xmin < 0:
             xmin = 0.0
+        if linspace_args:
+            return float(xmin), float(xmax), n_points
         return np.linspace(xmin, xmax, n_points)

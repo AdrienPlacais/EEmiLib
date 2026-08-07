@@ -1,7 +1,7 @@
 """Define the ABC :class:`Plotter` to produce the plots."""
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Literal, overload
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -137,13 +137,32 @@ class Plotter(ABC):
     def can_infer_energies(self, axes: Any | None) -> bool:
         """Check if energies can be inferred from given ``axes``."""
 
+    @overload
+    def infer_energies(
+        self,
+        axes: Any | None,
+        data_type: ImplementedEmissionData,
+        linspace_args: Literal[False],
+        n_points: int = 501,
+    ) -> NDArray[np.float64]: ...
+
+    @overload
+    def infer_energies(
+        self,
+        axes: Any | None,
+        data_type: ImplementedEmissionData,
+        linspace_args: Literal[True],
+        n_points: int = 501,
+    ) -> tuple[float, float, int]: ...
+
     @abstractmethod
     def infer_energies(
         self,
         axes: Any | None,
         data_type: ImplementedEmissionData,
+        linspace_args: bool = False,
         n_points: int = 501,
-    ) -> NDArray[np.float64]:
+    ) -> NDArray[np.float64] | tuple[float, float, int]:
         """Create array of electrons energies from given axes.
 
         Used for :class:`.Model` plots, in order to keep measurements maximum
@@ -155,12 +174,18 @@ class Plotter(ABC):
             Pre-existing axes; should contain measurement data.
         data_type :
             Type of represented data.
+        linspace_args :
+            Whether method should return ``np.linspace`` arguments instead of
+            the array (minimum, maximum, number of points).
         n_points :
             Number of points for the x axis.
 
         Returns
         -------
+        NDArray[np.float64]
             Array of energies ready to use by a :class:`.Model`. You should
             ensure that no negative energy is returned.
+        tuple[float, float, int]
+            Minimum and maximum values, number of points.
 
         """
