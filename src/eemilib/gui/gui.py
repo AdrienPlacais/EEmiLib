@@ -35,7 +35,6 @@ from types import ModuleType
 from typing import Literal, cast
 
 import numpy as np
-from matplotlib.axes import Axes
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -73,6 +72,7 @@ from eemilib.gui.model_selection import (
     ModelImplementationsDialog,
     model_configuration,
 )
+from eemilib.gui.plot_canvas import TabbedPlotArea
 from eemilib.gui.styles import (
     TITLE_STYLE,
     format_number,
@@ -123,7 +123,6 @@ class MainWindow(QMainWindow):
         self.model: Model
         self.loader: Loader
         self.plotter: Plotter
-        self.axes: Axes | None = None
 
         super().__init__()
         self.setWindowTitle("EEmiLib")
@@ -166,6 +165,9 @@ class MainWindow(QMainWindow):
         self._setup_model_evaluation()
 
         # Tab 2: Plot
+        self.plot_area = TabbedPlotArea()
+        self._plot_layout.addWidget(self.plot_area)
+
         self.energy_angle_group: QGroupBox
         self.energy_angle_layout: QVBoxLayout
         self.last_energy_widget: QLineEdit
@@ -558,7 +560,7 @@ class MainWindow(QMainWindow):
             buttons_args={
                 "Plot file": self.plot_measured,
                 "Plot modelled data": self.plot_model,
-                "Create new figure": lambda _: setattr(self, "axes", None),
+                "Clear figure": lambda _: self.plot_area.clear(),
             },
         )
         self.plotter_classes = setup.classes
@@ -601,12 +603,29 @@ class MainWindow(QMainWindow):
             return
         cast(ImplementedEmissionData, data_type)
 
-        self.axes = self.data_matrix.plot(
-            self.plotter,
-            population=populations,
-            data_type=data_type,
-            axes=self.axes,
-        )
+        group_by_pe = data_type == "Emission Energy"
+        if group_by_pe:
+            axes_by_pe = {
+                e_pe: self.plot_area.axes_for(e_pe)
+                for e_pe in self._known_impact_energies()
+            }
+            self.data_matrix.plot(
+                self.plotter,
+                population=populations,
+                data_type=data_type,
+                axes=axes_by_pe,
+                group_by_pe=True,
+            )
+            self.plot_area.refresh()
+        else:
+            axes = self.plot_area.axes_for(None)
+            self.data_matrix.plot(
+                self.plotter,
+                population=populations,
+                data_type=data_type,
+                axes=axes,
+            )
+            self.plot_area.refresh(None)
 
     def plot_model(self) -> None:
         """Plot the desired data, as modelled."""
@@ -623,14 +642,33 @@ class MainWindow(QMainWindow):
         if not success_angle:
             return
 
-        self.axes = self.model.plot(
-            self.plotter,
-            population=populations,
-            data_type=data_type,
-            energies=energies,
-            angles=angles,
-            axes=self.axes,
-        )
+        group_by_pe = data_type == "Emission Energy"
+        if group_by_pe:
+            axes_by_pe = {
+                e_pe: self.plot_area.axes_for(e_pe)
+                for e_pe in self._known_impact_energies()
+            }
+            self.model.plot(
+                self.plotter,
+                population=populations,
+                data_type=data_type,
+                energies=energies,
+                angles=angles,
+                axes=axes_by_pe,
+                group_by_pe=True,
+            )
+            self.plot_area.refresh()
+        else:
+            axes = self.plot_area.axes_for(None)
+            self.model.plot(
+                self.plotter,
+                population=populations,
+                data_type=data_type,
+                energies=energies,
+                angles=angles,
+                axes=axes,
+            )
+            self.plot_area.refresh(None)
 
     def _get_data_type_to_plot(
         self,
@@ -784,6 +822,14 @@ class MainWindow(QMainWindow):
             return
         widget.setStyleSheet("background-color: lightgray;")
         widget.setEnabled(False)
+
+    def _known_impact_energies(self) -> list[float]:
+        """List loaded impact energies."""
+        distribs = self.data_matrix.get_data(
+            "Emission Energy", IMPLEMENTED_POP
+        )
+        impacts = {d.e_pe for d in distribs}
+        return sorted(impacts)
 
     # =========================================================================
     # Misc

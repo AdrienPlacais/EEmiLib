@@ -3,7 +3,6 @@
 import logging
 from typing import Any
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.axes import Axes
@@ -256,8 +255,3 @@ class PandasPlotter(Plotter):
 
 class GUIPandasPlotter(PandasPlotter):
     """A :class:`.PandasPloter` handling plot interactivity."""
-
-    def __init__(self) -> None:
-        """Instantiate object."""
-        plt.ion()
-        super().__init__()
