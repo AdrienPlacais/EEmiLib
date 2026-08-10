@@ -110,7 +110,7 @@ class MainWindow(QMainWindow):
         self,
         default_model: str = "Vaughan",
         default_loader: str = "PandasLoader",
-        default_plotter: str = "PandasPlotter",
+        default_plotter: str = "GUIPandasPlotter",
     ) -> None:
         """Create the GUI."""
         self._defaults: dict[Dropdowns, str] = {
@@ -563,14 +563,14 @@ class MainWindow(QMainWindow):
         )
         self.plotter_classes = setup.classes
         setup.dropdown.currentIndexChanged.connect(self._setup_plotter)
-        self._plot_layout.addLayout(setup.layout)
         self.dropdowns["Plotter"] = setup.dropdown
         self.plot_measured_button = setup.buttons[0]
         self.plot_model_button = setup.buttons[1]
+        self._plot_layout.addLayout(setup.layout)
 
     def _setup_plotter(self) -> None:
         """Set up new plotter when the dropdown menu is changed."""
-        self.plotter = self._dropdown_to_class("Plotter")(gui=True)
+        self.plotter = self._dropdown_to_class("Plotter")()
 
     def _set_up_data_to_plot_checkboxes(self) -> None:
         """Add checkbox to select which data should be plotted."""

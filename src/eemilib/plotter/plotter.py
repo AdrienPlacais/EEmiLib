@@ -51,15 +51,8 @@ class Plotter(ABC):
         DEFAULT_IS_MODEL_STYLES
     )
 
-    def __init__(self, gui: bool = False) -> None:
-        """Instantiate the object.
-
-        Parameters
-        ----------
-        gui :
-            Activates interactive plotting if using GUI.
-
-        """
+    def __init__(self) -> None:
+        """Instantiate the object."""
         self.doc_url = documentation_url(self)
 
     def plot[T](

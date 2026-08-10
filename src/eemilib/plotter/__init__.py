@@ -1,5 +1,5 @@
 """Define the object that will take care of plotting the data."""
 
-from .pandas import PandasPlotter
+from .pandas import GUIPandasPlotter, PandasPlotter
 
-__all__ = ["PandasPlotter"]
+__all__ = ["GUIPandasPlotter", "PandasPlotter"]

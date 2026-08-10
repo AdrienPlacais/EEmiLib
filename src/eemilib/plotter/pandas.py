@@ -22,18 +22,9 @@ from eemilib.util.constants import (
 class PandasPlotter(Plotter):
     """A :class:`.Plotter` using pandas lib."""
 
-    def __init__(self, gui: bool = False) -> None:
-        """Instantiate object.
-
-        Parameters
-        ----------
-        gui :
-            Activates interactive plotting if using GUI.
-
-        """
-        if gui:
-            plt.ion()
-        super().__init__(gui=gui)
+    def __init__(self) -> None:
+        """Instantiate object."""
+        super().__init__()
 
     def plot_emission_yield(
         self,
@@ -261,3 +252,12 @@ class PandasPlotter(Plotter):
         if linspace_args:
             return float(xmin), float(xmax), n_points
         return np.linspace(xmin, xmax, n_points)
+
+
+class GUIPandasPlotter(PandasPlotter):
+    """A :class:`.PandasPloter` handling plot interactivity."""
+
+    def __init__(self) -> None:
+        """Instantiate object."""
+        plt.ion()
+        super().__init__()
