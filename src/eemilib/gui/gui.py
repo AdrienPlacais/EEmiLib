@@ -632,7 +632,7 @@ class MainWindow(QMainWindow):
 
         """
         checkbox = self.use_measured_energies_checkbox
-        if checkbox.isEnabled() and checkbox.isChecked():
+        if checkbox.isChecked():
             return
 
         success, linspace = self._gen_linspace("energy")
