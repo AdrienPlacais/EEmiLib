@@ -1,6 +1,7 @@
 """Define a tabbed collection of embedded matplotlib canvases."""
 
 from matplotlib.axes import Axes
+from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from PyQt5.QtWidgets import QTabWidget, QVBoxLayout, QWidget
@@ -14,8 +15,10 @@ class PlotCanvas(QWidget):
         super().__init__(parent)
         self.figure = Figure()
         self.canvas = FigureCanvasQTAgg(self.figure)
+        self.toolbar = NavigationToolbar2QT(self.canvas, self)
 
         layout = QVBoxLayout(self)
+        layout.addWidget(self.toolbar)
         layout.addWidget(self.canvas)
         layout.setContentsMargins(0, 0, 0, 0)
 
