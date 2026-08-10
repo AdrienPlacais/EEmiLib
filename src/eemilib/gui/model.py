@@ -55,6 +55,20 @@ def model_configuration() -> tuple[QGroupBox, QTableWidget]:
     return group, model_table
 
 
+def create_evaluation_table() -> QTableWidget:
+    """Create the two-column table that displays evaluation results."""
+    table = QTableWidget(0, 3)
+    table.setHorizontalHeaderLabels(["Metric", "Unit", "Value"])
+
+    header = table.horizontalHeader()
+    assert header is not None, "Error when creating header"
+    for i in range(3):
+        header.setSectionResizeMode(i, QHeaderView.ResizeToContents)
+    table.setEditTriggers(QTableWidget.NoEditTriggers)
+    table.setAlternatingRowColors(True)
+    return table
+
+
 class ModelImplementationsDialog(SettingsDialog):
     """Define an interactive window for :class:`.Model` implementations."""
 

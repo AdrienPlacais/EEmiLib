@@ -38,7 +38,6 @@ from PyQt5.QtWidgets import (
     QCheckBox,
     QComboBox,
     QGroupBox,
-    QHeaderView,
     QLineEdit,
     QListWidget,
     QMainWindow,
@@ -67,8 +66,9 @@ from eemilib.gui.helper import (
     to_plot_checkboxes,
 )
 from eemilib.gui.loader_selection import LoaderSettingsDialog
-from eemilib.gui.model_selection import (
+from eemilib.gui.model import (
     ModelImplementationsDialog,
+    create_evaluation_table,
     model_configuration,
 )
 from eemilib.gui.plot_canvas import TabbedPlotArea
@@ -148,7 +148,6 @@ class MainWindow(QMainWindow):
         self._setup_model_dropdown()
 
         self.evaluations: dict[str, float]
-        self.evaluators_group: QGroupBox
         self.evaluators_table: QTableWidget
         self.force_reevaluation_button: QPushButton
         self._setup_model_evaluation()
@@ -464,31 +463,18 @@ class MainWindow(QMainWindow):
     # =========================================================================
     def _setup_model_evaluation(self) -> None:
         """Set up display of model evaluators."""
-        self.evaluators_group = QGroupBox("Model evaluations")
-        self.evaluators_group.setStyleSheet(TITLE_STYLE)
+        group = QGroupBox("Model evaluations")
+        group.setStyleSheet(TITLE_STYLE)
         self.evaluators_layout = QVBoxLayout()
 
-        self.evaluators_table = self._create_evaluators_table()
+        self.evaluators_table = create_evaluation_table()
         self.evaluators_layout.addWidget(self.evaluators_table)
 
         self.force_reevaluation_button = self._set_reevaluation_button()
         self.evaluators_layout.addWidget(self.force_reevaluation_button)
 
-        self.evaluators_group.setLayout(self.evaluators_layout)
-        self.data_model_layout.addWidget(self.evaluators_group)
-
-    def _create_evaluators_table(self) -> QTableWidget:
-        """Create the two-column table that displays evaluation results."""
-        table = QTableWidget(0, 3)
-        table.setHorizontalHeaderLabels(["Metric", "Unit", "Value"])
-
-        for i in range(3):
-            table.horizontalHeader().setSectionResizeMode(
-                i, QHeaderView.ResizeToContents
-            )
-        table.setEditTriggers(QTableWidget.NoEditTriggers)
-        table.setAlternatingRowColors(True)
-        return table
+        group.setLayout(self.evaluators_layout)
+        self.data_model_layout.addWidget(group)
 
     def _set_reevaluation_button(self) -> QPushButton:
         """Create and return the 'Re-evaluate' button."""
