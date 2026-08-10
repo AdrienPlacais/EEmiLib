@@ -157,17 +157,19 @@ class MainWindow(QMainWindow):
         self.plot_area = TabbedPlotArea()
         self.plot_layout.addWidget(self.plot_area)
 
-        self.energy_angle_group: QGroupBox
+        #: Store whether measurements are currently plotted.
+        self._measurements_are_plotted: bool = False
+
+        #: Holds widgets related to energy/angle setting for the plots
         self.energy_angle_layout: QVBoxLayout
         #: Holds all widgets related to the energy linspace
         self.energy: LinspaceEntries
+        #: Holds all widgets related to the angle linspace
         self.angle: LinspaceEntries
-        #: Store whether measurements are currently plotted.
-        self._measurements_are_plotted: bool = False
         #: Check this to make the ``Model`` plots use the same energies as
         #: the measurements
         self.use_measured_energies_checkbox: QCheckBox
-        self._setup_energy_angle_inputs()
+        self.energy_angle_layout = self.create_energy_angle_inputs()
 
         self.plotter_classes: dict[str, str]
         self.data_checkboxes: list[QRadioButton]
@@ -348,7 +350,7 @@ class MainWindow(QMainWindow):
             self._deactivate_unnecessary_file_widgets
         )
         setup.dropdown.currentIndexChanged.connect(
-            self._fill_plot_nature_and_population
+            self._autofill_plot_data_type_and_population
         )
         setup.dropdown.currentIndexChanged.connect(
             self._populate_parameters_table_values
@@ -526,7 +528,7 @@ class MainWindow(QMainWindow):
     # =========================================================================
     # Tab 2 - Plot
     # =========================================================================
-    def _fill_plot_nature_and_population(self) -> None:
+    def _autofill_plot_data_type_and_population(self) -> None:
         """Check emission data type and population.
 
         When model is updated, check the ``Data to plot`` and ``Population to
@@ -563,30 +565,44 @@ class MainWindow(QMainWindow):
                     continue
                 button.setChecked(False)
 
-    def _setup_energy_angle_inputs(self) -> None:
-        """Set the energy and angle inputs for the model plot."""
-        self.energy_angle_group = QGroupBox("Plot configuration")
-        self.energy_angle_group.setStyleSheet(TITLE_STYLE)
+    def create_energy_angle_inputs(self) -> QVBoxLayout:
+        """Set the energy and angle inputs for the model plot.
 
-        self.energy_angle_layout = QVBoxLayout()
+        Also sets:
+        - :attr:`.energy`
+        - :attr:`.angle`
+        - :attr:`.use_measured_energies_checkbox`
+
+        Returns
+        -------
+            Layout holding energy/angle plot settings.
+
+        """
+        group = QGroupBox("Plot configuration")
+        group.setStyleSheet(TITLE_STYLE)
+
+        layout = QVBoxLayout()
 
         energy_setup = setup_linspace_entries(
             "Energy [eV]", initial_values=(0.0, 500.0, 501)
         )
         self.energy = energy_setup
-        self.energy_angle_layout.addLayout(energy_setup.layout)
+        layout.addLayout(energy_setup.layout)
+
         checkbox = self._create_use_measured_energies_checkbox()
         self.use_measured_energies_checkbox = checkbox
-        self.energy_angle_layout.addWidget(checkbox)
+        layout.addWidget(checkbox)
 
         angle_setup = setup_linspace_entries(
             "Angle [deg]", initial_values=(0.0, 60.0, 4), max_value=90.0
         )
         self.angle = angle_setup
-        self.energy_angle_layout.addLayout(angle_setup.layout)
+        layout.addLayout(angle_setup.layout)
 
-        self.energy_angle_group.setLayout(self.energy_angle_layout)
-        self.plot_layout.addWidget(self.energy_angle_group)
+        self.plot_layout.addWidget(group)
+        group.setLayout(layout)
+        self.energy_angle_layout = layout
+        return layout
 
     def _create_use_measured_energies_checkbox(self) -> QCheckBox:
         """Set checkbox making :meth:`.Model.plot` use ener from measurements.
