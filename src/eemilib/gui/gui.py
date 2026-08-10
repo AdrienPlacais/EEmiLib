@@ -58,6 +58,7 @@ from eemilib.gui.file_selection import file_selection_matrix
 from eemilib.gui.helper import (
     PARAMETER_ATTR_TO_POS,
     PARAMETER_POS_TO_ATTR,
+    LinspaceEntries,
     set_dropdown_value,
     set_help_button_action,
     setup_dropdown,
@@ -168,9 +169,9 @@ class MainWindow(QMainWindow):
 
         self.energy_angle_group: QGroupBox
         self.energy_angle_layout: QVBoxLayout
-        self.last_energy_widget: QLineEdit
-        self.last_theta_widget: QLineEdit
-        self.n_theta_widget: QLineEdit
+        #: Holds all widgets related to the energy linspace
+        self.energy: LinspaceEntries
+        self.angle: LinspaceEntries
         #: Store whether measurements are currently plotted.
         self._measurements_are_plotted: bool = False
         self._setup_energy_angle_inputs()
@@ -541,31 +542,23 @@ class MainWindow(QMainWindow):
         """Set the energy and angle inputs for the model plot."""
         self.energy_angle_group = QGroupBox("Plot configuration")
         self.energy_angle_group.setStyleSheet(TITLE_STYLE)
+
         self.energy_angle_layout = QVBoxLayout()
-        quantities = ("energy", "angle")
-        labels = ("Energy [eV]", "Angle [deg]")
-        initial_values = ((0.0, 500.0, 501), (0.0, 60.0, 4))
-        max_values = (None, 90.0)
-        for qty, label, initial, max_val in zip(
-            quantities, labels, initial_values, max_values
-        ):
-            setup = setup_linspace_entries(
-                label, initial_values=initial, max_value=max_val
-            )
-            self.energy_angle_layout.addLayout(setup.layout)
-            if qty == ("energy"):
-                self.last_energy_widget = setup.last
-                checkbox = self._create_use_measured_energies_checkbox()
-                self.use_measured_energies_checkbox = checkbox
-                self.energy_angle_layout.addWidget(checkbox)
-            elif qty == ("angle"):
-                self.last_theta_widget = setup.last
-                self.n_theta_widget = setup.n_points
-            for attr, attr_name in zip(
-                (setup.first, setup.last, setup.n_points),
-                ("first", "last", "points"),
-            ):
-                setattr(self, f"{qty}_{attr_name}", attr)
+
+        energy_setup = setup_linspace_entries(
+            "Energy [eV]", initial_values=(0.0, 500.0, 501)
+        )
+        self.energy = energy_setup
+        self.energy_angle_layout.addLayout(energy_setup.layout)
+        checkbox = self._create_use_measured_energies_checkbox()
+        self.use_measured_energies_checkbox = checkbox
+        self.energy_angle_layout.addWidget(checkbox)
+
+        angle_setup = setup_linspace_entries(
+            "Angle [deg]", initial_values=(0.0, 60.0, 4), max_value=90.0
+        )
+        self.angle = angle_setup
+        self.energy_angle_layout.addLayout(angle_setup.layout)
 
         self.energy_angle_group.setLayout(self.energy_angle_layout)
         self._plot_layout.addWidget(self.energy_angle_group)
@@ -585,9 +578,9 @@ class MainWindow(QMainWindow):
         def _on_use_measured_energies_toggled(checked: bool) -> None:
             """Grey out energy linspace inputs."""
             for widg in (
-                self.energy_first,
-                self.energy_last,
-                self.energy_points,
+                self.energy.first,
+                self.energy.last,
+                self.energy.n_points,
             ):
                 widg.setEnabled(not checked)
 
@@ -788,16 +781,21 @@ class MainWindow(QMainWindow):
         """Take the desired input, check validity, create array of values."""
         success = True
         linspace_args = []
-        for box in ("first", "last", "points"):
-            line_name = f"{variable}_{box}"
-            qline_edit = getattr(self, line_name, None)
-            if qline_edit is None:
+        linspace: LinspaceEntries | None = getattr(self, variable)
+        if linspace is None:
+            raise ValueError(
+                f"The LinspaceEntries named {variable} was not found."
+            )
+
+        for line_name in ("first", "last", "n_points"):
+            widget = getattr(linspace, line_name, None)
+            if widget is None:
                 logging.error(f"The attribute {line_name} is not defined.")
                 success = False
                 continue
 
-            assert isinstance(qline_edit, QLineEdit)
-            value = qline_edit.displayText()
+            assert isinstance(widget, QLineEdit)
+            value = widget.displayText()
             if not value:
                 logging.error(f"You must give a value in {line_name}.")
                 success = False
@@ -860,7 +858,7 @@ class MainWindow(QMainWindow):
         e_maxi = max([max(d.energies) for d in data])
         if e_maxi is not None and not np.isnan(e_maxi):
             logging.debug(f"Setting {e_maxi = }")
-            self.last_energy_widget.setText(str(e_maxi))
+            self.energy.last.setText(str(e_maxi))
 
         theta_maxi = 0.0
         n_theta = 1
@@ -872,9 +870,9 @@ class MainWindow(QMainWindow):
             n_theta = len(d.angles)
         if theta_maxi is not None and not np.isnan(theta_maxi):
             logging.debug(f"Setting {theta_maxi = }")
-            self.last_theta_widget.setText(str(theta_maxi))
+            self.angle.last.setText(str(theta_maxi))
             logging.debug(f"Setting {n_theta = }")
-            self.n_theta_widget.setText(str(n_theta))
+            self.angle.n_points.setText(str(n_theta))
 
     # =========================================================================
     # Helper
