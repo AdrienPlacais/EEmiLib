@@ -78,9 +78,11 @@ def _select_files(
 ) -> None:
     """Set up a function to set the filepaths."""
     options = QFileDialog.Options()
+    data_type = IMPLEMENTED_EMISSION_DATA[col]
+    population = IMPLEMENTED_POP[row]
     file_names, _ = QFileDialog.getOpenFileNames(
         main_window,
-        "Select Files",
+        f"Select file(s) for {data_type} of {population}",
         "",
         "All Files (*);;CSV Files (*.csv)",
         options=options,
