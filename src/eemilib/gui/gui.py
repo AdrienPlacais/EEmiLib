@@ -126,21 +126,11 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("EEmiLib")
 
-        self.central_widget = QWidget()
-        self.setCentralWidget(self.central_widget)
-
-        self.main_layout = QVBoxLayout(self.central_widget)
-
-        self.tab_widget = QTabWidget()
-        self.main_layout.addWidget(self.tab_widget)
-
-        self._data_model_tab = QWidget()
-        self._data_model_layout = QVBoxLayout(self._data_model_tab)
-        self.tab_widget.addTab(self._data_model_tab, "Data && Model")
-
-        self._plot_tab = QWidget()
-        self._plot_layout = QVBoxLayout(self._plot_tab)
-        self.tab_widget.addTab(self._plot_tab, "Plot")
+        #: Holds all widgets of first tab
+        self.data_model_layout: QVBoxLayout
+        #: Holds all widgets of second tab
+        self.plot_layout: QVBoxLayout
+        self.data_model_layout, self.plot_layout = self._main_structure()
 
         # Tab 1: Data & Model
         self.file_lists = self._setup_file_selection_matrix()
@@ -165,7 +155,7 @@ class MainWindow(QMainWindow):
 
         # Tab 2: Plot
         self.plot_area = TabbedPlotArea()
-        self._plot_layout.addWidget(self.plot_area)
+        self.plot_layout.addWidget(self.plot_area)
 
         self.energy_angle_group: QGroupBox
         self.energy_angle_layout: QVBoxLayout
@@ -209,12 +199,42 @@ class MainWindow(QMainWindow):
         self.refresh_use_measured_energies_availability()
 
     # =========================================================================
+    # Main tabs organization
+    # =========================================================================
+    def _main_structure(self) -> tuple[QVBoxLayout, QVBoxLayout]:
+        """Organize the GUI.
+
+        1. First tab holds:
+           i. A :class:`.DataMatrix`;
+           ii. :class:`.Model` parameters.
+        2. Second tab holds:
+           i. The :class:`.Plotter` parameters.
+
+        """
+        central = QWidget()
+        self.setCentralWidget(central)
+        main_layout = QVBoxLayout(central)
+
+        tab = QTabWidget()
+        main_layout.addWidget(tab)
+
+        data_model_tab = QWidget()
+        data_model_layout = QVBoxLayout(data_model_tab)
+        tab.addTab(data_model_tab, "Data && Model")
+
+        plot_tab = QWidget()
+        plot_layout = QVBoxLayout(plot_tab)
+        tab.addTab(plot_tab, "Plot")
+
+        return data_model_layout, plot_layout
+
+    # =========================================================================
     # Tab 1 - File selection
     # =========================================================================
     def _setup_file_selection_matrix(self) -> list[list[None | QListWidget]]:
         """Create the 4 * 3 matrix to select the files to load."""
         file_matrix_group, file_lists = file_selection_matrix(self)
-        self._data_model_layout.addWidget(file_matrix_group)
+        self.data_model_layout.addWidget(file_matrix_group)
         return file_lists
 
     def _deactivate_unnecessary_file_widgets(self) -> None:
@@ -256,7 +276,7 @@ class MainWindow(QMainWindow):
         _ = setup.dropdown.setCurrentText
         self.dropdowns["Loader"] = setup.dropdown
         self.loader_help_button = setup.buttons[0]
-        self._data_model_layout.addLayout(setup.layout)
+        self.data_model_layout.addLayout(setup.layout)
 
     def _setup_loader(self) -> None:
         """Set up new loader whenever the dropdown menu is changed."""
@@ -334,7 +354,7 @@ class MainWindow(QMainWindow):
         )
 
         self.model_help_button = setup.buttons[0]
-        self._data_model_layout.addLayout(setup.layout)
+        self.data_model_layout.addLayout(setup.layout)
 
     def _setup_model_implementations_dialog(self) -> tuple[str, Callable]:
         """Give arguments to setup the model setttings button."""
@@ -351,7 +371,7 @@ class MainWindow(QMainWindow):
     def _setup_model_configuration(self) -> QTableWidget:
         """Set the interface related to the model specific parameters."""
         group, model_table = model_configuration()
-        self._data_model_layout.addWidget(group)
+        self.data_model_layout.addWidget(group)
         return model_table
 
     def _setup_model(self) -> None:
@@ -452,7 +472,7 @@ class MainWindow(QMainWindow):
         self.evaluators_layout.addWidget(self.force_reevaluation_button)
 
         self.evaluators_group.setLayout(self.evaluators_layout)
-        self._data_model_layout.addWidget(self.evaluators_group)
+        self.data_model_layout.addWidget(self.evaluators_group)
 
     def _create_evaluators_table(self) -> QTableWidget:
         """Create the two-column table that displays evaluation results."""
@@ -565,7 +585,7 @@ class MainWindow(QMainWindow):
         self.energy_angle_layout.addLayout(angle_setup.layout)
 
         self.energy_angle_group.setLayout(self.energy_angle_layout)
-        self._plot_layout.addWidget(self.energy_angle_group)
+        self.plot_layout.addWidget(self.energy_angle_group)
 
     def _create_use_measured_energies_checkbox(self) -> QCheckBox:
         """Set checkbox making :meth:`.Model.plot` use ener from measurements.
@@ -644,7 +664,7 @@ class MainWindow(QMainWindow):
         self.dropdowns["Plotter"] = setup.dropdown
         self.plot_measured_button = setup.buttons[0]
         self.plot_model_button = setup.buttons[1]
-        self._plot_layout.addLayout(setup.layout)
+        self.plot_layout.addLayout(setup.layout)
 
     def _clear_figure_action(self) -> None:
         """Clean the figure and the ``is/are_plotted`` flag(s)."""
@@ -662,7 +682,7 @@ class MainWindow(QMainWindow):
             IMPLEMENTED_EMISSION_DATA,
             several_can_be_checked=False,
         )
-        self._plot_layout.addLayout(layout)
+        self.plot_layout.addLayout(layout)
         self.data_checkboxes = checkboxes
 
     def _set_up_population_to_plot_checkboxes(self) -> None:
@@ -670,7 +690,7 @@ class MainWindow(QMainWindow):
         layout, checkboxes = to_plot_checkboxes(
             "Population to plot:", IMPLEMENTED_POP, several_can_be_checked=True
         )
-        self._plot_layout.addLayout(layout)
+        self.plot_layout.addLayout(layout)
         self.population_checkboxes = checkboxes
 
     def plot_measured(self) -> None:
