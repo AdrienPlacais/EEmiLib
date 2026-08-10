@@ -604,8 +604,8 @@ class MainWindow(QMainWindow):
         if not success_pop:
             return
         cast(list[ImplementedPop], populations)
-        success_data, data_type = self._get_data_type_to_plot()
-        if not success_data:
+        data_type = self._get_data_type_to_plot()
+        if data_type is None:
             return
         cast(ImplementedEmissionData, data_type)
 
@@ -638,8 +638,8 @@ class MainWindow(QMainWindow):
         success_pop, populations = self._get_populations_to_plot()
         if not success_pop:
             return
-        success_data, data_type = self._get_data_type_to_plot()
-        if not success_data:
+        data_type = self._get_data_type_to_plot()
+        if data_type is None:
             return
         success_ene, energies = self._gen_linspace("energy")
         if not success_ene:
@@ -664,31 +664,30 @@ class MainWindow(QMainWindow):
                 group_by_pe=True,
             )
             self.plot_area.refresh()
-        else:
-            axes = self.plot_area.axes_for(None)
-            self.model.plot(
-                self.plotter,
-                population=populations,
-                data_type=data_type,
-                energies=energies,
-                angles=angles,
-                axes=axes,
-            )
-            self.plot_area.refresh(None)
+            return
+        axes = self.plot_area.axes_for(None)
 
-    def _get_data_type_to_plot(
-        self,
-    ) -> tuple[bool, ImplementedEmissionData | None]:
+        self.model.plot(
+            self.plotter,
+            population=populations,
+            data_type=data_type,
+            energies=energies,
+            angles=angles,
+            axes=axes,
+        )
+        self.plot_area.refresh(None)
+
+    def _get_data_type_to_plot(self) -> ImplementedEmissionData | None:
         """Read input to determine the emission data type to plot."""
-        data_type = [
+        data_type: list[ImplementedEmissionData] = [
             IMPLEMENTED_EMISSION_DATA[i]
             for i, checked in enumerate(self.data_checkboxes)
             if checked.isChecked()
         ]
         if len(data_type) == 0:
             logging.error("Please provide a type of data to plot.")
-            return False, None
-        return True, data_type[0]
+            return None
+        return data_type[0]
 
     def _get_populations_to_plot(self) -> tuple[bool, list[ImplementedPop]]:
         """Read input to determine the populations to plot."""
