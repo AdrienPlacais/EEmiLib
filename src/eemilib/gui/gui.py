@@ -41,6 +41,7 @@ from types import ModuleType
 from typing import Literal, cast
 
 import numpy as np
+from numpy.typing import NDArray
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -179,6 +180,7 @@ class MainWindow(QMainWindow):
         self.last_energy_widget: QLineEdit
         self.last_theta_widget: QLineEdit
         self.n_theta_widget: QLineEdit
+        self._measurements_are_plotted: bool = False
         self._setup_energy_angle_inputs()
 
         self.plotter_classes: dict[str, str]
@@ -566,7 +568,7 @@ class MainWindow(QMainWindow):
             buttons_args={
                 "Plot file": self.plot_measured,
                 "Plot modelled data": self.plot_model,
-                "Clear figure": lambda _: self.plot_area.clear(),
+                "Clear figure": lambda _: self._clear_figure_action(),
             },
         )
         self.plotter_classes = setup.classes
@@ -575,6 +577,11 @@ class MainWindow(QMainWindow):
         self.plot_measured_button = setup.buttons[0]
         self.plot_model_button = setup.buttons[1]
         self._plot_layout.addLayout(setup.layout)
+
+    def _clear_figure_action(self) -> None:
+        """Clean the figure and the ``is/are_plotted`` flag(s)."""
+        self.plot_area.clear()
+        self._measurements_are_plotted = False
 
     def _setup_plotter(self) -> None:
         """Set up new plotter when the dropdown menu is changed."""
@@ -633,6 +640,9 @@ class MainWindow(QMainWindow):
             )
             self.plot_area.refresh(None)
 
+        self._measurements_are_plotted = True
+        return
+
     def plot_model(self) -> None:
         """Plot the desired data, as modelled."""
         success_pop, populations = self._get_populations_to_plot()
@@ -641,7 +651,10 @@ class MainWindow(QMainWindow):
         data_type = self._get_data_type_to_plot()
         if data_type is None:
             return
-        success_ene, energies = self._gen_linspace("energy")
+        if self._measurements_are_plotted:
+            success_ene, energies = True, None
+        else:
+            success_ene, energies = self._gen_linspace("energy")
         if not success_ene:
             return
         success_angle, angles = self._gen_linspace("angle")
@@ -664,18 +677,19 @@ class MainWindow(QMainWindow):
                 group_by_pe=True,
             )
             self.plot_area.refresh()
-            return
-        axes = self.plot_area.axes_for(None)
+        else:
+            axes = self.plot_area.axes_for(None)
+            self.model.plot(
+                self.plotter,
+                population=populations,
+                data_type=data_type,
+                energies=energies,
+                angles=angles,
+                axes=axes,
+            )
+            self.plot_area.refresh(None)
 
-        self.model.plot(
-            self.plotter,
-            population=populations,
-            data_type=data_type,
-            energies=energies,
-            angles=angles,
-            axes=axes,
-        )
-        self.plot_area.refresh(None)
+        return
 
     def _get_data_type_to_plot(self) -> ImplementedEmissionData | None:
         """Read input to determine the emission data type to plot."""
@@ -704,7 +718,7 @@ class MainWindow(QMainWindow):
 
     def _gen_linspace(
         self, variable: Literal["energy", "angle"]
-    ) -> tuple[bool, np.ndarray]:
+    ) -> tuple[bool, NDArray[np.float64]]:
         """Take the desired input, check validity, create array of values."""
         success = True
         linspace_args = []
