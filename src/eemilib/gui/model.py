@@ -22,30 +22,40 @@ from PyQt5.QtWidgets import (
 )
 
 from eemilib.gui.dialogs import SettingsDialog
-from eemilib.gui.helper import PARAMETER_ATTR_TO_POS
+from eemilib.gui.helper import PARAMETER_ATTR_TO_POS, setup_lock_checkbox
 from eemilib.gui.styles import (
     TITLE_STYLE,
     format_number,
     math_text_label_from_key,
 )
 from eemilib.model.model import Model
+from eemilib.model.parameter import Parameter
 
 
 def model_configuration() -> tuple[QGroupBox, QTableWidget]:
-    """Set the interface related to the model specific parameters."""
+    """Set the interface related to the model specific parameters.
+
+    Returns
+    -------
+    QGroupBox
+        Holds all the :class:`.Model` parameters logic.
+    QTableWidget
+        Actual list of :class:`.Parameter`.
+
+    """
     group = QGroupBox("Model configuration")
     group.setStyleSheet(TITLE_STYLE)
     layout = QVBoxLayout()
 
     headers = list(PARAMETER_ATTR_TO_POS.keys())
     n_cols = len(headers)
-    model_table = QTableWidget(0, n_cols)
-    model_table.setHorizontalHeaderLabels(headers)
-    model_table.setMaximumHeight(1000)
-    model_table.setMinimumHeight(200)
-    model_table.setAlternatingRowColors(True)
+    parameters_table = QTableWidget(0, n_cols)
+    parameters_table.setHorizontalHeaderLabels(headers)
+    parameters_table.setMaximumHeight(1000)
+    parameters_table.setMinimumHeight(200)
+    parameters_table.setAlternatingRowColors(True)
 
-    header = model_table.horizontalHeader()
+    header = parameters_table.horizontalHeader()
     for attr, col in PARAMETER_ATTR_TO_POS.items():
         mode = (
             QHeaderView.Stretch
@@ -54,10 +64,57 @@ def model_configuration() -> tuple[QGroupBox, QTableWidget]:
         )
         header.setSectionResizeMode(col, mode)
 
-    layout.addWidget(model_table)
+    layout.addWidget(parameters_table)
 
     group.setLayout(layout)
-    return group, model_table
+    return group, parameters_table
+
+
+def populate_parameters_table_constants(
+    parameters_table: QTableWidget, parameters: dict[str, Parameter]
+) -> None:
+    """Print out the constants of model parameters in dedicated table.
+
+    The :class:`.Parameter` attributes that are written are:
+    - :attr:`.Parameter.name`
+      - separated into a simple label and unit
+    - :attr:`.Parameter.description`
+    - :attr:`.Parameter.lower_bound`
+    - :attr:`.Parameter.is_locked`
+
+    The method :methd:`.EEmiLibGUI._populate_parameters_table_values` is used
+    to print out non-constant parameters, such as :attr:`.Parameter.value`.
+
+    Parameters
+    ----------
+    parameters_table :
+        Table as created by :func:`model_configuration`.
+    parameters :
+        Model parameters as stored in :attr:`.Model.parameters`.
+
+    """
+    parameters_table.setRowCount(0)
+    for row, param in enumerate(parameters.values()):
+        parameters_table.insertRow(row)
+
+        label, unit = math_text_label_from_key(param.name)
+        label.setObjectName(param.name)  # anchors the name to the widget
+        parameters_table.setCellWidget(row, 0, label)
+        parameters_table.setCellWidget(row, 1, unit)
+        description, _ = math_text_label_from_key(param.description)
+        parameters_table.setCellWidget(
+            row, PARAMETER_ATTR_TO_POS["description"], description
+        )
+
+        for attr in ("lower_bound", "upper_bound"):
+            col = PARAMETER_ATTR_TO_POS[attr]
+            attr_value = getattr(param, attr, None)
+            parameters_table.setItem(
+                row, col, QTableWidgetItem(str(attr_value))
+            )
+        col_lock = PARAMETER_ATTR_TO_POS["lock"]
+        checkbox_widget = setup_lock_checkbox(param)
+        parameters_table.setCellWidget(row, col_lock, checkbox_widget)
 
 
 def create_evaluation_table() -> QTableWidget:

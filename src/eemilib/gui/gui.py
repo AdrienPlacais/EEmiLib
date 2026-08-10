@@ -62,7 +62,6 @@ from eemilib.gui.helper import (
     set_help_button_action,
     setup_dropdown,
     setup_linspace_entries,
-    setup_lock_checkbox,
     to_plot_checkboxes,
 )
 from eemilib.gui.loader_selection import LoaderSettingsDialog
@@ -71,13 +70,10 @@ from eemilib.gui.model import (
     create_evaluation_table,
     model_configuration,
     populate_evaluators_table,
+    populate_parameters_table_constants,
 )
 from eemilib.gui.plot_canvas import TabbedPlotArea
-from eemilib.gui.styles import (
-    TITLE_STYLE,
-    format_number,
-    math_text_label_from_key,
-)
+from eemilib.gui.styles import TITLE_STYLE, format_number
 from eemilib.loader.loader import Loader
 from eemilib.model.model import Model
 from eemilib.plotter.plotter import Plotter
@@ -93,7 +89,7 @@ DROPDOWNS = ("Loader", "Model", "Plotter")
 Dropdowns = Literal["Loader", "Model", "Plotter"]
 
 
-class MainWindow(QMainWindow):
+class EEmiLibGUI(QMainWindow):
     """GUI."""
 
     #: Whether selecting Model in dropdown should automatically fill the
@@ -142,9 +138,14 @@ class MainWindow(QMainWindow):
         self.loader_help_button: QPushButton
         self._setup_loader_dropdown()
 
-        self.model_table = self._setup_model_configuration()
+        _model_group, parameters_table = model_configuration()
+        self.data_model_layout.addWidget(_model_group)
+        #: Store the :class:`.Parameters` logic for the :class:`.Model`.
+        self.parameters_table = parameters_table
+
+        #: Maps implemented model names to their actuall import path.
         self.model_classes: dict[str, str]
-        self.model_class: ABCMeta
+        #: Opens current :class:`.Model` documentation.
         self.model_help_button: QPushButton
         self._setup_model_dropdown()
 
@@ -345,7 +346,7 @@ class MainWindow(QMainWindow):
         )
         self.model_classes = setup.classes
         self.dropdowns["Model"] = setup.dropdown
-        setup.dropdown.currentIndexChanged.connect(self._setup_model)
+        setup.dropdown.currentIndexChanged.connect(self.setup_model_selection)
         setup.dropdown.currentIndexChanged.connect(
             self._deactivate_unnecessary_file_widgets
         )
@@ -366,53 +367,28 @@ class MainWindow(QMainWindow):
         def settings_action() -> int:
             code = ModelImplementationsDialog(self, self.model).exec()
             self._populate_parameters_table_values()
-            self._populate_parameters_table_constants()
+            populate_parameters_table_constants(
+                self.parameters_table, self.model.parameters
+            )
             return code
 
         return settings_label, settings_action
 
-    def _setup_model_configuration(self) -> QTableWidget:
-        """Set the interface related to the model specific parameters."""
-        group, model_table = model_configuration()
-        self.data_model_layout.addWidget(group)
-        return model_table
-
-    def _setup_model(self) -> None:
+    def setup_model_selection(self) -> None:
         """Instantiate :class:`.Model` when it is selected in dropdown menu."""
-        self.model_class = self._dropdown_to_class("Model")
-        self.model = self.model_class()
+        self.model = self._dropdown_to_class("Model")()
 
         set_help_button_action(self.model_help_button, self.model)
 
-        self._populate_parameters_table_constants()
-        self.model_table.itemChanged.connect(
+        populate_parameters_table_constants(
+            self.parameters_table, self.model.parameters
+        )
+        populate_parameters_table_constants(
+            self.parameters_table, self.model.parameters
+        )
+        self.parameters_table.itemChanged.connect(
             self._update_parameter_value_from_table
         )
-
-    def _populate_parameters_table_constants(self) -> None:
-        """Print out the model parameters in dedicated table."""
-        self.model_table.setRowCount(0)
-        for row, param in enumerate(self.model.parameters.values()):
-            self.model_table.insertRow(row)
-
-            label, unit = math_text_label_from_key(param.name)
-            label.setObjectName(param.name)  # anchors the name to the widget
-            self.model_table.setCellWidget(row, 0, label)
-            self.model_table.setCellWidget(row, 1, unit)
-            description, _ = math_text_label_from_key(param.description)
-            self.model_table.setCellWidget(
-                row, PARAMETER_ATTR_TO_POS["description"], description
-            )
-
-            for attr in ("lower_bound", "upper_bound"):
-                col = PARAMETER_ATTR_TO_POS[attr]
-                attr_value = getattr(param, attr, None)
-                self.model_table.setItem(
-                    row, col, QTableWidgetItem(str(attr_value))
-                )
-            col_lock = PARAMETER_ATTR_TO_POS["lock"]
-            checkbox_widget = setup_lock_checkbox(param)
-            self.model_table.setCellWidget(row, col_lock, checkbox_widget)
 
     def _update_parameter_value_from_table(
         self, item: QTableWidgetItem
@@ -424,7 +400,7 @@ class MainWindow(QMainWindow):
         if attr not in updatable_attr:
             return
 
-        name = self.model_table.cellWidget(row, 0).objectName()
+        name = self.parameters_table.cellWidget(row, 0).objectName()
         parameter = self.model.parameters.get(name)
 
         if parameter:
@@ -445,17 +421,22 @@ class MainWindow(QMainWindow):
         self._populate_parameters_table_values()
 
     def _populate_parameters_table_values(self) -> None:
-        """Print out the values of the model parameters in dedicated table."""
+        """Print out the :attr:`.Parameter.value` in the dedicated tab.
+
+        This method needs dynamic access to :attr:`model`, so it is not defined
+        as a function like :func:`.populate_parameters_table_constants`.
+
+        """
         for row, param in enumerate(self.model.parameters.values()):
             for attr in ("value",):
                 col = PARAMETER_ATTR_TO_POS[attr]
                 attr_value = getattr(param, attr, None)
-                self.model_table.setItem(
+                self.parameters_table.setItem(
                     row, col, QTableWidgetItem(str(attr_value))
                 )
 
         for i, param in enumerate(self.model.parameters.values()):
-            self.model_table.setItem(
+            self.parameters_table.setItem(
                 i, 2, QTableWidgetItem(format_number(param.value))
             )
 
@@ -950,7 +931,7 @@ class MainWindow(QMainWindow):
 def main() -> None:
     """Build the GUI interface."""
     app = QApplication(sys.argv)
-    window = MainWindow()
+    window = EEmiLibGUI()
     window.show()
     sys.exit(app.exec_())
 
