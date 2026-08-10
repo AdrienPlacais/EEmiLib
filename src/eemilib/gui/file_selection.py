@@ -90,4 +90,3 @@ def _select_files(
         assert current_file_lists is not None
         current_file_lists.clear()
         current_file_lists.addItems(file_names)
-        # self.data_matrix.set_files(file_names, row=row, col=col)

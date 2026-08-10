@@ -167,8 +167,6 @@ class MainWindow(QMainWindow):
         self._setup_energy_angle_inputs()
 
         self.plotter_classes: dict[str, str]
-        self.plot_measured_button: QPushButton
-        self.plot_model_button: QPushButton
         self.data_checkboxes: list[QRadioButton]
         self.population_checkboxes: list[QCheckBox]
         self._setup_plotter_dropdowns()
@@ -662,8 +660,6 @@ class MainWindow(QMainWindow):
         self.plotter_classes = setup.classes
         setup.dropdown.currentIndexChanged.connect(self._setup_plotter)
         self.dropdowns["Plotter"] = setup.dropdown
-        self.plot_measured_button = setup.buttons[0]
-        self.plot_model_button = setup.buttons[1]
         self.plot_layout.addLayout(setup.layout)
 
     def _clear_figure_action(self) -> None:
