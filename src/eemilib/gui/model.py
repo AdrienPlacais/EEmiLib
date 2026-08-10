@@ -17,12 +17,17 @@ from PyQt5.QtWidgets import (
     QHeaderView,
     QLabel,
     QTableWidget,
+    QTableWidgetItem,
     QVBoxLayout,
 )
 
 from eemilib.gui.dialogs import SettingsDialog
 from eemilib.gui.helper import PARAMETER_ATTR_TO_POS
-from eemilib.gui.styles import TITLE_STYLE
+from eemilib.gui.styles import (
+    TITLE_STYLE,
+    format_number,
+    math_text_label_from_key,
+)
 from eemilib.model.model import Model
 
 
@@ -67,6 +72,36 @@ def create_evaluation_table() -> QTableWidget:
     table.setEditTriggers(QTableWidget.NoEditTriggers)
     table.setAlternatingRowColors(True)
     return table
+
+
+def populate_evaluators_table(
+    evaluators_table: QTableWidget, evaluations: dict[str, float]
+) -> None:
+    """Write the contents of ``evaluations`` into the table.
+
+    ``evaluators_table`` is modified in place.
+
+    Parameters
+    ----------
+    evaluators_table :
+        A table with label in first column, units in second, value in third.
+        Such a table is created by :func:`create_evaluation_table`.
+    evaluations :
+        Maps label + units to associated values. Such a dictionnary is returned
+        by :meth:`.Model.evaluate`.
+
+    """
+    evaluators_table.setRowCount(0)
+    for row, (key, value) in enumerate(evaluations.items()):
+        evaluators_table.insertRow(row)
+
+        label, unit = math_text_label_from_key(key)
+        evaluators_table.setCellWidget(row, 0, label)
+        evaluators_table.setCellWidget(row, 1, unit)
+
+        evaluators_table.setItem(
+            row, 2, QTableWidgetItem(format_number(value))
+        )
 
 
 class ModelImplementationsDialog(SettingsDialog):

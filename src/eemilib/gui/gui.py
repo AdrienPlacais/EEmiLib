@@ -70,6 +70,7 @@ from eemilib.gui.model import (
     ModelImplementationsDialog,
     create_evaluation_table,
     model_configuration,
+    populate_evaluators_table,
 )
 from eemilib.gui.plot_canvas import TabbedPlotArea
 from eemilib.gui.styles import (
@@ -147,10 +148,10 @@ class MainWindow(QMainWindow):
         self.model_help_button: QPushButton
         self._setup_model_dropdown()
 
-        self.evaluations: dict[str, float]
-        self.evaluators_table: QTableWidget
-        self.force_reevaluation_button: QPushButton
-        self._setup_model_evaluation()
+        _evaluators_group, evaluators_table = self.create_model_evaluation()
+        self.data_model_layout.addWidget(_evaluators_group)
+        #: Widget holding evaluator names and values.
+        self.evaluators_table = evaluators_table
 
         # Tab 2: Plot
         self.plot_area = TabbedPlotArea()
@@ -461,20 +462,30 @@ class MainWindow(QMainWindow):
     # =========================================================================
     # Tab 1 - Model evaluation
     # =========================================================================
-    def _setup_model_evaluation(self) -> None:
-        """Set up display of model evaluators."""
+    def create_model_evaluation(self) -> tuple[QGroupBox, QTableWidget]:
+        """Create the display of the model evaluations.
+
+        Returns
+        -------
+        QGroupBox
+            Group holding all the model evaluations logic.
+        QTableWidget
+            Object actually holding evaluator names, units, values.
+
+        """
         group = QGroupBox("Model evaluations")
         group.setStyleSheet(TITLE_STYLE)
-        self.evaluators_layout = QVBoxLayout()
 
-        self.evaluators_table = create_evaluation_table()
-        self.evaluators_layout.addWidget(self.evaluators_table)
+        layout = QVBoxLayout()
 
-        self.force_reevaluation_button = self._set_reevaluation_button()
-        self.evaluators_layout.addWidget(self.force_reevaluation_button)
+        evaluators_table = create_evaluation_table()
+        layout.addWidget(evaluators_table)
 
-        group.setLayout(self.evaluators_layout)
-        self.data_model_layout.addWidget(group)
+        force_reevaluation_button = self._set_reevaluation_button()
+        layout.addWidget(force_reevaluation_button)
+
+        group.setLayout(layout)
+        return group, evaluators_table
 
     def _set_reevaluation_button(self) -> QPushButton:
         """Create and return the 'Re-evaluate' button."""
@@ -490,26 +501,8 @@ class MainWindow(QMainWindow):
         if not hasattr(self, "data_matrix") or not self.data_matrix:
             logging.info("Please load data before evaluating.")
             return
-        self._evaluate_model()
-        self._populate_evaluators_table()
-
-    def _evaluate_model(self) -> None:
-        """Evaluate model and save resulting dict in ``self.evaluations``."""
-        self.evaluations = self.model.evaluate(self.data_matrix)
-
-    def _populate_evaluators_table(self) -> None:
-        """Write the contents of ``self.evaluations`` into the table."""
-        self.evaluators_table.setRowCount(0)
-        for row, (key, value) in enumerate(self.evaluations.items()):
-            self.evaluators_table.insertRow(row)
-
-            label, unit = math_text_label_from_key(key)
-            self.evaluators_table.setCellWidget(row, 0, label)
-            self.evaluators_table.setCellWidget(row, 1, unit)
-
-            self.evaluators_table.setItem(
-                row, 2, QTableWidgetItem(format_number(value))
-            )
+        evaluations = self.model.evaluate(self.data_matrix)
+        populate_evaluators_table(self.evaluators_table, evaluations)
 
     # =========================================================================
     # Tab 2 - Plot
