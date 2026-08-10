@@ -164,6 +164,9 @@ class MainWindow(QMainWindow):
         self.angle: LinspaceEntries
         #: Store whether measurements are currently plotted.
         self._measurements_are_plotted: bool = False
+        #: Check this to make the ``Model`` plots use the same energies as
+        #: the measurements
+        self.use_measured_energies_checkbox: QCheckBox
         self._setup_energy_angle_inputs()
 
         self.plotter_classes: dict[str, str]
