@@ -9,15 +9,6 @@
     Dynamic boxes for Parameters?
 
 .. todo::
-    Allow ``None`` for energies, so that measurements energies are picked up.
-    Ideas:
-
-    - Checkbox "Use energies from measurements".
-    - Clicking it greys out the ``energies`` linspace definition.
-    - This checkbox is greyed out/unclickable if no data was plotted,
-      *i.e.* if current `Axes` contains no `Line2D`.
-
-.. todo::
    Switch to ``@property`` for the dropdowns values?
 
 .. todo::
@@ -180,6 +171,7 @@ class MainWindow(QMainWindow):
         self.last_energy_widget: QLineEdit
         self.last_theta_widget: QLineEdit
         self.n_theta_widget: QLineEdit
+        #: Store whether measurements are currently plotted.
         self._measurements_are_plotted: bool = False
         self._setup_energy_angle_inputs()
 
@@ -192,6 +184,24 @@ class MainWindow(QMainWindow):
 
         # Call the methods called by the model_dropdown index change
         self._set_default_dropdown()
+
+    @property
+    def measurements_are_plotted(self) -> bool:
+        """Tell if measurements are currenty plotted."""
+        return self._measurements_are_plotted
+
+    @measurements_are_plotted.setter
+    def measurements_are_plotted(self, value: bool) -> None:
+        """Update flag value, and also the checkbox "Use measured energies".
+
+        Used by the "Plot model" and the "Clear figure" buttons.
+
+        """
+        self._measurements_are_plotted = value
+        checkbox = getattr(self, "use_measured_energies_checkbox", None)
+        if checkbox is None:
+            return
+        self.refresh_use_measured_energies_availability()
 
     # =========================================================================
     # Tab 1 - File selection
@@ -545,6 +555,9 @@ class MainWindow(QMainWindow):
             self.energy_angle_layout.addLayout(setup.layout)
             if qty == ("energy"):
                 self.last_energy_widget = setup.last
+                checkbox = self._create_use_measured_energies_checkbox()
+                self.use_measured_energies_checkbox = checkbox
+                self.energy_angle_layout.addWidget(checkbox)
             elif qty == ("angle"):
                 self.last_theta_widget = setup.last
                 self.n_theta_widget = setup.n_points
@@ -556,6 +569,64 @@ class MainWindow(QMainWindow):
 
         self.energy_angle_group.setLayout(self.energy_angle_layout)
         self._plot_layout.addWidget(self.energy_angle_group)
+
+    def _create_use_measured_energies_checkbox(self) -> QCheckBox:
+        """Set checkbox making :meth:`.Model.plot` use ener from measurements.
+
+        Behavior:
+        - Greyed out if no measurements plotted (rely on
+          :attr:`.measurements_are_plotted`)
+        - When checked, the :meth:`.Model.plot` is called with
+          ``energies=None`` so that min/max energies are taken from currently
+          drawn axes.
+
+        """
+
+        def _on_use_measured_energies_toggled(checked: bool) -> None:
+            """Grey out energy linspace inputs."""
+            for widg in (
+                self.energy_first,
+                self.energy_last,
+                self.energy_points,
+            ):
+                widg.setEnabled(not checked)
+
+        checkbox = QCheckBox("Use energies from measurements")
+        checkbox.setEnabled(self.measurements_are_plotted)
+        checkbox.toggled.connect(_on_use_measured_energies_toggled)
+        return checkbox
+
+    def refresh_use_measured_energies_availability(self) -> None:
+        """Re-sync the checkbox state with :attr:`.measurements_are_plotted`.
+
+        Call this every time :attr:`.measurements_are_plotted` changes.
+
+        """
+        checkbox = self.use_measured_energies_checkbox
+        checkbox.setEnabled(self.measurements_are_plotted)
+        if not self.measurements_are_plotted and checkbox.isChecked():
+            checkbox.setChecked(False)
+
+    def _get_energies_for_model_plot(self) -> NDArray[np.float64] | None:
+        """Get proper energies for :meth:`.Model.plot`.
+
+        - If the :attr:`.use_measured_energies_checkbox` is checked, we return
+          ``None`` and :meth:`.Model.plot` will take energies  from the given
+          ``Axes``.
+        - If unchecked, we create a linspace from the energy linspace inputs.
+
+        """
+        checkbox = self.use_measured_energies_checkbox
+        if checkbox.isEnabled() and checkbox.isChecked():
+            return
+
+        success, linspace = self._gen_linspace("energy")
+        if not success:
+            logging.warning(
+                "An error was raised trying to generate the linspace. "
+                "Continue with a default energies array."
+            )
+        return linspace
 
     def _setup_plotter_dropdowns(self) -> None:
         """Set the :class:`.Plotter` related interface."""
@@ -581,7 +652,7 @@ class MainWindow(QMainWindow):
     def _clear_figure_action(self) -> None:
         """Clean the figure and the ``is/are_plotted`` flag(s)."""
         self.plot_area.clear()
-        self._measurements_are_plotted = False
+        self.measurements_are_plotted = False
 
     def _setup_plotter(self) -> None:
         """Set up new plotter when the dropdown menu is changed."""
@@ -640,7 +711,7 @@ class MainWindow(QMainWindow):
             )
             self.plot_area.refresh(None)
 
-        self._measurements_are_plotted = True
+        self.measurements_are_plotted = True
         return
 
     def plot_model(self) -> None:
@@ -651,12 +722,7 @@ class MainWindow(QMainWindow):
         data_type = self._get_data_type_to_plot()
         if data_type is None:
             return
-        if self._measurements_are_plotted:
-            success_ene, energies = True, None
-        else:
-            success_ene, energies = self._gen_linspace("energy")
-        if not success_ene:
-            return
+        energies = self._get_energies_for_model_plot()
         success_angle, angles = self._gen_linspace("angle")
         if not success_angle:
             return
