@@ -201,6 +201,10 @@ class MainWindow(QMainWindow):
         self._measurements_are_plotted = value
         checkbox = getattr(self, "use_measured_energies_checkbox", None)
         if checkbox is None:
+            logging.error(
+                "Checkbox 'use_measured_energies_checkbox' not created yet. "
+                "May cause problems later."
+            )
             return
         self.refresh_use_measured_energies_availability()
 
