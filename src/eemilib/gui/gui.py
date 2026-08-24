@@ -37,7 +37,6 @@ from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
     QComboBox,
-    QGroupBox,
     QLineEdit,
     QListWidget,
     QMainWindow,
@@ -115,6 +114,7 @@ class EEmiLibGUI(QMainWindow):
             "Loader": default_loader,
             "Plotter": default_plotter,
         }
+
         # EEmiLib attributes
         self.data_matrix = DataMatrix()
         self.model: Model
@@ -128,22 +128,18 @@ class EEmiLibGUI(QMainWindow):
         self.data_model_layout: QVBoxLayout
         #: Holds all widgets of second tab
         self.plot_layout: QVBoxLayout
-        self.data_model_layout, self.plot_layout = self._main_structure()
+        self._setup_main_structure()
+
+        #: Maps a dropdown name to the actual ``QComboBox`` widget.
+        self.dropdowns: dict[str, QComboBox] = {}
 
         # Tab 1: Data & Model
         self.file_lists: list[list[None | QListWidget]]
         self._setup_file_selection_matrix()
 
-        # TODO: Make it a TypedDict? Can we? It would need to be created in
-        # one step. The whole idea was to set creation and use of dropdown with
-        # re-usable methods.
-        self.dropdowns: dict[str, QComboBox] = {}
-        # TODO: should we also create a `self.help_buttons` attribute? It would
-        # also let this module be more DRY.
-        # OR, we could create a new class holding everything necessary for
-        # every dropdown?
-
+        #: Maps implemented loader names to their actual import path.
         self.loader_classes: dict[str, str]
+        #: Opens current :class:`.Loader` documentation.
         self.loader_help_button: QPushButton
         self._setup_loader_dropdown()
 
@@ -157,16 +153,18 @@ class EEmiLibGUI(QMainWindow):
         self.model_help_button: QPushButton
         self._setup_model_dropdown()
 
-        _evaluators_group, evaluators_table = self.create_model_evaluation()
-        self.data_model_layout.addWidget(_evaluators_group)
         #: Widget holding evaluator names and values.
-        self.evaluators_table = evaluators_table
+        self.evaluators_table: QTableWidget
+        self._setup_model_evaluation()
 
         # Tab 2: Plot
         #: Stores the current figure(s).
         self.plot_area: TabbedPlotArea
+        self._setup_plot_area()
+
         #: Store whether measurements are currently plotted.
-        self._measurements_are_plotted: bool
+        self._measurements_are_plotted: bool = False
+
         #: Holds all widgets related to the energy linspace
         self.energy: LinspaceEntries
         #: Holds all widgets related to the angle linspace
@@ -174,14 +172,16 @@ class EEmiLibGUI(QMainWindow):
         #: Check this to make the ``Model`` plots use the same energies as
         #: the measurements
         self.use_measured_energies_checkbox: QCheckBox
+        self._setup_energy_angle_inputs()
+
         #: Maps implemented :class:`.Plotter` names with their actual import
         #: paths.
         self.plotter_classes: dict[str, str]
-        #: Let user select wich type of data should be plotted.
+        #: Let user select which type of data should be plotted.
         self.data_checkboxes: list[QRadioButton]
-        #: Let user select wich kind of electron population should be plotted.
+        #: Let user select which kind of electron population should be plotted.
         self.population_checkboxes: list[QCheckBox]
-        self._setup_plot()
+        self._setup_plotter_dropdowns()
 
         # Call the methods called by the model_dropdown index change
         self._set_default_dropdown()
@@ -211,14 +211,16 @@ class EEmiLibGUI(QMainWindow):
     # =========================================================================
     # Main tabs organization
     # =========================================================================
-    def _main_structure(self) -> tuple[QVBoxLayout, QVBoxLayout]:
-        """Organize the GUI.
+    def _setup_main_structure(self) -> None:
+        """Organize the GUI into tabs.
 
         1. First tab holds:
-           i. A :class:`.DataMatrix`;
-           ii. :class:`.Model` parameters.
+            i. A :class:`.DataMatrix`;
+            ii. :class:`.Model` parameters.
         2. Second tab holds:
-           i. The :class:`.Plotter` parameters.
+            i. The :class:`.Plotter` parameters.
+
+        Sets :attr:`data_model_layout` and :attr:`plot_layout`.
 
         """
         central = QWidget()
@@ -229,14 +231,12 @@ class EEmiLibGUI(QMainWindow):
         main_layout.addWidget(tab)
 
         data_model_tab = QWidget()
-        data_model_layout = QVBoxLayout(data_model_tab)
+        self.data_model_layout = QVBoxLayout(data_model_tab)
         tab.addTab(data_model_tab, "Data && Model")
 
         plot_tab = QWidget()
-        plot_layout = QVBoxLayout(plot_tab)
+        self.plot_layout = QVBoxLayout(plot_tab)
         tab.addTab(plot_tab, "Plot")
-
-        return data_model_layout, plot_layout
 
     # =========================================================================
     # Tab 1 - File selection
@@ -526,34 +526,23 @@ class EEmiLibGUI(QMainWindow):
     # =========================================================================
     # Tab 1 - Model evaluation
     # =========================================================================
-    def create_model_evaluation(self) -> tuple[QGroupBox, QTableWidget]:
+    def _setup_model_evaluation(self) -> None:
         """Create the display of the model evaluations.
 
-        Returns
-        -------
-        QGroupBox
-            Group holding all the model evaluations logic.
-        QTableWidget
-            Object actually holding evaluator names, units, values.
+        Sets :attr:`evaluators_table`.
 
         """
         layout = QVBoxLayout()
         group = titled_group("Model evaluations", layout)
 
-        evaluators_table = create_evaluation_table()
-        layout.addWidget(evaluators_table)
+        self.evaluators_table = create_evaluation_table()
+        layout.addWidget(self.evaluators_table)
 
-        force_reevaluation_button = self._set_reevaluation_button()
-        layout.addWidget(force_reevaluation_button)
+        reevaluate_button = QPushButton("Re-evaluate")
+        reevaluate_button.clicked.connect(self._fill_evaluations_display)
+        layout.addWidget(reevaluate_button)
 
-        group.setLayout(layout)
-        return group, evaluators_table
-
-    def _set_reevaluation_button(self) -> QPushButton:
-        """Create and return the 'Re-evaluate' button."""
-        button = QPushButton("Re-evaluate")
-        button.clicked.connect(self._fill_evaluations_display)
-        return button
+        self.data_model_layout.addWidget(group)
 
     def _fill_evaluations_display(self) -> None:
         """Fill the evaluations display with the last model."""
@@ -569,16 +558,14 @@ class EEmiLibGUI(QMainWindow):
     # =========================================================================
     # Tab 2 - Plot
     # =========================================================================
+    def _setup_plot_area(self) -> None:
+        """Create the tabbed canvas area.
 
-    def _setup_plot(self) -> None:
-        """Orchestrate the creation of the `Plot` window."""
+        Sets :attr:`plot_area`.
+
+        """
         self.plot_area = TabbedPlotArea()
         self.plot_layout.addWidget(self.plot_area)
-
-        self._measurements_are_plotted = False
-
-        self._create_energy_angle_inputs()
-        self._setup_plotter_dropdowns()
 
     def _autofill_plot_data_type_and_population(self) -> None:
         """Check emission data type and population.
@@ -617,41 +604,31 @@ class EEmiLibGUI(QMainWindow):
                     continue
                 button.setChecked(False)
 
-    def _create_energy_angle_inputs(self) -> QVBoxLayout:
+    def _setup_energy_angle_inputs(self) -> None:
         """Set the energy and angle inputs for the model plot.
 
-        Also sets:
-        - :attr:`.energy`
-        - :attr:`.angle`
-        - :attr:`.use_measured_energies_checkbox`
-
-        Returns
-        -------
-            Layout holding energy/angle plot settings.
+        Sets :attr:`energy`, :attr:`angle`, :attr:`use_measured_energies_checkbox`.
 
         """
         layout = QVBoxLayout()
         group = titled_group("Plot configuration", layout)
 
-        energy_setup = setup_linspace_entries(
+        self.energy = setup_linspace_entries(
             "Energy [eV]", initial_values=(0.0, 500.0, 501)
         )
-        self.energy = energy_setup
-        layout.addLayout(energy_setup.layout)
+        layout.addLayout(self.energy.layout)
 
-        checkbox = self._create_use_measured_energies_checkbox()
-        self.use_measured_energies_checkbox = checkbox
-        layout.addWidget(checkbox)
+        self.use_measured_energies_checkbox = (
+            self._create_use_measured_energies_checkbox()
+        )
+        layout.addWidget(self.use_measured_energies_checkbox)
 
-        angle_setup = setup_linspace_entries(
+        self.angle = setup_linspace_entries(
             "Angle [deg]", initial_values=(0.0, 60.0, 4), max_value=90.0
         )
-        self.angle = angle_setup
-        layout.addLayout(angle_setup.layout)
+        layout.addLayout(self.angle.layout)
 
         self.plot_layout.addWidget(group)
-        group.setLayout(layout)
-        return layout
 
     def _create_use_measured_energies_checkbox(self) -> QCheckBox:
         """Set checkbox making :meth:`.Model.plot` use ener from measurements.
@@ -722,7 +699,7 @@ class EEmiLibGUI(QMainWindow):
             buttons_args={
                 "Plot file": self.plot_measured,
                 "Plot modelled data": self.plot_model,
-                "Clear figure": lambda _: self._clear_figure_action(),
+                "Clear figure": self._clear_figure_action,
             },
         )
         self.plotter_classes = setup.classes
