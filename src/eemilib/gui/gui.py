@@ -466,9 +466,6 @@ class EEmiLibGUI(QMainWindow):
         populate_parameters_table_constants(
             self.parameters_table, self.model.parameters
         )
-        populate_parameters_table_constants(
-            self.parameters_table, self.model.parameters
-        )
         self.parameters_table.itemChanged.connect(
             self._update_parameter_value_from_table
         )
