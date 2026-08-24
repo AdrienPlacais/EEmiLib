@@ -1,7 +1,6 @@
 """Define functions to be as DRY as possible."""
 
 import logging
-from abc import ABCMeta
 from collections.abc import Collection
 from functools import partial
 from typing import Any, Literal, NamedTuple, overload
@@ -10,7 +9,6 @@ from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtGui import QDesktopServices, QDoubleValidator, QIntValidator
 from PyQt5.QtWidgets import (
     QCheckBox,
-    QComboBox,
     QGroupBox,
     QHBoxLayout,
     QLabel,
@@ -23,94 +21,6 @@ from PyQt5.QtWidgets import (
 
 from eemilib.gui.styles import TITLE_STYLE
 from eemilib.model.parameter import Parameter
-from eemilib.util.helper import get_classes
-
-
-class DropdownSetup(NamedTuple):
-    """Named values returned by :func:`.setup_dropdown`."""
-
-    #: Keys are the name of the objects inheriting from ``base_class`` found
-    #: in ``module_name``. Values are the path leading to them.
-    classes: dict[str, str]
-    #: Layout holding together ``dropdown`` and ``button``.
-    layout: QHBoxLayout
-    #: Dropdown menu holding the keys of ``classes``.
-    dropdown: QComboBox
-    #: The buttons next to the dropdown menu.
-    buttons: list[QPushButton]
-
-
-def setup_dropdown(
-    module_name: str, base_class: ABCMeta, buttons_args: dict[str, Any]
-) -> DropdownSetup:
-    """Set up interface with a dropdown menu and a button next to it.
-
-    Parameters
-    ----------
-    module_name :
-        Where the entries of the dropdown will be searched.
-    base_class :
-        The base class from which dropdown entries should inherit.
-    buttons_args :
-        Dictionary where the keys are the name of the buttons to add next to
-        the dropdown menu, and values the callable that will be called when
-        clicking the button. Several callables can be provided as a list or
-        tuple.
-
-    Returns
-    -------
-        Define the full dropdown menu.
-
-    """
-    classes = get_classes(module_name, base_class)
-
-    layout = QHBoxLayout()
-
-    dropdown = QComboBox()
-    dropdown.addItems(classes.keys())
-    layout.addWidget(QLabel(f"Select {base_class.__name__}:"))
-    layout.addWidget(dropdown)
-
-    buttons = []
-    for name, action in buttons_args.items():
-        button = QPushButton(name)
-        if not hasattr(action, "__iter__"):
-            action = (action,)
-        for a in action:
-            button.clicked.connect(a)
-        layout.addWidget(button)
-        buttons.append(button)
-
-    return DropdownSetup(classes, layout, dropdown, buttons)
-
-
-def set_dropdown_value(
-    dropdown: QComboBox, value: str | ABCMeta | None
-) -> None:
-    """Set a ``dropdown`` to desired value.
-
-    Parameters
-    ----------
-    dropdown :
-        Dropdown object.
-    value :
-        Name of class or class object you want to select in the dropdown. If
-        unset, we do not do anything.
-
-    """
-    if value is None:
-        return
-    if isinstance(value, ABCMeta):
-        value = value.__name__
-    index = dropdown.findText(value)
-    if index == -1:
-        logging.info(f"{value = } not found in {dropdown = } items.")
-        return
-    current_index = dropdown.currentIndex()
-    if current_index != index:
-        dropdown.setCurrentIndex(index)
-    else:
-        dropdown.currentIndexChanged.emit(index)
 
 
 class LinspaceEntries(NamedTuple):

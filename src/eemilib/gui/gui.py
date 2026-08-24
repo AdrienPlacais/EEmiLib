@@ -9,13 +9,6 @@
     Dynamic boxes for Parameters?
 
 .. todo::
-   Switch to ``@property`` for the dropdowns values?
-
-.. todo::
-   Integrate the `dropdown.currentIndexChanged` logic to the `setup_dropdown`
-   helper?
-
-.. todo::
    Make plot tab draggable so we can have model values and plot side by side.
 
 .. todo::
@@ -23,12 +16,10 @@
 
 """
 
-import importlib
 import logging
 import sys
 from abc import ABCMeta
 from collections.abc import Callable
-from types import ModuleType
 from typing import Literal, cast
 
 import numpy as np
@@ -36,7 +27,6 @@ from numpy.typing import NDArray
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
-    QComboBox,
     QLineEdit,
     QListWidget,
     QMainWindow,
@@ -52,14 +42,19 @@ from PyQt5.QtWidgets import (
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
 from eemilib.emission_data.emission_data import EmissionData
+from eemilib.gui.dropdown import (
+    DROPDOWNS,
+    DropdownEntry,
+    Dropdowns,
+    set_dropdown_value,
+    setup_dropdown,
+)
 from eemilib.gui.file_selection import file_selection_matrix
 from eemilib.gui.helper import (
     PARAMETER_ATTR_TO_POS,
     PARAMETER_POS_TO_ATTR,
     LinspaceEntries,
-    set_dropdown_value,
     set_help_button_action,
-    setup_dropdown,
     setup_linspace_entries,
     titled_group,
     to_plot_checkboxes,
@@ -84,9 +79,6 @@ from eemilib.util.constants import (
     ImplementedPop,
 )
 from eemilib.util.helper import flatten
-
-DROPDOWNS = ("Loader", "Model", "Plotter")
-Dropdowns = Literal["Loader", "Model", "Plotter"]
 
 
 class EEmiLibGUI(QMainWindow):
@@ -130,27 +122,19 @@ class EEmiLibGUI(QMainWindow):
         self.plot_layout: QVBoxLayout
         self._setup_main_structure()
 
-        #: Maps a dropdown name to the actual ``QComboBox`` widget.
-        self.dropdowns: dict[str, QComboBox] = {}
+        #: Maps a dropdown name to its definition
+        self.dropdowns: dict[Dropdowns, DropdownEntry] = {}
 
         # Tab 1: Data & Model
         self.file_lists: list[list[None | QListWidget]]
         self._setup_file_selection_matrix()
 
-        #: Maps implemented loader names to their actual import path.
-        self.loader_classes: dict[str, str]
-        #: Opens current :class:`.Loader` documentation.
-        self.loader_help_button: QPushButton
         self._setup_loader_dropdown()
 
         #: Store the :class:`.Parameters` logic for the :class:`.Model`.
         self.parameters_table: QTableWidget
         self._setup_model_configuration()
 
-        #: Maps implemented model names to their actual import path.
-        self.model_classes: dict[str, str]
-        #: Opens current :class:`.Model` documentation.
-        self.model_help_button: QPushButton
         self._setup_model_dropdown()
 
         #: Widget holding evaluator names and values.
@@ -174,9 +158,6 @@ class EEmiLibGUI(QMainWindow):
         self.use_measured_energies_checkbox: QCheckBox
         self._setup_energy_angle_inputs()
 
-        #: Maps implemented :class:`.Plotter` names with their actual import
-        #: paths.
-        self.plotter_classes: dict[str, str]
         #: Let user select which type of data should be plotted.
         self.data_checkboxes: list[QRadioButton]
         #: Let user select which kind of electron population should be plotted.
@@ -307,7 +288,7 @@ class EEmiLibGUI(QMainWindow):
 
         """
         settings_label, settings_action = self._setup_loader_settings_dialog()
-        setup = setup_dropdown(
+        entry = setup_dropdown(
             module_name="eemilib.loader",
             base_class=Loader,
             buttons_args={
@@ -316,24 +297,23 @@ class EEmiLibGUI(QMainWindow):
                 settings_label: settings_action,
             },
         )
-        self.loader_help_button = setup.buttons[0]
-        self.dropdowns["Loader"] = setup.dropdown
-        self.loader_classes = setup.classes
+        self.dropdowns["Loader"] = entry
 
-        setup.dropdown.currentIndexChanged.connect(
+        entry.dropdown.currentIndexChanged.connect(
             self._instantiate_a_new_loader
         )
         # FIXME: I believe the line below is just here to init the dropdown.
         # But we already have the :meth:`_set_default_dropdown` called at the
         # end of ``__init__`` 🤔
-        _ = setup.dropdown.setCurrentText
+        _ = entry.dropdown.setCurrentText
 
-        self.data_model_layout.addLayout(setup.layout)
+        self.data_model_layout.addLayout(entry.layout)
 
     def _instantiate_a_new_loader(self) -> None:
         """Set up new loader whenever the dropdown menu is changed."""
         self.loader = self._dropdown_to_class("Loader")()
-        set_help_button_action(self.loader_help_button, self.loader)
+        help_button = self.dropdowns["Loader"].buttons[0]
+        set_help_button_action(help_button, self.loader)
 
     def _setup_loader_settings_dialog(self) -> tuple[str, Callable]:
         """Give arguments to setup the loader settings button."""
@@ -391,31 +371,11 @@ class EEmiLibGUI(QMainWindow):
         self.data_model_layout.addWidget(model_group)
 
     def _setup_model_dropdown(self) -> None:
-        """Set the :class:`.Model` dropdown.
-
-        1. Create the widgets
-           - :attr:`model_help_button`. Delegated to :func:`.setup_dropdown`.
-           - ``model_dropdown``, added to :attr:`dropdowns`. Delegated to
-             :func:`.setup_dropdown`.
-        2. Wire the signals
-           - Delegated to :func:`.setup_dropdown`.
-           - Some wiring is also done at the end of the  method.
-        3. Create the layout
-           - already created: `data_model_layout`
-           - A `QHBoxLayout` is returned by :func:`.setup_dropdown`
-        4. Call the `addWidget` and `addLayout` methods
-           - :func:`.setup_dropdown` already adds its widgets to the layout in
-             the returned :class:`.DropdownSetup`.
-           - Add the final layout from :func:`.setup_dropdown` to the
-             :attr:`data_model_layout`.
-
-        Also, it sets the :attr:`model_classes` dictionary.
-
-        """
+        """Set the :class:`.Model` dropdown."""
         settings_label, settings_action = (
             self._setup_model_implementations_dialog()
         )
-        setup = setup_dropdown(
+        entry = setup_dropdown(
             module_name="eemilib.model",
             base_class=Model,
             buttons_args={
@@ -424,24 +384,22 @@ class EEmiLibGUI(QMainWindow):
                 settings_label: settings_action,
             },
         )
-        self.model_help_button = setup.buttons[0]
-        self.dropdowns["Model"] = setup.dropdown
-        self.model_classes = setup.classes
+        self.dropdowns["Model"] = entry
 
-        setup.dropdown.currentIndexChanged.connect(
+        entry.dropdown.currentIndexChanged.connect(
             self._instantiate_a_new_model
         )
-        setup.dropdown.currentIndexChanged.connect(
+        entry.dropdown.currentIndexChanged.connect(
             self._deactivate_unnecessary_file_widgets
         )
-        setup.dropdown.currentIndexChanged.connect(
+        entry.dropdown.currentIndexChanged.connect(
             self._autofill_plot_data_type_and_population
         )
-        setup.dropdown.currentIndexChanged.connect(
+        entry.dropdown.currentIndexChanged.connect(
             self._populate_parameters_table_values
         )
 
-        self.data_model_layout.addLayout(setup.layout)
+        self.data_model_layout.addLayout(entry.layout)
 
     def _setup_model_implementations_dialog(self) -> tuple[str, Callable]:
         """Give arguments to setup the model setttings button."""
@@ -461,7 +419,8 @@ class EEmiLibGUI(QMainWindow):
         """Instantiate :class:`.Model` when it is selected in dropdown menu."""
         self.model = self._dropdown_to_class("Model")()
 
-        set_help_button_action(self.model_help_button, self.model)
+        help_button = self.dropdowns["Model"].buttons[0]
+        set_help_button_action(help_button, self.model)
 
         populate_parameters_table_constants(
             self.parameters_table, self.model.parameters
@@ -690,19 +649,18 @@ class EEmiLibGUI(QMainWindow):
         self._set_up_data_to_plot_checkboxes()
         self._set_up_population_to_plot_checkboxes()
 
-        setup = setup_dropdown(
+        entry = setup_dropdown(
             module_name="eemilib.plotter",
             base_class=Plotter,
             buttons_args={
                 "Plot file": self.plot_measured,
                 "Plot modelled data": self.plot_model,
-                "Clear figure": self._clear_figure_action,
+                "Clear figure": lambda _: self._clear_figure_action(),
             },
         )
-        self.plotter_classes = setup.classes
-        setup.dropdown.currentIndexChanged.connect(self._setup_plotter)
-        self.dropdowns["Plotter"] = setup.dropdown
-        self.plot_layout.addLayout(setup.layout)
+        self.dropdowns["Plotter"] = entry
+        entry.dropdown.currentIndexChanged.connect(self._setup_plotter)
+        self.plot_layout.addLayout(entry.layout)
 
     def _clear_figure_action(self) -> None:
         """Clean the figure and the ``is/are_plotted`` flag(s)."""
@@ -941,21 +899,9 @@ class EEmiLibGUI(QMainWindow):
     # =========================================================================
     def _dropdown_to_class(self, name: Dropdowns) -> ABCMeta:
         """Convert dropdown entry to class."""
-        dropdown = self.dropdowns.get(name, None)
-        assert dropdown is not None, f" The dropdown {name} is not defined."
-
-        module_names_to_paths = f"{name.lower()}_classes"
-        module_name_to_path = getattr(self, module_names_to_paths, None)
-        assert module_name_to_path is not None, (
-            f"The dictionary {module_names_to_paths}, linking every module"
-            " name to its path, is not defined."
-        )
-
-        selected: str = dropdown.currentText()
-        module_path: str = module_name_to_path[selected]
-        module: ModuleType = importlib.import_module(module_path)
-        my_class = getattr(module, selected)
-        return my_class
+        entry = self.dropdowns.get(name)
+        assert entry is not None, f"The dropdown {name} is not defined."
+        return entry.selected_class()
 
     def _set_list_widget_state(
         self, widget: QListWidget, enabled: bool
