@@ -22,12 +22,12 @@ from PyQt5.QtWidgets import (
 )
 
 from eemilib.gui.dialogs import SettingsDialog
-from eemilib.gui.helper import PARAMETER_ATTR_TO_POS, setup_lock_checkbox
-from eemilib.gui.styles import (
-    TITLE_STYLE,
-    format_number,
-    math_text_label_from_key,
+from eemilib.gui.helper import (
+    PARAMETER_ATTR_TO_POS,
+    setup_lock_checkbox,
+    titled_group,
 )
+from eemilib.gui.styles import format_number, math_text_label_from_key
 from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 
@@ -43,9 +43,8 @@ def model_configuration() -> tuple[QGroupBox, QTableWidget]:
         Actual list of :class:`.Parameter`.
 
     """
-    group = QGroupBox("Model configuration")
-    group.setStyleSheet(TITLE_STYLE)
     layout = QVBoxLayout()
+    group = titled_group("Model configuration", layout)
 
     headers = list(PARAMETER_ATTR_TO_POS.keys())
     n_cols = len(headers)

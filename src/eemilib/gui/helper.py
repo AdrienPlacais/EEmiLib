@@ -11,14 +11,17 @@ from PyQt5.QtGui import QDesktopServices, QDoubleValidator, QIntValidator
 from PyQt5.QtWidgets import (
     QCheckBox,
     QComboBox,
+    QGroupBox,
     QHBoxLayout,
     QLabel,
+    QLayout,
     QLineEdit,
     QPushButton,
     QRadioButton,
     QWidget,
 )
 
+from eemilib.gui.styles import TITLE_STYLE
 from eemilib.model.parameter import Parameter
 from eemilib.util.helper import get_classes
 
@@ -240,6 +243,14 @@ def _open_help(obj: Any) -> None:
         logging.warning(f"No valid URL found for {obj = }")
         return
     QDesktopServices.openUrl(QUrl(url))
+
+
+def titled_group(title: str, layout: QLayout) -> QGroupBox:
+    """Add a standard `QGroupBox` to the given layout."""
+    group = QGroupBox(title)
+    group.setStyleSheet(TITLE_STYLE)
+    group.setLayout(layout)
+    return group
 
 
 # Associate Parameters attributes with their column position

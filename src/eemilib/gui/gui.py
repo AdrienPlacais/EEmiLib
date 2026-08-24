@@ -62,6 +62,7 @@ from eemilib.gui.helper import (
     set_help_button_action,
     setup_dropdown,
     setup_linspace_entries,
+    titled_group,
     to_plot_checkboxes,
 )
 from eemilib.gui.loader_selection import LoaderSettingsDialog
@@ -73,7 +74,7 @@ from eemilib.gui.model import (
     populate_parameters_table_constants,
 )
 from eemilib.gui.plot_canvas import TabbedPlotArea
-from eemilib.gui.styles import TITLE_STYLE, format_number
+from eemilib.gui.styles import format_number
 from eemilib.loader.loader import Loader
 from eemilib.model.model import Model
 from eemilib.plotter.plotter import Plotter
@@ -454,10 +455,8 @@ class EEmiLibGUI(QMainWindow):
             Object actually holding evaluator names, units, values.
 
         """
-        group = QGroupBox("Model evaluations")
-        group.setStyleSheet(TITLE_STYLE)
-
         layout = QVBoxLayout()
+        group = titled_group("Model evaluations", layout)
 
         evaluators_table = create_evaluation_table()
         layout.addWidget(evaluators_table)
@@ -538,10 +537,8 @@ class EEmiLibGUI(QMainWindow):
             Layout holding energy/angle plot settings.
 
         """
-        group = QGroupBox("Plot configuration")
-        group.setStyleSheet(TITLE_STYLE)
-
         layout = QVBoxLayout()
+        group = titled_group("Plot configuration", layout)
 
         energy_setup = setup_linspace_entries(
             "Energy [eV]", initial_values=(0.0, 500.0, 501)
