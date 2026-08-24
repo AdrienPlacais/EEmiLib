@@ -5,10 +5,6 @@
     Export/Import settings
 
 .. todo::
-    Add description at and of parameters
-    Dynamic boxes for Parameters?
-
-.. todo::
    Make plot tab draggable so we can have model values and plot side by side.
 
 .. todo::
@@ -245,8 +241,8 @@ class EEmiLibGUI(QMainWindow):
 
     def _deactivate_unnecessary_file_widgets(self) -> None:
         """Grey out the files not needed by current model."""
-        model = self._dropdown_to_class("Model")()
-        if not isinstance(model, Model):
+        model = getattr(self, "model", None)
+        if model is None:
             return
         config: ModelConfig = model.model_config
 
@@ -389,6 +385,8 @@ class EEmiLibGUI(QMainWindow):
         entry.dropdown.currentIndexChanged.connect(
             self._instantiate_a_new_model
         )
+        # Warning! _deactivate_unnecessary_file_widgets relies on a `Model`
+        # being already set. _instantiate_a_new_model should be called before
         entry.dropdown.currentIndexChanged.connect(
             self._deactivate_unnecessary_file_widgets
         )
