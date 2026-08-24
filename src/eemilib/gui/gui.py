@@ -131,20 +131,27 @@ class EEmiLibGUI(QMainWindow):
         self.data_model_layout, self.plot_layout = self._main_structure()
 
         # Tab 1: Data & Model
-        self.file_lists = self._setup_file_selection_matrix()
+        self.file_lists: list[list[None | QListWidget]]
+        self._setup_file_selection_matrix()
 
+        # TODO: Make it a TypedDict? Can we? It would need to be created in
+        # one step. The whole idea was to set creation and use of dropdown with
+        # re-usable methods.
         self.dropdowns: dict[str, QComboBox] = {}
+        # TODO: should we also create a `self.help_buttons` attribute? It would
+        # also let this module be more DRY.
+        # OR, we could create a new class holding everything necessary for
+        # every dropdown?
 
         self.loader_classes: dict[str, str]
         self.loader_help_button: QPushButton
         self._setup_loader_dropdown()
 
-        _model_group, parameters_table = model_configuration()
-        self.data_model_layout.addWidget(_model_group)
         #: Store the :class:`.Parameters` logic for the :class:`.Model`.
-        self.parameters_table = parameters_table
+        self.parameters_table: QTableWidget
+        self._setup_model_configuration()
 
-        #: Maps implemented model names to their actuall import path.
+        #: Maps implemented model names to their actual import path.
         self.model_classes: dict[str, str]
         #: Opens current :class:`.Model` documentation.
         self.model_help_button: QPushButton
@@ -156,14 +163,10 @@ class EEmiLibGUI(QMainWindow):
         self.evaluators_table = evaluators_table
 
         # Tab 2: Plot
-        self.plot_area = TabbedPlotArea()
-        self.plot_layout.addWidget(self.plot_area)
-
+        #: Stores the current figure(s).
+        self.plot_area: TabbedPlotArea
         #: Store whether measurements are currently plotted.
-        self._measurements_are_plotted: bool = False
-
-        #: Holds widgets related to energy/angle setting for the plots
-        self.energy_angle_layout: QVBoxLayout
+        self._measurements_are_plotted: bool
         #: Holds all widgets related to the energy linspace
         self.energy: LinspaceEntries
         #: Holds all widgets related to the angle linspace
@@ -171,12 +174,14 @@ class EEmiLibGUI(QMainWindow):
         #: Check this to make the ``Model`` plots use the same energies as
         #: the measurements
         self.use_measured_energies_checkbox: QCheckBox
-        self.energy_angle_layout = self.create_energy_angle_inputs()
-
+        #: Maps implemented :class:`.Plotter` names with their actual import
+        #: paths.
         self.plotter_classes: dict[str, str]
+        #: Let user select wich type of data should be plotted.
         self.data_checkboxes: list[QRadioButton]
+        #: Let user select wich kind of electron population should be plotted.
         self.population_checkboxes: list[QCheckBox]
-        self._setup_plotter_dropdowns()
+        self._setup_plot()
 
         # Call the methods called by the model_dropdown index change
         self._set_default_dropdown()
@@ -236,11 +241,26 @@ class EEmiLibGUI(QMainWindow):
     # =========================================================================
     # Tab 1 - File selection
     # =========================================================================
-    def _setup_file_selection_matrix(self) -> list[list[None | QListWidget]]:
-        """Create the 4 * 3 matrix to select the files to load."""
-        file_matrix_group, file_lists = file_selection_matrix(self)
+    def _setup_file_selection_matrix(self) -> None:
+        """Create the 4 * 3 matrix to select the files to load.
+
+        1. Create the widgets
+           - ``file_matrix_group``, delegated to
+             :func:`.file_selection_matrix`.
+           - :attr:`file_lists`, delegated to :func:`.file_selection_matrix`.
+        2. Wire the signals
+           - Delegated to :func:`.file_selection_matrix`.
+        3. Create the layout
+           - :attr:`data_model_layout`, already created
+           - :func:`file_selection_matrix` also creates a ``QGridLayout``
+             internally.
+        4. Call the `addWidget` and `addLayout` methods
+           - The `addWidget` related to :attr:`file_lists` are handled by
+             :func:`.file_selection_matrix`!
+
+        """
+        file_matrix_group, self.file_lists = file_selection_matrix(self)
         self.data_model_layout.addWidget(file_matrix_group)
-        return file_lists
 
     def _deactivate_unnecessary_file_widgets(self) -> None:
         """Grey out the files not needed by current model."""
@@ -265,7 +285,27 @@ class EEmiLibGUI(QMainWindow):
     # Tab 1 - Load files
     # =========================================================================
     def _setup_loader_dropdown(self) -> None:
-        """Set the :class:`.Loader` related interface."""
+        """Set the :class:`.Loader` dropdown.
+
+        1. Create the widgets
+           - :attr:`loader_help_button`, delegated to :func:`.setup_dropdown`.
+           - The widgets associating :class:`.Loader` names to the instances
+             are created, wired, added directly within :func:`setup_dropdown`.
+        2. Wire the signals
+           - Delegated to :func:`.setup_dropdown`.
+           - Some wiring is also done at the end of the  method.
+        3. Create the layout
+           - already created: `data_model_layout`
+           - A `QHBoxLayout` is returned by :func:`.setup_dropdown`
+        4. Call the `addWidget` and `addLayout` methods
+           - :func:`.setup_dropdown` already adds its widgets to the layout in
+             the returned :class:`.DropdownSetup`.
+           - Add the final layout from :func:`.setup_dropdown` to the
+             :attr:`data_model_layout`.
+
+        Also sets the :attr:`loader_classes` dictionary.
+
+        """
         settings_label, settings_action = self._setup_loader_settings_dialog()
         setup = setup_dropdown(
             module_name="eemilib.loader",
@@ -276,20 +316,27 @@ class EEmiLibGUI(QMainWindow):
                 settings_label: settings_action,
             },
         )
-        self.loader_classes = setup.classes
-        setup.dropdown.currentIndexChanged.connect(self._setup_loader)
-        _ = setup.dropdown.setCurrentText
-        self.dropdowns["Loader"] = setup.dropdown
         self.loader_help_button = setup.buttons[0]
+        self.dropdowns["Loader"] = setup.dropdown
+        self.loader_classes = setup.classes
+
+        setup.dropdown.currentIndexChanged.connect(
+            self._instantiate_a_new_loader
+        )
+        # FIXME: I believe the line below is just here to init the dropdown.
+        # But we already have the :meth:`_set_default_dropdown` called at the
+        # end of ``__init__`` 🤔
+        _ = setup.dropdown.setCurrentText
+
         self.data_model_layout.addLayout(setup.layout)
 
-    def _setup_loader(self) -> None:
+    def _instantiate_a_new_loader(self) -> None:
         """Set up new loader whenever the dropdown menu is changed."""
         self.loader = self._dropdown_to_class("Loader")()
         set_help_button_action(self.loader_help_button, self.loader)
 
     def _setup_loader_settings_dialog(self) -> tuple[str, Callable]:
-        """Give arguments to setup the loader setttings button."""
+        """Give arguments to setup the loader settings button."""
         settings_label = "⚙️ Settings"
 
         def settings_action() -> int:
@@ -327,10 +374,42 @@ class EEmiLibGUI(QMainWindow):
     # =========================================================================
     # Tab 1 - Model
     # =========================================================================
-    def _setup_model_dropdown(self) -> None:
-        """Set the :class:`.Model` related interface.
+    def _setup_model_configuration(self) -> None:
+        """Orchestrate :class:`.Model` :class:`.Parameter` related interfaces.
 
-        Assign the ``model_classes`` and ``model_dropdown``.
+        1. Create the widgets
+           - :attr:`.parameters_table`, delegated to
+             :func:`model_configuration`.
+        2. Wire the signals
+           - delegated to :func:`model_configuration`
+        3. Create the layout
+           - already created: `data_model_layout`
+        4. Call the `addWidget` and `addLayout` methods
+
+        """
+        model_group, self.parameters_table = model_configuration()
+        self.data_model_layout.addWidget(model_group)
+
+    def _setup_model_dropdown(self) -> None:
+        """Set the :class:`.Model` dropdown.
+
+        1. Create the widgets
+           - :attr:`model_help_button`. Delegated to :func:`.setup_dropdown`.
+           - ``model_dropdown``, added to :attr:`dropdowns`. Delegated to
+             :func:`.setup_dropdown`.
+        2. Wire the signals
+           - Delegated to :func:`.setup_dropdown`.
+           - Some wiring is also done at the end of the  method.
+        3. Create the layout
+           - already created: `data_model_layout`
+           - A `QHBoxLayout` is returned by :func:`.setup_dropdown`
+        4. Call the `addWidget` and `addLayout` methods
+           - :func:`.setup_dropdown` already adds its widgets to the layout in
+             the returned :class:`.DropdownSetup`.
+           - Add the final layout from :func:`.setup_dropdown` to the
+             :attr:`data_model_layout`.
+
+        Also, it sets the :attr:`model_classes` dictionary.
 
         """
         settings_label, settings_action = (
@@ -345,9 +424,13 @@ class EEmiLibGUI(QMainWindow):
                 settings_label: settings_action,
             },
         )
-        self.model_classes = setup.classes
+        self.model_help_button = setup.buttons[0]
         self.dropdowns["Model"] = setup.dropdown
-        setup.dropdown.currentIndexChanged.connect(self.setup_model_selection)
+        self.model_classes = setup.classes
+
+        setup.dropdown.currentIndexChanged.connect(
+            self._instantiate_a_new_model
+        )
         setup.dropdown.currentIndexChanged.connect(
             self._deactivate_unnecessary_file_widgets
         )
@@ -358,7 +441,6 @@ class EEmiLibGUI(QMainWindow):
             self._populate_parameters_table_values
         )
 
-        self.model_help_button = setup.buttons[0]
         self.data_model_layout.addLayout(setup.layout)
 
     def _setup_model_implementations_dialog(self) -> tuple[str, Callable]:
@@ -375,7 +457,7 @@ class EEmiLibGUI(QMainWindow):
 
         return settings_label, settings_action
 
-    def setup_model_selection(self) -> None:
+    def _instantiate_a_new_model(self) -> None:
         """Instantiate :class:`.Model` when it is selected in dropdown menu."""
         self.model = self._dropdown_to_class("Model")()
 
@@ -487,6 +569,17 @@ class EEmiLibGUI(QMainWindow):
     # =========================================================================
     # Tab 2 - Plot
     # =========================================================================
+
+    def _setup_plot(self) -> None:
+        """Orchestrate the creation of the `Plot` window."""
+        self.plot_area = TabbedPlotArea()
+        self.plot_layout.addWidget(self.plot_area)
+
+        self._measurements_are_plotted = False
+
+        self._create_energy_angle_inputs()
+        self._setup_plotter_dropdowns()
+
     def _autofill_plot_data_type_and_population(self) -> None:
         """Check emission data type and population.
 
@@ -524,7 +617,7 @@ class EEmiLibGUI(QMainWindow):
                     continue
                 button.setChecked(False)
 
-    def create_energy_angle_inputs(self) -> QVBoxLayout:
+    def _create_energy_angle_inputs(self) -> QVBoxLayout:
         """Set the energy and angle inputs for the model plot.
 
         Also sets:
@@ -558,7 +651,6 @@ class EEmiLibGUI(QMainWindow):
 
         self.plot_layout.addWidget(group)
         group.setLayout(layout)
-        self.energy_angle_layout = layout
         return layout
 
     def _create_use_measured_energies_checkbox(self) -> QCheckBox:
