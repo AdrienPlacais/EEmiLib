@@ -31,7 +31,7 @@ from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
 from eemilib.emission_data.emission_data import MissingDataError
 from eemilib.model.model import Model
-from eemilib.model.parameter import Parameter
+from eemilib.model.parameter import Parameter, ParameterSet
 from eemilib.util.constants import (
     COL_ENERGY,
     COL_NORMAL,
@@ -143,13 +143,14 @@ class Dionne(Model):
 
         self.parameters = cast(
             DionneParameters,
-            {
-                name: Parameter(**cast(dict, kwargs))
-                for name, kwargs in self.initial_parameters.items()
-            },
+            ParameterSet(
+                {
+                    name: Parameter(**cast(dict, kwargs))
+                    for name, kwargs in self.initial_parameters.items()
+                },
+                on_change=self._on_parameter_changed,
+            ),
         )
-        for parameter in self.parameters.values():
-            parameter.subscribe(self._on_parameter_changed)
         self._generate_parameter_docs()
         if parameters_values is not None:
             self.set_parameters_values(parameters_values)

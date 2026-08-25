@@ -281,3 +281,33 @@ class Parameter:
         if not self.is_locked:
             return
         self.is_locked = False
+
+
+class ParameterSet(dict[str, Parameter]):
+    """A set of :class:`Parameter` for a :class:`Model`.
+
+    .. note::
+       Do not forget to ``cast`` the actual parameters to a typed dict for the
+       static checker to work correctly. Example:
+
+       .. code-block::
+
+          self.parameters = cast(
+             VaughanParameters,  # a ``TypedDict``
+             ParametersSet(
+                {
+                   name: Parameter(**cast(dict, kwargs))
+                   for name, kwargs in self.initial_parameters.items()
+                }
+             )
+          )
+
+    """
+
+    def __init__(
+        self, parameters: dict[str, Parameter], on_change: Callable[[], None]
+    ) -> None:
+        """Wire the ``on_change`` callback to every :class:`Parameter`."""
+        super().__init__(parameters)
+        for parameter in self.values():
+            parameter.subscribe(on_change)
