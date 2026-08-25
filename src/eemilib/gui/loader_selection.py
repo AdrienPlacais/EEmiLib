@@ -1,28 +1,24 @@
 """Define interface related to :class:`.Loader` in GUI."""
 
 from PyQt5.QtGui import QWindow
-from PyQt5.QtWidgets import (
-    QDialog,
-    QDialogButtonBox,
-    QLabel,
-    QLineEdit,
-    QVBoxLayout,
-)
+from PyQt5.QtWidgets import QLabel, QLineEdit
 
+from eemilib.gui.dialogs import SettingsDialog
 from eemilib.loader.loader import Loader
 
 
-class LoaderSettingsDialog(QDialog):
+def _unescape(text: str) -> str:
+    r"""Interpret escape sequences typed by the user (e.g. ``\\t``)."""
+    return text.encode("utf-8").decode("unicode-escape")
+
+
+class LoaderSettingsDialog(SettingsDialog):
     """Define an interactive window for :class:`.Loader` settings."""
 
     def __init__(self, parent: QWindow, loader: Loader) -> None:
         """Instantiate the window and its parameters."""
-        super().__init__(parent=parent)
+        super().__init__(parent, f"{loader.__class__.__name__!s} settings")
         self._loader = loader
-
-        self.setWindowTitle(f"{loader.__class__.__name__!s} settings")
-
-        self._layout = QVBoxLayout(self)
 
         self._sep_box: QLineEdit | None = None
         args = self._sep_selector()
@@ -30,6 +26,7 @@ class LoaderSettingsDialog(QDialog):
             label, box = args
             self._layout.addWidget(label)
             self._layout.addWidget(box)
+
         self._comment_box: QLineEdit | None = None
         args = self._comment_selector()
         if args is not None:
@@ -37,8 +34,7 @@ class LoaderSettingsDialog(QDialog):
             self._layout.addWidget(label)
             self._layout.addWidget(box)
 
-        buttons = self._buttons()
-        self._layout.addWidget(buttons)
+        self._finalize()
 
     def _sep_selector(self) -> tuple[QLabel, QLineEdit] | None:
         """Create menu to select column delimiter."""
@@ -56,8 +52,7 @@ class LoaderSettingsDialog(QDialog):
         """Return current separator."""
         if not self._sep_box:
             return
-        sep = self._sep_box.text().encode("utf-8").decode("unicode-escape")
-        return sep
+        return _unescape(self._sep_box.text())
 
     def _comment_selector(self) -> tuple[QLabel, QLineEdit] | None:
         """Create menu to select comment character."""
@@ -75,26 +70,7 @@ class LoaderSettingsDialog(QDialog):
         """Return current comment character."""
         if not self._comment_box:
             return
-        comment = (
-            self._comment_box.text().encode("utf-8").decode("unicode-escape")
-        )
-        return comment
-
-    def _buttons(self) -> QDialogButtonBox:
-        """Create OK/Cancel buttons."""
-        buttons = QDialogButtonBox(
-            QDialogButtonBox.StandardButtons(
-                QDialogButtonBox.Ok | QDialogButtonBox.Cancel
-            )
-        )
-
-        def on_ok() -> None:
-            self.apply()
-            self.accept()
-
-        buttons.accepted.connect(on_ok)
-        buttons.rejected.connect(self.reject)
-        return buttons
+        return _unescape(self._comment_box.text())
 
     def apply(self) -> None:
         """Apply the settings to the :class:`.Model`."""
