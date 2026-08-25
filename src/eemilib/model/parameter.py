@@ -1,6 +1,7 @@
 """Define a model parameter."""
 
 import logging
+from collections.abc import Callable
 
 import numpy as np
 
@@ -76,6 +77,8 @@ class Parameter:
         self.markdown = markdown
         self.unit = unit
         self._value = value
+        #: Callables invoked whenever :attr:`value` changes.
+        self._on_change: list[Callable[[], None]] = []
         #: Raw lower bound for fitting, as provided by the user. The
         #: actual :attr:`lower_bound` may be different if :attr:`.is_locked` is
         #: ``True``, because in this case the bounds are tightly set around
@@ -207,18 +210,25 @@ class Parameter:
                 value = float(value[0])
             else:
                 raise ValueError(f"Trying to set unsupported {value = }")
+
         if self._value == value:
             logging.debug(f"{self.name:<52}: is already {value}.")
-        else:
-            debug = (
-                f"{self.name:<52}: updating {self._value:<35} -> {value:<35}"
-            )
-            if abs(value - self.lower_bound) < 0.5 * self._tol:
-                debug += " new value very close to lower bound "
-            if abs(value - self.upper_bound) < 0.5 * self._tol:
-                debug += " new value very close to upper bound "
-            logging.debug(debug)
+            return
+
+        debug = f"{self.name:<52}: updating {self._value:<35} -> {value:<35}"
+        if abs(value - self.lower_bound) < 0.5 * self._tol:
+            debug += " new value very close to lower bound "
+        if abs(value - self.upper_bound) < 0.5 * self._tol:
+            debug += " new value very close to upper bound "
+        logging.debug(debug)
+
         self._value = value
+        for callback in self._on_change:
+            callback()
+
+    def subscribe(self, callback: Callable[[], None]) -> None:
+        """Register a callback to run whenever :attr:`value` changes."""
+        self._on_change.append(callback)
 
     @property
     def lower_bound(self) -> float:
