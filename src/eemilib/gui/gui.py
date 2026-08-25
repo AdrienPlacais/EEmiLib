@@ -646,8 +646,8 @@ class EEmiLibGUI(QMainWindow):
 
     def plot_measured(self) -> None:
         """Plot the desired data, as imported."""
-        success_pop, populations = self._get_populations_to_plot()
-        if not success_pop:
+        populations = self._get_populations_to_plot()
+        if populations is None:
             return
         data_type = self._get_data_type_to_plot()
         if data_type is None:
@@ -686,8 +686,8 @@ class EEmiLibGUI(QMainWindow):
 
     def plot_model(self) -> None:
         """Plot the desired data, as modelled."""
-        success_pop, populations = self._get_populations_to_plot()
-        if not success_pop:
+        populations = self._get_populations_to_plot()
+        if populations is None:
             return
         data_type = self._get_data_type_to_plot()
         if data_type is None:
@@ -742,9 +742,9 @@ class EEmiLibGUI(QMainWindow):
             return None
         return data_type[0]
 
-    def _get_populations_to_plot(self) -> tuple[bool, list[ImplementedPop]]:
+    def _get_populations_to_plot(self) -> list[ImplementedPop] | None:
         """Read input to determine the populations to plot."""
-        success = True
+        populations: list[ImplementedPop]
         populations = [
             IMPLEMENTED_POP[i]
             for i, checked in enumerate(self.population_checkboxes)
@@ -752,8 +752,8 @@ class EEmiLibGUI(QMainWindow):
         ]
         if len(populations) == 0:
             logging.error("Please provide at least one population to plot.")
-            success = False
-        return success, populations
+            return None
+        return populations
 
     def _gen_linspace(
         self, variable: Literal["energy", "angle"]
