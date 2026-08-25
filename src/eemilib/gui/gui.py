@@ -10,6 +10,13 @@
 .. todo::
    Make model plot update on parameter value change (``Sync`` checkbox).
 
+.. note::
+    The `_setup_*` methods should:
+    1. Create widgets
+    2. Wire them
+    3. Create layouts
+    4. Call the `addWidget`, `addLayout` methods.
+
 """
 
 import logging
@@ -219,23 +226,7 @@ class EEmiLibGUI(QMainWindow):
     # Tab 1 - File selection
     # =========================================================================
     def _setup_file_selection_matrix(self) -> None:
-        """Create the 4 * 3 matrix to select the files to load.
-
-        1. Create the widgets
-           - ``file_matrix_group``, delegated to
-             :func:`.file_selection_matrix`.
-           - :attr:`file_lists`, delegated to :func:`.file_selection_matrix`.
-        2. Wire the signals
-           - Delegated to :func:`.file_selection_matrix`.
-        3. Create the layout
-           - :attr:`data_model_layout`, already created
-           - :func:`file_selection_matrix` also creates a ``QGridLayout``
-             internally.
-        4. Call the `addWidget` and `addLayout` methods
-           - The `addWidget` related to :attr:`file_lists` are handled by
-             :func:`.file_selection_matrix`!
-
-        """
+        """Create the 4 * 3 matrix to select the files to load."""
         file_matrix_group, self.file_lists = file_selection_matrix(self)
         self.data_model_layout.addWidget(file_matrix_group)
 
@@ -262,27 +253,7 @@ class EEmiLibGUI(QMainWindow):
     # Tab 1 - Load files
     # =========================================================================
     def _setup_loader_dropdown(self) -> None:
-        """Set the :class:`.Loader` dropdown.
-
-        1. Create the widgets
-           - :attr:`loader_help_button`, delegated to :func:`.setup_dropdown`.
-           - The widgets associating :class:`.Loader` names to the instances
-             are created, wired, added directly within :func:`setup_dropdown`.
-        2. Wire the signals
-           - Delegated to :func:`.setup_dropdown`.
-           - Some wiring is also done at the end of the  method.
-        3. Create the layout
-           - already created: `data_model_layout`
-           - A `QHBoxLayout` is returned by :func:`.setup_dropdown`
-        4. Call the `addWidget` and `addLayout` methods
-           - :func:`.setup_dropdown` already adds its widgets to the layout in
-             the returned :class:`.DropdownSetup`.
-           - Add the final layout from :func:`.setup_dropdown` to the
-             :attr:`data_model_layout`.
-
-        Also sets the :attr:`loader_classes` dictionary.
-
-        """
+        """Set the :class:`.Loader` dropdown."""
         settings_label, settings_action = self._setup_loader_settings_dialog()
         entry = setup_dropdown(
             module_name="eemilib.loader",
@@ -347,18 +318,7 @@ class EEmiLibGUI(QMainWindow):
     # Tab 1 - Model
     # =========================================================================
     def _setup_model_configuration(self) -> None:
-        """Orchestrate :class:`.Model` :class:`.Parameter` related interfaces.
-
-        1. Create the widgets
-           - :attr:`.parameters_table`, delegated to
-             :func:`model_configuration`.
-        2. Wire the signals
-           - delegated to :func:`model_configuration`
-        3. Create the layout
-           - already created: `data_model_layout`
-        4. Call the `addWidget` and `addLayout` methods
-
-        """
+        """Orchestrate :class:`.Model` :class:`.Parameter` related interfaces."""
         model_group, self.parameters_table = model_configuration()
         self.data_model_layout.addWidget(model_group)
 
@@ -557,7 +517,8 @@ class EEmiLibGUI(QMainWindow):
     def _setup_energy_angle_inputs(self) -> None:
         """Set the energy and angle inputs for the model plot.
 
-        Sets :attr:`energy`, :attr:`angle`, :attr:`use_measured_energies_checkbox`.
+        Sets :attr:`energy`, :attr:`angle`,
+        :attr:`use_measured_energies_checkbox`.
 
         """
         layout = QVBoxLayout()
@@ -581,7 +542,7 @@ class EEmiLibGUI(QMainWindow):
         self.plot_layout.addWidget(group)
 
     def _create_use_measured_energies_checkbox(self) -> QCheckBox:
-        """Set checkbox making :meth:`.Model.plot` use ener from measurements.
+        """Set checkbox making :meth:`.Model.plot` use measured energies.
 
         Behavior:
         - Greyed out if no measurements plotted (rely on
@@ -688,11 +649,9 @@ class EEmiLibGUI(QMainWindow):
         success_pop, populations = self._get_populations_to_plot()
         if not success_pop:
             return
-        cast(list[ImplementedPop], populations)
         data_type = self._get_data_type_to_plot()
         if data_type is None:
             return
-        cast(ImplementedEmissionData, data_type)
 
         group_by_pe = data_type == "Emission Energy"
         if group_by_pe:
@@ -724,7 +683,6 @@ class EEmiLibGUI(QMainWindow):
             self.plot_area.refresh(None)
 
         self.measurements_are_plotted = True
-        return
 
     def plot_model(self) -> None:
         """Plot the desired data, as modelled."""
@@ -771,8 +729,6 @@ class EEmiLibGUI(QMainWindow):
                 axes=axes,
             )
             self.plot_area.refresh(None)
-
-        return
 
     def _get_data_type_to_plot(self) -> ImplementedEmissionData | None:
         """Read input to determine the emission data type to plot."""
