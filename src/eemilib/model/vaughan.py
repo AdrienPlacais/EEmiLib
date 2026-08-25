@@ -21,7 +21,7 @@ from scipy.optimize import least_squares
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
 from eemilib.model.model import Model
-from eemilib.model.parameter import Parameter, ParameterSet
+from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
     COL_ENERGY,
     ImplementedEmissionData,
@@ -143,6 +143,7 @@ class Vaughan(Model):
     implementation_choices: ClassVar[dict[str, tuple[str, ...]]] = {
         "implementation": VAUGHAN_IMPLEMENTATIONS
     }
+    _url_doc_override = "manual/models/vaughan"
 
     def __init__(
         self,
@@ -167,21 +168,8 @@ class Vaughan(Model):
             override the default values set in ``initial_parameters``.
 
         """
-        super().__init__(url_doc_override="manual/models/vaughan")
-        self.parameters = cast(
-            VaughanParameters,
-            ParameterSet(
-                {
-                    name: Parameter(**cast(dict, kwargs))
-                    for name, kwargs in self.initial_parameters.items()
-                },
-                on_change=self._on_parameter_changed,
-            ),
-        )
-        self._generate_parameter_docs()
-        if parameters_values is not None:
-            self.set_parameters_values(parameters_values)
-
+        super().__init__(parameters_values)
+        self.parameters = cast(VaughanParameters, self.parameters)
         self._func: Callable
         self.current_implementation: VaughanImplementation
         self.set_implementation("implementation", implementation)

@@ -16,7 +16,7 @@ from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
 from eemilib.emission_data.emission_data import MissingDataError
 from eemilib.model.model import Model
-from eemilib.model.parameter import Parameter, ParameterSet
+from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
     COL_ENERGY,
     COL_NORMAL,
@@ -74,6 +74,7 @@ class Sombrin(Model):
             "description": "First crossover energy.",
         },
     }
+    _url_doc_override = "manual/models/sombrin"
 
     def __init__(
         self, parameters_values: dict[str, Any] | None = None
@@ -87,20 +88,8 @@ class Sombrin(Model):
             override the default values set in ``initial_parameters``.
 
         """
-        super().__init__(url_doc_override="manual/models/sombrin")
-        self.parameters = cast(
-            SombrinParameters,
-            ParameterSet(
-                {
-                    name: Parameter(**cast(dict, kwargs))
-                    for name, kwargs in self.initial_parameters.items()
-                },
-                on_change=self._on_parameter_changed,
-            ),
-        )
-        self._generate_parameter_docs()
-        if parameters_values is not None:
-            self.set_parameters_values(parameters_values)
+        super().__init__(parameters_values)
+        self.parameters = cast(SombrinParameters, self.parameters)
 
         self._func = sombrin_func
         self._E: float | None = None

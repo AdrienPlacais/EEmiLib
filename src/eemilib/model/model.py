@@ -21,6 +21,7 @@ from eemilib.emission_data import DataMatrix
 from eemilib.emission_data.emission_data import MissingDataError
 from eemilib.emission_data.emission_yield import TEEY
 from eemilib.emission_data.helper import get_ec1, get_max
+from eemilib.model.parameter import Parameter, ParameterSet
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
     COL_ENERGY,
@@ -66,11 +67,11 @@ class Model(ABC):
     initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = {}
     model_config: ModelConfig
     implementation_choices: ClassVar[dict[str, tuple[str, ...]]] = {}
+    #: Override default URL in documentation
+    _url_doc_override: str | None = None
 
     def __init__(
-        self,
-        parameters_values: dict[str, Any] | None = None,
-        url_doc_override: str | None = None,
+        self, parameters_values: dict[str, Any] | None = None
     ) -> None:
         """Instantiate the object.
 
@@ -79,16 +80,23 @@ class Model(ABC):
         parameters_values :
             Contains name of parameters and associated value. If provided, will
             override the default values set in ``initial_parameters``.
-        url_doc_override :
-            Override default URL in documentation.
 
         """
         self.doc_url = documentation_url(
-            self, url_doc_override=url_doc_override
+            self, url_doc_override=self._url_doc_override
         )
-        #: A :class:`.TypedDict` specific to every :class:`.model.Model`. Keys
-        #: are parameters names, values are :class:`.Parameter`.
-        self.parameters: Any
+        #: Maps parameters name to :class:`.Parameter` instances.
+        self.parameters = ParameterSet(
+            {
+                name: Parameter(**cast(dict, kwargs))
+                for name, kwargs in self.initial_parameters.items()
+            },
+            on_change=self._on_parameter_changed,
+        )
+
+        self._generate_parameter_docs()
+        if parameters_values is not None:
+            self.set_parameters_values(parameters_values)
         #: Maps each axis name (see :attr:`.Model.implementation_choices`) to
         #: the currently selected option.
         self.current_implementations: dict[str, str] = {}

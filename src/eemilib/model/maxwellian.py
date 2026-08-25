@@ -17,7 +17,7 @@ from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
 from eemilib.emission_data.emission_data import MissingDataError
 from eemilib.model.model import Model
-from eemilib.model.parameter import Parameter, ParameterSet
+from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
     COL_ENERGY,
     COL_NORMAL,
@@ -63,6 +63,7 @@ class Maxwellian(Model):
             "description": "Distribution re-normalization constant.",
         },
     }
+    _url_doc_override = "manual/models/maxwellian"
 
     def __init__(
         self, parameters_values: dict[str, Any] | None = None
@@ -76,21 +77,8 @@ class Maxwellian(Model):
             override the default values set in ``initial_parameters``.
 
         """
-        super().__init__(url_doc_override="manual/models/maxwellian")
-        self.parameters = cast(
-            MaxwellianParameters,
-            ParameterSet(
-                {
-                    name: Parameter(**cast(dict, kwargs))
-                    for name, kwargs in self.initial_parameters.items()
-                },
-                on_change=self._on_parameter_changed,
-            ),
-        )
-        self._generate_parameter_docs()
-        if parameters_values is not None:
-            self.set_parameters_values(parameters_values)
-
+        super().__init__(parameters_values)
+        self.parameters = cast(MaxwellianParameters, self.parameters)
         self._func = maxwellian_pdf
 
     def get_data(

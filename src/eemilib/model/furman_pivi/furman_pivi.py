@@ -64,7 +64,6 @@ from eemilib.model.furman_pivi.se import (
     set_number_of_secondaries_probability_function,
 )
 from eemilib.model.model import Model
-from eemilib.model.parameter import Parameter, ParameterSet
 from eemilib.util.constants import (
     COL_ENERGY,
     ImplementedEmissionData,
@@ -99,6 +98,7 @@ class FurmanPivi(Model):
         "distribution": FURMAN_PIVI_DISTRIBUTIONS,
         "normalization": FURMAN_PIVI_NORMALIZATIONS,
     }
+    _url_doc_override = "manual/models/furman_pivi"
 
     def __init__(
         self,
@@ -123,24 +123,10 @@ class FurmanPivi(Model):
             override the default values set in ``initial_parameters``.
 
         """
-        super().__init__(url_doc_override="manual/models/furman_pivi")
-
         for parameters_kwargs in self.initial_parameters.values():
             add_furman_pivi_notation(parameters_kwargs)
-
-        self.parameters = cast(
-            FurmanPiviParameters,
-            ParameterSet(
-                {
-                    name: Parameter(**cast(dict, kwargs))
-                    for name, kwargs in self.initial_parameters.items()
-                },
-                on_change=self._on_parameter_changed,
-            ),
-        )
-        self._generate_parameter_docs()
-        if parameters_values is not None:
-            self.set_parameters_values(parameters_values)
+        super().__init__(parameters_values)
+        self.parameters = cast(FurmanPiviParameters, self.parameters)
 
         self.set_implementation("distribution", distribution)
         self._proba_emit_n_se: PROBA_EMIT_N_SE

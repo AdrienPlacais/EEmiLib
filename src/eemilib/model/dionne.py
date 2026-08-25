@@ -31,7 +31,7 @@ from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
 from eemilib.emission_data.emission_data import MissingDataError
 from eemilib.model.model import Model
-from eemilib.model.parameter import Parameter, ParameterSet
+from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
     COL_ENERGY,
     COL_NORMAL,
@@ -119,6 +119,7 @@ class Dionne(Model):
             "description": "Exponent in the power law energy loss model.",
         },
     }
+    _url_doc_override = "manual/models/dionne"
 
     def __init__(
         self,
@@ -138,23 +139,9 @@ class Dionne(Model):
             :func:`.dionne.range_func` for more info.
 
         """
-        super().__init__(url_doc_override="manual/models/dionne")
+        super().__init__(parameters_values)
+        self.parameters = cast(DionneParameters, self.parameters)
         self._energy_loss_model: EnergyLossModel = energy_loss_model
-
-        self.parameters = cast(
-            DionneParameters,
-            ParameterSet(
-                {
-                    name: Parameter(**cast(dict, kwargs))
-                    for name, kwargs in self.initial_parameters.items()
-                },
-                on_change=self._on_parameter_changed,
-            ),
-        )
-        self._generate_parameter_docs()
-        if parameters_values is not None:
-            self.set_parameters_values(parameters_values)
-
         self._func = dionne_func
 
     def get_data(
