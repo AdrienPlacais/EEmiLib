@@ -298,10 +298,6 @@ class EEmiLibGUI(QMainWindow):
         entry.dropdown.currentIndexChanged.connect(
             self._instantiate_a_new_loader
         )
-        # FIXME: I believe the line below is just here to init the dropdown.
-        # But we already have the :meth:`_set_default_dropdown` called at the
-        # end of ``__init__`` 🤔
-        _ = entry.dropdown.setCurrentText
 
         self.data_model_layout.addLayout(entry.layout)
 
@@ -700,9 +696,14 @@ class EEmiLibGUI(QMainWindow):
 
         group_by_pe = data_type == "Emission Energy"
         if group_by_pe:
+            impact_energies = self._known_impact_energies()
+            if not impact_energies:
+                logging.error(
+                    "No emission energy measurement loaded, nothing to plot."
+                )
+                return
             axes_by_pe = {
-                e_pe: self.plot_area.axes_for(e_pe)
-                for e_pe in self._known_impact_energies()
+                e_pe: self.plot_area.axes_for(e_pe) for e_pe in impact_energies
             }
             self.data_matrix.plot(
                 self.plotter,
@@ -740,9 +741,14 @@ class EEmiLibGUI(QMainWindow):
 
         group_by_pe = data_type == "Emission Energy"
         if group_by_pe:
+            impact_energies = self._known_impact_energies()
+            if not impact_energies:
+                logging.error(
+                    "No emission energy measurement loaded, nothing to plot."
+                )
+                return
             axes_by_pe = {
-                e_pe: self.plot_area.axes_for(e_pe)
-                for e_pe in self._known_impact_energies()
+                e_pe: self.plot_area.axes_for(e_pe) for e_pe in impact_energies
             }
             self.model.plot(
                 self.plotter,
@@ -913,7 +919,11 @@ class EEmiLibGUI(QMainWindow):
         widget.setEnabled(False)
 
     def _known_impact_energies(self) -> list[float]:
-        """List loaded impact energies."""
+        """List loaded impact energies.
+
+        This is used in ``"Emission Energy Distribution"`` plots.
+
+        """
         distribs = self.data_matrix.get_data(
             "Emission Energy", IMPLEMENTED_POP
         )
