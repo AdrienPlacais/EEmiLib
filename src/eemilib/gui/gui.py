@@ -653,35 +653,12 @@ class EEmiLibGUI(QMainWindow):
         if data_type is None:
             return
 
-        group_by_pe = data_type == "Emission Energy"
-        if group_by_pe:
-            impact_energies = self._known_impact_energies()
-            if not impact_energies:
-                logging.error(
-                    "No emission energy measurement loaded, nothing to plot."
-                )
-                return
-            axes_by_pe = {
-                e_pe: self.plot_area.axes_for(e_pe) for e_pe in impact_energies
-            }
-            self.data_matrix.plot(
-                self.plotter,
-                population=populations,
-                data_type=data_type,
-                axes=axes_by_pe,
-                group_by_pe=True,
-            )
-            self.plot_area.refresh()
-        else:
-            axes = self.plot_area.axes_for(None)
-            self.data_matrix.plot(
-                self.plotter,
-                population=populations,
-                data_type=data_type,
-                axes=axes,
-            )
-            self.plot_area.refresh(None)
-
+        self._plot(
+            self.data_matrix.plot,
+            data_type=data_type,
+            impact_energies=self._known_impact_energies(),
+            population=populations,
+        )
         self.measurements_are_plotted = True
 
     def plot_model(self) -> None:
@@ -697,38 +674,72 @@ class EEmiLibGUI(QMainWindow):
         if not success_angle:
             return
 
+        self._plot(
+            self.model.plot,
+            data_type=data_type,
+            impact_energies=self._known_impact_energies(),
+            population=populations,
+            energies=energies,
+            angles=angles,
+        )
+
+    def _plot(
+        self,
+        plot_callable: Callable[..., None],
+        data_type: ImplementedEmissionData,
+        impact_energies: list[float],
+        **plot_kwargs,
+    ) -> None:
+        """Call ``plot_callable`` on the right axes.
+
+        Can be grouped by |PE| energy.
+
+        Parameters
+        ----------
+        plot_callable :
+            Plot method to call.
+        data_type :
+            Data type to plot.
+        impact_energies :
+            |PE| energies, used only for ``"Emission Energy"``
+            plots.
+        plot_kwargs :
+            Other kwargs passed to the plot method, such as ``population``,
+            ``energies``, ``angles``.
+
+        """
         group_by_pe = data_type == "Emission Energy"
-        if group_by_pe:
-            impact_energies = self._known_impact_energies()
-            if not impact_energies:
-                logging.error(
-                    "No emission energy measurement loaded, nothing to plot."
-                )
-                return
-            axes_by_pe = {
-                e_pe: self.plot_area.axes_for(e_pe) for e_pe in impact_energies
-            }
-            self.model.plot(
-                self.plotter,
-                population=populations,
-                data_type=data_type,
-                energies=energies,
-                angles=angles,
-                axes=axes_by_pe,
-                group_by_pe=True,
+
+        if group_by_pe and not impact_energies:
+            logging.info(
+                "No impact energy available, maybe this data could not be read"
+                " from the provided data file? All the emission energy "
+                "spectrum will be plotted in the same tab, on the same figure."
+                " If this is too messy, check the used `Loader` documentation "
+                "to know how you can associate each spectrum file with it's "
+                "PE impact energy."
             )
-            self.plot_area.refresh()
-        else:
+            group_by_pe = False
+
+        if not group_by_pe:
             axes = self.plot_area.axes_for(None)
-            self.model.plot(
-                self.plotter,
-                population=populations,
-                data_type=data_type,
-                energies=energies,
-                angles=angles,
-                axes=axes,
+            plot_callable(
+                self.plotter, data_type=data_type, axes=axes, **plot_kwargs
             )
             self.plot_area.refresh(None)
+            return
+
+        axes_by_pe = {
+            e_pe: self.plot_area.axes_for(e_pe) for e_pe in impact_energies
+        }
+        plot_callable(
+            self.plotter,
+            data_type=data_type,
+            axes=axes_by_pe,
+            group_by_pe=group_by_pe,
+            **plot_kwargs,
+        )
+        self.plot_area.refresh()
 
     def _get_data_type_to_plot(self) -> ImplementedEmissionData | None:
         """Read input to determine the emission data type to plot."""
