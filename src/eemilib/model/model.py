@@ -577,6 +577,10 @@ class Model(ABC):
         for name in names:
             self.reset_parameter_value(name)
 
+    def _on_parameter_changed(self) -> None:
+        """Set events that should occur on parameter change."""
+        return
+
     def set_implementation(self, name: str, value: str) -> None:
         """Update one implementation axis.
 

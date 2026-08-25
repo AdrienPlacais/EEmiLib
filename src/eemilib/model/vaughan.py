@@ -175,6 +175,8 @@ class Vaughan(Model):
                 for name, kwargs in self.initial_parameters.items()
             },
         )
+        for parameter in self.parameters.values():
+            parameter.subscribe(self._on_parameter_changed)
         self._generate_parameter_docs()
         if parameters_values is not None:
             self.set_parameters_values(parameters_values)
