@@ -5,9 +5,14 @@ from dataclasses import dataclass
 
 from eemilib.util.constants import (
     IMPLEMENTED_EMISSION_DATA,
+    IMPLEMENTED_POP,
     ImplementedEmissionData,
     ImplementedPop,
 )
+
+
+class NotImplementedPopulationError(NotImplementedError):
+    """Error raised when the desired population does not exists."""
 
 
 @dataclass
@@ -17,6 +22,20 @@ class ModelConfig:
     emission_yields: Collection[ImplementedPop]
     emission_energies: Collection[ImplementedPop]
     emission_angles: Collection[ImplementedPop]
+
+    def __post_init__(self) -> None:
+        """Validate given data."""
+        for populations in (
+            self.emission_yields,
+            self.emission_energies,
+            self.emission_angles,
+        ):
+            for population in populations:
+                if population not in IMPLEMENTED_POP:
+                    raise NotImplementedPopulationError(
+                        f"{population = } is not in the list of implemented "
+                        f"populations, ie {IMPLEMENTED_POP}."
+                    )
 
     def mandatory_populations(
         self, data_type: ImplementedEmissionData
