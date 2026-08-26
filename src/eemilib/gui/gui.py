@@ -17,6 +17,10 @@
     3. Create layouts
     4. Call the `addWidget`, `addLayout` methods.
 
+.. todo::
+   Add a ``Clear`` button somewhere in the data matrix calling its ``Clear``
+   method.
+
 """
 
 import logging

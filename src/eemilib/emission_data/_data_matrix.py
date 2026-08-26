@@ -661,6 +661,19 @@ class DataMatrix:
             )
             distrib.rescale(objective_yield=expected_area, norm=1.0)
 
+    def clear(self) -> None:
+        """Clear loaded data.
+
+        Should only be called manually by the user.
+
+        .. todo::
+           Wire this to a button in the GUI.
+
+        """
+        self.data_matrix = [
+            [[] for _ in range(_N_COLS)] for _ in range(_N_ROWS)
+        ]
+
 
 class MeasuredDataMatrix(DataMatrix):
     """Hold data specifically obtained via an experimental campaign."""
