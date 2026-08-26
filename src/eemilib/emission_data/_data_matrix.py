@@ -374,7 +374,7 @@ class DataMatrix:
         )
         self._rescale_energy_distributions_to_teey()
 
-    def has_all_mandatory_files(self, model_config: ModelConfig) -> bool:
+    def holds_required_data(self, model_config: ModelConfig) -> bool:
         """Tell if files defined by :attr:`.Model.model_config` are set."""
         for data_type, corresponding_attribute in zip(
             IMPLEMENTED_EMISSION_DATA,
@@ -687,3 +687,14 @@ class ModelledDataMatrix(DataMatrix):
             e_pes_emission_energies=e_pes_emission_energies,
             rescale_energy_distributions_to_yield=rescale_energy_distributions_to_yield,
         )
+
+    def holds_required_data(self, model_config: ModelConfig) -> bool:
+        """Tell if the objet holds all data specified in ``model_config``.
+
+        Should be overriden, cause modelled data not necessarily file-based.
+
+        But it could be! In the future, we should be able to save and reload
+        both kind of data matrix.
+
+        """
+        raise NotImplementedError

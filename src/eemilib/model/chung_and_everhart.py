@@ -158,7 +158,7 @@ class ChungEverhart(Model):
             Additional unused parameters.
 
         """
-        if not data_matrix.has_all_mandatory_files(self.model_config):
+        if not data_matrix.holds_required_data(self.model_config):
             raise MissingDataError("Files are not all provided.")
 
         distributions = data_matrix.get_data("Emission Energy", population)

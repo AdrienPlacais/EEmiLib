@@ -279,7 +279,7 @@ class Vaughan(Model):
         self, data_matrix: DataMatrix, **kwargs
     ) -> None:
         """Match with position of first crossover and maximum."""
-        if not data_matrix.has_all_mandatory_files(self.model_config):
+        if not data_matrix.holds_required_data(self.model_config):
             logging.info(
                 "Files are not all provided. If Ec1 was given, I will try to "
                 "find the corresponding E_0."

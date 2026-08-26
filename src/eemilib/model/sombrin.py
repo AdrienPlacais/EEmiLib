@@ -147,7 +147,7 @@ class Sombrin(Model):
         self, data_matrix: DataMatrix, **kwargs
     ) -> None:
         """Extract main |TEEY| curve parameters from measure."""
-        if not data_matrix.has_all_mandatory_files(self.model_config):
+        if not data_matrix.holds_required_data(self.model_config):
             raise MissingDataError("Files are not all provided.")
 
         emission_yield = data_matrix.teey

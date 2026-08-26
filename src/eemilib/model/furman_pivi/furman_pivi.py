@@ -318,7 +318,7 @@ class FurmanPivi(Model):
             Unused kwargs.
 
         """
-        if not data_matrix.has_all_mandatory_files(self.model_config):
+        if not data_matrix.holds_required_data(self.model_config):
             raise MissingDataError("Files are not all provided.")
 
         teeys = data_matrix.get_data("Emission Yield", "all")
