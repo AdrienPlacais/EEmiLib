@@ -641,3 +641,49 @@ class DataMatrix:
                 np.interp(e_pe, energies, ref_teey.normal_data)
             )
             distrib.rescale(objective_yield=expected_area, norm=1.0)
+
+
+class MeasuredDataMatrix(DataMatrix):
+    """Hold data specifically obtained via an experimental campaign."""
+
+
+class ModelledDataMatrix(DataMatrix):
+    """Hold data specifically calculated by a :class:`.Model`."""
+
+    def load_data(
+        self,
+        loader: Loader,
+        e_pes_emission_energies: (
+            dict[ImplementedPop, Sequence[float]] | None
+        ) = None,
+        rescale_energy_distributions_to_yield: bool = False,
+    ) -> None:
+        """Load all filepaths in ``files_matrix``.
+
+        .. important::
+           If ``rescale_energy_distributions_to_yield`` is set to ``True``
+           (which is **NOT** the default for modelled data) and both emission
+           yield and emission energy distribution for ``"all"`` population are
+           provided, the emissision energy distribution will be rescaled so
+           that it's integral match corresponding |TEEY|.
+
+        Parameters
+        ----------
+        loader :
+            Actual instance that will load data.
+        e_pes_emission_energies :
+            Maps emitted electrons populations to their files' |PEs| energies
+            in :unit:`eV`. Every value must have the same length as it's
+            corresponding file paths. Use it only if the original files do not
+            contain this info and/or the :class:`.Loader` cannot infer it.
+        rescale_energy_distributions_to_yield :
+            Rescale ``"all"`` emission distributions so that their integrals
+            match the |TEEY|. Only if emission yield and emission distributions
+            for ``"all"`` population are provided.
+
+        """
+        return super().load_data(
+            loader=loader,
+            e_pes_emission_energies=e_pes_emission_energies,
+            rescale_energy_distributions_to_yield=rescale_energy_distributions_to_yield,
+        )
