@@ -71,9 +71,7 @@ class Dionne(Model):
     is_3d = False
     is_dielectrics_compatible = False
     model_config = ModelConfig(
-        emission_yield_files=("SE",),
-        emission_energy_files=(),
-        emission_angle_files=(),
+        emission_yields=("SE",), emission_energies=(), emission_angles=()
     )
     initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = {
         "excitation_energy": {

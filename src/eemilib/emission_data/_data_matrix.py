@@ -3,6 +3,11 @@
 .. todo::
     Methods to reset filepaths/data
 
+.. todo::
+   Once "data is present" is decoupled from "filepath is given", clean the
+   ``MockDataMatrix`` in the tests. In particular, ``holds_required_data``
+   (ex-``has_all_mandatory_files``) does not need to be overriden anymore.
+
 """
 
 import logging
@@ -378,11 +383,7 @@ class DataMatrix:
         """Tell if files defined by :attr:`.Model.model_config` are set."""
         for data_type, corresponding_attribute in zip(
             IMPLEMENTED_EMISSION_DATA,
-            (
-                "emission_yield_files",
-                "emission_energy_files",
-                "emission_angle_files",
-            ),
+            ("emission_yields", "emission_energies", "emission_angles"),
         ):
             mandatory_populations = getattr(
                 model_config, corresponding_attribute

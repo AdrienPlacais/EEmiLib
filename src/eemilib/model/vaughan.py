@@ -66,9 +66,7 @@ class Vaughan(Model):
     is_3d = True
     is_dielectrics_compatible = False
     model_config = ModelConfig(
-        emission_yield_files=("all",),
-        emission_energy_files=(),
-        emission_angle_files=(),
+        emission_yields=("all",), emission_energies=(), emission_angles=()
     )
     initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = {
         "E_0": {

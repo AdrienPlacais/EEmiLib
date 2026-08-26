@@ -239,9 +239,9 @@ class EEmiLibGUI(QMainWindow):
 
         # Get required file types for each population type
         required_files = {
-            "Emission Yield": config.emission_yield_files,
-            "Emission Energy": config.emission_energy_files,
-            "Emission Angle": config.emission_angle_files,
+            "Emission Yield": config.emission_yields,
+            "Emission Energy": config.emission_energies,
+            "Emission Angle": config.emission_angles,
         }
 
         for i, pop in enumerate(IMPLEMENTED_POP):

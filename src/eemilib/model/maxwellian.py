@@ -43,9 +43,7 @@ class Maxwellian(Model):
     is_3d = False
     is_dielectrics_compatible = False
     model_config = ModelConfig(
-        emission_yield_files=(),
-        emission_energy_files=("all",),
-        emission_angle_files=(),
+        emission_yields=(), emission_energies=("all",), emission_angles=()
     )
     initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = {
         "temperature": {
