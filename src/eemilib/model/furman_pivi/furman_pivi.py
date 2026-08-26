@@ -31,7 +31,6 @@ from scipy.optimize import least_squares
 
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
-from eemilib.emission_data.emission_data import MissingDataError
 from eemilib.emission_data.emission_energy_distribution import (
     AllEmissionEnergyDistribution,
     EmissionEnergyDistribution,
@@ -69,6 +68,7 @@ from eemilib.util.constants import (
     ImplementedEmissionData,
     ImplementedPop,
 )
+from eemilib.util.exceptions import MissingDataError
 
 EMISSION_YIELD_FUNCS: dict[ImplementedPop, Callable] = {
     "SE": seey,

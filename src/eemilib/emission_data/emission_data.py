@@ -20,10 +20,6 @@ from eemilib.util.constants import COL_ENERGY, COL_NORMAL, ImplementedPop
 from eemilib.util.helper import documentation_url
 
 
-class MissingDataError(ValueError):
-    """Error raised when data is missing."""
-
-
 class EmissionData(ABC):
     """A yield, energy distribution or angular distribution."""
 

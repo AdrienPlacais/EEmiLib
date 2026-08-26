@@ -15,7 +15,7 @@ from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data.emission_angle_distribution import (
     EmissionAngleDistribution,
 )
-from eemilib.emission_data.emission_data import EmissionData, MissingDataError
+from eemilib.emission_data.emission_data import EmissionData
 from eemilib.emission_data.emission_energy_distribution import (
     EMISSION_ENERGIES_BY_POP,
     AllEmissionEnergyDistribution,
@@ -41,6 +41,7 @@ from eemilib.util.constants import (
     ImplementedEmissionData,
     ImplementedPop,
 )
+from eemilib.util.exceptions import MissingDataError
 from eemilib.util.helper import flatten
 
 pop_to_row = {pop: i for i, pop in enumerate(IMPLEMENTED_POP)}

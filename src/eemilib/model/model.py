@@ -18,7 +18,6 @@ from numpy.typing import NDArray
 
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
-from eemilib.emission_data.emission_data import MissingDataError
 from eemilib.emission_data.emission_yield import TEEY
 from eemilib.emission_data.helper import get_ec1, get_max
 from eemilib.model.parameter import Parameter, ParameterSet
@@ -29,6 +28,7 @@ from eemilib.util.constants import (
     ImplementedEmissionData,
     ImplementedPop,
 )
+from eemilib.util.exceptions import MissingDataError
 from eemilib.util.helper import documentation_url
 from eemilib.util.markdown import E_MAX, EC_1, SIGMA, SIGMA_MAX, tex_math
 

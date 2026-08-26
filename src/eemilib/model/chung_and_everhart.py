@@ -16,7 +16,6 @@ from scipy.optimize import Bounds, least_squares
 
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
-from eemilib.emission_data.emission_data import MissingDataError
 from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
@@ -25,6 +24,7 @@ from eemilib.util.constants import (
     ImplementedEmissionData,
     ImplementedPop,
 )
+from eemilib.util.exceptions import MissingDataError
 from eemilib.util.markdown import NORM, W_F
 
 

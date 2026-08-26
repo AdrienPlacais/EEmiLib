@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
 
-from eemilib.emission_data.emission_data import EmissionData, MissingDataError
+from eemilib.emission_data.emission_data import EmissionData
 from eemilib.emission_data.helper import (
     get_crossover_energies,
     get_emax_eymax,
@@ -23,10 +23,7 @@ from eemilib.util.constants import (
     ImplementedPop,
     md_ey,
 )
-
-
-class MissingNormalEmissionYieldError(MissingDataError):
-    """Error raised when emission yield at normal incidence would be needed."""
+from eemilib.util.exceptions import MissingNormalEmissionYieldError
 
 
 class EmissionYield(EmissionData):

@@ -9,10 +9,7 @@ from eemilib.util.constants import (
     ImplementedEmissionData,
     ImplementedPop,
 )
-
-
-class NotImplementedPopulationError(NotImplementedError):
-    """Error raised when the desired population does not exists."""
+from eemilib.util.exceptions import NotImplementedPopulationError
 
 
 @dataclass
