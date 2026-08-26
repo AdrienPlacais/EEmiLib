@@ -3,11 +3,6 @@
 .. todo::
     Methods to reset filepaths/data
 
-.. todo::
-   Once "data is present" is decoupled from "filepath is given", clean the
-   ``MockDataMatrix`` in the tests. In particular, ``holds_required_data``
-   (ex-``has_all_mandatory_files``) does not need to be overriden anymore.
-
 """
 
 import logging
@@ -380,36 +375,30 @@ class DataMatrix:
         self._rescale_energy_distributions_to_teey()
 
     def holds_required_data(self, model_config: ModelConfig) -> bool:
-        """Tell if files defined by :attr:`.Model.model_config` are set."""
-        for data_type, corresponding_attribute in zip(
+        """Tell if data defined by :attr:`.Model.model_config` exists.
+
+        Parameters
+        ----------
+        model_config :
+            Lists the data necessary for a :class:`.Model` to be fitted.
+
+        Returns
+        -------
+            Whether all data is contained in current object (whether it was
+            loaded or given directly).
+
+        """
+        for data_type, data_type_attribute in zip(
             IMPLEMENTED_EMISSION_DATA,
             ("emission_yields", "emission_energies", "emission_angles"),
+            strict=True,
         ):
-            mandatory_populations = getattr(
-                model_config, corresponding_attribute
-            )
+            required_pop = getattr(model_config, data_type_attribute)
 
-            for mandatory_population in mandatory_populations:
-                if mandatory_population not in IMPLEMENTED_POP:
-                    logging.error(
-                        f"{mandatory_population = } not in {IMPLEMENTED_POP = }"
-                    )
-                    return False
-
-                filepath = self.get_files(data_type, mandatory_population)
-                if filepath is None:
-                    logging.error(
-                        f"You must define a {data_type} filepath for"
-                        f" population {mandatory_population}"
-                    )
-                    return False
-
-                data_objects = self.get_data(data_type, mandatory_population)
-                if not data_objects:
-                    logging.error(
-                        f"You must load {data_type} filepath for "
-                        f"population {mandatory_population}"
-                    )
+            for pop in required_pop:
+                data = self.get_data(data_type, pop)
+                if not data:
+                    logging.error(f"No {data_type} found for {pop} electrons.")
                     return False
         return True
 

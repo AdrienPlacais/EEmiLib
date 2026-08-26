@@ -38,10 +38,6 @@ class MockDataMatrix(DataMatrix):
             [[emission_data], [], []],
         ]
 
-    def holds_required_data(self, *args, **kwargs) -> bool:
-        """Skip this check."""
-        return True
-
 
 def test_initial_parameters(vaughan_model: Vaughan) -> None:
     """Check that the mandatory parameters are defined."""
