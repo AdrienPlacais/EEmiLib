@@ -6,10 +6,11 @@
 """
 
 import logging
-from collections.abc import Collection, Sequence
+from collections.abc import Callable, Collection, Sequence
 from typing import Literal, cast, overload
 
 import numpy as np
+from numpy.typing import NDArray
 
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data.emission_angle_distribution import (
@@ -44,16 +45,16 @@ from eemilib.util.constants import (
 from eemilib.util.exceptions import MissingDataError
 from eemilib.util.helper import flatten
 
-pop_to_row = {pop: i for i, pop in enumerate(IMPLEMENTED_POP)}
-row_to_pop = {val: key for key, val in pop_to_row.items()}
+_POP_TO_ROW = {pop: i for i, pop in enumerate(IMPLEMENTED_POP)}
+_ROW_TO_POP = {val: key for key, val in _POP_TO_ROW.items()}
 
-data_type_to_col = {
+_DATA_TYPE_TO_COL = {
     data_type: j for j, data_type in enumerate(IMPLEMENTED_EMISSION_DATA)
 }
-col_to_data_type = {val: key for key, val in data_type_to_col.items()}
+_COL_TO_DATA_TYPE = {val: key for key, val in _DATA_TYPE_TO_COL.items()}
 
-n_rows = len(IMPLEMENTED_POP)
-n_cols = len(IMPLEMENTED_EMISSION_DATA)
+_N_ROWS = len(IMPLEMENTED_POP)
+_N_COLS = len(IMPLEMENTED_EMISSION_DATA)
 
 
 class DataMatrix:
@@ -63,25 +64,27 @@ class DataMatrix:
         """Instantiate the object."""
         self.files_matrix: list[list[list[DataPath]]]
         self.files_matrix = [
-            [[] for _ in range(n_cols)] for _ in range(n_rows)
+            [[] for _ in range(_N_COLS)] for _ in range(_N_ROWS)
         ]
 
         self.data_matrix: list[list[list[EmissionData]]]
-        self.data_matrix = [[[] for _ in range(n_cols)] for _ in range(n_rows)]
+        self.data_matrix = [
+            [[] for _ in range(_N_COLS)] for _ in range(_N_ROWS)
+        ]
 
     def _natures_to_indexes(
         self, data_type: ImplementedEmissionData, population: ImplementedPop
     ) -> tuple[int, int]:
         """Give the desired indexes."""
-        return (pop_to_row[population], data_type_to_col[data_type])
+        return (_POP_TO_ROW[population], _DATA_TYPE_TO_COL[data_type])
 
     def _indexes_to_natures(
         self, row: int, col: int
     ) -> tuple[ImplementedPop, ImplementedEmissionData]:
         """Give the desired natures."""
-        population_type = row_to_pop[row]
+        population_type = _ROW_TO_POP[row]
         assert population_type in IMPLEMENTED_POP
-        data_type = col_to_data_type[col]
+        data_type = _COL_TO_DATA_TYPE[col]
         assert data_type in IMPLEMENTED_EMISSION_DATA
         return population_type, data_type
 
@@ -101,9 +104,33 @@ class DataMatrix:
     @overload
     def set_data(
         self,
-        emission_data: EmissionYield | Collection[EmissionYield],
+        emission_data: TEEY | Collection[TEEY],
         data_type: Literal["Emission Yield"],
-        population: ImplementedPop,
+        population: Literal["all"],
+    ) -> None: ...
+
+    @overload
+    def set_data(
+        self,
+        emission_data: SEEY | Collection[SEEY],
+        data_type: Literal["Emission Yield"],
+        population: Literal["SE"],
+    ) -> None: ...
+
+    @overload
+    def set_data(
+        self,
+        emission_data: EBEEY | Collection[EBEEY],
+        data_type: Literal["Emission Yield"],
+        population: Literal["EBE"],
+    ) -> None: ...
+
+    @overload
+    def set_data(
+        self,
+        emission_data: IBEEY | Collection[IBEEY],
+        data_type: Literal["Emission Yield"],
+        population: Literal["IBE"],
     ) -> None: ...
 
     @overload
@@ -138,6 +165,7 @@ class DataMatrix:
         data_type: Literal["Emission Energy"],
         population: Literal["all"],
     ) -> None: ...
+
     @overload
     def set_data(
         self,
@@ -641,6 +669,15 @@ class MeasuredDataMatrix(DataMatrix):
 class ModelledDataMatrix(DataMatrix):
     """Hold data specifically calculated by a :class:`.Model`."""
 
+    def __init__(self) -> None:
+        """Instantiate the object with an empty cache."""
+        super().__init__()
+        #: Tracks the ``(energy, theta, e_pe)`` that produced each cell's
+        #: current content, so that a mismatched request can invalidate one
+        #: cell rather than the whole matrix.
+        self._requests: list[list[tuple]]
+        self._requests = [[() for _ in range(_N_COLS)] for _ in range(_N_ROWS)]
+
     def load_data(
         self,
         loader: Loader,
@@ -689,3 +726,69 @@ class ModelledDataMatrix(DataMatrix):
 
         """
         raise NotImplementedError
+
+    def get_or_compute(
+        self,
+        data_type: ImplementedEmissionData,
+        population: ImplementedPop,
+        energy: NDArray[np.float64],
+        theta: NDArray[np.float64],
+        e_pe: float | None,
+        compute: Callable[[], Sequence[EmissionData] | None],
+    ) -> Sequence[EmissionData]:
+        """Return cached entry for this cell, compute and cache it if new.
+
+        The cell is recomputed only if this exact request ``(energy, theta,
+        e_pe)`` is stored in corresponding :attr:`_requests` cell. Other cells
+        are left untouched.
+
+        Parameters
+        ----------
+        data_type :
+            Desired type of data.
+        population :
+            Desired population.
+        energy :
+            |PE| impact energies for emission yield, |EE| emission energies for
+            emission energy distribution.
+        theta :
+            |PE| impact angles.
+        e_pe :
+            |PE| impact energy for emission energy distribution.
+        compute :
+            Function computing the cell if cache misses. Returns ``None`` if
+            this model does not support this request.
+
+        Return
+        ------
+            Cached or freshly computed emission data. Empty list if it failed.
+
+        """
+        row, col = self._natures_to_indexes(data_type, population)
+        request = (energy, theta, e_pe)
+        stored = self._requests[row][col]
+        cached = self.get_data(data_type, population)
+        if _is_same_request(stored, request) and cached:
+            return cached
+
+        emission_data = compute()
+        if emission_data is None:
+            return []
+
+        # TODO: Does compute return a dataframe OR an EmissionData?
+        self.set_data(emission_data, data_type, population)
+        self._requests[row][col] = request
+        return emission_data
+
+
+def _is_same_request(stored: tuple, request: tuple) -> bool:
+    """Tell whether ``request`` arguments are exactly ``stored``."""
+    if not stored:
+        return False
+    s_energy, s_theta, s_e_pe = stored
+    r_energy, r_theta, r_e_pe = request
+    return (
+        np.array_equal(s_energy, r_energy)
+        and np.array_equal(s_theta, r_theta)
+        and s_e_pe == r_e_pe
+    )
