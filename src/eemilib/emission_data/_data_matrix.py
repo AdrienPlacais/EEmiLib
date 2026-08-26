@@ -10,6 +10,7 @@ from collections.abc import Callable, Collection, Sequence
 from typing import Literal, cast, overload
 
 import numpy as np
+import pandas as pd
 from numpy.typing import NDArray
 
 from eemilib.core.model_config import ModelConfig
@@ -42,7 +43,10 @@ from eemilib.util.constants import (
     ImplementedEmissionData,
     ImplementedPop,
 )
-from eemilib.util.exceptions import MissingDataError
+from eemilib.util.exceptions import (
+    MissingDataError,
+    NotImplementedEmissionDataTypeError,
+)
 from eemilib.util.helper import flatten
 
 _POP_TO_ROW = {pop: i for i, pop in enumerate(IMPLEMENTED_POP)}
@@ -635,7 +639,8 @@ class DataMatrix:
         teeys = self.get_data("Emission Yield", "all")
         if not teeys:
             raise MissingDataError(
-                "Missing TEEY measurement, needed to rescale energy distributions."
+                "Missing TEEY measurement, needed to rescale energy "
+                "distributions."
             )
         if len(teeys) > 1:
             logging.warning(
@@ -691,44 +696,6 @@ class ModelledDataMatrix(DataMatrix):
         self._requests: list[list[tuple]]
         self._requests = [[() for _ in range(_N_COLS)] for _ in range(_N_ROWS)]
 
-    def load_data(
-        self,
-        loader: Loader,
-        e_pes_emission_energies: (
-            dict[ImplementedPop, Sequence[float]] | None
-        ) = None,
-        rescale_energy_distributions_to_yield: bool = False,
-    ) -> None:
-        """Load all filepaths in ``files_matrix``.
-
-        .. important::
-           If ``rescale_energy_distributions_to_yield`` is set to ``True``
-           (which is **NOT** the default for modelled data) and both emission
-           yield and emission energy distribution for ``"all"`` population are
-           provided, the emissision energy distribution will be rescaled so
-           that it's integral match corresponding |TEEY|.
-
-        Parameters
-        ----------
-        loader :
-            Actual instance that will load data.
-        e_pes_emission_energies :
-            Maps emitted electrons populations to their files' |PEs| energies
-            in :unit:`eV`. Every value must have the same length as it's
-            corresponding file paths. Use it only if the original files do not
-            contain this info and/or the :class:`.Loader` cannot infer it.
-        rescale_energy_distributions_to_yield :
-            Rescale ``"all"`` emission distributions so that their integrals
-            match the |TEEY|. Only if emission yield and emission distributions
-            for ``"all"`` population are provided.
-
-        """
-        return super().load_data(
-            loader=loader,
-            e_pes_emission_energies=e_pes_emission_energies,
-            rescale_energy_distributions_to_yield=rescale_energy_distributions_to_yield,
-        )
-
     def holds_required_data(self, model_config: ModelConfig) -> bool:
         """Tell if the objet holds all data specified in ``model_config``.
 
@@ -747,7 +714,7 @@ class ModelledDataMatrix(DataMatrix):
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
         e_pe: float | None,
-        compute: Callable[[], Sequence[EmissionData] | None],
+        compute: Callable[[], pd.DataFrame | None],
     ) -> Sequence[EmissionData]:
         """Return cached entry for this cell, compute and cache it if new.
 
@@ -780,15 +747,18 @@ class ModelledDataMatrix(DataMatrix):
         row, col = self._natures_to_indexes(data_type, population)
         request = (energy, theta, e_pe)
         stored = self._requests[row][col]
-        cached = self.get_data(data_type, population)
-        if _is_same_request(stored, request) and cached:
+
+        if _is_same_request(stored, request) and (
+            cached := self.get_data(data_type, population)
+        ):
             return cached
 
-        emission_data = compute()
-        if emission_data is None:
+        data = compute()
+        if data is None:
             return []
 
-        # TODO: Does compute return a dataframe OR an EmissionData?
+        emission_data = _build_emission_data(data_type, population, data, e_pe)
+
         self.set_data(emission_data, data_type, population)
         self._requests[row][col] = request
         return emission_data
@@ -805,3 +775,18 @@ def _is_same_request(stored: tuple, request: tuple) -> bool:
         and np.array_equal(s_theta, r_theta)
         and s_e_pe == r_e_pe
     )
+
+
+def _build_emission_data(
+    data_type: ImplementedEmissionData,
+    population: ImplementedPop,
+    data: pd.DataFrame,
+    e_pe: float | None = None,
+) -> Sequence[EmissionData]:
+    """Instantiate the proper :class:`EmissionData` subclass from data."""
+    if data_type == "Emission Yield":
+        return [EMISSION_YIELDS_BY_POP[population](data)]
+    if data_type == "Emission Energy":
+        return [EMISSION_ENERGIES_BY_POP[population](data, e_pe=e_pe)]
+    else:
+        raise NotImplementedEmissionDataTypeError(data_type)
