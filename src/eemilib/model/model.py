@@ -18,6 +18,7 @@ from numpy.typing import NDArray
 
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
+from eemilib.emission_data._data_matrix import ModelledDataMatrix
 from eemilib.emission_data.emission_yield import TEEY
 from eemilib.emission_data.helper import get_ec1, get_max
 from eemilib.model.parameter import Parameter, ParameterSet
@@ -100,6 +101,19 @@ class Model(ABC):
         #: Maps each axis name (see :attr:`.Model.implementation_choices`) to
         #: the currently selected option.
         self.current_implementations: dict[str, str] = {}
+
+        #: Cached computed data, invalidated on parameter change or when
+        #: :attr:`reference_data` is modified.
+        #:
+        #: .. seealso::
+        #:    :meth:`_on_parameter_changed`
+        #:
+        self._cached_data_matrix = ModelledDataMatrix()
+
+        #: Optional reference; used to infer ``energy`` and ``theta`` when not
+        #: given, and as default for :meth:`find_optimal_parameters` and
+        #: :meth:`evaluate` when no ``data_matrix`` is provided.
+        self.reference_data: DataMatrix | None = None
 
     @classmethod
     def _generate_parameter_docs(cls) -> str:
@@ -586,8 +600,22 @@ class Model(ABC):
             self.reset_parameter_value(name)
 
     def _on_parameter_changed(self) -> None:
-        """Set events that should occur on parameter change."""
-        return
+        """Set events that should occur on parameter change.
+
+        As for now, remove the :class:`.EmissionData` in
+        :attr:`_cached_data_matrix`.
+
+        """
+        self._cached_data_matrix.clear()
+
+    def set_reference_data(self, data_matrix: DataMatrix) -> None:
+        """Set new reference data.
+
+        Also call :meth:`_on_parameter_changed`.
+
+        """
+        self.reference_data = data_matrix
+        self._on_parameter_changed()
 
     def set_implementation(self, name: str, value: str) -> None:
         """Update one implementation axis.
