@@ -80,7 +80,7 @@ class ChungEverhart(Model):
         self.parameters = cast(ChungEverhartParameters, self.parameters)
         self._func = chung_everhart_func
 
-    def get_data(
+    def compute_data(
         self,
         population: ImplementedPop,
         data_type: ImplementedEmissionData,
@@ -124,7 +124,7 @@ class ChungEverhart(Model):
 
         """
         if population != "SE" or data_type != "Emission Energy":
-            return super().get_data(
+            return super().compute_data(
                 population, data_type, energy, theta, *args, **kwargs
             )
         out = np.zeros(len(energy))

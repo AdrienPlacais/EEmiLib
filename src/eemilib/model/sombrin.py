@@ -104,7 +104,7 @@ class Sombrin(Model):
         )
         return self._E
 
-    def get_data(
+    def compute_data(
         self,
         population: ImplementedPop,
         data_type: ImplementedEmissionData,
@@ -119,7 +119,7 @@ class Sombrin(Model):
 
         """
         if population != "all" or data_type != "Emission Yield":
-            return super().get_data(
+            return super().compute_data(
                 population, data_type, energy, theta, *args, **kwargs
             )
         out = np.zeros(len(energy))

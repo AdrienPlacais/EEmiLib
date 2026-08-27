@@ -8,7 +8,7 @@
 import logging
 import math
 from abc import ABC, abstractmethod
-from collections.abc import Collection
+from collections.abc import Collection, Sequence
 from pprint import pformat
 from typing import Any, ClassVar, Literal, cast, overload
 
@@ -19,6 +19,7 @@ from numpy.typing import NDArray
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
 from eemilib.emission_data._data_matrix import ModelledDataMatrix
+from eemilib.emission_data.emission_data import EmissionData
 from eemilib.emission_data.emission_yield import TEEY
 from eemilib.emission_data.helper import get_ec1, get_max
 from eemilib.model.parameter import Parameter, ParameterSet
@@ -89,6 +90,14 @@ class Model(ABC):
         self.doc_url = documentation_url(
             self, url_doc_override=self._url_doc_override
         )
+        #: Cached computed data, invalidated on parameter change or when
+        #: :attr:`reference_data` is modified.
+        #:
+        #: .. seealso::
+        #:    :meth:`_on_parameter_changed`
+        #:
+        self._cached_data_matrix = ModelledDataMatrix()
+
         #: Maps parameters name to :class:`.Parameter` instances.
         self.parameters = ParameterSet(
             {
@@ -104,14 +113,6 @@ class Model(ABC):
         #: Maps each axis name (see :attr:`.Model.implementation_choices`) to
         #: the currently selected option.
         self.current_implementations: dict[str, str] = {}
-
-        #: Cached computed data, invalidated on parameter change or when
-        #: :attr:`reference_data` is modified.
-        #:
-        #: .. seealso::
-        #:    :meth:`_on_parameter_changed`
-        #:
-        self._cached_data_matrix = ModelledDataMatrix()
 
         #: Optional reference; used to infer ``energy`` and ``theta`` when not
         #: given, and as default for :meth:`find_optimal_parameters` and
@@ -159,11 +160,11 @@ class Model(ABC):
         Under the hood, it calls :meth:`get_data`.
 
         """
-        teey = self.get_data(
+        teeys = self.get_or_compute_data(
             "all", "Emission Yield", energy, theta, *args, **kwargs
         )
-        if teey is not None:
-            return teey
+        if teeys:
+            return teeys[0].data
         logging.warning("No TEEY data found, returning dummy.")
         return _dummy_df(energy, theta)
 
@@ -179,11 +180,11 @@ class Model(ABC):
         Under the hood, it calls :meth:`get_data`.
 
         """
-        seey = self.get_data(
+        seeys = self.get_or_compute_data(
             "SE", "Emission Yield", energy, theta, *args, **kwargs
         )
-        if seey is not None:
-            return seey
+        if seeys:
+            return seeys[0].data
         logging.warning("No SEEY data found, returning dummy.")
         return _dummy_df(energy, theta)
 
@@ -199,17 +200,17 @@ class Model(ABC):
         Under the hood, it calls :meth:`get_data`.
 
         """
-        se_distrib = self.get_data(
+        se_distribs = self.get_or_compute_data(
             "SE", "Emission Energy", energy, theta, *args, **kwargs
         )
-        if se_distrib is not None:
-            return se_distrib
+        if se_distribs:
+            return se_distribs[0].data
         logging.warning(
             "No SE energy distribution data found, returning dummy."
         )
         return _dummy_df(energy, theta)
 
-    def get_data(
+    def compute_data(
         self,
         population: ImplementedPop,
         data_type: ImplementedEmissionData,
@@ -263,6 +264,63 @@ class Model(ABC):
 
         """
         return None
+
+    def get_or_compute_data(
+        self,
+        population: ImplementedPop,
+        data_type: ImplementedEmissionData,
+        energy: NDArray[np.float64] | None = None,
+        theta: NDArray[np.float64] | None = None,
+        e_pe: float | None = None,
+        *args,
+        **kwargs,
+    ) -> Sequence[EmissionData]:
+        r"""Return cached data if available, else compute it and cache it.
+
+        Parameters
+        ----------
+        population :
+            Type of population you want data from.
+        data_type :
+            Desired type of emission data.
+        energy :
+            According to the emission data type, this argument can mean
+            several things:
+
+            - ``"Emission Yield"``: array of |PEs| impact energy in
+            :unit:`eV`.
+            - ``"Emission Energy"``: array of |EEs| emission energy in
+            :unit:`eV`. By convention, if ``e_pe`` is not provided, the
+            impact energy of the |PE| is also the last value of ``energy``.
+
+        theta :
+            Array of |PE| electrons impact angle in :unit:`\degrees`.
+        e_pe :
+            Energy of |PEs| in :unit:`eV`, if applicable.
+        args, kwargs :
+            Forwarded to :meth:`compute_data` on a cache miss.
+
+        Return
+        ------
+            The cached or freshly computed :class:`.EmissionData`.
+
+        """
+        if energy is None:
+            energy = self._infer_energy(data_type, population)
+        if theta is None:
+            theta = self._infer_theta(data_type, population)
+
+        result = self._cached_data_matrix.get_or_compute(
+            data_type,
+            population,
+            energy,
+            theta,
+            e_pe,
+            compute=lambda: self.compute_data(
+                population, data_type, energy, theta, e_pe, *args, **kwargs
+            ),
+        )
+        return result
 
     def _infer_energy(
         self,
@@ -531,7 +589,7 @@ class Model(ABC):
                 axes, n_points=n_points, data_type=data_type
             )
 
-        data = self.get_data(
+        data = self.compute_data(
             population=population,
             data_type=data_type,
             energy=energies,

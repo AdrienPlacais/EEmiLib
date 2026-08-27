@@ -79,7 +79,7 @@ class Maxwellian(Model):
         self.parameters = cast(MaxwellianParameters, self.parameters)
         self._func = maxwellian_pdf
 
-    def get_data(
+    def compute_data(
         self,
         population: ImplementedPop,
         data_type: ImplementedEmissionData,
@@ -94,7 +94,7 @@ class Maxwellian(Model):
 
         """
         if population != "SE" or data_type != "Emission Energy":
-            return super().get_data(
+            return super().compute_data(
                 population, data_type, energy, theta, *args, **kwargs
             )
         out = np.zeros(len(energy))

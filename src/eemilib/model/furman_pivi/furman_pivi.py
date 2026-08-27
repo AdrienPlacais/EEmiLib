@@ -241,7 +241,7 @@ class FurmanPivi(Model):
         }
         return pd.DataFrame(out_dict)
 
-    def get_data(
+    def compute_data(
         self,
         population: ImplementedPop,
         data_type: ImplementedEmissionData,
@@ -274,7 +274,7 @@ class FurmanPivi(Model):
 
         """
         if data_type == "Emission Angle":
-            return super().get_data(
+            return super().compute_data(
                 population, data_type, energy, theta, *args, **kwargs
             )
 
@@ -284,13 +284,13 @@ class FurmanPivi(Model):
             )
             if data is not None:
                 return data
-            return super().get_data(
+            return super().compute_data(
                 population, data_type, energy, theta, *args, **kwargs
             )
 
         ey_func = EMISSION_YIELD_FUNCS.get(population)
         if ey_func is None:
-            return super().get_data(
+            return super().compute_data(
                 population, data_type, energy, theta, *args, **kwargs
             )
         out = np.zeros((len(energy), len(theta)))

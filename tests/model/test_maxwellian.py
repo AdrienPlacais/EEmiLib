@@ -35,7 +35,7 @@ class MockDataMatrix(DataMatrix):
             [[], [se_pdf], []],
         ]
 
-    def has_all_mandatory_files(self, *args, **kwargs) -> bool:
+    def holds_required_data(self, *args, **kwargs) -> bool:
         """Skip this check."""
         return True
 
@@ -89,7 +89,7 @@ def test_modelled_maxwellian_agains_cst(
     emission_energies = np.array(expected.energies)
     theta = np.array(expected.angles)
 
-    calculated_df = model.get_data(
+    calculated_df = model.compute_data(
         population="SE",
         data_type="Emission Energy",
         energy=emission_energies,

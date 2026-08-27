@@ -142,7 +142,7 @@ class Dionne(Model):
         self._energy_loss_model: EnergyLossModel = energy_loss_model
         self._func = dionne_func
 
-    def get_data(
+    def compute_data(
         self,
         population: ImplementedPop,
         data_type: ImplementedEmissionData,
@@ -157,7 +157,7 @@ class Dionne(Model):
 
         """
         if population != "SE" or data_type != "Emission Yield":
-            return super().get_data(
+            return super().compute_data(
                 population, data_type, energy, theta, *args, **kwargs
             )
         out = np.zeros(len(energy))
