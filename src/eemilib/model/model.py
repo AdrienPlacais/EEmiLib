@@ -617,6 +617,35 @@ class Model(ABC):
         self.reference_data = data_matrix
         self._on_parameter_changed()
 
+    def _resolve_data_matrix(
+        self, data_matrix: DataMatrix | None
+    ) -> DataMatrix:
+        """Return ``data_matrix`` if provided, or fall back on the reference one.
+
+        Parameters
+        ----------
+        data_matrix :
+            Optional data matrix.
+
+        Returns
+        -------
+            Resolved data matrix object.
+
+        Raises
+        ------
+        MissingDataError
+            If ``data_matrix = None`` and :attr:`.reference_data` is not set.
+
+        """
+        if data_matrix:
+            return data_matrix
+        if self.reference_data:
+            return self.reference_data
+        raise MissingDataError(
+            "``data_matrix`` argument was None AND there was no reference data"
+            f" matrix on {self.__class__.__name__}."
+        )
+
     def set_implementation(self, name: str, value: str) -> None:
         """Update one implementation axis.
 
