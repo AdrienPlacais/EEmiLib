@@ -33,6 +33,9 @@ from eemilib.util.exceptions import MissingDataError
 from eemilib.util.helper import documentation_url
 from eemilib.util.markdown import E_MAX, EC_1, SIGMA, SIGMA_MAX, tex_math
 
+_DEFAULT_ENERGY = np.linspace(0.0, 500.0, 501)
+_DEFAULT_THETA = np.array([0.0])
+
 
 class Model(ABC):
     """Define the base electron emission model.
@@ -260,6 +263,64 @@ class Model(ABC):
 
         """
         return None
+
+    def _infer_energy(
+        self,
+        data_type: ImplementedEmissionData,
+        population: ImplementedPop,
+        n_points: int = 501,
+    ) -> NDArray[np.float64]:
+        """Infer an energy array from :attr:`reference_data`, densified.
+
+        Tries:
+
+        1. Energy array from same data type, same population.
+        2. Energy array from same data type, population ``"all"``.
+           - Likely what will work, as :attr:`reference_data` will generally
+             hold experimental data.
+
+        3. Else, return the default :data:`_DEFAULT_ENERGY`.
+
+        Array taken from :attr:`reference_data` is densified, it holds
+        ``n_points``.
+
+        """
+        if not self.reference_data:
+            return _DEFAULT_ENERGY
+        for pop in (population, "all"):
+            emission_data = self.reference_data.get_data(data_type, pop)
+            if not emission_data:
+                continue
+            energies = emission_data[0].energies
+            return np.linspace(energies.min(), energies.max(), n_points)
+        return _DEFAULT_ENERGY
+
+    def _infer_theta(
+        self, data_type: ImplementedEmissionData, population: ImplementedPop
+    ) -> NDArray[np.float64]:
+        """Infer a theta array from :attr:`reference_data`.
+
+        Tries:
+
+        1. theta array from same data type, same population.
+        2. theta array from same data type, population ``"all"``.
+           - Likely what will work, as :attr:`reference_data` will generally
+             hold experimental data.
+
+        3. Else, return the default :data:`_DEFAULT_THETA`.
+
+        Array taken from :attr:`reference_data` is NOT densified, it is
+        returned as is.
+
+        """
+        if not self.reference_data:
+            return _DEFAULT_THETA
+        for pop in (population, "all"):
+            emission_data = self.reference_data.get_data(data_type, pop)
+            if not emission_data:
+                continue
+            return np.asarray(emission_data[0].angles)
+        return _DEFAULT_THETA
 
     @abstractmethod
     def find_optimal_parameters(
