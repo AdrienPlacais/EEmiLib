@@ -47,7 +47,7 @@ from PyQt5.QtWidgets import (
 )
 
 from eemilib.core.model_config import ModelConfig
-from eemilib.emission_data import DataMatrix
+from eemilib.emission_data import MeasuredDataMatrix
 from eemilib.emission_data.emission_data import EmissionData
 from eemilib.gui.dropdown import (
     DROPDOWNS,
@@ -115,7 +115,7 @@ class EEmiLibGUI(QMainWindow):
         }
 
         # EEmiLib attributes
-        self.data_matrix = DataMatrix()
+        self.data_matrix = MeasuredDataMatrix()
         self.model: Model
         self.loader: Loader
         self.plotter: Plotter

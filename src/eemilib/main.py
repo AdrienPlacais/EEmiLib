@@ -4,7 +4,7 @@ from pathlib import Path
 
 import numpy as np
 
-from eemilib.emission_data import DataMatrix
+from eemilib.emission_data import MeasuredDataMatrix
 from eemilib.loader.pandas_loader import PandasLoader
 from eemilib.model.vaughan import Vaughan
 from eemilib.plotter.pandas import PandasPlotter
@@ -18,7 +18,7 @@ def main() -> None:
     # =========================================================================
     # Horizontal screen portion 1 of 3
     # =========================================================================
-    data_matrix = DataMatrix()
+    data_matrix = MeasuredDataMatrix()
 
     # A matrix with 4 rows, 3 cols. You click on a cell, a window opens and you
     # select the file(s) to open.
