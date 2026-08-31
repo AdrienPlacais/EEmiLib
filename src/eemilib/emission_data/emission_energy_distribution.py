@@ -210,7 +210,6 @@ class EmissionEnergyDistribution(EmissionData):
             grid=grid,
             label=self.label,
             population=population,
-            is_model=False,
             e_pe=self.e_pe,
             **kwargs,
         )

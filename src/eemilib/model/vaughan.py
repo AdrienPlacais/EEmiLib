@@ -243,8 +243,8 @@ class Vaughan(Model):
 
     def compute_data(
         self,
-        population: ImplementedPop,
         data_type: ImplementedEmissionData,
+        population: ImplementedPop,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
         *args,
@@ -260,7 +260,7 @@ class Vaughan(Model):
         """
         if population != "all" or data_type != "Emission Yield":
             return super().compute_data(
-                population, data_type, energy, theta, *args, **kwargs
+                data_type, population, energy, theta, *args, **kwargs
             )
         out = np.zeros((len(energy), len(theta)))
         for i, ene in enumerate(energy):
@@ -274,9 +274,10 @@ class Vaughan(Model):
         return pd.DataFrame(out_dict)
 
     def find_optimal_parameters(
-        self, data_matrix: DataMatrix, **kwargs
+        self, data_matrix: DataMatrix | None = None, **kwargs
     ) -> None:
         """Match with position of first crossover and maximum."""
+        data_matrix = self._resolve_data_matrix(data_matrix)
         if not data_matrix.holds_required_data(self.model_config):
             logging.info(
                 "Files are not all provided. If Ec1 was given, I will try to "
@@ -323,7 +324,9 @@ class Vaughan(Model):
         optimized_E_0 = least_squares(_to_minimize, x0=12.5).x
         return float(optimized_E_0[0])
 
-    def evaluate(self, data_matrix: DataMatrix) -> dict[str, float]:
+    def evaluate(
+        self, data_matrix: DataMatrix | None = None
+    ) -> dict[str, float]:
         """Evaluate the quality of the model using Fil criterions.
 
         Fil criterions :cite:`Fil2016a,Fil2020` are adapted to |TEEY| models.

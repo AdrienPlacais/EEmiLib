@@ -7,6 +7,9 @@ Dionne1975`.
    Handle the different implementations like :class:`~eemilib.model.FurmanPivi`
    does.
 
+.. todo::
+   Test suite for this model.
+
 """
 
 # work_function :
@@ -140,12 +143,11 @@ class Dionne(Model):
         super().__init__(parameters_values)
         self.parameters = cast(DionneParameters, self.parameters)
         self._energy_loss_model: EnergyLossModel = energy_loss_model
-        self._func = dionne_func
 
     def compute_data(
         self,
-        population: ImplementedPop,
         data_type: ImplementedEmissionData,
+        population: ImplementedPop,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
         *args,
@@ -158,20 +160,24 @@ class Dionne(Model):
         """
         if population != "SE" or data_type != "Emission Yield":
             return super().compute_data(
-                population, data_type, energy, theta, *args, **kwargs
+                data_type, population, energy, theta, *args, **kwargs
             )
         out = np.zeros(len(energy))
 
         for i, ene in enumerate(energy):
-            out[i] = self._func(ene, **self.parameters)
+            out[i] = dionne_func(ene, **self.parameters)
 
-        out_dict = {COL_ENERGY: energy, COL_NORMAL: out}
+        out_dict = {
+            COL_ENERGY: energy,
+            **{f"{the} [deg]": out for the in theta},
+        }
         return pd.DataFrame(out_dict)
 
     def find_optimal_parameters(
-        self, data_matrix: DataMatrix, **kwargs
+        self, data_matrix: DataMatrix | None = None, **kwargs
     ) -> None:
         """Extract main |SEEY| curve parameters from measure."""
+        data_matrix = self._resolve_data_matrix(data_matrix)
         if not data_matrix.holds_required_data(self.model_config):
             raise MissingDataError("Files are not all provided.")
 

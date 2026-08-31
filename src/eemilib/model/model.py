@@ -161,7 +161,7 @@ class Model(ABC):
 
         """
         teeys = self.get_or_compute_data(
-            "all", "Emission Yield", energy, theta, *args, **kwargs
+            "Emission Yield", "all", energy, theta, *args, **kwargs
         )
         if teeys:
             return teeys[0].data
@@ -181,7 +181,7 @@ class Model(ABC):
 
         """
         seeys = self.get_or_compute_data(
-            "SE", "Emission Yield", energy, theta, *args, **kwargs
+            "Emission Yield", "SE", energy, theta, *args, **kwargs
         )
         if seeys:
             return seeys[0].data
@@ -201,7 +201,7 @@ class Model(ABC):
 
         """
         se_distribs = self.get_or_compute_data(
-            "SE", "Emission Energy", energy, theta, *args, **kwargs
+            "Emission Energy", "SE", energy, theta, *args, **kwargs
         )
         if se_distribs:
             return se_distribs[0].data
@@ -212,8 +212,8 @@ class Model(ABC):
 
     def compute_data(
         self,
-        population: ImplementedPop,
         data_type: ImplementedEmissionData,
+        population: ImplementedPop,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
         e_pe: float | None = None,
@@ -230,10 +230,10 @@ class Model(ABC):
 
         Parameters
         ----------
-        population :
-            Type of population you want data from.
         data_type :
             Desired type of emission data.
+        population :
+            Type of population you want data from.
         energy :
             According to the emission data type, this argument can mean
             several things:
@@ -267,8 +267,8 @@ class Model(ABC):
 
     def get_or_compute_data(
         self,
-        population: ImplementedPop,
         data_type: ImplementedEmissionData,
+        population: ImplementedPop,
         energy: NDArray[np.float64] | None = None,
         theta: NDArray[np.float64] | None = None,
         e_pe: float | None = None,
@@ -279,10 +279,10 @@ class Model(ABC):
 
         Parameters
         ----------
-        population :
-            Type of population you want data from.
         data_type :
             Desired type of emission data.
+        population :
+            Type of population you want data from.
         energy :
             According to the emission data type, this argument can mean
             several things:
@@ -317,7 +317,7 @@ class Model(ABC):
             theta,
             e_pe,
             compute=lambda: self.compute_data(
-                population, data_type, energy, theta, e_pe, *args, **kwargs
+                data_type, population, energy, theta, e_pe, *args, **kwargs
             ),
         )
         return result
@@ -382,7 +382,7 @@ class Model(ABC):
 
     @abstractmethod
     def find_optimal_parameters(
-        self, data_matrix: DataMatrix, **kwargs
+        self, data_matrix: DataMatrix | None = None, **kwargs
     ) -> None:
         """Find the best parameters for the current model."""
 
@@ -578,37 +578,24 @@ class Model(ABC):
                     energies,
                     angles,
                     axes=axes,
-                    e_pe=e_pe,
                     grid=grid,
                     **kwargs,
                 )
             return axes
-
-        if energies is None:
-            energies = plotter.infer_energies(
-                axes, n_points=n_points, data_type=data_type
-            )
-
-        data = self.compute_data(
-            population=population,
-            data_type=data_type,
-            energy=energies,
-            theta=angles,
-            e_pe=e_pe,
+        data = self.get_or_compute_data(
+            data_type, population, energy=energies, theta=angles, e_pe=e_pe
         )
-        if data is None:
+        if not data:
             logging.info(
-                f"No model data for {population = } and "
-                f"{data_type = }. Skipping this plot."
+                f"No model data for {population = } and {data_type = }. "
+                "Skipping this plot."
             )
             return axes
 
-        return plotter.plot(
-            data_type=data_type,
-            df=data,
+        return data[0].plot(
+            plotter,
             axes=axes,
             population=population,
-            e_pe=e_pe,
             grid=grid,
             is_model=True,
             **kwargs,
@@ -674,7 +661,6 @@ class Model(ABC):
                 energies=energies,
                 angles=angles,
                 axes=axes.get(e_pe),
-                e_pe=e_pe,
                 grid=grid,
                 **kwargs,
             )
@@ -776,7 +762,7 @@ class Model(ABC):
 
     def evaluate(
         self,
-        data_matrix: DataMatrix,
+        data_matrix: DataMatrix | None = None,
         *args,
         evaluations: dict[str, float] | None = None,
         **kwargs,
@@ -804,6 +790,7 @@ class Model(ABC):
             Maps names of quality criterions with their actual value.
 
         """
+        data_matrix = self._resolve_data_matrix(data_matrix)
         if evaluations is None:
             evaluations = {}
         if "Emission Yield" in self.data_types and (
@@ -818,13 +805,14 @@ class Model(ABC):
         return evaluations
 
     def _evaluate_for_teey_models(
-        self, data_matrix: DataMatrix
+        self, data_matrix: DataMatrix | None = None
     ) -> dict[str, float]:
         """Evaluate a |TEEY| model with N. Fil criterions.
 
         Ref: :cite:`Fil2016a,Fil2020`.
 
         """
+        data_matrix = self._resolve_data_matrix(data_matrix)
         evaluations = self._main_teey_parameters()
 
         try:
@@ -882,8 +870,8 @@ class Model(ABC):
         Returned value is in :unit:`%`.
 
         """
-        min_energy = emission_yield.e_c1
-        max_energy = emission_yield.e_max
+        min_energy = emission_yield._e_c1
+        max_energy = emission_yield._e_max
         df = emission_yield.data
         mask = (df[COL_ENERGY] >= min_energy) & (df[COL_ENERGY] <= max_energy)
 

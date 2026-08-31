@@ -243,8 +243,8 @@ class FurmanPivi(Model):
 
     def compute_data(
         self,
-        population: ImplementedPop,
         data_type: ImplementedEmissionData,
+        population: ImplementedPop,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
         e_pe: float | None = None,
@@ -275,7 +275,7 @@ class FurmanPivi(Model):
         """
         if data_type == "Emission Angle":
             return super().compute_data(
-                population, data_type, energy, theta, *args, **kwargs
+                data_type, population, energy, theta, *args, **kwargs
             )
 
         if data_type == "Emission Energy":
@@ -285,13 +285,13 @@ class FurmanPivi(Model):
             if data is not None:
                 return data
             return super().compute_data(
-                population, data_type, energy, theta, *args, **kwargs
+                data_type, population, energy, theta, *args, **kwargs
             )
 
         ey_func = EMISSION_YIELD_FUNCS.get(population)
         if ey_func is None:
             return super().compute_data(
-                population, data_type, energy, theta, *args, **kwargs
+                data_type, population, energy, theta, *args, **kwargs
             )
         out = np.zeros((len(energy), len(theta)))
         for i, ene in enumerate(energy):
@@ -305,7 +305,7 @@ class FurmanPivi(Model):
         return pd.DataFrame(out_dict)
 
     def find_optimal_parameters(
-        self, data_matrix: DataMatrix, **kwargs
+        self, data_matrix: DataMatrix | None = None, **kwargs
     ) -> None:
         """Fit all Furman and Pivi parameters on measurements.
 
@@ -318,6 +318,7 @@ class FurmanPivi(Model):
             Unused kwargs.
 
         """
+        data_matrix = self._resolve_data_matrix(data_matrix)
         if not data_matrix.holds_required_data(self.model_config):
             raise MissingDataError("Files are not all provided.")
 
@@ -487,7 +488,9 @@ class FurmanPivi(Model):
     # =========================================================================
     # 4. Post
     # =========================================================================
-    def evaluate(self, data_matrix: DataMatrix) -> dict[str, float]:
+    def evaluate(
+        self, data_matrix: DataMatrix | None = None
+    ) -> dict[str, float]:
         """Evaluate the quality of the model using Fil criterions.
 
         Fil criterions :cite:`Fil2016a,Fil2020` are adapted to |TEEY| models.

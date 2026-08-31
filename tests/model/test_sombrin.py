@@ -15,12 +15,6 @@ from eemilib.loader.pandas_loader import PandasLoader
 from eemilib.model.sombrin import Sombrin
 
 
-@pytest.fixture
-def sombrin_model() -> Sombrin:
-    """Create a default instance of :class:`.Sombrin` model."""
-    return Sombrin()
-
-
 class MockDataMatrix(DataMatrix):
     """Mock a data matrix with only a TEEY."""
 
@@ -32,22 +26,6 @@ class MockDataMatrix(DataMatrix):
             [[], [], []],
             [[emission_data], [], []],
         ]
-
-
-def test_initial_parameters(sombrin_model: Sombrin) -> None:
-    """Check that the mandatory parameters are defined."""
-    expected_parameters = {"E_max", "teey_max", "E_c1"}
-    assert set(sombrin_model.initial_parameters.keys()) == expected_parameters
-
-
-def test_teey_output_shape(sombrin_model: Sombrin) -> None:
-    """Check that TEEY array has proper shape."""
-    energy = np.linspace(0, 100, 5, dtype=np.float64)
-    theta = np.linspace(0, 90, 3, dtype=np.float64)  # will be ignored
-    with patch("eemilib.model.sombrin._e_parameter", return_value=1.0):
-        result = sombrin_model.teey(energy, theta)
-    assert isinstance(result, pd.DataFrame)
-    assert result.shape == (5, 2)  # 1 theta columns + 1 energy column
 
 
 # fmt: off
@@ -131,26 +109,50 @@ def reference_ag() -> DataMatrix:
     return data_matrix
 
 
-def test_error_ec1(sombrin_model: Sombrin, reference_ag: DataMatrix) -> None:
+@pytest.fixture
+def sombrin_model(reference_ag: DataMatrix) -> Sombrin:
+    """Create a default instance of :class:`.Sombrin` model."""
+    sombrin_model = Sombrin()
+    sombrin_model.set_reference_data(reference_ag)
+    return sombrin_model
+
+
+def test_initial_parameters(sombrin_model: Sombrin) -> None:
+    """Check that the mandatory parameters are defined."""
+    expected_parameters = {"E_max", "teey_max", "E_c1"}
+    assert set(sombrin_model.initial_parameters.keys()) == expected_parameters
+
+
+def test_teey_output_shape(sombrin_model: Sombrin) -> None:
+    """Check that TEEY array has proper shape."""
+    energy = np.linspace(0, 100, 5, dtype=np.float64)
+    theta = np.linspace(0, 90, 3, dtype=np.float64)
+    with patch("eemilib.model.sombrin._e_parameter", return_value=1.0):
+        result = sombrin_model.teey(energy, theta)
+    assert isinstance(result, pd.DataFrame)
+    assert result.shape == (5, 4)
+
+
+def test_error_ec1(sombrin_model: Sombrin) -> None:
     """Check that we retrieve N. Fil results :cite:`Fil2016a,Fil2020`.
 
     We use the same technical Ag as he did.
 
     """
-    sombrin_model.find_optimal_parameters(reference_ag)
-    returned = sombrin_model._error_ec1(reference_ag.teey)
+    sombrin_model.find_optimal_parameters()
+    returned = sombrin_model._error_ec1(sombrin_model.reference_data.teey)
     expected = 0.0
     assert returned == pytest.approx(expected, abs=1e-2)
 
 
 @pytest.mark.xfail
-def test_error_teey(sombrin_model: Sombrin, reference_ag: DataMatrix) -> None:
+def test_error_teey(sombrin_model: Sombrin) -> None:
     """Check that we retrieve N. Fil results :cite:`Fil2016a,Fil2020`.
 
     We use the same technical Ag as he did.
 
     """
-    sombrin_model.find_optimal_parameters(reference_ag)
-    returned = sombrin_model._error_teey(reference_ag.teey)
+    sombrin_model.find_optimal_parameters()
+    returned = sombrin_model._error_teey(sombrin_model.reference_data.teey)
     expected = 4.4
     assert returned == pytest.approx(expected, abs=1e-3)

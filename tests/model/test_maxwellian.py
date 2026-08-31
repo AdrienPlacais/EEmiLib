@@ -17,12 +17,6 @@ from eemilib.loader import PandasLoader
 from eemilib.model import Maxwellian
 
 
-@pytest.fixture
-def maxwellian_model() -> Maxwellian:
-    """Create a default instance of :class:`.Maxwellian` model."""
-    return Maxwellian()
-
-
 class MockDataMatrix(DataMatrix):
     """Mock a data matrix with only an energy distribution for |SEs|."""
 
@@ -59,6 +53,14 @@ def energy_distrib_data(
     )
 
 
+@pytest.fixture
+def maxwellian_model(energy_distrib_data: DataMatrix) -> Maxwellian:
+    """Create a default instance of :class:`.Maxwellian` model."""
+    maxwellian_model = Maxwellian()
+    maxwellian_model.set_reference_data(energy_distrib_data)
+    return maxwellian_model
+
+
 def test_initial_parameters(maxwellian_model: Maxwellian) -> None:
     """Check that the mandatory parameters are defined."""
     expected_parameters = {"temperature", "norm"}
@@ -72,10 +74,10 @@ def test_emission_energy_distribution_output_shape(
 ) -> None:
     """Check that energy pdf array has proper shape."""
     energy = np.linspace(0, 100, 5, dtype=np.float64)
-    theta = np.linspace(0, 90, 3, dtype=np.float64)  # will be ignored
+    theta = np.linspace(0, 90, 3, dtype=np.float64)
     result = maxwellian_model.se_energy_distribution(energy, theta)
     assert isinstance(result, pd.DataFrame)
-    assert result.shape == (5, 2)  # 1 theta column + 1 energy column
+    assert result.shape == (5, 4)
 
 
 def test_modelled_maxwellian_agains_cst(
@@ -90,8 +92,8 @@ def test_modelled_maxwellian_agains_cst(
     theta = np.array(expected.angles)
 
     calculated_df = model.compute_data(
-        population="SE",
         data_type="Emission Energy",
+        population="SE",
         energy=emission_energies,
         theta=theta,
         impact_energy=expected.e_pe,

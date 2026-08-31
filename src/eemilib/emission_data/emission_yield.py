@@ -120,7 +120,6 @@ class EmissionYield(EmissionData):
             grid=grid,
             label=self.label,
             population=population,
-            is_model=False,
             **kwargs,
         )
 

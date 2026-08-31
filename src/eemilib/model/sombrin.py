@@ -18,7 +18,6 @@ from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
     COL_ENERGY,
-    COL_NORMAL,
     ImplementedEmissionData,
     ImplementedPop,
 )
@@ -88,8 +87,6 @@ class Sombrin(Model):
         """
         super().__init__(parameters_values)
         self.parameters = cast(SombrinParameters, self.parameters)
-
-        self._func = sombrin_func
         self._E: float | None = None
 
     @property
@@ -106,8 +103,8 @@ class Sombrin(Model):
 
     def compute_data(
         self,
-        population: ImplementedPop,
         data_type: ImplementedEmissionData,
+        population: ImplementedPop,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
         *args,
@@ -120,11 +117,11 @@ class Sombrin(Model):
         """
         if population != "all" or data_type != "Emission Yield":
             return super().compute_data(
-                population, data_type, energy, theta, *args, **kwargs
+                data_type, population, energy, theta, *args, **kwargs
             )
         out = np.zeros(len(energy))
         for i, ene in enumerate(energy):
-            out[i] = self._func(
+            out[i] = sombrin_func(
                 ene,
                 E_max=self.parameters["E_max"],
                 teey_max=self.parameters["teey_max"],
@@ -132,7 +129,10 @@ class Sombrin(Model):
                 E_param=self.E,
             )
 
-        out_dict = {COL_ENERGY: energy, COL_NORMAL: out}
+        out_dict = {
+            COL_ENERGY: energy,
+            **{f"{the} [deg]": out for the in theta},
+        }
         return pd.DataFrame(out_dict)
 
     def set_parameter_value(self, name: str, value: Any) -> None:
@@ -142,21 +142,21 @@ class Sombrin(Model):
         return super().set_parameter_value(name, value)
 
     def find_optimal_parameters(
-        self, data_matrix: DataMatrix, **kwargs
+        self, data_matrix: DataMatrix | None = None, **kwargs
     ) -> None:
-        """Extract main |TEEY| curve parameters from measure."""
+        """Extract main |TEEY| curve parameters from measurements.
+
+        This method does not involve optimization, it simply takes the
+        crossover and maximum |TEEY| positions.
+
+        """
+        data_matrix = self._resolve_data_matrix(data_matrix)
         if not data_matrix.holds_required_data(self.model_config):
             raise MissingDataError("Files are not all provided.")
 
-        emission_yield = data_matrix.teey
-        assert emission_yield.population == "all"
-
+        teey = data_matrix.teey
         self.set_parameters_values(
-            {
-                "E_max": emission_yield.e_max,
-                "teey_max": emission_yield.ey_max,
-                "E_c1": emission_yield.e_c1,
-            }
+            {"E_max": teey.e_max, "teey_max": teey.ey_max, "E_c1": teey.e_c1}
         )
 
     def evaluate(self, data_matrix: DataMatrix) -> dict[str, float]:

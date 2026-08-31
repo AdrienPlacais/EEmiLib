@@ -77,12 +77,11 @@ class Maxwellian(Model):
         """
         super().__init__(parameters_values)
         self.parameters = cast(MaxwellianParameters, self.parameters)
-        self._func = maxwellian_pdf
 
     def compute_data(
         self,
-        population: ImplementedPop,
         data_type: ImplementedEmissionData,
+        population: ImplementedPop,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
         *args,
@@ -95,22 +94,25 @@ class Maxwellian(Model):
         """
         if population != "SE" or data_type != "Emission Energy":
             return super().compute_data(
-                population, data_type, energy, theta, *args, **kwargs
+                data_type, population, energy, theta, *args, **kwargs
             )
         out = np.zeros(len(energy))
         for i, ene in enumerate(energy):
-            out[i] = self._func(
+            out[i] = maxwellian_pdf(
                 ene,
                 temperature=self.parameters["temperature"],
                 norm=self.parameters["norm"],
             )
 
-        out_dict = {COL_ENERGY: energy, COL_NORMAL: out}
+        out_dict = {
+            COL_ENERGY: energy,
+            **{f"{the} [deg]": out for the in theta},
+        }
         return pd.DataFrame(out_dict)
 
     def find_optimal_parameters(
         self,
-        data_matrix: DataMatrix,
+        data_matrix: DataMatrix | None = None,
         population: Literal["SE", "all"] = "all",
         **kwargs,
     ) -> None:
@@ -128,6 +130,7 @@ class Maxwellian(Model):
             Unused additional kwargs.
 
         """
+        data_matrix = self._resolve_data_matrix(data_matrix)
         if not data_matrix.holds_required_data(self.model_config):
             raise MissingDataError("Files are not all provided.")
 
