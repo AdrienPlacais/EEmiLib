@@ -75,13 +75,14 @@ def populate_parameters_table_constants(
     """Print out the constants of model parameters in dedicated table.
 
     The :class:`.Parameter` attributes that are written are:
+
     - :attr:`.Parameter.name`
       - separated into a simple label and unit
     - :attr:`.Parameter.description`
     - :attr:`.Parameter.lower_bound`
     - :attr:`.Parameter.is_locked`
 
-    The method :methd:`.EEmiLibGUI._populate_parameters_table_values` is used
+    The method :meth:`.EEmiLibGUI._populate_parameters_table_values` is used
     to print out non-constant parameters, such as :attr:`.Parameter.value`.
 
     Parameters

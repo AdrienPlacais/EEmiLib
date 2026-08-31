@@ -85,6 +85,7 @@ class Parameter:
         #: current value.
         self._lower_bound = lower_bound
         self._upper_bound = upper_bound
+        #: Store a small description of the parameter.
         self.description = description
         #: Whether the parameter is allowed to change values during the fit.
         #: Concretely, setting this to ``True`` sets very tight lower and upper
@@ -284,7 +285,7 @@ class Parameter:
 
 
 class ParameterSet(dict[str, Parameter]):
-    """A set of :class:`Parameter` for a :class:`Model`.
+    """A set of :class:`Parameter` for a :class:`.Model`.
 
     .. note::
        Do not forget to ``cast`` the actual parameters to a typed dict for the

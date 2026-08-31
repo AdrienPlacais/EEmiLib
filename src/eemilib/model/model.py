@@ -34,7 +34,9 @@ from eemilib.util.exceptions import MissingDataError
 from eemilib.util.helper import documentation_url
 from eemilib.util.markdown import E_MAX, EC_1, SIGMA, SIGMA_MAX, tex_math
 
+#: Default energy, when none is provided
 _DEFAULT_ENERGY = np.linspace(0.0, 500.0, 501)
+#: Default angle, when none is provided
 _DEFAULT_THETA = np.array([0.0])
 
 
@@ -115,8 +117,8 @@ class Model(ABC):
         self.current_implementations: dict[str, str] = {}
 
         #: Optional reference; used to infer ``energy`` and ``theta`` when not
-        #: given, and as default for :meth:`find_optimal_parameters` and
-        #: :meth:`evaluate` when no ``data_matrix`` is provided.
+        #: given, and as default for :meth:`.Model.find_optimal_parameters` and
+        #: :meth:`.Model.evaluate` when no ``data_matrix`` is provided.
         self.reference_data: DataMatrix | None = None
 
     @classmethod
@@ -157,7 +159,7 @@ class Model(ABC):
     ) -> pd.DataFrame:
         r"""Compute |TEEY| :math:`\sigma`.
 
-        Under the hood, it calls :meth:`get_data`.
+        Under the hood, it calls :meth:`get_or_compute_data`.
 
         """
         teeys = self.get_or_compute_data(
@@ -177,7 +179,7 @@ class Model(ABC):
     ) -> pd.DataFrame:
         r"""Compute |SEEY| :math:`\delta`.
 
-        Under the hood, it calls :meth:`get_data`.
+        Under the hood, it calls :meth:`get_or_compute_data`.
 
         """
         seeys = self.get_or_compute_data(
@@ -197,7 +199,7 @@ class Model(ABC):
     ) -> pd.DataFrame:
         r"""Compute |SEs| emission energy distribution.
 
-        Under the hood, it calls :meth:`get_data`.
+        Under the hood, it calls :meth:`get_or_compute_data`.
 
         """
         se_distribs = self.get_or_compute_data(
@@ -288,10 +290,10 @@ class Model(ABC):
             several things:
 
             - ``"Emission Yield"``: array of |PEs| impact energy in
-            :unit:`eV`.
+              :unit:`eV`.
             - ``"Emission Energy"``: array of |EEs| emission energy in
-            :unit:`eV`. By convention, if ``e_pe`` is not provided, the
-            impact energy of the |PE| is also the last value of ``energy``.
+              :unit:`eV`. By convention, if ``e_pe`` is not provided, the
+              impact energy of the |PE| is also the last value of ``energy``.
 
         theta :
             Array of |PE| electrons impact angle in :unit:`\degrees`.
@@ -334,6 +336,7 @@ class Model(ABC):
 
         1. Energy array from same data type, same population.
         2. Energy array from same data type, population ``"all"``.
+
            - Likely what will work, as :attr:`reference_data` will generally
              hold experimental data.
 
@@ -362,6 +365,7 @@ class Model(ABC):
 
         1. theta array from same data type, same population.
         2. theta array from same data type, population ``"all"``.
+
            - Likely what will work, as :attr:`reference_data` will generally
              hold experimental data.
 

@@ -116,8 +116,11 @@ class EEmiLibGUI(QMainWindow):
 
         # EEmiLib attributes
         self.data_matrix = MeasuredDataMatrix()
+        #: Currently selected model
         self.model: Model
+        #: Currently selected loader
         self.loader: Loader
+        #: Currently selected plotter
         self.plotter: Plotter
 
         super().__init__()
@@ -138,7 +141,7 @@ class EEmiLibGUI(QMainWindow):
 
         self._setup_loader_dropdown()
 
-        #: Store the :class:`.Parameters` logic for the :class:`.Model`.
+        #: Store the :class:`.Parameter` logic for the :class:`.Model`.
         self.parameters_table: QTableWidget
         self._setup_model_configuration()
 
@@ -549,6 +552,7 @@ class EEmiLibGUI(QMainWindow):
         """Set checkbox making :meth:`.Model.plot` use measured energies.
 
         Behavior:
+
         - Greyed out if no measurements plotted (rely on
           :attr:`.measurements_are_plotted`)
         - When checked, the :meth:`.Model.plot` is called with

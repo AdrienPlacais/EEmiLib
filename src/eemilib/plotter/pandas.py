@@ -190,4 +190,4 @@ class PandasPlotter(Plotter):
 
 
 class GUIPandasPlotter(PandasPlotter):
-    """A :class:`.PandasPloter` handling plot interactivity."""
+    """A :class:`.PandasPlotter` handling plot interactivity."""
