@@ -327,9 +327,6 @@ class EBEEmissionEnergyDistribution(EmissionEnergyDistribution):
         (e.g. normalizing by this population's own peak value).
 
         """
-        logging.warning(
-            "Default norm was not overriden. Returning default value of 1.0"
-        )
         return 1.0
 
 
@@ -345,9 +342,6 @@ class IBEEmissionEnergyDistribution(EmissionEnergyDistribution):
         (e.g. normalizing by this population's own peak value).
 
         """
-        logging.warning(
-            "Default norm was not overriden. Returning default value of 1.0"
-        )
         return 1.0
 
 
