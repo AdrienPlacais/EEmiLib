@@ -86,7 +86,7 @@ data_matrix = DataMatrix()
 data_matrix.set_files(
     filepath="path/to/a/TEEY/file.csv",
     population="all",
-    data_type="Emission Yield"
+    data_type="Emission Yield",
 )
 
 loader = PandasLoader()
@@ -97,9 +97,7 @@ model.find_optimal_parameters(data_matrix)
 
 plotter = PandasPlotter()
 axes = data_matrix.plot(
-    plotter=plotter,
-    population="all",
-    data_type="Emission Yield"
+    plotter=plotter, population="all", data_type="Emission Yield"
 )
 model.plot(
     plotter=plotter,
