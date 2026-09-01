@@ -115,7 +115,7 @@ def clear_filepaths_button(
 
 def clear_data_button(data_matrix: DataMatrix) -> QPushButton:
     """Create a button to clear loaded data."""
-    clear_button = QPushButton(text="🧹 Clear loaded data")
+    clear_button = QPushButton(text="🗑️ Clear loaded data")
 
     def _clear_data() -> None:
         data_matrix.clear_data()
