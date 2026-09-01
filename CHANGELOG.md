@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - GUI automatic find of energy/angle limits was broken since
   `DataMatrix.get_data` returns a `list`.
+- Proper package version printed in the logs.
 
 ## [0.2.0] -- 2026-08-06
 

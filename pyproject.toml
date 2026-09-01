@@ -94,6 +94,9 @@ package-dir = { "" = "src" }
 find = { where = ["src"] }
 
 [tool.setuptools_scm]
+local_scheme = "node-and-date"
+version_scheme = "post-release"
+write_to = "src/eemilib/_version.py"
 
 [build-system]
 build-backend = "setuptools.build_meta"
