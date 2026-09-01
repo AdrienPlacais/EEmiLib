@@ -715,7 +715,7 @@ class Model(ABC):
         :attr:`_cached_data_matrix`.
 
         """
-        self._cached_data_matrix.clear()
+        self._cached_data_matrix.clear_data()
 
     def set_reference_data(self, data_matrix: DataMatrix) -> None:
         """Set new reference data.

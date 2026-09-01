@@ -1,9 +1,4 @@
-"""Store the filepaths entered by user.
-
-.. todo::
-    Methods to reset filepaths/data
-
-"""
+"""Store the filepaths entered by user."""
 
 import logging
 from collections import defaultdict
@@ -741,16 +736,25 @@ class DataMatrix:
             )
             distrib.rescale(objective_yield=expected_area, norm=1.0)
 
-    def clear(self) -> None:
+    def clear_data(self) -> None:
         """Clear loaded data.
-
-        Should only be called manually by the user.
 
         .. todo::
            Wire this to a button in the GUI.
 
         """
         self.data_matrix = [
+            [[] for _ in range(_N_COLS)] for _ in range(_N_ROWS)
+        ]
+
+    def clear_filepaths(self) -> None:
+        """Clear stored filepaths.
+
+        .. todo::
+           Wire this to a button in the GUI.
+
+        """
+        self.files_matrix = [
             [[] for _ in range(_N_COLS)] for _ in range(_N_ROWS)
         ]
 
