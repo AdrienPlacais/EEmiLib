@@ -16,6 +16,7 @@ import logging
 import subprocess
 import sys
 from importlib.metadata import PackageNotFoundError, version
+from importlib.util import find_spec
 from pathlib import Path
 from typing import Literal
 
@@ -28,29 +29,43 @@ def _get_package_version(package_name: str) -> str:
         return "Unknown version"
 
 
-def _get_last_commit_hash() -> str:
-    """Get the last Git commit hash.
+def _get_package_dir(package_name: str) -> Path | None:
+    """Find location of current package."""
+    try:
+        spec = find_spec(package_name)
+    except (ImportError, ValueError):
+        return None
+    if spec is None or spec.origin is None:
+        return None
 
-    .. todo::
-        Will look for the script commit number, not for the code commit number!
+    return Path(spec.origin).resolve().parent
 
-    """
+
+def _get_last_commit_hash(package_name: str) -> str:
+    """Get the last Git commit hash."""
+    package_dir = _get_package_dir(package_name)
+    if package_dir is None:
+        return "Unknown commit"
     try:
         return (
-            subprocess.check_output(["git", "rev-parse", "HEAD"])
+            subprocess.check_output(
+                ["git", "rev-parse", "HEAD"],
+                cwd=package_dir,
+                stderr=subprocess.DEVNULL,
+            )
             .decode("utf-8")
             .strip()
         )
-    except subprocess.CalledProcessError:
+    except (subprocess.CalledProcessError, FileNotFoundError, OSError):
         return "Unknown commit"
 
 
-def _log_header(package_name: str) -> str:
+def _log_header(package_name: str, fancy_name: str) -> str:
     """Create a header for the log file."""
     package_version = _get_package_version(package_name)
-    commit_hash = _get_last_commit_hash()
+    commit_hash = _get_last_commit_hash(package_name)
     header_message = (
-        f"Starting log for {package_name} - Version: {package_version}, "
+        f"Starting log for {fancy_name} - Version: {package_version}, "
         f"Commit: {commit_hash}"
     )
     return header_message
@@ -119,6 +134,7 @@ class LogFormatter(logging.Formatter):
 
 def set_up_logging(
     package_name: str,
+    fancy_name: str,
     console_log_output: str = "stdout",
     console_log_level: str = "INFO",
     console_log_color: bool = True,
@@ -155,7 +171,7 @@ def set_up_logging(
     if not logfile_handler:
         return False
     logger.addHandler(logfile_handler)
-    logger.info(_log_header(package_name))
+    logger.info(_log_header(package_name, fancy_name))
 
     return True
 
@@ -163,7 +179,8 @@ def set_up_logging(
 def main() -> int:
     """Set up logging."""
     if not set_up_logging(
-        package_name="EEmiLib",
+        package_name="eemilib",
+        fancy_name="EEmiLib",
         console_log_output="stdout",
         console_log_level="warning",
         console_log_color=True,
