@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.1]
 
+### Changed
+
+- `DataMatrix._set_data` no longer needs the `data_type` and `population`
+  attribute, and the `emission_data: list[EmissionData]` argument no longer
+  needs to be an homogeneous list.
+
 ### Fixed
 
 - GUI automatic find of energy/angle limits was broken since

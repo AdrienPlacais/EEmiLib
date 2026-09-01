@@ -6,6 +6,7 @@
 """
 
 import logging
+from collections import defaultdict
 from collections.abc import Callable, Collection, Sequence
 from typing import Literal, cast, overload
 
@@ -61,6 +62,31 @@ _N_ROWS = len(IMPLEMENTED_POP)
 _N_COLS = len(IMPLEMENTED_EMISSION_DATA)
 
 
+def _natures_to_indexes(
+    data_type: ImplementedEmissionData, population: ImplementedPop
+) -> tuple[int, int]:
+    """Give cell indexes in data matrix corresponding to arguments."""
+    return (_POP_TO_ROW[population], _DATA_TYPE_TO_COL[data_type])
+
+
+def _data_type_to_indexes(emission_data: EmissionData) -> tuple[int, int]:
+    """Give cell indexes in data matrix where ``emission_data`` should go."""
+    data_type: ImplementedEmissionData
+    if isinstance(emission_data, EmissionYield):
+        data_type = "Emission Yield"
+    elif isinstance(emission_data, EmissionEnergyDistribution):
+        data_type = "Emission Energy"
+    elif isinstance(emission_data, EmissionAngleDistribution):
+        data_type = "Emission Angle"
+    else:
+        raise NotImplementedEmissionDataTypeError(
+            f"{emission_data = } is not a valid `EmissionData` subclass."
+        )
+
+    population: ImplementedPop = emission_data.population
+    return _natures_to_indexes(data_type, population)
+
+
 class DataMatrix:
     """Store all the input files and corresp data in a single object."""
 
@@ -76,22 +102,6 @@ class DataMatrix:
             [[] for _ in range(_N_COLS)] for _ in range(_N_ROWS)
         ]
 
-    def _natures_to_indexes(
-        self, data_type: ImplementedEmissionData, population: ImplementedPop
-    ) -> tuple[int, int]:
-        """Give the desired indexes."""
-        return (_POP_TO_ROW[population], _DATA_TYPE_TO_COL[data_type])
-
-    def _indexes_to_natures(
-        self, row: int, col: int
-    ) -> tuple[ImplementedPop, ImplementedEmissionData]:
-        """Give the desired natures."""
-        population_type = _ROW_TO_POP[row]
-        assert population_type in IMPLEMENTED_POP
-        data_type = _COL_TO_DATA_TYPE[col]
-        assert data_type in IMPLEMENTED_EMISSION_DATA
-        return population_type, data_type
-
     def set_files(
         self,
         files: DataPath | Collection[DataPath],
@@ -99,7 +109,7 @@ class DataMatrix:
         population: ImplementedPop,
     ) -> None:
         """Set the file(s) by index or name."""
-        row, col = self._natures_to_indexes(data_type, population)
+        row, col = _natures_to_indexes(data_type, population)
         if isinstance(files, DataPath):
             self.files_matrix[row][col] = [files]
         else:
@@ -191,29 +201,94 @@ class DataMatrix:
         population: ImplementedPop,
     ) -> None: ...
 
+    @overload
     def set_data(
         self,
         emission_data: EmissionData | Collection[EmissionData],
-        data_type: ImplementedEmissionData,
-        population: ImplementedPop,
-    ) -> None:
-        """Set the data by index or name.
+        data_type: ImplementedEmissionData | None = None,
+        population: ImplementedPop | None = None,
+    ) -> None: ...
 
-        .. todo::
-           ``population`` is already known if emission_data is given.
-           ``data_type`` could be known if emission_data is given.
+    def set_data(
+        self,
+        emission_data: EmissionData | Collection[EmissionData],
+        data_type: ImplementedEmissionData | None = None,
+        population: ImplementedPop | None = None,
+    ) -> None:
+        """Store the ``emission_data`` in the appropriate data matrix cell.
+
+        Parameters
+        ----------
+        emission_data :
+            (list of) data to store. Will overwrite pre-existing data matrix
+            cell content. The appropriate cell for each :class:`.EmissionData`
+            is inferred from it's subclass and ``population`` attribute. If
+            ``data_type`` and ``population`` are specified, we use these
+            instead to determine appropriate cell. In this case, you should
+            ensure that all elements of ``emission_data`` have the same type.
+        data_type, population :
+            Indicate nature of ``emission_data``; if given, both arguments must
+            be speficied. If their nature do not correspond to the type of
+            ``emission_data``, a warning is issued, but data is set
+            nonetheless.
 
         """
-        row, col = self._natures_to_indexes(data_type, population)
         if isinstance(emission_data, EmissionData):
             emission_data = [emission_data]
-        self.data_matrix[row][col] = list(emission_data)
+        else:
+            emission_data = list(emission_data)
+
+        if data_type is None and population is None:
+            setme: dict[tuple[int, int], list[EmissionData]] = defaultdict(
+                list
+            )
+            for data in emission_data:
+                indexes = _data_type_to_indexes(data)
+                setme[indexes].append(data)
+
+            for (row, col), list_of_emission_data in setme.items():
+                self.data_matrix[row][col] = list_of_emission_data
+
+            return
+
+        if population is None:
+            logging.error(
+                "population is None but data_type isn't. Both should be None, "
+                "or both should be given. Setting population to None and going "
+                "on..."
+            )
+            return self.set_data(emission_data)
+        if data_type is None:
+            logging.error(
+                "data_type is None but population isn't. Both should be None, "
+                "or both should be given. Setting data_type to None and going "
+                "on..."
+            )
+            return self.set_data(emission_data)
+
+        row, col = _natures_to_indexes(data_type, population)
+        types = {type(data) for data in emission_data}
+        if len(types) > 1:
+            logging.warning(
+                "Given emission data have different types, but will all be "
+                f"assigned to {data_type = } and {population = }.\n{types = }"
+            )
+        else:
+            any_data = emission_data[0]
+            row_from_type, col_from_type = _data_type_to_indexes(any_data)
+            if row_from_type != row or col_from_type != col:
+                logging.warning(
+                    f"The type of emission_data {type(any_data)} is "
+                    f"inconsistent with {data_type = } and/or {population}. "
+                    "Proceeding anyway."
+                )
+        self.data_matrix[row][col] = emission_data
 
     def get_files(
         self, data_type: ImplementedEmissionData, population: ImplementedPop
     ) -> list[DataPath]:
         """Get the file(s) by index or name."""
-        row, col = self._natures_to_indexes(data_type, population)
+        row, col = _natures_to_indexes(data_type, population)
         return self.files_matrix[row][col]
 
     @overload
@@ -311,7 +386,7 @@ class DataMatrix:
                 Sequence[EmissionData], list(flatten(nested_data))
             )
             return flattened_data
-        row, col = self._natures_to_indexes(data_type, population)
+        row, col = _natures_to_indexes(data_type, population)
         data = self.data_matrix[row][col]
         if data is None:
             return []
@@ -390,7 +465,7 @@ class DataMatrix:
                         emission_data,
                         data_type=data_type,
                         population=population,
-                    )  # type: ignore
+                    )
         if not rescale_energy_distributions_to_yield:
             return
         teeys = self.get_data("Emission Yield", "all")
@@ -744,7 +819,7 @@ class ModelledDataMatrix(DataMatrix):
             Cached or freshly computed emission data. Empty list if it failed.
 
         """
-        row, col = self._natures_to_indexes(data_type, population)
+        row, col = _natures_to_indexes(data_type, population)
         request = (energy, theta, e_pe)
         stored = self._requests[row][col]
 
