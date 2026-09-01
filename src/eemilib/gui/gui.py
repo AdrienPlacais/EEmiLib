@@ -5,36 +5,31 @@
     Export/Import settings
 
 .. todo::
-    Add description at and of parameters
-    Dynamic boxes for Parameters?
+   Make plot tab draggable so we can have model values and plot side by side.
 
 .. todo::
-    Allow ``None`` for energies, so that measurements energies are picked up.
-    Ideas:
+   Make model plot update on parameter value change (``Sync`` checkbox).
 
-    - Checkbox "Use energies from measurements".
-    - Clicking it greys out the ``energies`` linspace definition.
-      - May also auto-fill it?
-    - This checkbox is greyed out/unclickable if no data was plotted,
-      *i.e.* if current `Axes` contains no `Line2D`.
+.. note::
+    The `_setup_*` methods should:
+    1. Create widgets
+    2. Wire them
+    3. Create layouts
+    4. Call the `addWidget`, `addLayout` methods.
 
 """
 
-import importlib
 import logging
 import sys
 from abc import ABCMeta
 from collections.abc import Callable
-from types import ModuleType
-from typing import Literal
+from typing import Literal, cast
 
 import numpy as np
+from numpy.typing import NDArray
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
-    QComboBox,
-    QGroupBox,
-    QHeaderView,
     QLineEdit,
     QListWidget,
     QMainWindow,
@@ -49,27 +44,34 @@ from PyQt5.QtWidgets import (
 
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
+from eemilib.emission_data.emission_data import EmissionData
+from eemilib.gui.dropdown import (
+    DROPDOWNS,
+    DropdownEntry,
+    Dropdowns,
+    set_dropdown_value,
+    setup_dropdown,
+)
 from eemilib.gui.file_selection import file_selection_matrix
 from eemilib.gui.helper import (
     PARAMETER_ATTR_TO_POS,
     PARAMETER_POS_TO_ATTR,
-    set_dropdown_value,
+    LinspaceEntries,
     set_help_button_action,
-    setup_dropdown,
     setup_linspace_entries,
-    setup_lock_checkbox,
+    titled_group,
     to_plot_checkboxes,
 )
 from eemilib.gui.loader_selection import LoaderSettingsDialog
-from eemilib.gui.model_selection import (
+from eemilib.gui.model import (
     ModelImplementationsDialog,
+    create_evaluation_table,
     model_configuration,
+    populate_evaluators_table,
+    populate_parameters_table_constants,
 )
-from eemilib.gui.styles import (
-    TITLE_STYLE,
-    format_number,
-    math_text_label_from_key,
-)
+from eemilib.gui.plot_canvas import TabbedPlotArea
+from eemilib.gui.styles import format_number
 from eemilib.loader.loader import Loader
 from eemilib.model.model import Model
 from eemilib.plotter.plotter import Plotter
@@ -79,12 +81,10 @@ from eemilib.util.constants import (
     ImplementedEmissionData,
     ImplementedPop,
 )
-
-DROPDOWNS = ("Loader", "Model", "Plotter")
-Dropdowns = Literal["Loader", "Model", "Plotter"]
+from eemilib.util.helper import flatten
 
 
-class MainWindow(QMainWindow):
+class EEmiLibGUI(QMainWindow):
     """GUI."""
 
     #: Whether selecting Model in dropdown should automatically fill the
@@ -101,7 +101,7 @@ class MainWindow(QMainWindow):
         self,
         default_model: str = "Vaughan",
         default_loader: str = "PandasLoader",
-        default_plotter: str = "PandasPlotter",
+        default_plotter: str = "GUIPandasPlotter",
     ) -> None:
         """Create the GUI."""
         self._defaults: dict[Dropdowns, str] = {
@@ -109,83 +109,131 @@ class MainWindow(QMainWindow):
             "Loader": default_loader,
             "Plotter": default_plotter,
         }
+
         # EEmiLib attributes
         self.data_matrix = DataMatrix()
-        self.loader: Loader
         self.model: Model
-        self.axes = None
+        self.loader: Loader
+        self.plotter: Plotter
 
         super().__init__()
         self.setWindowTitle("EEmiLib")
 
-        self.central_widget = QWidget()
-        self.setCentralWidget(self.central_widget)
+        #: Holds all widgets of first tab
+        self.data_model_layout: QVBoxLayout
+        #: Holds all widgets of second tab
+        self.plot_layout: QVBoxLayout
+        self._setup_main_structure()
 
-        self.main_layout = QVBoxLayout(self.central_widget)
-
-        self.tab_widget = QTabWidget()
-        self.main_layout.addWidget(self.tab_widget)
-
-        self._data_model_tab = QWidget()
-        self._data_model_layout = QVBoxLayout(self._data_model_tab)
-        self.tab_widget.addTab(self._data_model_tab, "Data && Model")
-
-        self._plot_tab = QWidget()
-        self._plot_layout = QVBoxLayout(self._plot_tab)
-        self.tab_widget.addTab(self._plot_tab, "Plot")
+        #: Maps a dropdown name to its definition
+        self.dropdowns: dict[Dropdowns, DropdownEntry] = {}
 
         # Tab 1: Data & Model
-        self.file_lists = self._setup_file_selection_matrix()
+        self.file_lists: list[list[None | QListWidget]]
+        self._setup_file_selection_matrix()
 
-        self.dropdowns: dict[str, QComboBox] = {}
-
-        self.loader_classes: dict[str, str]
-        self.loader_help_button: QPushButton
         self._setup_loader_dropdown()
 
-        self.model_table = self._setup_model_configuration()
-        self.model_classes: dict[str, str]
-        self.model_class: ABCMeta
-        self.model_help_button: QPushButton
+        #: Store the :class:`.Parameters` logic for the :class:`.Model`.
+        self.parameters_table: QTableWidget
+        self._setup_model_configuration()
+
         self._setup_model_dropdown()
 
-        self.evaluations: dict[str, float]
-        self.evaluators_group: QGroupBox
+        #: Widget holding evaluator names and values.
         self.evaluators_table: QTableWidget
-        self.force_reevaluation_button: QPushButton
         self._setup_model_evaluation()
 
         # Tab 2: Plot
-        self.energy_angle_group: QGroupBox
-        self.energy_angle_layout: QVBoxLayout
-        self.last_energy_widget: QLineEdit
-        self.last_theta_widget: QLineEdit
-        self.n_theta_widget: QLineEdit
+        #: Stores the current figure(s).
+        self.plot_area: TabbedPlotArea
+        self._setup_plot_area()
+
+        #: Store whether measurements are currently plotted.
+        self._measurements_are_plotted: bool = False
+
+        #: Holds all widgets related to the energy linspace
+        self.energy: LinspaceEntries
+        #: Holds all widgets related to the angle linspace
+        self.angle: LinspaceEntries
+        #: Check this to make the ``Model`` plots use the same energies as
+        #: the measurements
+        self.use_measured_energies_checkbox: QCheckBox
         self._setup_energy_angle_inputs()
 
-        self.plotter_classes: dict[str, str]
-        self.plot_measured_button: QPushButton
-        self.plot_model_button: QPushButton
+        #: Let user select which type of data should be plotted.
         self.data_checkboxes: list[QRadioButton]
+        #: Let user select which kind of electron population should be plotted.
         self.population_checkboxes: list[QCheckBox]
         self._setup_plotter_dropdowns()
 
         # Call the methods called by the model_dropdown index change
         self._set_default_dropdown()
 
+    @property
+    def measurements_are_plotted(self) -> bool:
+        """Tell if measurements are currenty plotted."""
+        return self._measurements_are_plotted
+
+    @measurements_are_plotted.setter
+    def measurements_are_plotted(self, value: bool) -> None:
+        """Update flag value, and also the checkbox "Use measured energies".
+
+        Used by the "Plot model" and the "Clear figure" buttons.
+
+        """
+        self._measurements_are_plotted = value
+        checkbox = getattr(self, "use_measured_energies_checkbox", None)
+        if checkbox is None:
+            logging.error(
+                "Checkbox 'use_measured_energies_checkbox' not created yet. "
+                "May cause problems later."
+            )
+            return
+        self.refresh_use_measured_energies_availability()
+
+    # =========================================================================
+    # Main tabs organization
+    # =========================================================================
+    def _setup_main_structure(self) -> None:
+        """Organize the GUI into tabs.
+
+        1. First tab holds:
+            i. A :class:`.DataMatrix`;
+            ii. :class:`.Model` parameters.
+        2. Second tab holds:
+            i. The :class:`.Plotter` parameters.
+
+        Sets :attr:`data_model_layout` and :attr:`plot_layout`.
+
+        """
+        central = QWidget()
+        self.setCentralWidget(central)
+        main_layout = QVBoxLayout(central)
+
+        tab = QTabWidget()
+        main_layout.addWidget(tab)
+
+        data_model_tab = QWidget()
+        self.data_model_layout = QVBoxLayout(data_model_tab)
+        tab.addTab(data_model_tab, "Data && Model")
+
+        plot_tab = QWidget()
+        self.plot_layout = QVBoxLayout(plot_tab)
+        tab.addTab(plot_tab, "Plot")
+
     # =========================================================================
     # Tab 1 - File selection
     # =========================================================================
-    def _setup_file_selection_matrix(self) -> list[list[None | QListWidget]]:
+    def _setup_file_selection_matrix(self) -> None:
         """Create the 4 * 3 matrix to select the files to load."""
-        file_matrix_group, file_lists = file_selection_matrix(self)
-        self._data_model_layout.addWidget(file_matrix_group)
-        return file_lists
+        file_matrix_group, self.file_lists = file_selection_matrix(self)
+        self.data_model_layout.addWidget(file_matrix_group)
 
     def _deactivate_unnecessary_file_widgets(self) -> None:
         """Grey out the files not needed by current model."""
-        model = self._dropdown_to_class("Model")()
-        if not isinstance(model, Model):
+        model = getattr(self, "model", None)
+        if model is None:
             return
         config: ModelConfig = model.model_config
 
@@ -205,9 +253,9 @@ class MainWindow(QMainWindow):
     # Tab 1 - Load files
     # =========================================================================
     def _setup_loader_dropdown(self) -> None:
-        """Set the :class:`.Loader` related interface."""
+        """Set the :class:`.Loader` dropdown."""
         settings_label, settings_action = self._setup_loader_settings_dialog()
-        classes, layout, dropdown, buttons = setup_dropdown(
+        entry = setup_dropdown(
             module_name="eemilib.loader",
             base_class=Loader,
             buttons_args={
@@ -216,20 +264,22 @@ class MainWindow(QMainWindow):
                 settings_label: settings_action,
             },
         )
-        self.loader_classes = classes
-        dropdown.currentIndexChanged.connect(self._setup_loader)
-        _ = dropdown.setCurrentText
-        self.dropdowns["Loader"] = dropdown
-        self.loader_help_button = buttons[0]
-        self._data_model_layout.addLayout(layout)
+        self.dropdowns["Loader"] = entry
 
-    def _setup_loader(self) -> None:
+        entry.dropdown.currentIndexChanged.connect(
+            self._instantiate_a_new_loader
+        )
+
+        self.data_model_layout.addLayout(entry.layout)
+
+    def _instantiate_a_new_loader(self) -> None:
         """Set up new loader whenever the dropdown menu is changed."""
         self.loader = self._dropdown_to_class("Loader")()
-        set_help_button_action(self.loader_help_button, self.loader)
+        help_button = self.dropdowns["Loader"].buttons[0]
+        set_help_button_action(help_button, self.loader)
 
     def _setup_loader_settings_dialog(self) -> tuple[str, Callable]:
-        """Give arguments to setup the loader setttings button."""
+        """Give arguments to setup the loader settings button."""
         settings_label = "⚙️ Settings"
 
         def settings_action() -> int:
@@ -240,15 +290,17 @@ class MainWindow(QMainWindow):
 
     def load_data(self) -> None:
         """Load all the files set in GUI."""
-        for i in range(len(IMPLEMENTED_POP)):
-            for j in range(len(IMPLEMENTED_EMISSION_DATA)):
+        for i, pop in enumerate(IMPLEMENTED_POP):
+            for j, data in enumerate(IMPLEMENTED_EMISSION_DATA):
                 file_list_widget = self.file_lists[i][j]
                 if file_list_widget is not None:
                     file_names = [
                         file_list_widget.item(k).text()
                         for k in range(file_list_widget.count())
                     ]
-                    self.data_matrix.set_files(file_names, row=i, col=j)
+                    self.data_matrix.set_files(
+                        file_names, data_type=data, population=pop
+                    )
 
         try:
             self.data_matrix.load_data(self.loader)
@@ -265,16 +317,17 @@ class MainWindow(QMainWindow):
     # =========================================================================
     # Tab 1 - Model
     # =========================================================================
+    def _setup_model_configuration(self) -> None:
+        """Orchestrate :class:`.Model` :class:`.Parameter` related interfaces."""
+        model_group, self.parameters_table = model_configuration()
+        self.data_model_layout.addWidget(model_group)
+
     def _setup_model_dropdown(self) -> None:
-        """Set the :class:`.Model` related interface.
-
-        Assign the ``model_classes`` and ``model_dropdown``.
-
-        """
+        """Set the :class:`.Model` dropdown."""
         settings_label, settings_action = (
             self._setup_model_implementations_dialog()
         )
-        classes, layout, dropdown, buttons = setup_dropdown(
+        entry = setup_dropdown(
             module_name="eemilib.model",
             base_class=Model,
             buttons_args={
@@ -283,21 +336,24 @@ class MainWindow(QMainWindow):
                 settings_label: settings_action,
             },
         )
-        self.model_classes = classes
-        self.dropdowns["Model"] = dropdown
-        dropdown.currentIndexChanged.connect(self._setup_model)
-        dropdown.currentIndexChanged.connect(
+        self.dropdowns["Model"] = entry
+
+        entry.dropdown.currentIndexChanged.connect(
+            self._instantiate_a_new_model
+        )
+        # Warning! _deactivate_unnecessary_file_widgets relies on a `Model`
+        # being already set. _instantiate_a_new_model should be called before
+        entry.dropdown.currentIndexChanged.connect(
             self._deactivate_unnecessary_file_widgets
         )
-        dropdown.currentIndexChanged.connect(
-            self._fill_plot_nature_and_population
+        entry.dropdown.currentIndexChanged.connect(
+            self._autofill_plot_data_type_and_population
         )
-        dropdown.currentIndexChanged.connect(
+        entry.dropdown.currentIndexChanged.connect(
             self._populate_parameters_table_values
         )
 
-        self.model_help_button = buttons[0]
-        self._data_model_layout.addLayout(layout)
+        self.data_model_layout.addLayout(entry.layout)
 
     def _setup_model_implementations_dialog(self) -> tuple[str, Callable]:
         """Give arguments to setup the model setttings button."""
@@ -306,53 +362,26 @@ class MainWindow(QMainWindow):
         def settings_action() -> int:
             code = ModelImplementationsDialog(self, self.model).exec()
             self._populate_parameters_table_values()
-            self._populate_parameters_table_constants()
+            populate_parameters_table_constants(
+                self.parameters_table, self.model.parameters
+            )
             return code
 
         return settings_label, settings_action
 
-    def _setup_model_configuration(self) -> QTableWidget:
-        """Set the interface related to the model specific parameters."""
-        group, model_table = model_configuration()
-        self._data_model_layout.addWidget(group)
-        return model_table
-
-    def _setup_model(self) -> None:
+    def _instantiate_a_new_model(self) -> None:
         """Instantiate :class:`.Model` when it is selected in dropdown menu."""
-        self.model_class = self._dropdown_to_class("Model")
-        self.model = self.model_class()
+        self.model = self._dropdown_to_class("Model")()
 
-        set_help_button_action(self.model_help_button, self.model)
+        help_button = self.dropdowns["Model"].buttons[0]
+        set_help_button_action(help_button, self.model)
 
-        self._populate_parameters_table_constants()
-        self.model_table.itemChanged.connect(
+        populate_parameters_table_constants(
+            self.parameters_table, self.model.parameters
+        )
+        self.parameters_table.itemChanged.connect(
             self._update_parameter_value_from_table
         )
-
-    def _populate_parameters_table_constants(self) -> None:
-        """Print out the model parameters in dedicated table."""
-        self.model_table.setRowCount(0)
-        for row, param in enumerate(self.model.parameters.values()):
-            self.model_table.insertRow(row)
-
-            label, unit = math_text_label_from_key(param.name)
-            label.setObjectName(param.name)  # anchors the name to the widget
-            self.model_table.setCellWidget(row, 0, label)
-            self.model_table.setCellWidget(row, 1, unit)
-            description, _ = math_text_label_from_key(param.description)
-            self.model_table.setCellWidget(
-                row, PARAMETER_ATTR_TO_POS["description"], description
-            )
-
-            for attr in ("lower_bound", "upper_bound"):
-                col = PARAMETER_ATTR_TO_POS[attr]
-                attr_value = getattr(param, attr, None)
-                self.model_table.setItem(
-                    row, col, QTableWidgetItem(str(attr_value))
-                )
-            col_lock = PARAMETER_ATTR_TO_POS["lock"]
-            checkbox_widget = setup_lock_checkbox(param)
-            self.model_table.setCellWidget(row, col_lock, checkbox_widget)
 
     def _update_parameter_value_from_table(
         self, item: QTableWidgetItem
@@ -364,7 +393,7 @@ class MainWindow(QMainWindow):
         if attr not in updatable_attr:
             return
 
-        name = self.model_table.cellWidget(row, 0).objectName()
+        name = self.parameters_table.cellWidget(row, 0).objectName()
         parameter = self.model.parameters.get(name)
 
         if parameter:
@@ -385,17 +414,22 @@ class MainWindow(QMainWindow):
         self._populate_parameters_table_values()
 
     def _populate_parameters_table_values(self) -> None:
-        """Print out the values of the model parameters in dedicated table."""
+        """Print out the :attr:`.Parameter.value` in the dedicated tab.
+
+        This method needs dynamic access to :attr:`model`, so it is not defined
+        as a function like :func:`.populate_parameters_table_constants`.
+
+        """
         for row, param in enumerate(self.model.parameters.values()):
             for attr in ("value",):
                 col = PARAMETER_ATTR_TO_POS[attr]
                 attr_value = getattr(param, attr, None)
-                self.model_table.setItem(
+                self.parameters_table.setItem(
                     row, col, QTableWidgetItem(str(attr_value))
                 )
 
         for i, param in enumerate(self.model.parameters.values()):
-            self.model_table.setItem(
+            self.parameters_table.setItem(
                 i, 2, QTableWidgetItem(format_number(param.value))
             )
 
@@ -403,38 +437,22 @@ class MainWindow(QMainWindow):
     # Tab 1 - Model evaluation
     # =========================================================================
     def _setup_model_evaluation(self) -> None:
-        """Set up display of model evaluators."""
-        self.evaluators_group = QGroupBox("Model evaluations")
-        self.evaluators_group.setStyleSheet(TITLE_STYLE)
-        self.evaluators_layout = QVBoxLayout()
+        """Create the display of the model evaluations.
 
-        self.evaluators_table = self._create_evaluators_table()
-        self.evaluators_layout.addWidget(self.evaluators_table)
+        Sets :attr:`evaluators_table`.
 
-        self.force_reevaluation_button = self._set_reevaluation_button()
-        self.evaluators_layout.addWidget(self.force_reevaluation_button)
+        """
+        layout = QVBoxLayout()
+        group = titled_group("Model evaluations", layout)
 
-        self.evaluators_group.setLayout(self.evaluators_layout)
-        self._data_model_layout.addWidget(self.evaluators_group)
+        self.evaluators_table = create_evaluation_table()
+        layout.addWidget(self.evaluators_table)
 
-    def _create_evaluators_table(self) -> QTableWidget:
-        """Create the two-column table that displays evaluation results."""
-        table = QTableWidget(0, 3)
-        table.setHorizontalHeaderLabels(["Metric", "Unit", "Value"])
+        reevaluate_button = QPushButton("Re-evaluate")
+        reevaluate_button.clicked.connect(self._fill_evaluations_display)
+        layout.addWidget(reevaluate_button)
 
-        for i in range(3):
-            table.horizontalHeader().setSectionResizeMode(
-                i, QHeaderView.ResizeToContents
-            )
-        table.setEditTriggers(QTableWidget.NoEditTriggers)
-        table.setAlternatingRowColors(True)
-        return table
-
-    def _set_reevaluation_button(self) -> QPushButton:
-        """Create and return the 'Re-evaluate' button."""
-        button = QPushButton("Re-evaluate")
-        button.clicked.connect(self._fill_evaluations_display)
-        return button
+        self.data_model_layout.addWidget(group)
 
     def _fill_evaluations_display(self) -> None:
         """Fill the evaluations display with the last model."""
@@ -444,31 +462,22 @@ class MainWindow(QMainWindow):
         if not hasattr(self, "data_matrix") or not self.data_matrix:
             logging.info("Please load data before evaluating.")
             return
-        self._evaluate_model()
-        self._populate_evaluators_table()
-
-    def _evaluate_model(self) -> None:
-        """Evaluate model and save resulting dict in ``self.evaluations``."""
-        self.evaluations = self.model.evaluate(self.data_matrix)
-
-    def _populate_evaluators_table(self) -> None:
-        """Write the contents of ``self.evaluations`` into the table."""
-        self.evaluators_table.setRowCount(0)
-        for row, (key, value) in enumerate(self.evaluations.items()):
-            self.evaluators_table.insertRow(row)
-
-            label, unit = math_text_label_from_key(key)
-            self.evaluators_table.setCellWidget(row, 0, label)
-            self.evaluators_table.setCellWidget(row, 1, unit)
-
-            self.evaluators_table.setItem(
-                row, 2, QTableWidgetItem(format_number(value))
-            )
+        evaluations = self.model.evaluate(self.data_matrix)
+        populate_evaluators_table(self.evaluators_table, evaluations)
 
     # =========================================================================
     # Tab 2 - Plot
     # =========================================================================
-    def _fill_plot_nature_and_population(self) -> None:
+    def _setup_plot_area(self) -> None:
+        """Create the tabbed canvas area.
+
+        Sets :attr:`plot_area`.
+
+        """
+        self.plot_area = TabbedPlotArea()
+        self.plot_layout.addWidget(self.plot_area)
+
+    def _autofill_plot_data_type_and_population(self) -> None:
         """Check emission data type and population.
 
         When model is updated, check the ``Data to plot`` and ``Population to
@@ -506,55 +515,116 @@ class MainWindow(QMainWindow):
                 button.setChecked(False)
 
     def _setup_energy_angle_inputs(self) -> None:
-        """Set the energy and angle inputs for the model plot."""
-        self.energy_angle_group = QGroupBox("Plot configuration")
-        self.energy_angle_group.setStyleSheet(TITLE_STYLE)
-        self.energy_angle_layout = QVBoxLayout()
+        """Set the energy and angle inputs for the model plot.
 
-        quantities = ("energy", "angle")
-        labels = ("Energy [eV]", "Angle [deg]")
-        initial_values = ((0.0, 500.0, 501), (0.0, 60.0, 4))
-        max_values = (None, 90.0)
-        for qty, label, initial, max_val in zip(
-            quantities, labels, initial_values, max_values
-        ):
-            layout, first, last, points = setup_linspace_entries(
-                label, initial_values=initial, max_value=max_val
-            )
-            self.energy_angle_layout.addLayout(layout)
-            if qty == ("energy"):
-                self.last_energy_widget = last
-            elif qty == ("angle"):
-                self.last_theta_widget = last
-                self.n_theta_widget = points
+        Sets :attr:`energy`, :attr:`angle`,
+        :attr:`use_measured_energies_checkbox`.
 
-            for attr, attr_name in zip(
-                (first, last, points), ("first", "last", "points")
+        """
+        layout = QVBoxLayout()
+        group = titled_group("Plot configuration", layout)
+
+        self.energy = setup_linspace_entries(
+            "Energy [eV]", initial_values=(0.0, 500.0, 501)
+        )
+        layout.addLayout(self.energy.layout)
+
+        self.use_measured_energies_checkbox = (
+            self._create_use_measured_energies_checkbox()
+        )
+        layout.addWidget(self.use_measured_energies_checkbox)
+
+        self.angle = setup_linspace_entries(
+            "Angle [deg]", initial_values=(0.0, 60.0, 4), max_value=90.0
+        )
+        layout.addLayout(self.angle.layout)
+
+        self.plot_layout.addWidget(group)
+
+    def _create_use_measured_energies_checkbox(self) -> QCheckBox:
+        """Set checkbox making :meth:`.Model.plot` use measured energies.
+
+        Behavior:
+        - Greyed out if no measurements plotted (rely on
+          :attr:`.measurements_are_plotted`)
+        - When checked, the :meth:`.Model.plot` is called with
+          ``energies=None`` so that min/max energies are taken from currently
+          drawn axes.
+
+        """
+
+        def _on_use_measured_energies_toggled(checked: bool) -> None:
+            """Grey out energy linspace inputs."""
+            for widg in (
+                self.energy.first,
+                self.energy.last,
+                self.energy.n_points,
             ):
-                setattr(self, f"{qty}_{attr_name}", attr)
+                widg.setEnabled(not checked)
 
-        self.energy_angle_group.setLayout(self.energy_angle_layout)
-        self._plot_layout.addWidget(self.energy_angle_group)
+        checkbox = QCheckBox("Use energies from measurements")
+        checkbox.setEnabled(self.measurements_are_plotted)
+        checkbox.toggled.connect(_on_use_measured_energies_toggled)
+        return checkbox
+
+    def refresh_use_measured_energies_availability(self) -> None:
+        """Re-sync the checkbox state with :attr:`.measurements_are_plotted`.
+
+        Call this every time :attr:`.measurements_are_plotted` changes.
+
+        """
+        checkbox = self.use_measured_energies_checkbox
+        checkbox.setEnabled(self.measurements_are_plotted)
+        if not self.measurements_are_plotted and checkbox.isChecked():
+            checkbox.setChecked(False)
+
+    def _get_energies_for_model_plot(self) -> NDArray[np.float64] | None:
+        """Get proper energies for :meth:`.Model.plot`.
+
+        - If the :attr:`.use_measured_energies_checkbox` is checked, we return
+          ``None`` and :meth:`.Model.plot` will take energies  from the given
+          ``Axes``.
+        - If unchecked, we create a linspace from the energy linspace inputs.
+
+        """
+        checkbox = self.use_measured_energies_checkbox
+        if checkbox.isChecked():
+            return
+
+        success, linspace = self._gen_linspace("energy")
+        if not success:
+            logging.warning(
+                "An error was raised trying to generate the linspace. "
+                "Continue with a default energies array."
+            )
+        return linspace
 
     def _setup_plotter_dropdowns(self) -> None:
         """Set the :class:`.Plotter` related interface."""
         self._set_up_data_to_plot_checkboxes()
         self._set_up_population_to_plot_checkboxes()
 
-        classes, layout, dropdown, buttons = setup_dropdown(
+        entry = setup_dropdown(
             module_name="eemilib.plotter",
             base_class=Plotter,
             buttons_args={
                 "Plot file": self.plot_measured,
                 "Plot modelled data": self.plot_model,
-                "Create new figure": lambda _: setattr(self, "axes", None),
+                "Clear figure": lambda _: self._clear_figure_action(),
             },
         )
-        self.plotter_classes = classes
-        self._plot_layout.addLayout(layout)
-        self.dropdowns["Plotter"] = dropdown
-        self.plot_measured_button = buttons[0]
-        self.plot_model_button = buttons[1]
+        self.dropdowns["Plotter"] = entry
+        entry.dropdown.currentIndexChanged.connect(self._setup_plotter)
+        self.plot_layout.addLayout(entry.layout)
+
+    def _clear_figure_action(self) -> None:
+        """Clean the figure and the ``is/are_plotted`` flag(s)."""
+        self.plot_area.clear()
+        self.measurements_are_plotted = False
+
+    def _setup_plotter(self) -> None:
+        """Set up new plotter when the dropdown menu is changed."""
+        self.plotter = self._dropdown_to_class("Plotter")()
 
     def _set_up_data_to_plot_checkboxes(self) -> None:
         """Add checkbox to select which data should be plotted."""
@@ -563,7 +633,7 @@ class MainWindow(QMainWindow):
             IMPLEMENTED_EMISSION_DATA,
             several_can_be_checked=False,
         )
-        self._plot_layout.addLayout(layout)
+        self.plot_layout.addLayout(layout)
         self.data_checkboxes = checkboxes
 
     def _set_up_population_to_plot_checkboxes(self) -> None:
@@ -571,70 +641,121 @@ class MainWindow(QMainWindow):
         layout, checkboxes = to_plot_checkboxes(
             "Population to plot:", IMPLEMENTED_POP, several_can_be_checked=True
         )
-        self._plot_layout.addLayout(layout)
+        self.plot_layout.addLayout(layout)
         self.population_checkboxes = checkboxes
 
     def plot_measured(self) -> None:
         """Plot the desired data, as imported."""
-        plotter = self._dropdown_to_class("Plotter")(gui=True)
-
-        success_pop, populations = self._get_populations_to_plot()
-        if not success_pop:
+        populations = self._get_populations_to_plot()
+        if populations is None:
             return
-        success_data, data_type = self._get_data_type_to_plot()
-        if not success_data:
+        data_type = self._get_data_type_to_plot()
+        if data_type is None:
             return
 
-        self.axes = self.data_matrix.plot(
-            plotter,
-            population=populations,
+        self._plot(
+            self.data_matrix.plot,
             data_type=data_type,
-            axes=self.axes,
+            impact_energies=self._known_impact_energies(),
+            population=populations,
         )
+        self.measurements_are_plotted = True
 
     def plot_model(self) -> None:
         """Plot the desired data, as modelled."""
-        plotter = self._dropdown_to_class("Plotter")(gui=True)
-
-        success_pop, populations = self._get_populations_to_plot()
-        if not success_pop:
+        populations = self._get_populations_to_plot()
+        if populations is None:
             return
-        success_data, data_type = self._get_data_type_to_plot()
-        if not success_data:
+        data_type = self._get_data_type_to_plot()
+        if data_type is None:
             return
-        success_ene, energies = self._gen_linspace("energy")
-        if not success_ene:
-            return
+        energies = self._get_energies_for_model_plot()
         success_angle, angles = self._gen_linspace("angle")
         if not success_angle:
             return
 
-        self.axes = self.model.plot(
-            plotter,
-            population=populations,
+        self._plot(
+            self.model.plot,
             data_type=data_type,
+            impact_energies=self._known_impact_energies(),
+            population=populations,
             energies=energies,
             angles=angles,
-            axes=self.axes,
         )
 
-    def _get_data_type_to_plot(
+    def _plot(
         self,
-    ) -> tuple[bool, ImplementedEmissionData | None]:
+        plot_callable: Callable[..., None],
+        data_type: ImplementedEmissionData,
+        impact_energies: list[float],
+        **plot_kwargs,
+    ) -> None:
+        """Call ``plot_callable`` on the right axes.
+
+        Can be grouped by |PE| energy.
+
+        Parameters
+        ----------
+        plot_callable :
+            Plot method to call.
+        data_type :
+            Data type to plot.
+        impact_energies :
+            |PE| energies, used only for ``"Emission Energy"``
+            plots.
+        plot_kwargs :
+            Other kwargs passed to the plot method, such as ``population``,
+            ``energies``, ``angles``.
+
+        """
+        group_by_pe = data_type == "Emission Energy"
+
+        if group_by_pe and not impact_energies:
+            logging.info(
+                "No impact energy available, maybe this data could not be read"
+                " from the provided data file? All the emission energy "
+                "spectrum will be plotted in the same tab, on the same figure."
+                " If this is too messy, check the used `Loader` documentation "
+                "to know how you can associate each spectrum file with it's "
+                "PE impact energy."
+            )
+            group_by_pe = False
+
+        if not group_by_pe:
+            axes = self.plot_area.axes_for(None)
+            plot_callable(
+                self.plotter, data_type=data_type, axes=axes, **plot_kwargs
+            )
+            self.plot_area.refresh(None)
+            return
+
+        axes_by_pe = {
+            e_pe: self.plot_area.axes_for(e_pe) for e_pe in impact_energies
+        }
+        plot_callable(
+            self.plotter,
+            data_type=data_type,
+            axes=axes_by_pe,
+            group_by_pe=group_by_pe,
+            **plot_kwargs,
+        )
+        self.plot_area.refresh()
+
+    def _get_data_type_to_plot(self) -> ImplementedEmissionData | None:
         """Read input to determine the emission data type to plot."""
-        data_type = [
+        data_type: list[ImplementedEmissionData] = [
             IMPLEMENTED_EMISSION_DATA[i]
             for i, checked in enumerate(self.data_checkboxes)
             if checked.isChecked()
         ]
         if len(data_type) == 0:
             logging.error("Please provide a type of data to plot.")
-            return False, None
-        return True, data_type[0]
+            return None
+        return data_type[0]
 
-    def _get_populations_to_plot(self) -> tuple[bool, list[ImplementedPop]]:
+    def _get_populations_to_plot(self) -> list[ImplementedPop] | None:
         """Read input to determine the populations to plot."""
-        success = True
+        populations: list[ImplementedPop]
         populations = [
             IMPLEMENTED_POP[i]
             for i, checked in enumerate(self.population_checkboxes)
@@ -642,25 +763,30 @@ class MainWindow(QMainWindow):
         ]
         if len(populations) == 0:
             logging.error("Please provide at least one population to plot.")
-            success = False
-        return success, populations
+            return None
+        return populations
 
     def _gen_linspace(
         self, variable: Literal["energy", "angle"]
-    ) -> tuple[bool, np.ndarray]:
+    ) -> tuple[bool, NDArray[np.float64]]:
         """Take the desired input, check validity, create array of values."""
         success = True
         linspace_args = []
-        for box in ("first", "last", "points"):
-            line_name = f"{variable}_{box}"
-            qline_edit = getattr(self, line_name, None)
-            if qline_edit is None:
+        linspace: LinspaceEntries | None = getattr(self, variable)
+        if linspace is None:
+            raise ValueError(
+                f"The LinspaceEntries named {variable} was not found."
+            )
+
+        for line_name in ("first", "last", "n_points"):
+            widget = getattr(linspace, line_name, None)
+            if widget is None:
                 logging.error(f"The attribute {line_name} is not defined.")
                 success = False
                 continue
 
-            assert isinstance(qline_edit, QLineEdit)
-            value = qline_edit.displayText()
+            assert isinstance(widget, QLineEdit)
+            value = widget.displayText()
             if not value:
                 logging.error(f"You must give a value in {line_name}.")
                 success = False
@@ -686,69 +812,67 @@ class MainWindow(QMainWindow):
             model = self.model
         except AttributeError as e:
             logging.debug(
-                f"Model is not set, cannot fill energy/angle plotting ranges. \n{e}"
+                "Model is not set, cannot fill energy/angle plotting ranges."
+                f"\n{e}"
             )
             return
         try:
             data_matrix = self.data_matrix
         except AttributeError as e:
             logging.debug(
-                f"DataMatrix is not set, cannot fill energy/angle plotting ranges.\n{e}"
+                "DataMatrix is not set, cannot fill energy/angle plotting "
+                f"ranges.\n{e}"
             )
             return
 
         if not self.autofill_plotting_ranges:
             return
-        data_type_to_plot = model.data_types[0]
 
-        all_pop_data = []
-        for pop in IMPLEMENTED_POP:
-            data = data_matrix.get_data(data_type_to_plot, pop)
-            if not data:
-                continue
-            all_pop_data.append(data)
+        data = list(
+            cast(
+                list[EmissionData],
+                flatten(
+                    [
+                        data_matrix.get_data(data_type, IMPLEMENTED_POP)
+                        for data_type in model.data_types
+                    ]
+                ),
+            )
+        )
 
-        if not all_pop_data:
+        if not data:
             logging.debug(
                 "No valid data, cannot fill energy/angle plotting ranges."
             )
             return
 
-        data_subset = all_pop_data[0]
-
-        e_maxi = max(data_subset.energies)
+        e_maxi = max([max(d.energies) for d in data])
         if e_maxi is not None and not np.isnan(e_maxi):
             logging.debug(f"Setting {e_maxi = }")
-            self.last_energy_widget.setText(str(e_maxi))
+            self.energy.last.setText(str(e_maxi))
 
-        theta_maxi = max(data_subset.angles)
-        n_theta = len(data_subset.angles)
+        theta_maxi = 0.0
+        n_theta = 1
+        for d in data:
+            _theta_max = max(d.angles)
+            if _theta_max < theta_maxi:
+                continue
+            theta_maxi = _theta_max
+            n_theta = len(d.angles)
         if theta_maxi is not None and not np.isnan(theta_maxi):
             logging.debug(f"Setting {theta_maxi = }")
-            self.last_theta_widget.setText(str(theta_maxi))
+            self.angle.last.setText(str(theta_maxi))
             logging.debug(f"Setting {n_theta = }")
-            self.n_theta_widget.setText(str(n_theta))
+            self.angle.n_points.setText(str(n_theta))
 
     # =========================================================================
     # Helper
     # =========================================================================
     def _dropdown_to_class(self, name: Dropdowns) -> ABCMeta:
         """Convert dropdown entry to class."""
-        dropdown = self.dropdowns.get(name, None)
-        assert dropdown is not None, f" The dropdown {name} is not defined."
-
-        module_names_to_paths = f"{name.lower()}_classes"
-        module_name_to_path = getattr(self, module_names_to_paths, None)
-        assert module_name_to_path is not None, (
-            f"The dictionary {module_names_to_paths}, linking every module"
-            " name to its path, is not defined."
-        )
-
-        selected: str = dropdown.currentText()
-        module_path: str = module_name_to_path[selected]
-        module: ModuleType = importlib.import_module(module_path)
-        my_class = getattr(module, selected)
-        return my_class
+        entry = self.dropdowns.get(name)
+        assert entry is not None, f"The dropdown {name} is not defined."
+        return entry.selected_class()
 
     def _set_list_widget_state(
         self, widget: QListWidget, enabled: bool
@@ -760,6 +884,18 @@ class MainWindow(QMainWindow):
             return
         widget.setStyleSheet("background-color: lightgray;")
         widget.setEnabled(False)
+
+    def _known_impact_energies(self) -> list[float]:
+        """List loaded impact energies.
+
+        This is used in ``"Emission Energy Distribution"`` plots.
+
+        """
+        distribs = self.data_matrix.get_data(
+            "Emission Energy", IMPLEMENTED_POP
+        )
+        impacts = {d.e_pe for d in distribs}
+        return sorted(impacts)
 
     # =========================================================================
     # Misc
@@ -779,7 +915,7 @@ class MainWindow(QMainWindow):
 def main() -> None:
     """Build the GUI interface."""
     app = QApplication(sys.argv)
-    window = MainWindow()
+    window = EEmiLibGUI()
     window.show()
     sys.exit(app.exec_())
 

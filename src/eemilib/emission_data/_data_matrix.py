@@ -20,6 +20,7 @@ from eemilib.emission_data.emission_energy_distribution import (
     EMISSION_ENERGIES_BY_POP,
     AllEmissionEnergyDistribution,
     EBEEmissionEnergyDistribution,
+    EmissionEnergyDistribution,
     IBEEmissionEnergyDistribution,
     SEEmissionEnergyDistribution,
 )
@@ -40,6 +41,7 @@ from eemilib.util.constants import (
     ImplementedEmissionData,
     ImplementedPop,
 )
+from eemilib.util.helper import flatten
 
 pop_to_row = {pop: i for i, pop in enumerate(IMPLEMENTED_POP)}
 row_to_pop = {val: key for key, val in pop_to_row.items()}
@@ -203,6 +205,13 @@ class DataMatrix:
 
     @overload
     def get_data(
+        self,
+        data_type: Literal["Emission Yield"],
+        population: Sequence[ImplementedPop],
+    ) -> Sequence[EmissionYield]: ...
+
+    @overload
+    def get_data(
         self, data_type: Literal["Emission Energy"], population: Literal["SE"]
     ) -> Sequence[SEEmissionEnergyDistribution]: ...
 
@@ -223,11 +232,27 @@ class DataMatrix:
 
     @overload
     def get_data(
+        self,
+        data_type: Literal["Emission Energy"],
+        population: Sequence[ImplementedPop],
+    ) -> Sequence[EmissionEnergyDistribution]: ...
+
+    @overload
+    def get_data(
         self, data_type: Literal["Emission Angle"], population: ImplementedPop
     ) -> Sequence[EmissionAngleDistribution]: ...
 
+    @overload
     def get_data(
-        self, data_type: ImplementedEmissionData, population: ImplementedPop
+        self,
+        data_type: ImplementedEmissionData,
+        population: ImplementedPop | Sequence[ImplementedPop],
+    ) -> Sequence[EmissionData]: ...
+
+    def get_data(
+        self,
+        data_type: ImplementedEmissionData,
+        population: ImplementedPop | Sequence[ImplementedPop],
     ) -> Sequence[EmissionData]:
         """Get the file(s) by name.
 
@@ -236,7 +261,8 @@ class DataMatrix:
         data_type :
             Emission data type.
         population :
-            Population type.
+            Population type. If several populations are given, the output is
+            flattened to a 1D list.
 
         Returns
         -------
@@ -244,6 +270,14 @@ class DataMatrix:
             is returned without any error message.
 
         """
+        if not isinstance(population, str):
+            nested_data = [
+                list(self.get_data(data_type, pop)) for pop in population
+            ]
+            flattened_data = cast(
+                Sequence[EmissionData], list(flatten(nested_data))
+            )
+            return flattened_data
         row, col = self._natures_to_indexes(data_type, population)
         data = self.data_matrix[row][col]
         if data is None:
