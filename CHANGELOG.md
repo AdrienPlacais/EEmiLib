@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.1]
 
+### Added
+
+- GUI:
+  - Buttons to clear file paths / loaded data.
+
 ### Changed
 
 - `DataMatrix._set_data` no longer needs the `data_type` and `population`

@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import (
     QPushButton,
 )
 
+from eemilib.emission_data._data_matrix import DataMatrix
 from eemilib.gui.helper import titled_group
 from eemilib.gui.styles import FILE_LIST_MAX_HEIGHT
 from eemilib.util.constants import IMPLEMENTED_EMISSION_DATA, IMPLEMENTED_POP
@@ -92,3 +93,32 @@ def _select_files(
         assert current_file_lists is not None
         current_file_lists.clear()
         current_file_lists.addItems(file_names)
+
+
+def clear_filepaths_button(
+    data_matrix: DataMatrix, files_list: list[list[None | QListWidget]]
+) -> QPushButton:
+    """Create a button to clear filepaths in data matrix and GUI."""
+    clear_button = QPushButton(text="🧹 Clear files matrix")
+
+    def _clear_filepaths() -> None:
+        data_matrix.clear_filepaths()
+        for line in files_list:
+            for f in line:
+                if f is None:
+                    continue
+                f.clear()
+
+    clear_button.clicked.connect(_clear_filepaths)
+    return clear_button
+
+
+def clear_data_button(data_matrix: DataMatrix) -> QPushButton:
+    """Create a button to clear loaded data."""
+    clear_button = QPushButton(text="🧹 Clear loaded data")
+
+    def _clear_data() -> None:
+        data_matrix.clear_data()
+
+    clear_button.clicked.connect(_clear_data)
+    return clear_button

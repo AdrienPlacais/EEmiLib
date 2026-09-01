@@ -17,10 +17,6 @@
     3. Create layouts
     4. Call the `addWidget`, `addLayout` methods.
 
-.. todo::
-   Add a ``Clear`` button somewhere in the data matrix calling its ``Clear``
-   method.
-
 """
 
 import logging
@@ -34,6 +30,7 @@ from numpy.typing import NDArray
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
+    QHBoxLayout,
     QLineEdit,
     QListWidget,
     QMainWindow,
@@ -56,7 +53,11 @@ from eemilib.gui.dropdown import (
     set_dropdown_value,
     setup_dropdown,
 )
-from eemilib.gui.file_selection import file_selection_matrix
+from eemilib.gui.file_selection import (
+    clear_data_button,
+    clear_filepaths_button,
+    file_selection_matrix,
+)
 from eemilib.gui.helper import (
     PARAMETER_ATTR_TO_POS,
     PARAMETER_POS_TO_ATTR,
@@ -140,6 +141,7 @@ class EEmiLibGUI(QMainWindow):
         self._setup_file_selection_matrix()
 
         self._setup_loader_dropdown()
+        self._setup_clear_buttons()
 
         #: Store the :class:`.Parameter` logic for the :class:`.Model`.
         self.parameters_table: QTableWidget
@@ -320,6 +322,23 @@ class EEmiLibGUI(QMainWindow):
 
         if self.autofill_plotting_ranges:
             self._fill_plotting_ranges()
+
+    # =========================================================================
+    # Tab 1 - Clear buttons
+    # =========================================================================
+    def _setup_clear_buttons(self) -> None:
+        """Set two buttons to clear paths and data."""
+        layout = QHBoxLayout()
+        spacer = QWidget()
+        for _ in range(3):
+            layout.addWidget(spacer)
+
+        for clear_button in (
+            clear_filepaths_button(self.data_matrix, self.file_lists),
+            clear_data_button(self.data_matrix),
+        ):
+            layout.addWidget(clear_button)
+        self.data_model_layout.addLayout(layout)
 
     # =========================================================================
     # Tab 1 - Model
