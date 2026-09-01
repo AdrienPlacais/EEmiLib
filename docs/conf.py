@@ -1,4 +1,9 @@
-"""Define configuration for Sphinx doc builder."""
+"""Define configuration for Sphinx doc builder.
+
+.. todo::
+   Encoding of ç in bilbiography
+
+"""
 
 import os
 import sys
