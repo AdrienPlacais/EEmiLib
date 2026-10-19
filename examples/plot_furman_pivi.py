@@ -15,7 +15,7 @@ import numpy as np
 
 from eemilib.data.ag.emission_energy import distribs
 from eemilib.data.ag.emission_yield import teey_ag_1_heated_pd
-from eemilib.emission_data import DataMatrix
+from eemilib.emission_data import MeasuredDataMatrix
 from eemilib.loader import PandasLoader
 from eemilib.model import FurmanPivi
 from eemilib.plotter import PandasPlotter
@@ -23,7 +23,7 @@ from eemilib.plotter import PandasPlotter
 # %%
 # Create useful objects first
 # ---------------------------
-data_matrix = DataMatrix()
+measured_data = MeasuredDataMatrix()
 loader = PandasLoader()
 plotter = PandasPlotter()
 model = FurmanPivi()
@@ -37,11 +37,13 @@ model = FurmanPivi()
 # This could be de-activated by setting
 # ``rescale_energy_distributions_to_yield`` to ``False``, but would mess up
 # our fitting.
-data_matrix.set_files(
+measured_data.set_files(
     teey_ag_1_heated_pd, data_type="Emission Yield", population="all"
 )
-data_matrix.set_files(distribs, data_type="Emission Energy", population="all")
-data_matrix.load_data(
+measured_data.set_files(
+    distribs, data_type="Emission Energy", population="all"
+)
+measured_data.load_data(
     loader,
     rescale_energy_distributions_to_yield=True,  # Un-necessary, this is the default value anyway
 )
@@ -50,7 +52,7 @@ data_matrix.load_data(
 # Fit the model
 # -------------
 # This operation can take a little bit of time...
-model.find_optimal_parameters(data_matrix)
+model.find_optimal_parameters(measured_data)
 
 # %%
 # Now let's verify that the model is consistent with experimental data!
@@ -58,7 +60,7 @@ model.find_optimal_parameters(data_matrix)
 # .. note::
 #    By specifying ``energies=None``, we force the :class:`.Model` to be
 #    calculated on the same energies as the loaded data.
-axes_yield = data_matrix.plot(
+axes_yield = measured_data.plot(
     plotter, population="all", data_type="Emission Yield"
 )
 axes_yield = model.plot(
@@ -70,7 +72,7 @@ axes_yield = model.plot(
     axes=axes_yield,
 )
 
-axes_distrib = data_matrix.plot(
+axes_distrib = measured_data.plot(
     plotter, population="all", data_type="Emission Energy", group_by_pe=True
 )
 axes_distrib = model.plot(

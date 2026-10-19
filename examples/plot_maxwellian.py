@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from eemilib.data.ag.emission_energy import distrib_70eV
-from eemilib.emission_data import DataMatrix
+from eemilib.emission_data import MeasuredDataMatrix
 from eemilib.loader import PandasLoader
 from eemilib.model import Maxwellian
 from eemilib.plotter import PandasPlotter
@@ -28,7 +28,7 @@ filepath = distrib_70eV
 # ---------
 # This object will hold all the filepaths and link them to their content
 # nature:
-data_matrix = DataMatrix()
+measured_data = MeasuredDataMatrix()
 
 # %%
 #
@@ -37,7 +37,7 @@ data_matrix = DataMatrix()
 # - ``data_type``: allowed values are in
 #   :data:`.ImplementedEmissionData`.
 #
-data_matrix.set_files(
+measured_data.set_files(
     filepath,  # One or several filepaths
     population="all",  # Type of electrons population
     data_type="Emission Energy",  # Nature of emission data
@@ -62,7 +62,7 @@ loader = PandasLoader(
 
 # %%
 # Actually load the data:
-data_matrix.load_data(loader)
+measured_data.load_data(loader)
 # %%
 #
 # .. seealso::
@@ -75,7 +75,7 @@ plotter = PandasPlotter()
 
 # %%
 # Plot the loaded data:
-axes_1 = data_matrix.plot(
+axes_1 = measured_data.plot(
     plotter, population="all", data_type="Emission Energy"
 )
 plt.show()
@@ -89,7 +89,16 @@ model = Maxwellian()
 
 # %%
 # Fit it on loaded data:
-model.find_optimal_parameters(data_matrix)
+model.find_optimal_parameters(measured_data)
+
+# %%
+# Internally, the :class:`.Model` will store electron emission data in a
+# :class:`.ModelledDataMatrix` object. While being very close to
+# :class:`.MeasuredDataMatrix`, it defines additional methods. In particular,
+# :meth:`.ModelledDataMatrix.get_or_compute_data` is a version of
+# :meth:`.DataMatrix.get_data` that accepts the arguments that are required to
+# compute data. It has a caching functionality: calling it several times with
+# the same arguments does not recompute.
 
 # %%
 # Plot
@@ -99,7 +108,7 @@ model.find_optimal_parameters(data_matrix)
 # For :class:`.Model` plots, we must specify at which energies and angles we
 # want data. Here, we select emission energies in
 # :math:`[0\,\mathrm{eV},\,50\,\mathrm{eV}]` and only at normal incidence.
-axes_2 = data_matrix.plot(
+axes_2 = measured_data.plot(
     plotter, population="all", data_type="Emission Energy"
 )  # Create new Figure from scratch only for ``sphinx_gallery``
 
