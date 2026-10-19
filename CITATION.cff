@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: If you use this software, please cite it as below.
+title: EEmiLib
+abstract: A library gathering electron emission models and fitting methods, oriented toward multipactor studies.
+version: 0.2.2
+date-released: '2026-10-14'
+authors:
+- family-names: Plaçais
+  given-names: Adrien
+  orcid: https://orcid.org/0000-0001-6840-1685
+identifiers:
+- description: This is the article that presented the code.
+  type: doi
+  value: 10.0000/nan.00000000
+license: MIT
+repository-code: https://github.com/AdrienPlacais/EEmiLib

@@ -3,7 +3,6 @@
 import logging
 from typing import Any
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.axes import Axes
@@ -22,18 +21,9 @@ from eemilib.util.constants import (
 class PandasPlotter(Plotter):
     """A :class:`.Plotter` using pandas lib."""
 
-    def __init__(self, gui: bool = False) -> None:
-        """Instantiate object.
-
-        Parameters
-        ----------
-        gui :
-            Activates interactive plotting if using GUI.
-
-        """
-        if gui:
-            plt.ion()
-        super().__init__(gui=gui)
+    def __init__(self) -> None:
+        """Instantiate object."""
+        super().__init__()
 
     def plot_emission_yield(
         self,
@@ -200,12 +190,17 @@ class PandasPlotter(Plotter):
         merged_kwargs.update(kwargs)
         return merged_kwargs
 
+    def can_infer_energies(self, axes: Any | None) -> bool:
+        """Check if energies can be inferred from given ``axes``."""
+        return axes is not None and len(axes.get_lines()) > 0
+
     def infer_energies(
         self,
         axes: Axes | None,
         data_type: ImplementedEmissionData,
+        linspace_args: bool = False,
         n_points: int = 5001,
-    ) -> NDArray[np.float64]:
+    ) -> NDArray[np.float64] | tuple[float, float, int]:
         """Create array of electrons energies from given axes.
 
         Used for :class:`.Model` plots, in order to keep measurements maximum
@@ -217,16 +212,22 @@ class PandasPlotter(Plotter):
             Pre-existing axes; should contain measurement data.
         data_type :
             Type of plotted data.
+        linspace_args :
+            Whether method should return ``np.linspace`` arguments instead of
+            the array (minimum, maximum, number of points).
         n_points :
             Number of points for the x axis.
 
         Returns
         -------
+        NDArray[np.float64]
             Array of energies ready to use by a :class:`.Model`. Spans from
             minimum x-data up to maximum x-data across every
             :class:`matplotlib.lines.Line2D` in the given |Axes|. If no data
             was plotted, we use the current ``axes`` limits, though it will
             generally be meaningless.
+        tuple[float, float, int]
+            Minimum and maximum values, number of points.
 
         """
         if data_type == "Emission Angle":
@@ -234,20 +235,23 @@ class PandasPlotter(Plotter):
                 "Currently cannot pick up energies for emission angle "
                 "distribution, because its xdata is not energies but angles."
             )
-        if axes is None:
-            raise ValueError("Cannot infer energies if ``axes`` is ``None``.")
-        lines = axes.get_lines()
-        if not lines:
-            logging.warning(
-                "Given axes is empty. Its x-limits are probably meaningless. "
-                "Inferring x limits from it anyway."
+        if not self.can_infer_energies(axes):
+            raise ValueError(
+                f"Cannot infer energies from given {axes = }, because it does "
+                "not exist or nothing is drawn on it."
             )
-            xmin, xmax = axes.get_xlim()
+        assert axes is not None
+        lines = axes.get_lines()
 
-        else:
-            xmin = min([np.nanmin(line.get_data()[0]) for line in lines])
-            xmax = max([np.nanmax(line.get_data()[0]) for line in lines])
+        xmin = min([np.nanmin(line.get_data()[0]) for line in lines])
+        xmax = max([np.nanmax(line.get_data()[0]) for line in lines])
 
         if xmin < 0:
             xmin = 0.0
+        if linspace_args:
+            return float(xmin), float(xmax), n_points
         return np.linspace(xmin, xmax, n_points)
+
+
+class GUIPandasPlotter(PandasPlotter):
+    """A :class:`.PandasPloter` handling plot interactivity."""
