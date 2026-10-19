@@ -168,3 +168,4 @@ pyrightconfig.json
 data/*
 scripts/*
 *.mp4
+/src/eemilib/_version.py
