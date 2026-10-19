@@ -116,7 +116,7 @@ def update_files(version: str) -> None:
 
     """
     today = datetime.datetime.now(tz=datetime.UTC).date().isoformat()
-    # _update_citation(version, today)
+    _update_citation(version, today)
     _update_changelog(version, today)
 
 
