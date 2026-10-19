@@ -312,7 +312,7 @@ class Model(ABC):
         if theta is None:
             theta = self._infer_theta(data_type, population)
 
-        result = self._cached_data_matrix.get_or_compute(
+        result = self._cached_data_matrix.get_or_compute_data(
             data_type,
             population,
             energy,

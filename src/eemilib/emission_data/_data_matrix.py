@@ -786,7 +786,7 @@ class ModelledDataMatrix(DataMatrix):
         """
         raise NotImplementedError
 
-    def get_or_compute(
+    def get_or_compute_data(
         self,
         data_type: ImplementedEmissionData,
         population: ImplementedPop,
