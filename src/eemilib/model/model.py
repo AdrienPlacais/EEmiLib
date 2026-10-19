@@ -157,7 +157,7 @@ class Model(ABC):
         *args,
         **kwargs,
     ) -> pd.DataFrame:
-        r"""Compute |TEEY| :math:`\sigma`.
+        r"""Get or compute |TEEY| :math:`\sigma`.
 
         Under the hood, it calls :meth:`get_or_compute_data`.
 
@@ -177,7 +177,7 @@ class Model(ABC):
         *args,
         **kwargs,
     ) -> pd.DataFrame:
-        r"""Compute |SEEY| :math:`\delta`.
+        r"""Get or compute |SEEY| :math:`\delta`.
 
         Under the hood, it calls :meth:`get_or_compute_data`.
 
@@ -779,7 +779,8 @@ class Model(ABC):
         Parameters
         ----------
         data_matrix :
-            Holds all measured electron emission data.
+            Holds reference (generally measured) electron emission data. If not
+            provided, we take the :attr:`.reference_data`.
         args :
             Additional unused arguments.
         evaluations :
@@ -809,18 +810,17 @@ class Model(ABC):
         return evaluations
 
     def _evaluate_for_teey_models(
-        self, data_matrix: DataMatrix | None = None
+        self, ref_data_matrix: DataMatrix
     ) -> dict[str, float]:
         """Evaluate a |TEEY| model with N. Fil criterions.
 
         Ref: :cite:`Fil2016a,Fil2020`.
 
         """
-        data_matrix = self._resolve_data_matrix(data_matrix)
         evaluations = self._main_teey_parameters()
 
         try:
-            teey = data_matrix.teey
+            ref_teey = ref_data_matrix.teey
         except MissingDataError:
             logging.error("TEEY is mandatory in order to perform evaluations.")
             return evaluations
@@ -828,10 +828,10 @@ class Model(ABC):
         evaluations.update(
             {
                 rf"Relative error over {tex_math(EC_1)} [\%]": self._error_ec1(
-                    teey
+                    ref_teey
                 ),
                 f"{tex_math(SIGMA)} deviation between {tex_math(EC_1)} and "
-                rf"{tex_math(E_MAX)} [\%]": self._error_teey(teey),
+                rf"{tex_math(E_MAX)} [\%]": self._error_teey(ref_teey),
             }
         )
         return evaluations
@@ -854,9 +854,9 @@ class Model(ABC):
             f"Modelled {tex_math(SIGMA_MAX)}": sigma_max,
         }
 
-    def _error_ec1(self, emission_yield: TEEY) -> float:
+    def _error_ec1(self, ref_teey: TEEY) -> float:
         """Compute relative error over first crossover energy in :unit:`%`."""
-        measured_ec1 = emission_yield.e_c1
+        measured_ec1 = ref_teey.e_c1
         energy = np.linspace(0, 1.5 * measured_ec1, 10001, dtype=np.float64)
         theta = np.array([0.0])
         teey = self.teey(energy, theta)
@@ -868,15 +868,15 @@ class Model(ABC):
         error = 100.0 * std / measured_ec1
         return float(error)
 
-    def _error_teey(self, emission_yield: TEEY) -> float:
+    def _error_teey(self, ref_teey: TEEY) -> float:
         """Compute |TEEY| relative error between $E_{c1}$ and $E_{max}$.
 
         Returned value is in :unit:`%`.
 
         """
-        min_energy = emission_yield._e_c1
-        max_energy = emission_yield._e_max
-        df = emission_yield.data
+        min_energy = ref_teey._e_c1
+        max_energy = ref_teey._e_max
+        df = ref_teey.data
         mask = (df[COL_ENERGY] >= min_energy) & (df[COL_ENERGY] <= max_energy)
 
         measured_teey = df.loc[mask, COL_NORMAL].to_numpy()

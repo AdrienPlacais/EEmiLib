@@ -154,6 +154,17 @@ class SEEY(EmissionYield):
         self, n_resample: int = -1
     ) -> tuple[float | None, float | None, float | None, float | None]:
         """Compute the characteristics of the emission yield."""
+        normal_ey = self._resampled_normal_ey(n_resample=n_resample)
+        e_max, sigma_max = self._get_maximum_ey(normal_ey)
+        e_c1, e_c2 = self._get_crossovers(normal_ey, e_max)
+        return e_max, sigma_max, e_c1, e_c2
+
+    def _resampled_normal_ey(self, n_resample: int = -1) -> pd.DataFrame:
+        """Resample the normal emission yield.
+
+        Used in the calculation of the curve's characteristic parameters.
+
+        """
         if 0.0 not in self.angles:
             raise MissingNormalEmissionYieldError(
                 "We need normal incidence measurements to compute "
@@ -163,10 +174,7 @@ class SEEY(EmissionYield):
         normal_ey = self.data[[COL_ENERGY, COL_NORMAL]]
         assert isinstance(normal_ey, pd.DataFrame)
         normal_ey = resample(normal_ey, n_resample)
-
-        e_max, sigma_max = self._get_maximum_ey(normal_ey)
-        e_c1, e_c2 = self._get_crossovers(normal_ey, e_max)
-        return e_max, sigma_max, e_c1, e_c2
+        return normal_ey
 
     def _get_maximum_ey(
         self, normal_ey: pd.DataFrame, tol_energy: float = 1e-2
@@ -176,7 +184,8 @@ class SEEY(EmissionYield):
         Parameters
         ----------
         normal_ey :
-            Holds energy of |PEs| as well as emission yield at nominal incidence.
+            Holds energy of |PEs| as well as emission yield at normal
+            incidence.
         tol_energy :
             If the :math:`E_{max}` is too close to the maximum |PE| energy, an
             warning is raised; tolerance is ``tol_energy``.
