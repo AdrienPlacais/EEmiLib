@@ -121,11 +121,11 @@ documentation](https://eemilib.readthedocs.io/en/latest/auto_examples/index.html
   - [ ] Plot:
     - [ ] Let user choose `group_by_pe` and `e_pes` for `"Emission Energy"`
           plots.
-    - [ ] The `Use energies from measurements` button does not work.
+    - [x] The `Use energies from measurements` button does not work.
       - [x] On EY plots, it does the opposite of what it should.
       - [x] On energy distributions, it only picks up the energies of first
             plot.
-    - [ ] Rename the `Use energies from measurements` button?
+    - [x] Rename the `Use energies from measurements` button?
     - [ ] Plot window should be completely separated.
     - [ ] Changing parameter values should update the plot.
   - [x] Model evaluations:
