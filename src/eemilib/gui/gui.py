@@ -30,6 +30,7 @@ from numpy.typing import NDArray
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
+    QGridLayout,
     QHBoxLayout,
     QLineEdit,
     QListWidget,
@@ -62,6 +63,7 @@ from eemilib.gui.helper import (
     PARAMETER_ATTR_TO_POS,
     PARAMETER_POS_TO_ATTR,
     LinspaceEntries,
+    add_linspace_row,
     set_help_button_action,
     setup_linspace_entries,
     titled_group,
@@ -101,6 +103,8 @@ class EEmiLibGUI(QMainWindow):
     #: Whether loading data should automatically fill the energy/angle ranges
     #: with their maximum values.
     autofill_plotting_ranges = True
+    #: Whether plotting measurements should check the "use measured" boxes.
+    autofill_use_measured = True
 
     def __init__(
         self,
@@ -542,19 +546,33 @@ class EEmiLibGUI(QMainWindow):
         Sets :attr:`energy`, :attr:`angle`.
 
         """
-        layout = QVBoxLayout()
+        layout = QGridLayout()
         group = titled_group("Plot configuration", layout)
 
         self.energy = setup_linspace_entries(
-            "Energy [eV]", initial_values=(0.0, 500.0, 501)
+            "Energy [eV]",
+            initial_values=(0.0, 500.0, 501),
+            use_measured_text="Use measured energy range",
         )
-        layout.addLayout(self.energy.layout)
+        self.energy.use_measured.setToolTip(
+            "Evaluate the model on the same energy range as the plotted "
+            "measurements. The first/last/n_points fields are ignored."
+        )
 
         self.angle = setup_linspace_entries(
-            "Angle [deg]", initial_values=(0.0, 60.0, 4), max_value=90.0
+            "Angle [deg]",
+            initial_values=(0.0, 60.0, 4),
+            max_value=90.0,
+            use_measured_text="Match measured angles",
         )
-        layout.addLayout(self.angle.layout)
+        self.angle.use_measured.setToolTip(
+            "Evaluate the model on the same angles as the plotted "
+            "measurements. The first/last/n_points fields are ignored."
+        )
 
+        for row, entries in enumerate((self.energy, self.angle)):
+            add_linspace_row(layout, row, entries)
+            layout.setColumnStretch(7, 1)
         self.plot_layout.addWidget(group)
 
     def refresh_use_measured_availability(self) -> None:
@@ -650,6 +668,14 @@ class EEmiLibGUI(QMainWindow):
             population=populations,
         )
         self.measurements_are_plotted = True
+        self._check_use_measured()
+
+    def _check_use_measured(self) -> None:
+        """Check the "use measured" boxes, now that measurements exist."""
+        if not self.autofill_use_measured:
+            return
+        for entries in (self.energy, self.angle):
+            entries.use_measured.setChecked(True)
 
     def plot_model(self) -> None:
         """Plot the desired data, as modelled."""
