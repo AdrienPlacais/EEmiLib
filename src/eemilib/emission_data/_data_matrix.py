@@ -3,7 +3,7 @@
 import logging
 from collections import defaultdict
 from collections.abc import Callable, Collection, Sequence
-from typing import Literal, cast, overload
+from typing import ClassVar, Literal, cast, overload
 
 import numpy as np
 import pandas as pd
@@ -84,6 +84,8 @@ def _data_type_to_indexes(emission_data: EmissionData) -> tuple[int, int]:
 
 class DataMatrix:
     """Store all the input files and corresp data in a single object."""
+
+    _is_model: ClassVar[bool] = False
 
     def __init__(self) -> None:
         """Instantiate the object."""
@@ -572,6 +574,7 @@ class DataMatrix:
             can be empty if no plot was created.
 
         """
+        kwargs.setdefault("is_model", self._is_model)
         if group_by_pe:
             if data_type != "Emission Energy":
                 raise ValueError(
@@ -762,9 +765,13 @@ class DataMatrix:
 class MeasuredDataMatrix(DataMatrix):
     """Hold data specifically obtained via an experimental campaign."""
 
+    _is_model = False
+
 
 class ModelledDataMatrix(DataMatrix):
     """Hold data specifically calculated by a :class:`.Model`."""
+
+    _is_model = True
 
     def __init__(self) -> None:
         """Instantiate the object with an empty cache."""

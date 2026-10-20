@@ -168,22 +168,39 @@ class PandasPlotter(Plotter):
     ) -> dict[str, Any]:
         """Resolve plot kwargs.
 
-        Priority is the following: ``population`` < ``is_model`` < ``kwargs``.
+        Priority is the following: ``kwargs`` > ``is_model`` > ``population``.
+
+        Parameters
+        ----------
+        population :
+            Plotted population. Defines the line color.
+        is_model :
+            Whether plotted data is measured or modelled. Defines whether
+            markers are plotted.
+        data_type :
+            Type of plotted data. Defines the linestyle.
+        kwargs :
+            User keyword arguments. They have priority other defaults.
+
+        Returns
+        -------
+            kwargs for the plot.
 
         """
         merged_kwargs = {}
         if data_type == "Emission Yield":
-            default_population_style = self.pop_styles_ey
+            style_by_pop = self.pop_styles_ey
         elif data_type == "Emission Energy":
-            default_population_style = self.pop_styles_emission_energy
+            style_by_pop = self.pop_styles_emission_energy
         else:
             logging.info(
-                f"{data_type = } not implemented. Setting a default population style."
+                f"{data_type = } not implemented. Setting a default population"
+                " style."
             )
-            default_population_style = self.pop_styles_emission_energy
+            style_by_pop = self.pop_styles_emission_energy
 
         if population is not None:
-            merged_kwargs.update(default_population_style[population])
+            merged_kwargs.update(style_by_pop[population])
         merged_kwargs.update(self.is_model_styles[is_model])
         merged_kwargs.update(kwargs)
         return merged_kwargs

@@ -154,7 +154,7 @@ documentation](https://eemilib.readthedocs.io/en/latest/auto_examples/index.html
   - [ ] Import/export model configuration with a `TOML`.
   - [x] Make `Model` store its data in a `DataMatrix`.
   - [ ] Should every `Model` be fitted on `all` population?
-  - [ ] Remove markers on model plots.
+  - [x] Remove markers on model plots.
 - If it proves useful:
   - [ ] Handle experimental data with error bars
   - [ ] Add control over interpolation of loaded experimental data
