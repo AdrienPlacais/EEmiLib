@@ -133,7 +133,7 @@ documentation](https://eemilib.readthedocs.io/en/latest/auto_examples/index.html
     - [x] Fix display.
   - [ ] Let user load and plot files that are not needed for current `Model`, so
         they can compare `Model` data with tabulated data easily.
-  - [ ] Fix display of `Parameters` description.
+  - [x] Fix display of `Parameters` description.
   - [ ] Selecting `FurmanPivi` takes too long!
 - CI:
   - [x] `PyPI` release.
