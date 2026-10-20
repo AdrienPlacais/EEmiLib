@@ -34,6 +34,9 @@ class LinspaceEntries(NamedTuple):
     last: QWidget
     #: Number of linspace points
     n_points: QWidget
+    #: When checked, values are taken from measurements; the entries above
+    #: are greyed out
+    use_measured: QCheckBox
 
 
 def setup_linspace_entries(
@@ -56,7 +59,17 @@ def setup_linspace_entries(
         widgets.append(w := _linspace_entry(is_int, x_0=x_0, x_max=x_max))
         layout.addWidget(w)
 
-    return LinspaceEntries(layout, *widgets)
+    use_measured = QCheckBox("Use from measurements")
+    use_measured.setEnabled(False)
+
+    def grey_out_entries(checked: bool) -> None:
+        for widget in widgets:
+            widget.setEnabled(not checked)
+
+    use_measured.toggled.connect(grey_out_entries)
+    layout.addWidget(use_measured)
+
+    return LinspaceEntries(layout, *widgets, use_measured)
 
 
 def _linspace_entry(
