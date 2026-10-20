@@ -118,15 +118,23 @@ documentation](https://eemilib.readthedocs.io/en/latest/auto_examples/index.html
 
 - [x] Document abbreviations
 - GUI:
-  - [ ] Better handling of multiple `Plot data` and `Plot model` buttons push.
+  - [ ] Plot:
     - [ ] Let user choose `group_by_pe` and `e_pes` for `"Emission Energy"`
           plots.
-  - [x] Display quantitative criteria to assess model quality (e.g., Nicolas
-        Fil's criterion)
-  - [x] Display derived quantities such as crossover energies, maximum TEEY,
-        etc.
+    - [ ] The `Use energies from measurements` button does not work. On EY
+          plots, it does the opposite of what it should. On energy
+          distributions, it does nothing.
+    - [ ] Rename the `Use energies from measurements` button?
+  - [ ] Model evaluations:
+    - [x] Display quantitative criteria to assess model quality (e.g., Nicolas
+          Fil's criterion)
+    - [x] Display derived quantities such as crossover energies, maximum TEEY,
+          etc.
+    - [ ] Fix display.
   - [ ] Let user load and plot files that are not needed for current `Model`, so
         they can compare `Model` data with tabulated data easily.
+  - [ ] Fix display of `Parameters` description.
+  - [ ] Selecting `FurmanPivi` takes too long!
 - CI:
   - [x] `PyPI` release.
   - [x] Update installation instructions.
@@ -144,8 +152,9 @@ documentation](https://eemilib.readthedocs.io/en/latest/auto_examples/index.html
 - API:
   - [x] `Model.display_parameters()` method for nice printing.
   - [ ] Import/export model configuration with a `TOML`.
-  - [ ] Make `Model` store its data in a `DataMatrix`?
+  - [x] Make `Model` store its data in a `DataMatrix`.
   - [ ] Should every `Model` be fitted on `all` population?
+  - [ ] Remove markers on model plots.
 - If it proves useful:
   - [ ] Handle experimental data with error bars
   - [ ] Add control over interpolation of loaded experimental data
