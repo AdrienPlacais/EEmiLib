@@ -61,7 +61,10 @@ html_sidebars = {"**": ["versions.html"]}
 
 # -- Check that there is no broken link --------------------------------------
 nitpicky = True
-nitpick_ignore = [("py:class", "numpy.float64")]
+nitpick_ignore = [
+    ("py:class", "numpy.float64"),
+    ("py:class", "numpy.typing.NDArray"),
+]
 intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
