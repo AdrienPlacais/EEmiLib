@@ -11,12 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - GUI:
   - Buttons to clear file paths / loaded data.
+- `Model.get_or_compute_data` method, that returns cached data if it was already
+  calculated.
 
 ### Changed
 
 - `DataMatrix._set_data` no longer needs the `data_type` and `population`
   attribute, and the `emission_data: list[EmissionData]` argument no longer
   needs to be an homogeneous list.
+- `DataMatrix` has now two subclasses:
+  - `MeasuredDataMatrix`: a plain `DataMatrix` with nothing added, but
+    semantically clearer.
+  - `ModelledDataMatrix`: stored in `Model._cached_data_matrix`. Defines the
+    `ModelledDataMatrix.get_or_compute_data` method that is called by
+    `Model.get_or_compute_data` method.
 
 ### Fixed
 
