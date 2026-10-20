@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     `Model.get_or_compute_data` method.
 - `Model.get_or_compute_data` method, that returns cached data if it was already
   calculated.
+- `Model.plot` accepts `None` as value for `energies` argument. In this
+  case, data is plotted using the energies from the `reference_data`, _ie_ the
+  data the `Model` was plotted on.
+  - In GUI, check the `Use energies from measurements` checkbox.
 
 ### Changed
 

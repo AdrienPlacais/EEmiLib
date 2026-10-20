@@ -303,7 +303,7 @@ class Model(ABC):
 
         """
         if energy is None:
-            energy = self._infer_energy(data_type, population)
+            energy = self._infer_energy(data_type, population, e_pe=e_pe)
         if theta is None:
             theta = self._infer_theta(data_type, population)
 
@@ -324,6 +324,7 @@ class Model(ABC):
         data_type: ImplementedEmissionData,
         population: ImplementedPop,
         n_points: int = 501,
+        e_pe: float | None = None,
     ) -> NDArray[np.float64]:
         """Infer an energy array from :attr:`reference_data`, densified.
 
@@ -340,20 +341,37 @@ class Model(ABC):
         Array taken from :attr:`reference_data` is densified, it holds
         ``n_points``.
 
+        Parameters
+        ----------
+        data_type :
+            Type of reference data to extract.
+        population :
+            Nature of population to extract.
+        n_points :
+            Number of points in output array.
+        e_pe :
+            If provided, take energy from :class:`.EmissionData` with closest
+            ``e_pe``.
+
         """
         if not self.reference_data:
-            logging.info(
-                "No reference data, plotting on default energy array."
-            )
             return _DEFAULT_ENERGY
         for pop in (population, "all"):
             emission_data = self.reference_data.get_data(data_type, pop)
             if not emission_data:
                 continue
-            logging.info(f"Using from {pop}")
-            energies = emission_data[0].energies
+
+            if e_pe is None:
+                best_emission_data = emission_data[0]
+            else:
+                best_emission_data = min(
+                    emission_data,
+                    key=lambda data: abs(getattr(data, "e_pe", e_pe) - e_pe),
+                )
+
+            energies = best_emission_data.energies
             return np.linspace(energies.min(), energies.max(), n_points)
-        logging.info("No correct pop, plotting on default energy array.")
+
         return _DEFAULT_ENERGY
 
     def _infer_theta(
@@ -597,6 +615,7 @@ class Model(ABC):
                     energies,
                     angles,
                     axes=axes,
+                    e_pe=e_pe,
                     grid=grid,
                     **kwargs,
                 )
@@ -681,6 +700,7 @@ class Model(ABC):
                 angles=angles,
                 axes=axes.get(e_pe),
                 grid=grid,
+                e_pe=e_pe,
                 **kwargs,
             )
         return axes

@@ -44,7 +44,7 @@ model_classic.plot(
     plotter,
     population="all",
     data_type="Emission Yield",
-    energies=np.linspace(0, 1000, 1001),
+    energies=None,
     angles=np.linspace(0, 60, 4),
     axes=axes_1,
 )
@@ -83,7 +83,7 @@ for model, color, ls in zip(models, colors, linestyles):
         plotter,
         population="all",
         data_type="Emission Yield",
-        energies=np.linspace(0, 1000, 1001),
+        energies=None,
         angles=np.linspace(0, 0, 1),
         axes=axes_2,
         color=color,

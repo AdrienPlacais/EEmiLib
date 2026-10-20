@@ -105,9 +105,15 @@ model.find_optimal_parameters(measured_data)
 # ----
 # We start by re-plotting the experimental data for ``sphinx_gallery``.
 #
-# For :class:`.Model` plots, we must specify at which energies and angles we
-# want data. Here, we select emission energies in
+# For :class:`.Model` plots, we specify at which energies and angles we want
+# data. Here, we select emission energies in
 # :math:`[0\,\mathrm{eV},\,50\,\mathrm{eV}]` and only at normal incidence.
+#
+# .. tip::
+#    Setting ``energies=None`` makes the plot use ``energies`` from
+#    experimental data the model was fitted on. This is also what the GUI
+#    checkbox ``Use energies from measurements`` does.
+#
 axes_2 = measured_data.plot(
     plotter, population="all", data_type="Emission Energy"
 )  # Create new Figure from scratch only for ``sphinx_gallery``
@@ -116,7 +122,7 @@ axes_2 = model.plot(
     plotter,
     population="SE",
     data_type="Emission Energy",
-    energies=np.linspace(0, 50, 201),
+    energies=None,
     angles=np.linspace(0, 0, 1),
     axes=axes_2,
     color="red",

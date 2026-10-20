@@ -123,7 +123,7 @@ documentation](https://eemilib.readthedocs.io/en/latest/auto_examples/index.html
           plots.
     - [ ] The `Use energies from measurements` button does not work.
       - [x] On EY plots, it does the opposite of what it should.
-      - [ ] On energy distributions, it only picks up the energies of first
+      - [x] On energy distributions, it only picks up the energies of first
             plot.
     - [ ] Rename the `Use energies from measurements` button?
     - [ ] Plot window should be completely separated.
