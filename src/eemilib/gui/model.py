@@ -118,16 +118,17 @@ def populate_parameters_table_constants(
 
 
 def create_evaluation_table() -> QTableWidget:
-    """Create the two-column table that displays evaluation results."""
+    """Create the three-columns table that displays evaluation results."""
     table = QTableWidget(0, 3)
     table.setHorizontalHeaderLabels(["Metric", "Unit", "Value"])
 
     header = table.horizontalHeader()
     assert header is not None, "Error when creating header"
-    for i in range(3):
-        header.setSectionResizeMode(i, QHeaderView.ResizeToContents)
+    header.setSectionResizeMode(QHeaderView.Stretch)
     table.setEditTriggers(QTableWidget.NoEditTriggers)
     table.setAlternatingRowColors(True)
+    table.setMaximumHeight(1000)
+    table.setMinimumHeight(200)
     return table
 
 

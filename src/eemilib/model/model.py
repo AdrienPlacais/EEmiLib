@@ -32,7 +32,7 @@ from eemilib.util.constants import (
 )
 from eemilib.util.exceptions import MissingDataError
 from eemilib.util.helper import documentation_url
-from eemilib.util.markdown import E_MAX, EC_1, SIGMA, SIGMA_MAX, tex_math
+from eemilib.util.markdown import _TEEY, E_MAX, EC_1, SIGMA_MAX, tex_math
 
 #: Default energy, when none is provided
 _DEFAULT_ENERGY = np.linspace(0.0, 500.0, 501)
@@ -830,7 +830,7 @@ class Model(ABC):
                 rf"Relative error over {tex_math(EC_1)} [\%]": self._error_ec1(
                     ref_teey
                 ),
-                f"{tex_math(SIGMA)} deviation between {tex_math(EC_1)} and "
+                f"{tex_math(_TEEY)} deviation between {tex_math(EC_1)} and "
                 rf"{tex_math(E_MAX)} [\%]": self._error_teey(ref_teey),
             }
         )

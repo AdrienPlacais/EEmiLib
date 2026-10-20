@@ -125,12 +125,12 @@ documentation](https://eemilib.readthedocs.io/en/latest/auto_examples/index.html
           plots, it does the opposite of what it should. On energy
           distributions, it does nothing.
     - [ ] Rename the `Use energies from measurements` button?
-  - [ ] Model evaluations:
+  - [x] Model evaluations:
     - [x] Display quantitative criteria to assess model quality (e.g., Nicolas
           Fil's criterion)
     - [x] Display derived quantities such as crossover energies, maximum TEEY,
           etc.
-    - [ ] Fix display.
+    - [x] Fix display.
   - [ ] Let user load and plot files that are not needed for current `Model`, so
         they can compare `Model` data with tabulated data easily.
   - [ ] Fix display of `Parameters` description.
