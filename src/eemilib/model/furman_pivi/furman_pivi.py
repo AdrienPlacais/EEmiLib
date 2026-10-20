@@ -68,7 +68,6 @@ from eemilib.util.constants import (
     ImplementedEmissionData,
     ImplementedPop,
 )
-from eemilib.util.exceptions import MissingDataError
 
 EMISSION_YIELD_FUNCS: dict[ImplementedPop, Callable] = {
     "SE": seey,
@@ -304,8 +303,8 @@ class FurmanPivi(Model):
         }
         return pd.DataFrame(out_dict)
 
-    def find_optimal_parameters(
-        self, data_matrix: DataMatrix | None = None, **kwargs
+    def _find_optimal_parameters(
+        self, data_matrix: DataMatrix, **kwargs
     ) -> None:
         """Fit all Furman and Pivi parameters on measurements.
 
@@ -318,10 +317,6 @@ class FurmanPivi(Model):
             Unused kwargs.
 
         """
-        data_matrix = self._resolve_data_matrix(data_matrix)
-        if not data_matrix.holds_required_data(self.model_config):
-            raise MissingDataError("Files are not all provided.")
-
         teeys = data_matrix.get_data("Emission Yield", "all")
         self.find_normal_ey_params(teeys)
         self.find_oblique_ey_params(teeys)

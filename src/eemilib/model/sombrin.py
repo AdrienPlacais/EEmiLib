@@ -21,7 +21,6 @@ from eemilib.util.constants import (
     ImplementedEmissionData,
     ImplementedPop,
 )
-from eemilib.util.exceptions import MissingDataError
 from eemilib.util.markdown import E_MAX, EC_1, SIGMA_MAX
 
 
@@ -141,8 +140,8 @@ class Sombrin(Model):
             self._E = None
         return super().set_parameter_value(name, value)
 
-    def find_optimal_parameters(
-        self, data_matrix: DataMatrix | None = None, **kwargs
+    def _find_optimal_parameters(
+        self, data_matrix: DataMatrix, **kwargs
     ) -> None:
         """Extract main |TEEY| curve parameters from measurements.
 
@@ -150,10 +149,6 @@ class Sombrin(Model):
         crossover and maximum |TEEY| positions.
 
         """
-        data_matrix = self._resolve_data_matrix(data_matrix)
-        if not data_matrix.holds_required_data(self.model_config):
-            raise MissingDataError("Files are not all provided.")
-
         teey = data_matrix.teey
         self.set_parameters_values(
             {"E_max": teey.e_max, "teey_max": teey.ey_max, "E_c1": teey.e_c1}

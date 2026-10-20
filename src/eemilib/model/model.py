@@ -92,12 +92,7 @@ class Model(ABC):
         self.doc_url = documentation_url(
             self, url_doc_override=self._url_doc_override
         )
-        #: Cached computed data, invalidated on parameter change or when
-        #: :attr:`reference_data` is modified.
-        #:
-        #: .. seealso::
-        #:    :meth:`_on_parameter_changed`
-        #:
+        #: Cached computed data, invalidated on parameter change.
         self._cached_data_matrix = ModelledDataMatrix()
 
         #: Maps parameters name to :class:`.Parameter` instances.
@@ -347,13 +342,18 @@ class Model(ABC):
 
         """
         if not self.reference_data:
+            logging.info(
+                "No reference data, plotting on default energy array."
+            )
             return _DEFAULT_ENERGY
         for pop in (population, "all"):
             emission_data = self.reference_data.get_data(data_type, pop)
             if not emission_data:
                 continue
+            logging.info(f"Using from {pop}")
             energies = emission_data[0].energies
             return np.linspace(energies.min(), energies.max(), n_points)
+        logging.info("No correct pop, plotting on default energy array.")
         return _DEFAULT_ENERGY
 
     def _infer_theta(
@@ -384,11 +384,26 @@ class Model(ABC):
             return np.asarray(emission_data[0].angles)
         return _DEFAULT_THETA
 
-    @abstractmethod
     def find_optimal_parameters(
         self, data_matrix: DataMatrix | None = None, **kwargs
     ) -> None:
-        """Find the best parameters for the current model."""
+        """Find the best parameters for the current model.
+
+        Should start by ``self._resolve_data_matrix(data_matrix)``, in order
+        to save the data matrix as reference.
+
+        """
+        data_matrix = self._resolve_data_matrix(data_matrix)
+        self.set_reference_data(data_matrix)
+        if not data_matrix.holds_required_data(self.model_config):
+            raise MissingDataError("Files are not all provided.")
+        self._find_optimal_parameters(data_matrix, **kwargs)
+
+    @abstractmethod
+    def _find_optimal_parameters(
+        self, data_matrix: DataMatrix, **kwargs
+    ) -> None:
+        """Fit the parameters against ``data_matrix``."""
 
     @overload
     def plot[T](
@@ -718,18 +733,13 @@ class Model(ABC):
         self._cached_data_matrix.clear_data()
 
     def set_reference_data(self, data_matrix: DataMatrix) -> None:
-        """Set new reference data.
-
-        Also call :meth:`_on_parameter_changed`.
-
-        """
+        """Set new reference data."""
         self.reference_data = data_matrix
-        self._on_parameter_changed()
 
     def _resolve_data_matrix(
         self, data_matrix: DataMatrix | None
     ) -> DataMatrix:
-        """Return ``data_matrix`` if provided, or fall back on the reference one.
+        """Get ``data_matrix`` if provided, or fall back on the reference one.
 
         Parameters
         ----------

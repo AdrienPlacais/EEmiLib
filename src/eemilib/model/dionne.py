@@ -40,7 +40,6 @@ from eemilib.util.constants import (
     ImplementedEmissionData,
     ImplementedPop,
 )
-from eemilib.util.exceptions import MissingDataError
 from eemilib.util.markdown import (
     DIFFUSION_LENGTH,
     ESCAPE_PROBABILITY,
@@ -173,14 +172,10 @@ class Dionne(Model):
         }
         return pd.DataFrame(out_dict)
 
-    def find_optimal_parameters(
-        self, data_matrix: DataMatrix | None = None, **kwargs
+    def _find_optimal_parameters(
+        self, data_matrix: DataMatrix, **kwargs
     ) -> None:
         """Extract main |SEEY| curve parameters from measure."""
-        data_matrix = self._resolve_data_matrix(data_matrix)
-        if not data_matrix.holds_required_data(self.model_config):
-            raise MissingDataError("Files are not all provided.")
-
         emission_yield = data_matrix.seey
         assert emission_yield.population == "SE"
 

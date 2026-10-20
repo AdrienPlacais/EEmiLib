@@ -121,10 +121,13 @@ documentation](https://eemilib.readthedocs.io/en/latest/auto_examples/index.html
   - [ ] Plot:
     - [ ] Let user choose `group_by_pe` and `e_pes` for `"Emission Energy"`
           plots.
-    - [ ] The `Use energies from measurements` button does not work. On EY
-          plots, it does the opposite of what it should. On energy
-          distributions, it does nothing.
+    - [ ] The `Use energies from measurements` button does not work.
+      - [x] On EY plots, it does the opposite of what it should.
+      - [ ] On energy distributions, it only picks up the energies of first
+            plot.
     - [ ] Rename the `Use energies from measurements` button?
+    - [ ] Plot window should be completely separated.
+    - [ ] Changing parameter values should update the plot.
   - [x] Model evaluations:
     - [x] Display quantitative criteria to assess model quality (e.g., Nicolas
           Fil's criterion)
@@ -133,7 +136,9 @@ documentation](https://eemilib.readthedocs.io/en/latest/auto_examples/index.html
     - [x] Fix display.
   - [ ] Let user load and plot files that are not needed for current `Model`, so
         they can compare `Model` data with tabulated data easily.
-  - [x] Fix display of `Parameters` description.
+  - [ ] `Parameters` :
+    - [x] Fix display of description.
+    - [ ] Unlocking should update the displayed bounds.
   - [ ] Selecting `FurmanPivi` takes too long!
 - CI:
   - [x] `PyPI` release.
@@ -155,6 +160,10 @@ documentation](https://eemilib.readthedocs.io/en/latest/auto_examples/index.html
   - [x] Make `Model` store its data in a `DataMatrix`.
   - [ ] Should every `Model` be fitted on `all` population?
   - [x] Remove markers on model plots.
+  - [ ] Locking should remove optimization variables, rather than setting tiny
+        bounds.
+  - [ ] Energy distributions handling is inconsistent, in particular wrt the
+        norm.
 - If it proves useful:
   - [ ] Handle experimental data with error bars
   - [ ] Add control over interpolation of loaded experimental data

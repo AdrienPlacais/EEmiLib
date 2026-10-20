@@ -273,19 +273,10 @@ class Vaughan(Model):
         }
         return pd.DataFrame(out_dict)
 
-    def find_optimal_parameters(
-        self, data_matrix: DataMatrix | None = None, **kwargs
+    def _find_optimal_parameters(
+        self, data_matrix: DataMatrix, **kwargs
     ) -> None:
         """Match with position of first crossover and maximum."""
-        data_matrix = self._resolve_data_matrix(data_matrix)
-        if not data_matrix.holds_required_data(self.model_config):
-            logging.info(
-                "Files are not all provided. If Ec1 was given, I will try to "
-                "find the corresponding E_0."
-            )
-            self.find_e_0()
-            return
-
         emission_yield = data_matrix.teey
         assert emission_yield.population == "all"
 
@@ -297,18 +288,6 @@ class Vaughan(Model):
         if not self.parameters["E_0"].is_locked:
             E_0 = self._E_0_matching(E_c1=self.parameters["E_c1"].value)
             self.set_parameter_value("E_0", E_0)
-
-    def find_e_0(self) -> None:
-        """Find E_0 with error handling."""
-        e_0 = self.parameters["E_0"]
-        assert not e_0.is_locked, "Unlock E_0 to allow for a fit."
-
-        for key in ("E_c1", "E_max", "teey_max"):
-            value = self.parameters[key].value
-            assert value is not None, f"You must provide a value for {key}"
-
-        E_0 = self._E_0_matching(E_c1=self.parameters["E_c1"].value)
-        self.set_parameter_value("E_0", E_0)
 
     def _E_0_matching(self, *, E_c1: float) -> float:
         """Fit E_0 to retrieve E_c1 (SPARK3D)."""

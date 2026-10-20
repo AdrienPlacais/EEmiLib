@@ -570,13 +570,13 @@ class EEmiLibGUI(QMainWindow):
     def _create_use_measured_energies_checkbox(self) -> QCheckBox:
         """Set checkbox making :meth:`.Model.plot` use measured energies.
 
-        Behavior:
+        Behaviour:
 
         - Greyed out if no measurements plotted (rely on
           :attr:`.measurements_are_plotted`)
         - When checked, the :meth:`.Model.plot` is called with
-          ``energies=None`` so that min/max energies are taken from currently
-          drawn axes.
+          ``energies=None`` so that min/max energies are taken from reference
+          data by :meth:`.Model._infer_energy`.
 
         """
 

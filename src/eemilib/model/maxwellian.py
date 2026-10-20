@@ -110,9 +110,9 @@ class Maxwellian(Model):
         }
         return pd.DataFrame(out_dict)
 
-    def find_optimal_parameters(
+    def _find_optimal_parameters(
         self,
-        data_matrix: DataMatrix | None = None,
+        data_matrix: DataMatrix,
         population: Literal["SE", "all"] = "all",
         **kwargs,
     ) -> None:
@@ -130,10 +130,6 @@ class Maxwellian(Model):
             Unused additional kwargs.
 
         """
-        data_matrix = self._resolve_data_matrix(data_matrix)
-        if not data_matrix.holds_required_data(self.model_config):
-            raise MissingDataError("Files are not all provided.")
-
         distributions = data_matrix.get_data("Emission Energy", population)
         if not distributions:
             raise MissingDataError(f"Missing emission energy for {population}")

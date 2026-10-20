@@ -20,6 +20,7 @@ from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
     COL_ENERGY,
+    COL_NORMAL,
     ImplementedEmissionData,
     ImplementedPop,
 )
@@ -139,9 +140,9 @@ class ChungEverhart(Model):
         }
         return pd.DataFrame(out_dict)
 
-    def find_optimal_parameters(
+    def _find_optimal_parameters(
         self,
-        data_matrix: DataMatrix | None = None,
+        data_matrix: DataMatrix,
         population: Literal["SE", "all"] = "all",
         **kwargs,
     ) -> None:
@@ -159,10 +160,6 @@ class ChungEverhart(Model):
             Additional unused parameters.
 
         """
-        data_matrix = self._resolve_data_matrix(data_matrix)
-        if not data_matrix.holds_required_data(self.model_config):
-            raise MissingDataError("Files are not all provided.")
-
         distributions = data_matrix.get_data("Emission Energy", population)
         if not distributions:
             raise MissingDataError(f"Missing emission energy for {population}")
@@ -172,7 +169,10 @@ class ChungEverhart(Model):
             return np.concatenate(
                 [
                     _residue(
-                        w_f, distribution.energies, distribution.normal_data
+                        w_f,
+                        distribution.data[COL_ENERGY].to_numpy(),
+                        distribution.data[COL_NORMAL].to_numpy(),
+                        # distribution.energies, distribution.normal_data
                     )
                     for distribution in distributions
                 ]
