@@ -112,8 +112,7 @@ model.find_optimal_parameters(measured_data)
 # .. tip::
 #    It is also possible to omit ``energies`` and/or ``angles``. In this case,
 #    we take these from corresponding experimental data.
-#    This is also what the GUI checkboxes ``Use energies from measurements``,
-#    ``Use angles from measurements`` do.
+#    This is also what the GUI checkboxes ``Use measurements`` do.
 #
 axes_2 = measured_data.plot(
     plotter, population="all", data_type="Emission Energy"
