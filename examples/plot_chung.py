@@ -15,7 +15,6 @@ This script showcases:
 # sphinx_gallery_thumbnail_number = 4
 
 import matplotlib.pyplot as plt
-import numpy as np
 
 from eemilib.data.ag.emission_energy import distrib_70eV, distrib_100eV
 from eemilib.emission_data._data_matrix import MeasuredDataMatrix
@@ -77,8 +76,6 @@ _ = model.plot(
     plotter,
     population="SE",
     data_type="Emission Energy",
-    energies=None,
-    angles=np.linspace(0, 0, 1),
     axes=axes_2,
     group_by_pe=True,
     color="red",
@@ -98,8 +95,6 @@ _ = model.plot(
     plotter,
     population="SE",
     data_type="Emission Energy",
-    energies=None,
-    angles=np.linspace(0, 0, 1),
     axes=axes_3,
     e_pes=[50, 70],
     group_by_pe=True,

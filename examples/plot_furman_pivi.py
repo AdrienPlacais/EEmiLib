@@ -11,7 +11,6 @@ This script showcases:
 # sphinx_gallery_tags = ["emission yield", "emission energy", "implementation", "Furman and Pivi"]
 
 import matplotlib.pyplot as plt
-import numpy as np
 
 from eemilib.data.ag.emission_energy import distribs
 from eemilib.data.ag.emission_yield import teey_ag_1_heated_pd
@@ -67,8 +66,6 @@ axes_yield = model.plot(
     plotter,
     population=["SE", "EBE", "IBE", "all"],
     data_type="Emission Yield",
-    energies=None,
-    angles=np.linspace(0, 60, 4),
     axes=axes_yield,
 )
 
@@ -79,8 +76,6 @@ axes_distrib = model.plot(
     plotter,
     population=["SE", "EBE", "IBE", "all"],
     data_type="Emission Energy",
-    energies=None,
-    angles=np.linspace(0, 0, 1),
     axes=axes_distrib,
     group_by_pe=True,
 )

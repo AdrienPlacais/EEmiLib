@@ -16,7 +16,6 @@ This script showcases:
 # sphinx_gallery_thumbnail_number = 1
 
 import matplotlib.pyplot as plt
-import numpy as np
 
 from eemilib.data.cu.emission_yield import teey_cu_1_eroded as filepath
 from eemilib.emission_data._data_matrix import MeasuredDataMatrix
@@ -41,12 +40,7 @@ axes_1 = measured_data.plot(
 model_classic = Vaughan()
 model_classic.find_optimal_parameters(measured_data)
 model_classic.plot(
-    plotter,
-    population="all",
-    data_type="Emission Yield",
-    energies=None,
-    angles=np.linspace(0, 60, 4),
-    axes=axes_1,
+    plotter=plotter, population="all", data_type="Emission Yield", axes=axes_1
 )
 plt.show()
 
@@ -83,8 +77,6 @@ for model, color, ls in zip(models, colors, linestyles):
         plotter,
         population="all",
         data_type="Emission Yield",
-        energies=None,
-        angles=np.linspace(0, 0, 1),
         axes=axes_2,
         color=color,
         ls=ls,

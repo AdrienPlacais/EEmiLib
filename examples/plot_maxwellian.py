@@ -110,9 +110,10 @@ model.find_optimal_parameters(measured_data)
 # :math:`[0\,\mathrm{eV},\,50\,\mathrm{eV}]` and only at normal incidence.
 #
 # .. tip::
-#    Setting ``energies=None`` makes the plot use ``energies`` from
-#    experimental data the model was fitted on. This is also what the GUI
-#    checkbox ``Use energies from measurements`` does.
+#    It is also possible to omit ``energies`` and/or ``angles``. In this case,
+#    we take these from corresponding experimental data.
+#    This is also what the GUI checkboxes ``Use energies from measurements``,
+#    ``Use angles from measurements`` do.
 #
 axes_2 = measured_data.plot(
     plotter, population="all", data_type="Emission Energy"
@@ -122,7 +123,7 @@ axes_2 = model.plot(
     plotter,
     population="SE",
     data_type="Emission Energy",
-    energies=None,
+    energies=np.linspace(0, 50, 201),
     angles=np.linspace(0, 0, 1),
     axes=axes_2,
     color="red",

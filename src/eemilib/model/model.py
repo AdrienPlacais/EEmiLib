@@ -429,8 +429,8 @@ class Model(ABC):
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
         data_type: ImplementedEmissionData,
-        energies: NDArray[np.float64] | None,
-        angles: NDArray[np.float64],
+        energies: NDArray[np.float64] | None = None,
+        angles: NDArray[np.float64] | None = None,
         axes: T | None = None,
         group_by_pe: Literal[False] = False,
         e_pes: float | None = None,
@@ -443,8 +443,8 @@ class Model(ABC):
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
         data_type: Literal["Emission Energy"],
-        energies: NDArray[np.float64] | None,
-        angles: NDArray[np.float64],
+        energies: NDArray[np.float64] | None = None,
+        angles: NDArray[np.float64] | None = None,
         axes: dict[float, T] | None = None,
         group_by_pe: Literal[True] = True,
         e_pes: Collection[float] | None = None,
@@ -456,8 +456,8 @@ class Model(ABC):
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
         data_type: ImplementedEmissionData,
-        energies: NDArray[np.float64] | None,
-        angles: NDArray[np.float64],
+        energies: NDArray[np.float64] | None = None,
+        angles: NDArray[np.float64] | None = None,
         axes: T | dict[float, T] | None = None,
         group_by_pe: bool = False,
         e_pes: float | Collection[float] | None = None,
@@ -480,14 +480,15 @@ class Model(ABC):
         data_type :
             Type of data to plot.
         energies :
-            Energies at which the model is evaluated. If omitted, we use the
-            limits of a pre-existing ``axes`` -- ``axes`` should not be None,
-            and should not be empty!
+            Energies at which the model is evaluated. If omitted, we take
+            energies from reference data the :class:`.Model` was fitted on.
         angles :
-            Angles at which the model is evaluated.
+            Angles at which the model is evaluated. If omitted, we take impact
+            angles from reference data the :class:`.Model` was fitted on.
         axes :
             Axes to re-use if given. A plain ``T`` in the default case; a
-            ``dict[float, T]`` keyed by impact energy when ``group_by_pe=True``.
+            ``dict[float, T]`` keyed by impact energy when
+            ``group_by_pe=True``.
         group_by_pe :
             Only supported for ``data_type == "Emission Energy"``. If
             ``True``, one axes is created (or re-used) per impact energy,
@@ -562,8 +563,8 @@ class Model(ABC):
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
         data_type: ImplementedEmissionData,
-        energies: NDArray[np.float64] | None,
-        angles: NDArray[np.float64],
+        energies: NDArray[np.float64] | None = None,
+        angles: NDArray[np.float64] | None = None,
         axes: T | None = None,
         e_pe: float | None = None,
         grid: bool = True,
@@ -581,11 +582,11 @@ class Model(ABC):
         data_type :
             Type of data to plot.
         energies :
-            Energies at which the model is evaluated. If omitted, we use the
-            limits of a pre-existing ``axes`` -- ``axes`` should not be None,
-            and should not be empty!
+            Energies at which the model is evaluated. If omitted, we take
+            energies from reference data the :class:`.Model` was fitted on.
         angles :
-            Angles at which the model is evaluated.
+            Angles at which the model is evaluated. If omitted, we take impact
+            angles from reference data the :class:`.Model` was fitted on.
         axes :
             Axes to re-use if given.
         e_pe :
@@ -612,8 +613,8 @@ class Model(ABC):
                     plotter,
                     pop,
                     data_type,
-                    energies,
-                    angles,
+                    energies=energies,
+                    angles=angles,
                     axes=axes,
                     e_pe=e_pe,
                     grid=grid,
