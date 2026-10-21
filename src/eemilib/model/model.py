@@ -454,6 +454,8 @@ class Model(ABC):
                 [self.parameters[key].upper_bound for key in free],
             ),
         )
+        if not lsq.success:
+            logging.error(f"The fit failed with message:\n{lsq.message}")
         self.set_parameters_values(dict(zip(free, lsq.x)))
 
     @overload
