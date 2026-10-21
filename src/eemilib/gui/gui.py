@@ -14,6 +14,9 @@
     3. Create layouts
     4. Call the `addWidget`, `addLayout` methods.
 
+.. todo::
+    A MissingDataError should not make the code crash.
+
 """
 
 import logging

@@ -8,13 +8,14 @@
 import logging
 import math
 from abc import ABC, abstractmethod
-from collections.abc import Collection, Sequence
+from collections.abc import Callable, Collection, Sequence
 from pprint import pformat
 from typing import Any, ClassVar, Literal, cast, overload
 
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
+from scipy.optimize import least_squares
 
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
@@ -106,7 +107,7 @@ class Model(ABC):
 
         self._generate_parameter_docs()
         if parameters_values is not None:
-            self.set_parameters_values(parameters_values)
+            self.set_parameters_values(parameters_values, override_lock=True)
         #: Maps each axis name (see :attr:`.Model.implementation_choices`) to
         #: the currently selected option.
         self.current_implementations: dict[str, str] = {}
@@ -423,6 +424,38 @@ class Model(ABC):
     ) -> None:
         """Fit the parameters against ``data_matrix``."""
 
+    def _fit(
+        self,
+        keys: Sequence[str],
+        residue: Callable[[dict[str, float]], NDArray[np.float64]],
+    ) -> None:
+        """Fit the unlocked parameters among ``keys`` by least squares.
+
+        Parameters
+        ----------
+        keys :
+            Names of the candidate parameters.
+        residue :
+            Residuals as a function of all parameters in ``keys``. Locked
+            ones are given their current value.
+
+        """
+        free = [key for key in keys if not self.parameters[key].is_locked]
+        if not free:
+            return
+        locked = {
+            key: self.parameters[key].value for key in keys if key not in free
+        }
+        lsq = least_squares(
+            fun=lambda x: residue({**locked, **dict(zip(free, x))}),
+            x0=[self.parameters[key].value for key in free],
+            bounds=(
+                [self.parameters[key].lower_bound for key in free],
+                [self.parameters[key].upper_bound for key in free],
+            ),
+        )
+        self.set_parameters_values(dict(zip(free, lsq.x)))
+
     @overload
     def plot[T](
         self,
@@ -706,19 +739,71 @@ class Model(ABC):
             )
         return axes
 
-    def set_parameter_value(self, name: str, value: Any) -> None:
-        """Give the parameter named ``name`` the value ``value``."""
-        if name not in self.parameters:
+    def set_parameter_value(
+        self, name: str, value: float, override_lock: bool = False
+    ) -> None:
+        """Give the parameter named ``name`` the value ``value``.
+
+        Parameters
+        ----------
+        name :
+            Name of the :class:`.Parameter` to update.
+        value :
+            New value for ``name``.
+        override_lock :
+            If a :class:`.Parameter` with :attr:`.Parameter.is_locked` set to
+            ``True`` should be updated anyway.
+
+        """
+        parameter = self.parameters.get(name)
+        if parameter is None:
             logging.warning(
                 f"{name = } is not defined for {self}. Skipping... "
             )
             return
-        self.parameters[name].value = value
 
-    def reset_parameter_value(self, name: str) -> None:
+        if not parameter.is_locked or override_lock:
+            parameter.value = value
+            return
+
+        logging.debug(
+            f"NOT changing the value of {name} to {value} because it is "
+            "locked."
+        )
+
+    def set_parameters_values(
+        self, values: dict[str, float], override_lock: bool = False
+    ) -> None:
+        """Call :meth:`.set_parameter_value` for every give parameter.
+
+        Parameter
+        ---------
+        values :
+            Maps :class:`.Parameter` names to their new values.
+        override_lock :
+            If a :class:`.Parameter` with :attr:`.Parameter.is_locked` set to
+            ``True`` should be updated anyway.
+
+        """
+        for name, value in values.items():
+            self.set_parameter_value(name, value, override_lock=override_lock)
+
+    def _reset_parameter_value(
+        self, name: str, override_lock: bool = True
+    ) -> None:
         """Reset a parameter value to its default.
 
         Default is defined in ``initial_parameters``.
+
+        Parameters
+        ----------
+        name :
+            Name of the :class:`.Parameter` to reset.
+        override_lock :
+            If a :class:`.Parameter` with :attr:`.Parameter.is_locked` set to
+            ``True`` should be updated anyway. The default is ``True``, which
+            is different from the more commonly used
+            :meth:`set_parameter_value`.
 
         """
         if name not in self.parameters:
@@ -731,18 +816,28 @@ class Model(ABC):
                 f"{name = } has not initial value for {self}. Skipping... "
             )
             return
+
         value = float(self.initial_parameters[name]["value"])
-        self.parameters[name].value = value
+        self.set_parameter_value(name, value, override_lock=override_lock)
 
-    def set_parameters_values(self, values: dict[str, Any]) -> None:
-        """Set multiple parameter values."""
-        for name, value in values.items():
-            self.set_parameter_value(name, value)
+    def _reset_parameters_values(
+        self, *names: str, override_lock: bool = True
+    ) -> None:
+        """Reset multiple parameter values.
 
-    def reset_parameters_values(self, *names: str) -> None:
-        """Reset multiple parameter values."""
+        Parameters
+        ----------
+        names :
+            Names of the :class:`.Parameter` to reset.
+        override_lock :
+            If a :class:`.Parameter` with :attr:`.Parameter.is_locked` set to
+            ``True`` should be updated anyway. The default is ``True``, which
+            is different from the more commonly used
+            :meth:`reset_parameter_value`.
+
+        """
         for name in names:
-            self.reset_parameter_value(name)
+            self._reset_parameter_value(name, override_lock=override_lock)
 
     def _on_parameter_changed(self) -> None:
         """Set events that should occur on parameter change.

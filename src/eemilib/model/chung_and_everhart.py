@@ -7,6 +7,7 @@ You will need to provide emission energy distribution measurements.
 
 """
 
+import logging
 from typing import Any, ClassVar, Literal, TypedDict, cast
 
 import numpy as np
@@ -148,6 +149,9 @@ class ChungEverhart(Model):
     ) -> None:
         """Fit model parameters on measurements.
 
+        .. todo::
+           Use helper ``self._fit``.
+
         Parameters
         ----------
         data_matrix :
@@ -165,7 +169,12 @@ class ChungEverhart(Model):
             raise MissingDataError(f"Missing emission energy for {population}")
 
         def _aggregate_residue(w_f: float) -> NDArray[np.float64]:
-            """Compute residues on all distributions."""
+            """Compute residues on all distributions.
+
+            .. todo::
+               Use distribution.energies, distribution.normal_data in _residue?
+
+            """
             return np.concatenate(
                 [
                     _residue(
@@ -179,15 +188,17 @@ class ChungEverhart(Model):
             )
 
         param = self.parameters["W_f"]
-        lsq = least_squares(
-            fun=_aggregate_residue,
-            x0=param,
-            bounds=Bounds(param.lower_bound, param.upper_bound),
-        )
-        w_f = lsq.x[0]
-        self.set_parameters_values(
-            {"W_f": w_f, "norm": _chung_everhart_norm(w_f)}
-        )
+        if not param.is_locked:
+            lsq = least_squares(
+                fun=_aggregate_residue,
+                x0=param,
+                bounds=Bounds(param.lower_bound, param.upper_bound),
+            )
+
+            if not lsq.success:
+                logging.error(f"The fit failed with message:\n{lsq.message}")
+            self.set_parameter_value("W_f", lsq.x[0])
+        self.set_parameter_value("norm", _chung_everhart_norm(param.value))
 
 
 def _chung_everhart_norm(W_f: Parameter | float) -> float:

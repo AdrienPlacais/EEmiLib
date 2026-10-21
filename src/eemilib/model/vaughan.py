@@ -213,7 +213,7 @@ class Vaughan(Model):
         if implementation == "original":
             self._func = vaughan_func
             if implementation_update:
-                self.reset_parameters_values(
+                self._reset_parameters_values(
                     "teey_low", "delta_E_transition", "E_0"
                 )
             self.parameters["E_0"].lock()
@@ -222,21 +222,22 @@ class Vaughan(Model):
         if implementation == "CST":
             self._func = vaughan_func
             if implementation_update:
-                self.reset_parameters_values("delta_E_transition", "E_0")
-            self.set_parameter_value("teey_low", 0.0)
+                self._reset_parameters_values("delta_E_transition", "E_0")
+            self.set_parameter_value("teey_low", 0.0, override_lock=True)
             self.parameters["E_0"].lock()
             return
 
         if implementation == "SPARK3D":
             self._func = vaughan_spark3d
             self.set_parameters_values(
-                {"teey_low": 0.0, "delta_E_transition": 2.0}
+                {"teey_low": 0.0, "delta_E_transition": 2.0},
+                override_lock=True,
             )
             self.parameters["E_0"].unlock()
             e_0 = self._E_0_matching(E_c1=self.parameters["E_c1"])
             if np.isnan(e_0):
                 return
-            self.set_parameter_value("E_0", e_0)
+            self.set_parameter_value("E_0", e_0, override_lock=True)
             return
 
         logging.error(f"{implementation = } not in {VaughanImplementation}")
@@ -281,21 +282,24 @@ class Vaughan(Model):
         assert emission_yield.population == "all"
 
         self.set_parameters_values(
-            {"E_max": emission_yield.e_max, "teey_max": emission_yield.ey_max}
+            {
+                "E_max": emission_yield.e_max,
+                "teey_max": emission_yield.ey_max,
+                "E_c1": emission_yield.e_c1,
+            }
         )
-        if not self.parameters["E_c1"].is_locked:
-            self.set_parameter_value("E_c1", emission_yield.e_c1)
         if not self.parameters["E_0"].is_locked:
             E_0 = self._E_0_matching(E_c1=self.parameters["E_c1"].value)
             self.set_parameter_value("E_0", E_0)
 
     def _E_0_matching(self, *, E_c1: float) -> float:
         """Fit E_0 to retrieve E_c1 (SPARK3D)."""
-        parameters = self.parameters.copy()
+        values = {k: p.value for k, p in self.parameters.items()}
 
         def _to_minimize(E_0: float) -> float:
-            parameters["E_0"].value = E_0
-            teey_at_crossover = vaughan_func(ene=E_c1, the=0.0, **parameters)
+            teey_at_crossover = vaughan_func(
+                ene=E_c1, the=0.0, **{**values, "E_0": E_0}
+            )
             if isinstance(teey_at_crossover, np.ndarray):
                 teey_at_crossover = teey_at_crossover[0]
             return abs(teey_at_crossover - 1.0)

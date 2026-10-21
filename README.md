@@ -123,7 +123,9 @@ documentation](https://eemilib.readthedocs.io/en/latest/auto_examples/index.html
   - [ ] Let user load and plot files that are not needed for current `Model`, so
         they can compare `Model` data with tabulated data easily.
   - [ ] `Parameters` :
-    - [ ] Unlocking should update the displayed bounds.
+    - [ ] The bounds set in GUI are not taken into account.
+    - [ ] The values set in GUI are not taken into account.
+    - [ ] The `lock` checkbox is not taken into account.
   - [ ] Selecting `FurmanPivi` takes too long!
 - CI:
   - [ ] Allow execution on online Docker ?

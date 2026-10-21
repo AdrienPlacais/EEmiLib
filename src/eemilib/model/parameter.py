@@ -245,13 +245,13 @@ class Parameter:
             the returned lower bound accordingly.
 
         """
-        if self.is_locked:
-            bound = min(self.value - self._tol, self.value + self._tol)
-            if self._lower_bound != 0.0 or abs(bound) >= self._tol:
-                return bound
-            # _lower_bound is exactly 0.0, and calculated bound is very close
-            # to 0: we enforce lower bound to 0.0 to avoid negative values
-            return 0.0
+        # if self.is_locked:
+        #     bound = min(self.value - self._tol, self.value + self._tol)
+        #     if self._lower_bound != 0.0 or abs(bound) >= self._tol:
+        #         return bound
+        #     # _lower_bound is exactly 0.0, and calculated bound is very close
+        #     # to 0: we enforce lower bound to 0.0 to avoid negative values
+        #     return 0.0
         return self._lower_bound
 
     @lower_bound.setter
@@ -262,8 +262,8 @@ class Parameter:
     @property
     def upper_bound(self) -> float:
         """Give the current upper bound of the parameter."""
-        if self.is_locked:
-            return max(self.value - self._tol, self.value + self._tol)
+        # if self.is_locked:
+        #     return max(self.value - self._tol, self.value + self._tol)
         return self._upper_bound
 
     @upper_bound.setter
@@ -312,3 +312,10 @@ class ParameterSet(dict[str, Parameter]):
         super().__init__(parameters)
         for parameter in self.values():
             parameter.subscribe(on_change)
+
+    @property
+    def unlocked(self) -> dict[str, Parameter]:
+        """Get the parameters that can be optimized."""
+        return {
+            key: value for key, value in self.items() if not value.is_locked
+        }

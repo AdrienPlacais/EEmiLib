@@ -27,13 +27,11 @@ from typing import Any, ClassVar, cast
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
-from scipy.optimize import least_squares
 
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
 from eemilib.emission_data.emission_energy_distribution import (
     AllEmissionEnergyDistribution,
-    EmissionEnergyDistribution,
 )
 from eemilib.emission_data.emission_yield import TEEY
 from eemilib.model.furman_pivi.all import (
@@ -347,13 +345,9 @@ class FurmanPivi(Model):
             normal_e_max_se.lower_bound = _teey.e_max - 5.0
             normal_e_max_se.upper_bound = _teey.e_max + 5.0
 
-        self._fit_normal_teey(teeys)
-
-    def _fit_normal_teey(self, teeys: Sequence[TEEY]) -> None:
-        """Fit |TEEY| parameters."""
-
-        def _aggregate_residue(x: NDArray[np.float64]) -> NDArray[np.float64]:
-            kwargs = dict(zip(NORMAL_TEEY_PARAM_KEYS, x))
+        def _aggregate_residue(
+            kwargs: dict[str, float],
+        ) -> NDArray[np.float64]:
             residuals = []
             for _teey in teeys:
                 measured = _teey.normal_data
@@ -361,19 +355,7 @@ class FurmanPivi(Model):
                 residuals.append(measured - predicted)
             return np.concatenate(residuals)
 
-        x0 = [self.parameters[key].value for key in NORMAL_TEEY_PARAM_KEYS]
-        lower_bounds = [
-            self.parameters[key].lower_bound for key in NORMAL_TEEY_PARAM_KEYS
-        ]
-        upper_bounds = [
-            self.parameters[key].upper_bound for key in NORMAL_TEEY_PARAM_KEYS
-        ]
-
-        lsq = least_squares(
-            fun=_aggregate_residue, x0=x0, bounds=(lower_bounds, upper_bounds)
-        )
-        fitted = dict(zip(NORMAL_TEEY_PARAM_KEYS, lsq.x))
-        self.set_parameters_values(fitted)
+        self._fit(NORMAL_TEEY_PARAM_KEYS, _aggregate_residue)
 
     # =========================================================================
     # 2. Find best parameters for emission yield at oblique incidence
@@ -384,16 +366,13 @@ class FurmanPivi(Model):
             logging.warning(
                 "Method not actually adapted to several TEEY objects"
             )
-        self._fit_oblique_teey(teeys)
-
-    def _fit_oblique_teey(self, teeys: Sequence[TEEY]) -> None:
-        r"""Find oblique |TEEY| parameters."""
         extra_kwargs = {
             **{key: self.parameters[key] for key in NORMAL_TEEY_PARAM_KEYS}
         }
 
-        def _aggregate_residue(x: NDArray[np.float64]) -> NDArray[np.float64]:
-            kwargs = dict(zip(OBLIQUE_TEEY_PARAM_KEYS, x))
+        def _aggregate_residue(
+            kwargs: dict[str, float],
+        ) -> NDArray[np.float64]:
             residuals = []
             for _teey in teeys:
                 for theta, measured in zip(
@@ -405,19 +384,7 @@ class FurmanPivi(Model):
                     residuals.append(measured - predicted)
             return np.concatenate(residuals)
 
-        x0 = [self.parameters[key].value for key in OBLIQUE_TEEY_PARAM_KEYS]
-        lower_bounds = [
-            self.parameters[key].lower_bound for key in OBLIQUE_TEEY_PARAM_KEYS
-        ]
-        upper_bounds = [
-            self.parameters[key].upper_bound for key in OBLIQUE_TEEY_PARAM_KEYS
-        ]
-
-        lsq = least_squares(
-            fun=_aggregate_residue, x0=x0, bounds=(lower_bounds, upper_bounds)
-        )
-        fitted = dict(zip(OBLIQUE_TEEY_PARAM_KEYS, lsq.x))
-        self.set_parameters_values(fitted)
+        self._fit(OBLIQUE_TEEY_PARAM_KEYS, _aggregate_residue)
 
     # =========================================================================
     # 3. Find best parameters for emission distribution at normal incidence
@@ -426,12 +393,6 @@ class FurmanPivi(Model):
         self, distribs: Sequence[AllEmissionEnergyDistribution]
     ) -> None:
         """Orchestrate fitting of all normal energy distribution parameters."""
-        self._fit_energy_distribs(distribs)
-
-    def _fit_energy_distribs(
-        self, distribs: Sequence[EmissionEnergyDistribution]
-    ) -> None:
-        """Fit energy distributions parameters."""
         p_ns = [
             self.parameters[f"p_{i}"] for i in range(1, M_MAX_SECONDARIES + 1)
         ]
@@ -450,8 +411,9 @@ class FurmanPivi(Model):
             "normalization": self._normalization,
         }
 
-        def _aggregate_residue(x: NDArray[np.float64]) -> NDArray[np.float64]:
-            kwargs = dict(zip(ALL_DISTRIB_PARAMETERS, x))
+        def _aggregate_residue(
+            kwargs: dict[str, float],
+        ) -> NDArray[np.float64]:
             residuals = []
             for distrib in distribs:
                 measured = distrib.normal_data
@@ -466,19 +428,7 @@ class FurmanPivi(Model):
                 residuals.append(measured - predicted)
             return np.concatenate(residuals)
 
-        x0 = [self.parameters[key].value for key in ALL_DISTRIB_PARAMETERS]
-        lower_bounds = [
-            self.parameters[key].lower_bound for key in ALL_DISTRIB_PARAMETERS
-        ]
-        upper_bounds = [
-            self.parameters[key].upper_bound for key in ALL_DISTRIB_PARAMETERS
-        ]
-
-        lsq = least_squares(
-            fun=_aggregate_residue, x0=x0, bounds=(lower_bounds, upper_bounds)
-        )
-        fitted = dict(zip(ALL_DISTRIB_PARAMETERS, lsq.x))
-        self.set_parameters_values(fitted)
+        self._fit(ALL_DISTRIB_PARAMETERS, _aggregate_residue)
 
     # =========================================================================
     # 4. Post
@@ -491,6 +441,7 @@ class FurmanPivi(Model):
         Fil criterions :cite:`Fil2016a,Fil2020` are adapted to |TEEY| models.
 
         """
+        data_matrix = self._resolve_data_matrix(data_matrix)
         return self._evaluate_for_teey_models(data_matrix)
 
 

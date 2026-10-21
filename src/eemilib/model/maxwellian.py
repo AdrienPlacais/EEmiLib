@@ -4,6 +4,7 @@ You will need to provide emission energy distribution measurements.
 
 """
 
+import logging
 import math
 from typing import Any, ClassVar, Literal, TypedDict, cast, overload
 
@@ -118,6 +119,9 @@ class Maxwellian(Model):
     ) -> None:
         """Fit model parameters on measurements.
 
+        .. todo::
+           Use helper ``self._fit``.
+
         Parameters
         ----------
         data_matrix :
@@ -135,7 +139,12 @@ class Maxwellian(Model):
             raise MissingDataError(f"Missing emission energy for {population}")
 
         def _aggregate_residue(temperature: float) -> NDArray[np.float64]:
-            """Compute residues on all distributions."""
+            """Compute residues on all distributions.
+
+            .. todo::
+               Use distribution.energies, distribution.normal_data in _residue?
+
+            """
             return np.concatenate(
                 [
                     _residue(
@@ -148,15 +157,17 @@ class Maxwellian(Model):
             )
 
         param = self.parameters["temperature"]
-        lsq = least_squares(
-            fun=_aggregate_residue,
-            x0=param,
-            bounds=Bounds(param.lower_bound, param.upper_bound),
-        )
-        temp = lsq.x[0]
-        self.set_parameters_values(
-            {"temperature": temp, "norm": _maxwellian_norm(temp)}
-        )
+        if not param.is_locked:
+            lsq = least_squares(
+                fun=_aggregate_residue,
+                x0=param,
+                bounds=Bounds(param.lower_bound, param.upper_bound),
+            )
+
+            if not lsq.success:
+                logging.error(f"The fit failed with message:\n{lsq.message}")
+            self.set_parameter_value("temperature", lsq.x[0])
+        self.set_parameter_value("norm", _maxwellian_norm(param.value))
 
 
 def _maxwellian_norm(temp: float) -> float:

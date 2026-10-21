@@ -134,11 +134,15 @@ class Sombrin(Model):
         }
         return pd.DataFrame(out_dict)
 
-    def set_parameter_value(self, name: str, value: Any) -> None:
+    def set_parameter_value(
+        self, name: str, value: float, override_lock: bool = True
+    ) -> None:
         """Set ``E`` to None before updating the parameter."""
         if self._E is not None:
             self._E = None
-        return super().set_parameter_value(name, value)
+        return super().set_parameter_value(
+            name, value, override_lock=override_lock
+        )
 
     def _find_optimal_parameters(
         self, data_matrix: DataMatrix, **kwargs

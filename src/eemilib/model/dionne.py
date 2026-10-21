@@ -175,7 +175,13 @@ class Dionne(Model):
     def _find_optimal_parameters(
         self, data_matrix: DataMatrix, **kwargs
     ) -> None:
-        """Extract main |SEEY| curve parameters from measure."""
+        """Extract main |SEEY| curve parameters from measure.
+
+        .. todo::
+            Getting optimizable parameters is very brittle, and does not take
+            ``unlocked`` into account.
+
+        """
         emission_yield = data_matrix.seey
         assert emission_yield.population == "SE"
 
@@ -188,6 +194,8 @@ class Dionne(Model):
             "power_law_exponent",
         )
         params = [self.parameters[k] for k in keys]
+        if any(p.is_locked for p in params):
+            raise ValueError
         x0 = [float(param) for param in params]
         bounds = Bounds(
             np.array([param.lower_bound for param in params]),
