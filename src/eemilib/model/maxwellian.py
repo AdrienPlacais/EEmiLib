@@ -15,7 +15,6 @@ from scipy.optimize import Bounds, least_squares
 
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
-from eemilib.emission_data.emission_data import MissingDataError
 from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
@@ -24,6 +23,7 @@ from eemilib.util.constants import (
     ImplementedEmissionData,
     ImplementedPop,
 )
+from eemilib.util.exceptions import MissingDataError
 from eemilib.util.markdown import NORM, TEMPERATURE
 
 
@@ -43,9 +43,7 @@ class Maxwellian(Model):
     is_3d = False
     is_dielectrics_compatible = False
     model_config = ModelConfig(
-        emission_yield_files=(),
-        emission_energy_files=("all",),
-        emission_angle_files=(),
+        emission_yields=(), emission_energies=("all",), emission_angles=()
     )
     initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = {
         "temperature": {
@@ -63,6 +61,7 @@ class Maxwellian(Model):
             "description": "Distribution re-normalization constant.",
         },
     }
+    _url_doc_override = "manual/models/maxwellian"
 
     def __init__(
         self, parameters_values: dict[str, Any] | None = None
@@ -76,24 +75,13 @@ class Maxwellian(Model):
             override the default values set in ``initial_parameters``.
 
         """
-        super().__init__(url_doc_override="manual/models/maxwellian")
-        self.parameters = cast(
-            MaxwellianParameters,
-            {
-                name: Parameter(**cast(dict, kwargs))
-                for name, kwargs in self.initial_parameters.items()
-            },
-        )
-        self._generate_parameter_docs()
-        if parameters_values is not None:
-            self.set_parameters_values(parameters_values)
+        super().__init__(parameters_values)
+        self.parameters = cast(MaxwellianParameters, self.parameters)
 
-        self._func = maxwellian_pdf
-
-    def get_data(
+    def compute_data(
         self,
-        population: ImplementedPop,
         data_type: ImplementedEmissionData,
+        population: ImplementedPop,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
         *args,
@@ -105,21 +93,24 @@ class Maxwellian(Model):
 
         """
         if population != "SE" or data_type != "Emission Energy":
-            return super().get_data(
-                population, data_type, energy, theta, *args, **kwargs
+            return super().compute_data(
+                data_type, population, energy, theta, *args, **kwargs
             )
         out = np.zeros(len(energy))
         for i, ene in enumerate(energy):
-            out[i] = self._func(
+            out[i] = maxwellian_pdf(
                 ene,
                 temperature=self.parameters["temperature"],
                 norm=self.parameters["norm"],
             )
 
-        out_dict = {COL_ENERGY: energy, COL_NORMAL: out}
+        out_dict = {
+            COL_ENERGY: energy,
+            **{f"{the} [deg]": out for the in theta},
+        }
         return pd.DataFrame(out_dict)
 
-    def find_optimal_parameters(
+    def _find_optimal_parameters(
         self,
         data_matrix: DataMatrix,
         population: Literal["SE", "all"] = "all",
@@ -139,9 +130,6 @@ class Maxwellian(Model):
             Unused additional kwargs.
 
         """
-        if not data_matrix.has_all_mandatory_files(self.model_config):
-            raise MissingDataError("Files are not all provided.")
-
         distributions = data_matrix.get_data("Emission Energy", population)
         if not distributions:
             raise MissingDataError(f"Missing emission energy for {population}")

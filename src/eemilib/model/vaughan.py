@@ -66,9 +66,7 @@ class Vaughan(Model):
     is_3d = True
     is_dielectrics_compatible = False
     model_config = ModelConfig(
-        emission_yield_files=("all",),
-        emission_energy_files=(),
-        emission_angle_files=(),
+        emission_yields=("all",), emission_energies=(), emission_angles=()
     )
     initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = {
         "E_0": {
@@ -143,6 +141,7 @@ class Vaughan(Model):
     implementation_choices: ClassVar[dict[str, tuple[str, ...]]] = {
         "implementation": VAUGHAN_IMPLEMENTATIONS
     }
+    _url_doc_override = "manual/models/vaughan"
 
     def __init__(
         self,
@@ -167,18 +166,8 @@ class Vaughan(Model):
             override the default values set in ``initial_parameters``.
 
         """
-        super().__init__(url_doc_override="manual/models/vaughan")
-        self.parameters = cast(
-            VaughanParameters,
-            {
-                name: Parameter(**cast(dict, kwargs))
-                for name, kwargs in self.initial_parameters.items()
-            },
-        )
-        self._generate_parameter_docs()
-        if parameters_values is not None:
-            self.set_parameters_values(parameters_values)
-
+        super().__init__(parameters_values)
+        self.parameters = cast(VaughanParameters, self.parameters)
         self._func: Callable
         self.current_implementation: VaughanImplementation
         self.set_implementation("implementation", implementation)
@@ -252,10 +241,10 @@ class Vaughan(Model):
 
         logging.error(f"{implementation = } not in {VaughanImplementation}")
 
-    def get_data(
+    def compute_data(
         self,
-        population: ImplementedPop,
         data_type: ImplementedEmissionData,
+        population: ImplementedPop,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
         *args,
@@ -270,8 +259,8 @@ class Vaughan(Model):
 
         """
         if population != "all" or data_type != "Emission Yield":
-            return super().get_data(
-                population, data_type, energy, theta, *args, **kwargs
+            return super().compute_data(
+                data_type, population, energy, theta, *args, **kwargs
             )
         out = np.zeros((len(energy), len(theta)))
         for i, ene in enumerate(energy):
@@ -284,18 +273,10 @@ class Vaughan(Model):
         }
         return pd.DataFrame(out_dict)
 
-    def find_optimal_parameters(
+    def _find_optimal_parameters(
         self, data_matrix: DataMatrix, **kwargs
     ) -> None:
         """Match with position of first crossover and maximum."""
-        if not data_matrix.has_all_mandatory_files(self.model_config):
-            logging.info(
-                "Files are not all provided. If Ec1 was given, I will try to "
-                "find the corresponding E_0."
-            )
-            self.find_e_0()
-            return
-
         emission_yield = data_matrix.teey
         assert emission_yield.population == "all"
 
@@ -307,18 +288,6 @@ class Vaughan(Model):
         if not self.parameters["E_0"].is_locked:
             E_0 = self._E_0_matching(E_c1=self.parameters["E_c1"].value)
             self.set_parameter_value("E_0", E_0)
-
-    def find_e_0(self) -> None:
-        """Find E_0 with error handling."""
-        e_0 = self.parameters["E_0"]
-        assert not e_0.is_locked, "Unlock E_0 to allow for a fit."
-
-        for key in ("E_c1", "E_max", "teey_max"):
-            value = self.parameters[key].value
-            assert value is not None, f"You must provide a value for {key}"
-
-        E_0 = self._E_0_matching(E_c1=self.parameters["E_c1"].value)
-        self.set_parameter_value("E_0", E_0)
 
     def _E_0_matching(self, *, E_c1: float) -> float:
         """Fit E_0 to retrieve E_c1 (SPARK3D)."""
@@ -334,7 +303,9 @@ class Vaughan(Model):
         optimized_E_0 = least_squares(_to_minimize, x0=12.5).x
         return float(optimized_E_0[0])
 
-    def evaluate(self, data_matrix: DataMatrix) -> dict[str, float]:
+    def evaluate(
+        self, data_matrix: DataMatrix | None = None
+    ) -> dict[str, float]:
         """Evaluate the quality of the model using Fil criterions.
 
         Fil criterions :cite:`Fil2016a,Fil2020` are adapted to |TEEY| models.

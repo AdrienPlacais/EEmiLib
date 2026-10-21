@@ -83,7 +83,7 @@ class MockDataMatrix(DataMatrix):
             [teey, [all_pdf] if all_pdf else all_pdf, None],
         ]
 
-    def has_all_mandatory_files(self, *args, **kwargs) -> bool:
+    def holds_required_data(self, *args, **kwargs) -> bool:
         """Skip this check."""
         return True
 
@@ -210,7 +210,7 @@ def test_emission_yields_output_shape(
     """Check that all emission yield arrays have proper shape."""
     energy = np.linspace(0, 100, 5, dtype=np.float64)
     theta = np.linspace(0, 80, 3, dtype=np.float64)
-    result = furman_pivi_model.get_data(
+    result = furman_pivi_model.compute_data(
         population=population,
         data_type="Emission Yield",
         energy=energy,
@@ -253,7 +253,7 @@ def test_emission_yields_values(
     energy = np.array(expected.energies)
     theta = np.array(expected.angles)
 
-    calculated = model.get_data(
+    calculated = model.compute_data(
         population=population,
         data_type="Emission Yield",
         energy=energy,
@@ -302,7 +302,7 @@ def test_energy_distribution_values(
     emission_energies = np.array(expected.energies)
     theta = np.array(expected.angles)
 
-    calculated_df = model.get_data(
+    calculated_df = model.compute_data(
         population=population,
         data_type="Emission Energy",
         energy=emission_energies,

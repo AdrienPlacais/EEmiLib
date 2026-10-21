@@ -106,10 +106,8 @@ def _render_to_pixmap(
     width_in = max(width_px / dpi, 0.1)
 
     try:
-        # Set figure width to the available column width so wrap=True
-        # breaks lines at exactly the right point.
         fig = plt.figure(figsize=(width_in, 0.01))
-        t = fig.text(
+        fig.text(
             0,
             0,
             text,
@@ -119,21 +117,14 @@ def _render_to_pixmap(
             verticalalignment="bottom",
         )
 
-        renderer = fig.canvas.get_renderer()
-        bbox = t.get_window_extent(renderer=renderer).transformed(
-            fig.dpi_scale_trans.inverted()
-        )
-
-        # Clamp to a minimum size to avoid "tile cannot extend outside image".
-        min_inches = 0.1
-        bbox = bbox.expanded(
-            max(min_inches / max(bbox.width, 1e-6), 1.0),
-            max(min_inches / max(bbox.height, 1e-6), 1.0),
-        )
-
         buf = io.BytesIO()
         fig.savefig(
-            buf, format="png", dpi=dpi, bbox_inches=bbox, transparent=True
+            buf,
+            format="png",
+            dpi=dpi,
+            bbox_inches="tight",
+            pad_inches=0.02,
+            transparent=True,
         )
         plt.close(fig)
         buf.seek(0)

@@ -14,7 +14,9 @@ from PyQt5.QtWidgets import (
     QPushButton,
 )
 
-from eemilib.gui.styles import FILE_LIST_MAX_HEIGHT, TITLE_STYLE
+from eemilib.emission_data._data_matrix import DataMatrix
+from eemilib.gui.helper import titled_group
+from eemilib.gui.styles import FILE_LIST_MAX_HEIGHT
 from eemilib.util.constants import IMPLEMENTED_EMISSION_DATA, IMPLEMENTED_POP
 
 
@@ -22,9 +24,8 @@ def file_selection_matrix(
     main_window: QMainWindow,
 ) -> tuple[QGroupBox, list[list[None | QListWidget]]]:
     """Create the 4 * 3 matrix to select the files to load."""
-    file_matrix_group = QGroupBox("Files selection")
-    file_matrix_group.setStyleSheet(TITLE_STYLE)
-    file_matrix_layout = QGridLayout()
+    layout = QGridLayout()
+    group = titled_group("Files selection", layout)
 
     row_labels, col_labels = IMPLEMENTED_POP, IMPLEMENTED_EMISSION_DATA
     n_rows, n_cols = len(row_labels), len(col_labels)
@@ -33,10 +34,10 @@ def file_selection_matrix(
     file_lists = [[None for _ in range(n_cols)] for _ in range(n_rows)]
 
     for i, label in enumerate(row_labels):
-        file_matrix_layout.addWidget(QLabel(label), i + 1, 0)
+        layout.addWidget(QLabel(label), i + 1, 0)
 
     for j, label in enumerate(col_labels):
-        file_matrix_layout.addWidget(QLabel(label), 0, j + 1)
+        layout.addWidget(QLabel(label), 0, j + 1)
 
     for i in range(n_rows):
         for j in range(n_cols):
@@ -50,10 +51,10 @@ def file_selection_matrix(
             cell_layout.addWidget(file_list)
             file_lists[i][j] = file_list
 
-            file_matrix_layout.addLayout(cell_layout, i + 1, j + 1)
+            layout.addLayout(cell_layout, i + 1, j + 1)
 
-    file_matrix_group.setLayout(file_matrix_layout)
-    return file_matrix_group, file_lists
+    group.setLayout(layout)
+    return group, file_lists
 
 
 def _setup_file_selection_widget(
@@ -78,9 +79,11 @@ def _select_files(
 ) -> None:
     """Set up a function to set the filepaths."""
     options = QFileDialog.Options()
+    data_type = IMPLEMENTED_EMISSION_DATA[col]
+    population = IMPLEMENTED_POP[row]
     file_names, _ = QFileDialog.getOpenFileNames(
         main_window,
-        "Select Files",
+        f"Select file(s) for {data_type} of {population}",
         "",
         "All Files (*);;CSV Files (*.csv)",
         options=options,
@@ -90,4 +93,32 @@ def _select_files(
         assert current_file_lists is not None
         current_file_lists.clear()
         current_file_lists.addItems(file_names)
-        # self.data_matrix.set_files(file_names, row=row, col=col)
+
+
+def clear_filepaths_button(
+    data_matrix: DataMatrix, files_list: list[list[None | QListWidget]]
+) -> QPushButton:
+    """Create a button to clear filepaths in data matrix and GUI."""
+    clear_button = QPushButton(text="🧹 Clear files matrix")
+
+    def _clear_filepaths() -> None:
+        data_matrix.clear_filepaths()
+        for line in files_list:
+            for f in line:
+                if f is None:
+                    continue
+                f.clear()
+
+    clear_button.clicked.connect(_clear_filepaths)
+    return clear_button
+
+
+def clear_data_button(data_matrix: DataMatrix) -> QPushButton:
+    """Create a button to clear loaded data."""
+    clear_button = QPushButton(text="🗑️ Clear loaded data")
+
+    def _clear_data() -> None:
+        data_matrix.clear_data()
+
+    clear_button.clicked.connect(_clear_data)
+    return clear_button

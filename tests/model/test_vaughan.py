@@ -32,15 +32,11 @@ class MockDataMatrix(DataMatrix):
     def __init__(self, emission_data: EmissionYield) -> None:
         """Set emission yield for 'all' population."""
         self.data_matrix = [
-            [None, None, None],
-            [None, None, None],
-            [None, None, None],
-            [emission_data, None, None],
+            [[], [], []],
+            [[], [], []],
+            [[], [], []],
+            [[emission_data], [], []],
         ]
-
-    def has_all_mandatory_files(self, *args, **kwargs) -> bool:
-        """Skip this check."""
-        return True
 
 
 def test_initial_parameters(vaughan_model: Vaughan) -> None:

@@ -1,129 +1,86 @@
 """Define functions to be as DRY as possible."""
 
 import logging
-from abc import ABCMeta
 from collections.abc import Collection
 from functools import partial
-from typing import Any, Literal, overload
+from typing import Any, Literal, NamedTuple, overload
 
 from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtGui import QDesktopServices, QDoubleValidator, QIntValidator
 from PyQt5.QtWidgets import (
     QCheckBox,
-    QComboBox,
+    QGridLayout,
+    QGroupBox,
     QHBoxLayout,
     QLabel,
+    QLayout,
     QLineEdit,
     QPushButton,
     QRadioButton,
     QWidget,
 )
 
+from eemilib.gui.styles import TITLE_STYLE
 from eemilib.model.parameter import Parameter
-from eemilib.util.helper import get_classes
 
 
-def setup_dropdown(
-    module_name: str, base_class: ABCMeta, buttons_args: dict[str, Any]
-) -> tuple[dict[str, str], QHBoxLayout, QComboBox, list[QPushButton]]:
-    """Set up interface with a dropdown menu and a button next to it.
+class LinspaceEntries(NamedTuple):
+    """Named values returned by ``setup_linspace_entries``."""
 
-    Parameters
-    ----------
-    module_name :
-        Where the entries of the dropdown will be searched.
-    base_class :
-        The base class from which dropdown entries should inherit.
-    buttons_args :
-        Dictionary where the keys are the name of the buttons to add next to
-        the dropdown menu, and values the callable that will be called when
-        clicking the button. Several callables can be provided as a list or
-        tuple.
-
-    Returns
-    -------
-    dict[str, str]
-        Keys are the name of the objects inheriting from ``base_class`` found
-        in ``module_name``. Values are the path leading to them.
-    QHBoxLayout
-        Layout holding together ``dropdown`` and ``button``.
-    QComboBox
-        Dropdown menu holding the keys of ``classes``.
-    list[QPushButton]
-        The buttons next to the dropdown menu.
-
-    """
-    classes = get_classes(module_name, base_class)
-
-    layout = QHBoxLayout()
-
-    dropdown = QComboBox()
-    dropdown.addItems(classes.keys())
-    layout.addWidget(QLabel(f"Select {base_class.__name__}:"))
-    layout.addWidget(dropdown)
-
-    buttons = []
-    for name, action in buttons_args.items():
-        button = QPushButton(name)
-        if not hasattr(action, "__iter__"):
-            action = (action,)
-        for a in action:
-            button.clicked.connect(a)
-        layout.addWidget(button)
-        buttons.append(button)
-
-    return classes, layout, dropdown, buttons
-
-
-def set_dropdown_value(
-    dropdown: QComboBox, value: str | ABCMeta | None
-) -> None:
-    """Set a ``dropdown`` to desired value.
-
-    Parameters
-    ----------
-    dropdown :
-        Dropdown object.
-    value :
-        Name of class or class object you want to select in the dropdown. If
-        unset, we do not do anything.
-    allowed_values :
-        Dict used for the ``dropdown`` creation; links name of class objects
-        to their import path.
-
-    """
-    if value is None:
-        return
-    if isinstance(value, ABCMeta):
-        value = value.__name__
-    index = dropdown.findText(value)
-    if index == -1:
-        logging.info(f"{value = } not found in {dropdown = } items.")
-        return
-    dropdown.setCurrentIndex(index)
+    #: Row title
+    label: QLabel
+    #: Start of the linspace
+    first: QWidget
+    #: End of the linspace
+    last: QWidget
+    #: Number of linspace points
+    n_points: QWidget
+    #: When checked, values are taken from measurements; the entries above
+    #: are greyed out
+    use_measured: QCheckBox
 
 
 def setup_linspace_entries(
     label: str,
     initial_values: tuple[float, float, int],
     max_value: float | None = None,
-) -> tuple[QHBoxLayout, QLineEdit, QLineEdit, QLineEdit]:
-    """Create an input to call np.linspace."""
-    layout = QHBoxLayout()
-    layout.addWidget(QLabel(label))
+    use_measured_text: str = "Match measurements",
+) -> LinspaceEntries:
+    """Create the widgets of an input to call np.linspace."""
+    widgets = [
+        _linspace_entry(is_int, x_0=x_0, x_max=x_max)
+        for is_int, x_0, x_max in zip(
+            (False, False, True), initial_values, (max_value, max_value, None)
+        )
+    ]
 
-    widgets: list[QWidget] = []
-    for button_label, is_int, x_0, x_max in zip(
-        ("first", "last", "n_points"),
-        (False, False, True),
-        initial_values,
-        (max_value, max_value, None),
+    use_measured = QCheckBox(use_measured_text)
+    use_measured.setEnabled(False)
+
+    def grey_out_entries(checked: bool) -> None:
+        for widget in widgets:
+            widget.setEnabled(not checked)
+
+    use_measured.toggled.connect(grey_out_entries)
+
+    return LinspaceEntries(QLabel(label), *widgets, use_measured)
+
+
+def add_linspace_row(
+    grid: QGridLayout, row: int, entries: LinspaceEntries
+) -> None:
+    """Place ``entries`` on a row of ``grid``, with the sub-labels."""
+    grid.addWidget(entries.label, row, 0)
+    for i, (name, widget) in enumerate(
+        (
+            ("first", entries.first),
+            ("last", entries.last),
+            ("n_points", entries.n_points),
+        )
     ):
-        layout.addWidget(QLabel(button_label))
-        widgets.append(w := _linspace_entry(is_int, x_0=x_0, x_max=x_max))
-        layout.addWidget(w)
-
-    return layout, widgets[0], widgets[1], widgets[2]
+        grid.addWidget(QLabel(name), row, 1 + 2 * i)
+        grid.addWidget(widget, row, 2 + 2 * i)
+    grid.addWidget(entries.use_measured, row, 7)
 
 
 def _linspace_entry(
@@ -164,6 +121,7 @@ def _toggle_lock(state: Any, parameter: Parameter) -> None:
     """Activate/deactivate lock."""
     if state == Qt.Checked:
         parameter.lock()
+        return
     parameter.unlock()
 
 
@@ -219,6 +177,14 @@ def _open_help(obj: Any) -> None:
         logging.warning(f"No valid URL found for {obj = }")
         return
     QDesktopServices.openUrl(QUrl(url))
+
+
+def titled_group(title: str, layout: QLayout) -> QGroupBox:
+    """Add a standard `QGroupBox` to the given layout."""
+    group = QGroupBox(title)
+    group.setStyleSheet(TITLE_STYLE)
+    group.setLayout(layout)
+    return group
 
 
 # Associate Parameters attributes with their column position
