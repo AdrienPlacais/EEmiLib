@@ -14,12 +14,10 @@ from numpy.typing import NDArray
 
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
-from eemilib.emission_data.emission_data import MissingDataError
 from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
     COL_ENERGY,
-    COL_NORMAL,
     ImplementedEmissionData,
     ImplementedPop,
 )
@@ -47,9 +45,7 @@ class Sombrin(Model):
     is_3d = False
     is_dielectrics_compatible = False
     model_config = ModelConfig(
-        emission_yield_files=("all",),
-        emission_energy_files=(),
-        emission_angle_files=(),
+        emission_yields=("all",), emission_energies=(), emission_angles=()
     )
     initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = {
         "E_max": {
@@ -74,6 +70,7 @@ class Sombrin(Model):
             "description": "First crossover energy.",
         },
     }
+    _url_doc_override = "manual/models/sombrin"
 
     def __init__(
         self, parameters_values: dict[str, Any] | None = None
@@ -87,19 +84,8 @@ class Sombrin(Model):
             override the default values set in ``initial_parameters``.
 
         """
-        super().__init__(url_doc_override="manual/models/sombrin")
-        self.parameters = cast(
-            SombrinParameters,
-            {
-                name: Parameter(**cast(dict, kwargs))
-                for name, kwargs in self.initial_parameters.items()
-            },
-        )
-        self._generate_parameter_docs()
-        if parameters_values is not None:
-            self.set_parameters_values(parameters_values)
-
-        self._func = sombrin_func
+        super().__init__(parameters_values)
+        self.parameters = cast(SombrinParameters, self.parameters)
         self._E: float | None = None
 
     @property
@@ -114,10 +100,10 @@ class Sombrin(Model):
         )
         return self._E
 
-    def get_data(
+    def compute_data(
         self,
-        population: ImplementedPop,
         data_type: ImplementedEmissionData,
+        population: ImplementedPop,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
         *args,
@@ -129,12 +115,12 @@ class Sombrin(Model):
 
         """
         if population != "all" or data_type != "Emission Yield":
-            return super().get_data(
-                population, data_type, energy, theta, *args, **kwargs
+            return super().compute_data(
+                data_type, population, energy, theta, *args, **kwargs
             )
         out = np.zeros(len(energy))
         for i, ene in enumerate(energy):
-            out[i] = self._func(
+            out[i] = sombrin_func(
                 ene,
                 E_max=self.parameters["E_max"],
                 teey_max=self.parameters["teey_max"],
@@ -142,7 +128,10 @@ class Sombrin(Model):
                 E_param=self.E,
             )
 
-        out_dict = {COL_ENERGY: energy, COL_NORMAL: out}
+        out_dict = {
+            COL_ENERGY: energy,
+            **{f"{the} [deg]": out for the in theta},
+        }
         return pd.DataFrame(out_dict)
 
     def set_parameter_value(self, name: str, value: Any) -> None:
@@ -151,22 +140,18 @@ class Sombrin(Model):
             self._E = None
         return super().set_parameter_value(name, value)
 
-    def find_optimal_parameters(
+    def _find_optimal_parameters(
         self, data_matrix: DataMatrix, **kwargs
     ) -> None:
-        """Extract main |TEEY| curve parameters from measure."""
-        if not data_matrix.has_all_mandatory_files(self.model_config):
-            raise MissingDataError("Files are not all provided.")
+        """Extract main |TEEY| curve parameters from measurements.
 
-        emission_yield = data_matrix.teey
-        assert emission_yield.population == "all"
+        This method does not involve optimization, it simply takes the
+        crossover and maximum |TEEY| positions.
 
+        """
+        teey = data_matrix.teey
         self.set_parameters_values(
-            {
-                "E_max": emission_yield.e_max,
-                "teey_max": emission_yield.ey_max,
-                "E_c1": emission_yield.e_c1,
-            }
+            {"E_max": teey.e_max, "teey_max": teey.ey_max, "E_c1": teey.e_c1}
         )
 
     def evaluate(self, data_matrix: DataMatrix) -> dict[str, float]:

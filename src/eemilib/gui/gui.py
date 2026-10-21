@@ -30,6 +30,8 @@ from numpy.typing import NDArray
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
+    QGridLayout,
+    QHBoxLayout,
     QLineEdit,
     QListWidget,
     QMainWindow,
@@ -43,7 +45,7 @@ from PyQt5.QtWidgets import (
 )
 
 from eemilib.core.model_config import ModelConfig
-from eemilib.emission_data import DataMatrix
+from eemilib.emission_data import MeasuredDataMatrix
 from eemilib.emission_data.emission_data import EmissionData
 from eemilib.gui.dropdown import (
     DROPDOWNS,
@@ -52,11 +54,16 @@ from eemilib.gui.dropdown import (
     set_dropdown_value,
     setup_dropdown,
 )
-from eemilib.gui.file_selection import file_selection_matrix
+from eemilib.gui.file_selection import (
+    clear_data_button,
+    clear_filepaths_button,
+    file_selection_matrix,
+)
 from eemilib.gui.helper import (
     PARAMETER_ATTR_TO_POS,
     PARAMETER_POS_TO_ATTR,
     LinspaceEntries,
+    add_linspace_row,
     set_help_button_action,
     setup_linspace_entries,
     titled_group,
@@ -96,6 +103,8 @@ class EEmiLibGUI(QMainWindow):
     #: Whether loading data should automatically fill the energy/angle ranges
     #: with their maximum values.
     autofill_plotting_ranges = True
+    #: Whether plotting measurements should check the "use measured" boxes.
+    autofill_use_measured = True
 
     def __init__(
         self,
@@ -111,9 +120,12 @@ class EEmiLibGUI(QMainWindow):
         }
 
         # EEmiLib attributes
-        self.data_matrix = DataMatrix()
+        self.data_matrix = MeasuredDataMatrix()
+        #: Currently selected model
         self.model: Model
+        #: Currently selected loader
         self.loader: Loader
+        #: Currently selected plotter
         self.plotter: Plotter
 
         super().__init__()
@@ -133,8 +145,9 @@ class EEmiLibGUI(QMainWindow):
         self._setup_file_selection_matrix()
 
         self._setup_loader_dropdown()
+        self._setup_clear_buttons()
 
-        #: Store the :class:`.Parameters` logic for the :class:`.Model`.
+        #: Store the :class:`.Parameter` logic for the :class:`.Model`.
         self.parameters_table: QTableWidget
         self._setup_model_configuration()
 
@@ -156,9 +169,6 @@ class EEmiLibGUI(QMainWindow):
         self.energy: LinspaceEntries
         #: Holds all widgets related to the angle linspace
         self.angle: LinspaceEntries
-        #: Check this to make the ``Model`` plots use the same energies as
-        #: the measurements
-        self.use_measured_energies_checkbox: QCheckBox
         self._setup_energy_angle_inputs()
 
         #: Let user select which type of data should be plotted.
@@ -177,20 +187,19 @@ class EEmiLibGUI(QMainWindow):
 
     @measurements_are_plotted.setter
     def measurements_are_plotted(self, value: bool) -> None:
-        """Update flag value, and also the checkbox "Use measured energies".
+        """Update flag value, and also the "Use from measurements" checkboxes.
 
         Used by the "Plot model" and the "Clear figure" buttons.
 
         """
         self._measurements_are_plotted = value
-        checkbox = getattr(self, "use_measured_energies_checkbox", None)
-        if checkbox is None:
+        if not hasattr(self, "energy") or not hasattr(self, "angle"):
             logging.error(
-                "Checkbox 'use_measured_energies_checkbox' not created yet. "
-                "May cause problems later."
+                "Energy/angle inputs not created yet. May cause problems "
+                "later."
             )
             return
-        self.refresh_use_measured_energies_availability()
+        self.refresh_use_measured_availability()
 
     # =========================================================================
     # Main tabs organization
@@ -239,9 +248,9 @@ class EEmiLibGUI(QMainWindow):
 
         # Get required file types for each population type
         required_files = {
-            "Emission Yield": config.emission_yield_files,
-            "Emission Energy": config.emission_energy_files,
-            "Emission Angle": config.emission_angle_files,
+            "Emission Yield": config.emission_yields,
+            "Emission Energy": config.emission_energies,
+            "Emission Angle": config.emission_angles,
         }
 
         for i, pop in enumerate(IMPLEMENTED_POP):
@@ -313,6 +322,23 @@ class EEmiLibGUI(QMainWindow):
 
         if self.autofill_plotting_ranges:
             self._fill_plotting_ranges()
+
+    # =========================================================================
+    # Tab 1 - Clear buttons
+    # =========================================================================
+    def _setup_clear_buttons(self) -> None:
+        """Set two buttons to clear paths and data."""
+        layout = QHBoxLayout()
+        spacer = QWidget()
+        for _ in range(3):
+            layout.addWidget(spacer)
+
+        for clear_button in (
+            clear_filepaths_button(self.data_matrix, self.file_lists),
+            clear_data_button(self.data_matrix),
+        ):
+            layout.addWidget(clear_button)
+        self.data_model_layout.addLayout(layout)
 
     # =========================================================================
     # Tab 1 - Model
@@ -517,77 +543,59 @@ class EEmiLibGUI(QMainWindow):
     def _setup_energy_angle_inputs(self) -> None:
         """Set the energy and angle inputs for the model plot.
 
-        Sets :attr:`energy`, :attr:`angle`,
-        :attr:`use_measured_energies_checkbox`.
+        Sets :attr:`energy`, :attr:`angle`.
 
         """
-        layout = QVBoxLayout()
+        layout = QGridLayout()
         group = titled_group("Plot configuration", layout)
 
         self.energy = setup_linspace_entries(
-            "Energy [eV]", initial_values=(0.0, 500.0, 501)
+            "Energy [eV]",
+            initial_values=(0.0, 500.0, 501),
+            use_measured_text="Use measured energy range",
         )
-        layout.addLayout(self.energy.layout)
-
-        self.use_measured_energies_checkbox = (
-            self._create_use_measured_energies_checkbox()
+        self.energy.use_measured.setToolTip(
+            "Evaluate the model on the same energy range as the plotted "
+            "measurements. The first/last/n_points fields are ignored."
         )
-        layout.addWidget(self.use_measured_energies_checkbox)
 
         self.angle = setup_linspace_entries(
-            "Angle [deg]", initial_values=(0.0, 60.0, 4), max_value=90.0
+            "Angle [deg]",
+            initial_values=(0.0, 60.0, 4),
+            max_value=90.0,
+            use_measured_text="Match measured angles",
         )
-        layout.addLayout(self.angle.layout)
+        self.angle.use_measured.setToolTip(
+            "Evaluate the model on the same angles as the plotted "
+            "measurements. The first/last/n_points fields are ignored."
+        )
 
+        for row, entries in enumerate((self.energy, self.angle)):
+            add_linspace_row(layout, row, entries)
+            layout.setColumnStretch(7, 1)
         self.plot_layout.addWidget(group)
 
-    def _create_use_measured_energies_checkbox(self) -> QCheckBox:
-        """Set checkbox making :meth:`.Model.plot` use measured energies.
-
-        Behavior:
-        - Greyed out if no measurements plotted (rely on
-          :attr:`.measurements_are_plotted`)
-        - When checked, the :meth:`.Model.plot` is called with
-          ``energies=None`` so that min/max energies are taken from currently
-          drawn axes.
-
-        """
-
-        def _on_use_measured_energies_toggled(checked: bool) -> None:
-            """Grey out energy linspace inputs."""
-            for widg in (
-                self.energy.first,
-                self.energy.last,
-                self.energy.n_points,
-            ):
-                widg.setEnabled(not checked)
-
-        checkbox = QCheckBox("Use energies from measurements")
-        checkbox.setEnabled(self.measurements_are_plotted)
-        checkbox.toggled.connect(_on_use_measured_energies_toggled)
-        return checkbox
-
-    def refresh_use_measured_energies_availability(self) -> None:
-        """Re-sync the checkbox state with :attr:`.measurements_are_plotted`.
+    def refresh_use_measured_availability(self) -> None:
+        """Re-sync the checkboxes state with :attr:`.measurements_are_plotted`.
 
         Call this every time :attr:`.measurements_are_plotted` changes.
 
         """
-        checkbox = self.use_measured_energies_checkbox
-        checkbox.setEnabled(self.measurements_are_plotted)
-        if not self.measurements_are_plotted and checkbox.isChecked():
-            checkbox.setChecked(False)
+        for entries in (self.energy, self.angle):
+            checkbox = entries.use_measured
+            checkbox.setEnabled(self.measurements_are_plotted)
+            if not self.measurements_are_plotted and checkbox.isChecked():
+                checkbox.setChecked(False)
 
     def _get_energies_for_model_plot(self) -> NDArray[np.float64] | None:
         """Get proper energies for :meth:`.Model.plot`.
 
-        - If the :attr:`.use_measured_energies_checkbox` is checked, we return
-          ``None`` and :meth:`.Model.plot` will take energies  from the given
-          ``Axes``.
+        - If the correspondind checkbox is checked, we return ``None`` and
+          :meth:`.Model.plot` will take energies  from the given ``Axes``.
         - If unchecked, we create a linspace from the energy linspace inputs.
 
         """
-        checkbox = self.use_measured_energies_checkbox
+        checkbox = self.energy.use_measured
         if checkbox.isChecked():
             return
 
@@ -660,6 +668,14 @@ class EEmiLibGUI(QMainWindow):
             population=populations,
         )
         self.measurements_are_plotted = True
+        self._check_use_measured()
+
+    def _check_use_measured(self) -> None:
+        """Check the "use measured" boxes, now that measurements exist."""
+        if not self.autofill_use_measured:
+            return
+        for entries in (self.energy, self.angle):
+            entries.use_measured.setChecked(True)
 
     def plot_model(self) -> None:
         """Plot the desired data, as modelled."""
@@ -670,9 +686,11 @@ class EEmiLibGUI(QMainWindow):
         if data_type is None:
             return
         energies = self._get_energies_for_model_plot()
-        success_angle, angles = self._gen_linspace("angle")
-        if not success_angle:
-            return
+        angles = None
+        if not self.angle.use_measured.isChecked():
+            success_angle, angles = self._gen_linspace("angle")
+            if not success_angle:
+                return
 
         self._plot(
             self.model.plot,

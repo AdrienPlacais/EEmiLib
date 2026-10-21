@@ -8,7 +8,7 @@
 import logging
 import math
 from abc import ABC, abstractmethod
-from collections.abc import Collection
+from collections.abc import Collection, Sequence
 from pprint import pformat
 from typing import Any, ClassVar, Literal, cast, overload
 
@@ -18,9 +18,11 @@ from numpy.typing import NDArray
 
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
-from eemilib.emission_data.emission_data import MissingDataError
+from eemilib.emission_data._data_matrix import ModelledDataMatrix
+from eemilib.emission_data.emission_data import EmissionData
 from eemilib.emission_data.emission_yield import TEEY
 from eemilib.emission_data.helper import get_ec1, get_max
+from eemilib.model.parameter import Parameter, ParameterSet
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
     COL_ENERGY,
@@ -28,8 +30,14 @@ from eemilib.util.constants import (
     ImplementedEmissionData,
     ImplementedPop,
 )
+from eemilib.util.exceptions import MissingDataError
 from eemilib.util.helper import documentation_url
-from eemilib.util.markdown import E_MAX, EC_1, SIGMA, SIGMA_MAX, tex_math
+from eemilib.util.markdown import _TEEY, E_MAX, EC_1, SIGMA_MAX, tex_math
+
+#: Default energy, when none is provided
+_DEFAULT_ENERGY = np.linspace(0.0, 500.0, 501)
+#: Default angle, when none is provided
+_DEFAULT_THETA = np.array([0.0])
 
 
 class Model(ABC):
@@ -66,11 +74,11 @@ class Model(ABC):
     initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = {}
     model_config: ModelConfig
     implementation_choices: ClassVar[dict[str, tuple[str, ...]]] = {}
+    #: Override default URL in documentation
+    _url_doc_override: str | None = None
 
     def __init__(
-        self,
-        parameters_values: dict[str, Any] | None = None,
-        url_doc_override: str | None = None,
+        self, parameters_values: dict[str, Any] | None = None
     ) -> None:
         """Instantiate the object.
 
@@ -79,19 +87,34 @@ class Model(ABC):
         parameters_values :
             Contains name of parameters and associated value. If provided, will
             override the default values set in ``initial_parameters``.
-        url_doc_override :
-            Override default URL in documentation.
 
         """
         self.doc_url = documentation_url(
-            self, url_doc_override=url_doc_override
+            self, url_doc_override=self._url_doc_override
         )
-        #: A :class:`.TypedDict` specific to every :class:`.model.Model`. Keys
-        #: are parameters names, values are :class:`.Parameter`.
-        self.parameters: Any
+        #: Cached computed data, invalidated on parameter change.
+        self._cached_data_matrix = ModelledDataMatrix()
+
+        #: Maps parameters name to :class:`.Parameter` instances.
+        self.parameters = ParameterSet(
+            {
+                name: Parameter(**cast(dict, kwargs))
+                for name, kwargs in self.initial_parameters.items()
+            },
+            on_change=self._on_parameter_changed,
+        )
+
+        self._generate_parameter_docs()
+        if parameters_values is not None:
+            self.set_parameters_values(parameters_values)
         #: Maps each axis name (see :attr:`.Model.implementation_choices`) to
         #: the currently selected option.
         self.current_implementations: dict[str, str] = {}
+
+        #: Optional reference; used to infer ``energy`` and ``theta`` when not
+        #: given, and as default for :meth:`.Model.find_optimal_parameters` and
+        #: :meth:`.Model.evaluate` when no ``data_matrix`` is provided.
+        self.reference_data: DataMatrix | None = None
 
     @classmethod
     def _generate_parameter_docs(cls) -> str:
@@ -129,16 +152,16 @@ class Model(ABC):
         *args,
         **kwargs,
     ) -> pd.DataFrame:
-        r"""Compute |TEEY| :math:`\sigma`.
+        r"""Get or compute |TEEY| :math:`\sigma`.
 
-        Under the hood, it calls :meth:`get_data`.
+        Under the hood, it calls :meth:`get_or_compute_data`.
 
         """
-        teey = self.get_data(
-            "all", "Emission Yield", energy, theta, *args, **kwargs
+        teeys = self.get_or_compute_data(
+            "Emission Yield", "all", energy, theta, *args, **kwargs
         )
-        if teey is not None:
-            return teey
+        if teeys:
+            return teeys[0].data
         logging.warning("No TEEY data found, returning dummy.")
         return _dummy_df(energy, theta)
 
@@ -149,16 +172,16 @@ class Model(ABC):
         *args,
         **kwargs,
     ) -> pd.DataFrame:
-        r"""Compute |SEEY| :math:`\delta`.
+        r"""Get or compute |SEEY| :math:`\delta`.
 
-        Under the hood, it calls :meth:`get_data`.
+        Under the hood, it calls :meth:`get_or_compute_data`.
 
         """
-        seey = self.get_data(
-            "SE", "Emission Yield", energy, theta, *args, **kwargs
+        seeys = self.get_or_compute_data(
+            "Emission Yield", "SE", energy, theta, *args, **kwargs
         )
-        if seey is not None:
-            return seey
+        if seeys:
+            return seeys[0].data
         logging.warning("No SEEY data found, returning dummy.")
         return _dummy_df(energy, theta)
 
@@ -171,23 +194,23 @@ class Model(ABC):
     ) -> pd.DataFrame:
         r"""Compute |SEs| emission energy distribution.
 
-        Under the hood, it calls :meth:`get_data`.
+        Under the hood, it calls :meth:`get_or_compute_data`.
 
         """
-        se_distrib = self.get_data(
-            "SE", "Emission Energy", energy, theta, *args, **kwargs
+        se_distribs = self.get_or_compute_data(
+            "Emission Energy", "SE", energy, theta, *args, **kwargs
         )
-        if se_distrib is not None:
-            return se_distrib
+        if se_distribs:
+            return se_distribs[0].data
         logging.warning(
             "No SE energy distribution data found, returning dummy."
         )
         return _dummy_df(energy, theta)
 
-    def get_data(
+    def compute_data(
         self,
-        population: ImplementedPop,
         data_type: ImplementedEmissionData,
+        population: ImplementedPop,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
         e_pe: float | None = None,
@@ -204,10 +227,10 @@ class Model(ABC):
 
         Parameters
         ----------
-        population :
-            Type of population you want data from.
         data_type :
             Desired type of emission data.
+        population :
+            Type of population you want data from.
         energy :
             According to the emission data type, this argument can mean
             several things:
@@ -239,11 +262,166 @@ class Model(ABC):
         """
         return None
 
-    @abstractmethod
+    def get_or_compute_data(
+        self,
+        data_type: ImplementedEmissionData,
+        population: ImplementedPop,
+        energy: NDArray[np.float64] | None = None,
+        theta: NDArray[np.float64] | None = None,
+        e_pe: float | None = None,
+        *args,
+        **kwargs,
+    ) -> Sequence[EmissionData]:
+        r"""Return cached data if available, else compute it and cache it.
+
+        Parameters
+        ----------
+        data_type :
+            Desired type of emission data.
+        population :
+            Type of population you want data from.
+        energy :
+            According to the emission data type, this argument can mean
+            several things:
+
+            - ``"Emission Yield"``: array of |PEs| impact energy in
+              :unit:`eV`.
+            - ``"Emission Energy"``: array of |EEs| emission energy in
+              :unit:`eV`. By convention, if ``e_pe`` is not provided, the
+              impact energy of the |PE| is also the last value of ``energy``.
+
+        theta :
+            Array of |PE| electrons impact angle in :unit:`\degrees`.
+        e_pe :
+            Energy of |PEs| in :unit:`eV`, if applicable.
+        args, kwargs :
+            Forwarded to :meth:`compute_data` on a cache miss.
+
+        Return
+        ------
+            The cached or freshly computed :class:`.EmissionData`.
+
+        """
+        if energy is None:
+            energy = self._infer_energy(data_type, population, e_pe=e_pe)
+        if theta is None:
+            theta = self._infer_theta(data_type, population)
+
+        result = self._cached_data_matrix.get_or_compute_data(
+            data_type,
+            population,
+            energy,
+            theta,
+            e_pe,
+            compute=lambda: self.compute_data(
+                data_type, population, energy, theta, e_pe, *args, **kwargs
+            ),
+        )
+        return result
+
+    def _infer_energy(
+        self,
+        data_type: ImplementedEmissionData,
+        population: ImplementedPop,
+        n_points: int = 501,
+        e_pe: float | None = None,
+    ) -> NDArray[np.float64]:
+        """Infer an energy array from :attr:`reference_data`, densified.
+
+        Tries:
+
+        1. Energy array from same data type, same population.
+        2. Energy array from same data type, population ``"all"``.
+
+           - Likely what will work, as :attr:`reference_data` will generally
+             hold experimental data.
+
+        3. Else, return the default :data:`_DEFAULT_ENERGY`.
+
+        Array taken from :attr:`reference_data` is densified, it holds
+        ``n_points``.
+
+        Parameters
+        ----------
+        data_type :
+            Type of reference data to extract.
+        population :
+            Nature of population to extract.
+        n_points :
+            Number of points in output array.
+        e_pe :
+            If provided, take energy from :class:`.EmissionData` with closest
+            ``e_pe``.
+
+        """
+        if not self.reference_data:
+            return _DEFAULT_ENERGY
+        for pop in (population, "all"):
+            emission_data = self.reference_data.get_data(data_type, pop)
+            if not emission_data:
+                continue
+
+            if e_pe is None:
+                best_emission_data = emission_data[0]
+            else:
+                best_emission_data = min(
+                    emission_data,
+                    key=lambda data: abs(getattr(data, "e_pe", e_pe) - e_pe),
+                )
+
+            energies = best_emission_data.energies
+            return np.linspace(energies.min(), energies.max(), n_points)
+
+        return _DEFAULT_ENERGY
+
+    def _infer_theta(
+        self, data_type: ImplementedEmissionData, population: ImplementedPop
+    ) -> NDArray[np.float64]:
+        """Infer a theta array from :attr:`reference_data`.
+
+        Tries:
+
+        1. theta array from same data type, same population.
+        2. theta array from same data type, population ``"all"``.
+
+           - Likely what will work, as :attr:`reference_data` will generally
+             hold experimental data.
+
+        3. Else, return the default :data:`_DEFAULT_THETA`.
+
+        Array taken from :attr:`reference_data` is NOT densified, it is
+        returned as is.
+
+        """
+        if not self.reference_data:
+            return _DEFAULT_THETA
+        for pop in (population, "all"):
+            emission_data = self.reference_data.get_data(data_type, pop)
+            if not emission_data:
+                continue
+            return np.asarray(emission_data[0].angles)
+        return _DEFAULT_THETA
+
     def find_optimal_parameters(
+        self, data_matrix: DataMatrix | None = None, **kwargs
+    ) -> None:
+        """Find the best parameters for the current model.
+
+        Should start by ``self._resolve_data_matrix(data_matrix)``, in order
+        to save the data matrix as reference.
+
+        """
+        data_matrix = self._resolve_data_matrix(data_matrix)
+        self.set_reference_data(data_matrix)
+        if not data_matrix.holds_required_data(self.model_config):
+            raise MissingDataError("Files are not all provided.")
+        self._find_optimal_parameters(data_matrix, **kwargs)
+
+    @abstractmethod
+    def _find_optimal_parameters(
         self, data_matrix: DataMatrix, **kwargs
     ) -> None:
-        """Find the best parameters for the current model."""
+        """Fit the parameters against ``data_matrix``."""
 
     @overload
     def plot[T](
@@ -251,8 +429,8 @@ class Model(ABC):
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
         data_type: ImplementedEmissionData,
-        energies: NDArray[np.float64] | None,
-        angles: NDArray[np.float64],
+        energies: NDArray[np.float64] | None = None,
+        angles: NDArray[np.float64] | None = None,
         axes: T | None = None,
         group_by_pe: Literal[False] = False,
         e_pes: float | None = None,
@@ -265,8 +443,8 @@ class Model(ABC):
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
         data_type: Literal["Emission Energy"],
-        energies: NDArray[np.float64] | None,
-        angles: NDArray[np.float64],
+        energies: NDArray[np.float64] | None = None,
+        angles: NDArray[np.float64] | None = None,
         axes: dict[float, T] | None = None,
         group_by_pe: Literal[True] = True,
         e_pes: Collection[float] | None = None,
@@ -278,8 +456,8 @@ class Model(ABC):
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
         data_type: ImplementedEmissionData,
-        energies: NDArray[np.float64] | None,
-        angles: NDArray[np.float64],
+        energies: NDArray[np.float64] | None = None,
+        angles: NDArray[np.float64] | None = None,
         axes: T | dict[float, T] | None = None,
         group_by_pe: bool = False,
         e_pes: float | Collection[float] | None = None,
@@ -302,14 +480,15 @@ class Model(ABC):
         data_type :
             Type of data to plot.
         energies :
-            Energies at which the model is evaluated. If omitted, we use the
-            limits of a pre-existing ``axes`` -- ``axes`` should not be None,
-            and should not be empty!
+            Energies at which the model is evaluated. If omitted, we take
+            energies from reference data the :class:`.Model` was fitted on.
         angles :
-            Angles at which the model is evaluated.
+            Angles at which the model is evaluated. If omitted, we take impact
+            angles from reference data the :class:`.Model` was fitted on.
         axes :
             Axes to re-use if given. A plain ``T`` in the default case; a
-            ``dict[float, T]`` keyed by impact energy when ``group_by_pe=True``.
+            ``dict[float, T]`` keyed by impact energy when
+            ``group_by_pe=True``.
         group_by_pe :
             Only supported for ``data_type == "Emission Energy"``. If
             ``True``, one axes is created (or re-used) per impact energy,
@@ -384,8 +563,8 @@ class Model(ABC):
         plotter: Plotter,
         population: ImplementedPop | Collection[ImplementedPop],
         data_type: ImplementedEmissionData,
-        energies: NDArray[np.float64] | None,
-        angles: NDArray[np.float64],
+        energies: NDArray[np.float64] | None = None,
+        angles: NDArray[np.float64] | None = None,
         axes: T | None = None,
         e_pe: float | None = None,
         grid: bool = True,
@@ -403,11 +582,11 @@ class Model(ABC):
         data_type :
             Type of data to plot.
         energies :
-            Energies at which the model is evaluated. If omitted, we use the
-            limits of a pre-existing ``axes`` -- ``axes`` should not be None,
-            and should not be empty!
+            Energies at which the model is evaluated. If omitted, we take
+            energies from reference data the :class:`.Model` was fitted on.
         angles :
-            Angles at which the model is evaluated.
+            Angles at which the model is evaluated. If omitted, we take impact
+            angles from reference data the :class:`.Model` was fitted on.
         axes :
             Axes to re-use if given.
         e_pe :
@@ -434,40 +613,28 @@ class Model(ABC):
                     plotter,
                     pop,
                     data_type,
-                    energies,
-                    angles,
+                    energies=energies,
+                    angles=angles,
                     axes=axes,
                     e_pe=e_pe,
                     grid=grid,
                     **kwargs,
                 )
             return axes
-
-        if energies is None:
-            energies = plotter.infer_energies(
-                axes, n_points=n_points, data_type=data_type
-            )
-
-        data = self.get_data(
-            population=population,
-            data_type=data_type,
-            energy=energies,
-            theta=angles,
-            e_pe=e_pe,
+        data = self.get_or_compute_data(
+            data_type, population, energy=energies, theta=angles, e_pe=e_pe
         )
-        if data is None:
+        if not data:
             logging.info(
-                f"No model data for {population = } and "
-                f"{data_type = }. Skipping this plot."
+                f"No model data for {population = } and {data_type = }. "
+                "Skipping this plot."
             )
             return axes
 
-        return plotter.plot(
-            data_type=data_type,
-            df=data,
+        return data[0].plot(
+            plotter,
             axes=axes,
             population=population,
-            e_pe=e_pe,
             grid=grid,
             is_model=True,
             **kwargs,
@@ -533,8 +700,8 @@ class Model(ABC):
                 energies=energies,
                 angles=angles,
                 axes=axes.get(e_pe),
-                e_pe=e_pe,
                 grid=grid,
+                e_pe=e_pe,
                 **kwargs,
             )
         return axes
@@ -577,6 +744,48 @@ class Model(ABC):
         for name in names:
             self.reset_parameter_value(name)
 
+    def _on_parameter_changed(self) -> None:
+        """Set events that should occur on parameter change.
+
+        As for now, remove the :class:`.EmissionData` in
+        :attr:`_cached_data_matrix`.
+
+        """
+        self._cached_data_matrix.clear_data()
+
+    def set_reference_data(self, data_matrix: DataMatrix) -> None:
+        """Set new reference data."""
+        self.reference_data = data_matrix
+
+    def _resolve_data_matrix(
+        self, data_matrix: DataMatrix | None
+    ) -> DataMatrix:
+        """Get ``data_matrix`` if provided, or fall back on the reference one.
+
+        Parameters
+        ----------
+        data_matrix :
+            Optional data matrix.
+
+        Returns
+        -------
+            Resolved data matrix object.
+
+        Raises
+        ------
+        MissingDataError
+            If ``data_matrix = None`` and :attr:`.reference_data` is not set.
+
+        """
+        if data_matrix:
+            return data_matrix
+        if self.reference_data:
+            return self.reference_data
+        raise MissingDataError(
+            "``data_matrix`` argument was None AND there was no reference data"
+            f" matrix on {self.__class__.__name__}."
+        )
+
     def set_implementation(self, name: str, value: str) -> None:
         """Update one implementation axis.
 
@@ -588,7 +797,7 @@ class Model(ABC):
 
     def evaluate(
         self,
-        data_matrix: DataMatrix,
+        data_matrix: DataMatrix | None = None,
         *args,
         evaluations: dict[str, float] | None = None,
         **kwargs,
@@ -601,7 +810,8 @@ class Model(ABC):
         Parameters
         ----------
         data_matrix :
-            Holds all measured electron emission data.
+            Holds reference (generally measured) electron emission data. If not
+            provided, we take the :attr:`.reference_data`.
         args :
             Additional unused arguments.
         evaluations :
@@ -616,6 +826,7 @@ class Model(ABC):
             Maps names of quality criterions with their actual value.
 
         """
+        data_matrix = self._resolve_data_matrix(data_matrix)
         if evaluations is None:
             evaluations = {}
         if "Emission Yield" in self.data_types and (
@@ -630,7 +841,7 @@ class Model(ABC):
         return evaluations
 
     def _evaluate_for_teey_models(
-        self, data_matrix: DataMatrix
+        self, ref_data_matrix: DataMatrix
     ) -> dict[str, float]:
         """Evaluate a |TEEY| model with N. Fil criterions.
 
@@ -640,7 +851,7 @@ class Model(ABC):
         evaluations = self._main_teey_parameters()
 
         try:
-            teey = data_matrix.teey
+            ref_teey = ref_data_matrix.teey
         except MissingDataError:
             logging.error("TEEY is mandatory in order to perform evaluations.")
             return evaluations
@@ -648,10 +859,10 @@ class Model(ABC):
         evaluations.update(
             {
                 rf"Relative error over {tex_math(EC_1)} [\%]": self._error_ec1(
-                    teey
+                    ref_teey
                 ),
-                f"{tex_math(SIGMA)} deviation between {tex_math(EC_1)} and "
-                rf"{tex_math(E_MAX)} [\%]": self._error_teey(teey),
+                f"{tex_math(_TEEY)} deviation between {tex_math(EC_1)} and "
+                rf"{tex_math(E_MAX)} [\%]": self._error_teey(ref_teey),
             }
         )
         return evaluations
@@ -674,9 +885,9 @@ class Model(ABC):
             f"Modelled {tex_math(SIGMA_MAX)}": sigma_max,
         }
 
-    def _error_ec1(self, emission_yield: TEEY) -> float:
+    def _error_ec1(self, ref_teey: TEEY) -> float:
         """Compute relative error over first crossover energy in :unit:`%`."""
-        measured_ec1 = emission_yield.e_c1
+        measured_ec1 = ref_teey.e_c1
         energy = np.linspace(0, 1.5 * measured_ec1, 10001, dtype=np.float64)
         theta = np.array([0.0])
         teey = self.teey(energy, theta)
@@ -688,15 +899,15 @@ class Model(ABC):
         error = 100.0 * std / measured_ec1
         return float(error)
 
-    def _error_teey(self, emission_yield: TEEY) -> float:
+    def _error_teey(self, ref_teey: TEEY) -> float:
         """Compute |TEEY| relative error between $E_{c1}$ and $E_{max}$.
 
         Returned value is in :unit:`%`.
 
         """
-        min_energy = emission_yield.e_c1
-        max_energy = emission_yield.e_max
-        df = emission_yield.data
+        min_energy = ref_teey._e_c1
+        max_energy = ref_teey._e_max
+        df = ref_teey.data
         mask = (df[COL_ENERGY] >= min_energy) & (df[COL_ENERGY] <= max_energy)
 
         measured_teey = df.loc[mask, COL_NORMAL].to_numpy()

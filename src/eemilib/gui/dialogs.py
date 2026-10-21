@@ -18,6 +18,7 @@ class SettingsDialog(QDialog):
         """Instantiate the window."""
         super().__init__(parent=parent)
         self.setWindowTitle(title)
+        #: Stored layout.
         self._layout = QVBoxLayout(self)
 
     def _finalize(self) -> None:

@@ -75,13 +75,14 @@ def populate_parameters_table_constants(
     """Print out the constants of model parameters in dedicated table.
 
     The :class:`.Parameter` attributes that are written are:
+
     - :attr:`.Parameter.name`
       - separated into a simple label and unit
     - :attr:`.Parameter.description`
     - :attr:`.Parameter.lower_bound`
     - :attr:`.Parameter.is_locked`
 
-    The method :methd:`.EEmiLibGUI._populate_parameters_table_values` is used
+    The method :meth:`.EEmiLibGUI._populate_parameters_table_values` is used
     to print out non-constant parameters, such as :attr:`.Parameter.value`.
 
     Parameters
@@ -117,16 +118,17 @@ def populate_parameters_table_constants(
 
 
 def create_evaluation_table() -> QTableWidget:
-    """Create the two-column table that displays evaluation results."""
+    """Create the three-columns table that displays evaluation results."""
     table = QTableWidget(0, 3)
     table.setHorizontalHeaderLabels(["Metric", "Unit", "Value"])
 
     header = table.horizontalHeader()
     assert header is not None, "Error when creating header"
-    for i in range(3):
-        header.setSectionResizeMode(i, QHeaderView.ResizeToContents)
+    header.setSectionResizeMode(QHeaderView.Stretch)
     table.setEditTriggers(QTableWidget.NoEditTriggers)
     table.setAlternatingRowColors(True)
+    table.setMaximumHeight(1000)
+    table.setMinimumHeight(200)
     return table
 
 

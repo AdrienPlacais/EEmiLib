@@ -1,4 +1,10 @@
-"""Define an object to store an emission yield."""
+"""Define an object to store an emission yield.
+
+.. todo::
+   Introduce a way to skip calculation of ``self._parameters``. May be
+   un-necessary for some temporary calculations.
+
+"""
 
 import logging
 from collections.abc import Callable
@@ -8,7 +14,7 @@ import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
 
-from eemilib.emission_data.emission_data import EmissionData, MissingDataError
+from eemilib.emission_data.emission_data import EmissionData
 from eemilib.emission_data.helper import (
     get_crossover_energies,
     get_emax_eymax,
@@ -23,10 +29,7 @@ from eemilib.util.constants import (
     ImplementedPop,
     md_ey,
 )
-
-
-class MissingNormalEmissionYieldError(MissingDataError):
-    """Error raised when emission yield at normal incidence would be needed."""
+from eemilib.util.exceptions import MissingNormalEmissionYieldError
 
 
 class EmissionYield(EmissionData):
@@ -97,7 +100,6 @@ class EmissionYield(EmissionData):
         self,
         plotter: Plotter,
         *args,
-        marker: str | None = "+",
         axes: T | None = None,
         grid: bool = True,
         population: ImplementedPop | None = None,
@@ -113,11 +115,9 @@ class EmissionYield(EmissionData):
             self.data,
             *args,
             axes=axes,
-            marker=marker,
             grid=grid,
             label=self.label,
             population=population,
-            is_model=False,
             **kwargs,
         )
 
@@ -136,22 +136,111 @@ class SEEY(EmissionYield):
         """Compute characteristic parameters."""
         super().__init__(data)
 
-        #: Energy at the maximum emission yield in :unit:`eV`.
-        self.e_max: float
-        #: Maximum emission yield.
-        self.ey_max: float
-        #: First cross-over energy in :unit:`eV`.
-        self.e_c1: float
-        #: Second cross-over energy in :unit:`eV`.
-        self.e_c2: float | None
-        self.e_max, self.ey_max, self.e_c1, self.e_c2 = self._parameters(
-            n_resample=1000
+        #: Number of sampling points for :attr:`._resampled_normal_ey`. Defines
+        #: the precision of characteristic points: cross-overs, maxima.
+        self._n_sample_points: int = 1000
+        #: Normal emission yield, resampled over :attr:`_n_sample_points`
+        #: points. Used to calculate characteristic points: cross-overs,
+        #: maxima.
+        #:
+        #: .. note::
+        #:    This re-sampling is performed even if the characteristic points
+        #:    are not calculated. Maybe we could make this lazier... But does
+        #:    it really affect execution time?
+        self._resampled_normal_ey = self._resample_normal_ey(
+            self._n_sample_points
         )
 
-    def _parameters(
-        self, n_resample: int = -1
-    ) -> tuple[float, float, float, float | None]:
-        """Compute the characteristics of the emission yield."""
+        #: Energy at the maximum emission yield in :unit:`eV`.
+        self._e_max: float | None = None
+        #: Maximum emission yield.
+        self._ey_max: float | None = None
+        #: First cross-over energy in :unit:`eV`.
+        self._e_c1: float | None = None
+        #: Second cross-over energy in :unit:`eV`.
+        self._e_c2: float | None = None
+
+    @property
+    def e_max(self) -> float:
+        """Get the energy of maximum emission yield.
+
+        Raises
+        ------
+        ValueError
+            When the internal :attr:`_e_max` is ``None``.
+
+        """
+        if self._e_max is None:
+            self._e_max, self._ey_max = self._get_maximum_ey(
+                self._resampled_normal_ey
+            )
+        if self._e_max is not None:
+            return self._e_max
+        raise ValueError("An ocurred trying to compute E_max")
+
+    @property
+    def ey_max(self) -> float:
+        """Get the maximum emission yield.
+
+        Raises
+        ------
+        ValueError
+            When the internal :attr:`_ey_max` is ``None``.
+
+        """
+        if self._ey_max is None:
+            self._e_max, self._ey_max = self._get_maximum_ey(
+                self._resampled_normal_ey
+            )
+        if self._ey_max is not None:
+            return self._ey_max
+        raise ValueError(
+            "An ocurred trying to compute maximum emission yield."
+        )
+
+    @property
+    def e_c1(self) -> float:
+        """Get the first cross-over energy.
+
+        Raises
+        ------
+        ValueError
+            When the internal :attr:`_e_c1` is ``None``.
+
+        """
+        if self._e_c1 is None:
+            self._e_c1, self._e_c2 = self._get_crossovers(
+                self._resampled_normal_ey, self.e_max
+            )
+        if self._e_c1 is not None:
+            return self._e_c1
+        raise ValueError("An ocurred trying to compute first cross-over.")
+
+    @property
+    def e_c2(self) -> float | None:
+        """Get the second cross-over energy."""
+        if self._e_c2 is None:
+            self._e_c1, self._e_c2 = self._get_crossovers(
+                self._resampled_normal_ey, self.e_max
+            )
+        return self._e_c2
+
+    def _resample_normal_ey(self, n_sample_points: int) -> pd.DataFrame:
+        """Resample the normal emission yield.
+
+        Used in the calculation of the curve's characteristic parameters.
+
+        Parameters
+        ----------
+        n_sample_points :
+            Number of sampling points for the output data frame.
+
+        Returns
+        -------
+            Holds the energy and corresponding normal emission yield,
+            intrapolated to ``n_sample_points``.
+
+        """
         if 0.0 not in self.angles:
             raise MissingNormalEmissionYieldError(
                 "We need normal incidence measurements to compute "
@@ -160,54 +249,68 @@ class SEEY(EmissionYield):
 
         normal_ey = self.data[[COL_ENERGY, COL_NORMAL]]
         assert isinstance(normal_ey, pd.DataFrame)
-        normal_ey = resample(normal_ey, n_resample)
-
-        e_max, sigma_max = self._get_maximum_ey(normal_ey)
-        e_c1, e_c2 = self._get_crossovers(normal_ey, e_max)
-        return e_max, sigma_max, e_c1, e_c2
+        normal_ey = resample(normal_ey, n_sample_points)
+        return normal_ey
 
     def _get_maximum_ey(
-        self, normal_ey: pd.DataFrame, tol_energy: float = 10.0
-    ) -> tuple[float, float]:
+        self, normal_ey: pd.DataFrame, tol_energy: float = 1e-2
+    ) -> tuple[float | None, float | None]:
         r"""Get the position and value of max emission yield.
 
         Parameters
         ----------
         normal_ey :
-            Holds energy of |PEs| as well as emission yield at nominal incidence.
+            Holds energy of |PEs| as well as emission yield at normal
+            incidence.
         tol_energy :
             If the :math:`E_{max}` is too close to the maximum |PE| energy, an
             warning is raised; tolerance is ``tol_energy``.
 
         Returns
         -------
-            :math:`E_{max}` and :math:`\sigma_{max}`.
+            :math:`E_{max}` and :math:`\sigma_{max}`. We return ``None`` if the
+            maximum emission yield is at the very end or at the start of the
+            emission yield array, as it would indicate that actual max lies
+            outside the given measurements.
 
         """
         e_max, sigma_max = get_emax_eymax(normal_ey)
         if abs(e_max - self.energies[-1]) < tol_energy:
-            logging.warning(
+            logging.error(
                 "E_max is very close to the last measured energy. Maybe "
-                "maximum emission yield was not reached?"
+                "maximum emission yield was not reached? Setting E_max and "
+                "sigma_max to None."
             )
+            return None, None
+
+        if abs(e_max - self.energies[0]) < tol_energy:
+            logging.error(
+                "E_max is very close to the first measured energy. Maybe "
+                "maximum emission yield was not reached? Setting E_max and "
+                "sigma_max to None."
+            )
+            return None, None
+
         return e_max, sigma_max
 
     def _get_crossovers(
         self,
         normal_ey: pd.DataFrame,
-        e_max: float,
+        e_max: float | None,
         min_e: float = 10.0,
         tol_ey: float = 0.01,
-    ) -> tuple[float, float | None]:
+    ) -> tuple[float | None, float | None]:
         """Compute first and second crossover energies.
 
         Parameters
         ----------
         normal_ey :
-            Holds energy of |PEs| as well as emission yield at nominal incidence.
+            Holds energy of |PEs| as well as emission yield at nominal
+            incidence.
         e_max :
             Energy of maximum emission yield. Used to discriminate
-            :math:`E_{c1}` from :math:`E_{c2}`.
+            :math:`E_{c1}` from :math:`E_{c2}`. If not provided, we return
+            ``None`` values for bot cross-over energies.
         min_e :
             Energy under which :math:`E_{c1}` is not searched. It is useful if
             emission yield data comes from a model which sets the emission
@@ -219,10 +322,14 @@ class SEEY(EmissionYield):
 
         Returns
         -------
-        tuple[float, float | None]
             First and second crossover energies.
 
         """
+        if e_max is None:
+            logging.error(
+                "E_max was not provided, so we cannot compute E_c1 and E_c2."
+            )
+            return None, None
         (ec1, ey_ec1), (ec2, ey_ec2) = get_crossover_energies(
             normal_ey, e_max, min_e
         )

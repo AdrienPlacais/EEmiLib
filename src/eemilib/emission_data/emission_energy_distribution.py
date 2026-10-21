@@ -189,7 +189,6 @@ class EmissionEnergyDistribution(EmissionData):
         self,
         plotter: Plotter,
         *args,
-        marker: str | None = "+",
         axes: T | None = None,
         grid: bool = True,
         population: ImplementedPop | None = None,
@@ -206,11 +205,9 @@ class EmissionEnergyDistribution(EmissionData):
             self.data,
             *args,
             axes=axes,
-            marker=marker,
             grid=grid,
             label=self.label,
             population=population,
-            is_model=False,
             e_pe=self.e_pe,
             **kwargs,
         )
@@ -328,9 +325,6 @@ class EBEEmissionEnergyDistribution(EmissionEnergyDistribution):
         (e.g. normalizing by this population's own peak value).
 
         """
-        logging.warning(
-            "Default norm was not overriden. Returning default value of 1.0"
-        )
         return 1.0
 
 
@@ -346,9 +340,6 @@ class IBEEmissionEnergyDistribution(EmissionEnergyDistribution):
         (e.g. normalizing by this population's own peak value).
 
         """
-        logging.warning(
-            "Default norm was not overriden. Returning default value of 1.0"
-        )
         return 1.0
 
 

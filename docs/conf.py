@@ -1,4 +1,9 @@
-"""Define configuration for Sphinx doc builder."""
+"""Define configuration for Sphinx doc builder.
+
+.. todo::
+   Encoding of ç in bilbiography
+
+"""
 
 import os
 import sys
@@ -56,7 +61,10 @@ html_sidebars = {"**": ["versions.html"]}
 
 # -- Check that there is no broken link --------------------------------------
 nitpicky = True
-nitpick_ignore = [("py:class", "numpy.float64")]
+nitpick_ignore = [
+    ("py:class", "numpy.float64"),
+    ("py:class", "numpy.typing.NDArray"),
+]
 intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
@@ -132,13 +140,15 @@ myst_gfm_only = True  # interpret markdown with github styling
 # -- Parameters sphinx-gallery ------------------------------------------------
 sphinx_gallery_conf = {
     "examples_dirs": "../examples",  # path to your example scripts
+    "filename_pattern": "/(cached_data|plot_)",
     "gallery_dirs": "auto_examples",  # path to where to save gallery generated output
     "within_subsection_order": ExplicitOrder(
         [
-            "../examples/plot_maxwellian.py",
-            "../examples/plot_chung.py",
-            "../examples/plot_vaughan.py",
-            "../examples/plot_furman_pivi.py",
+            "plot_maxwellian.py",
+            "plot_chung.py",
+            "plot_vaughan.py",
+            "plot_furman_pivi.py",
+            "cached_data.py",
             "*",
         ]
     ),

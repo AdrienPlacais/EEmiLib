@@ -7,6 +7,9 @@ Dionne1975`.
    Handle the different implementations like :class:`~eemilib.model.FurmanPivi`
    does.
 
+.. todo::
+   Test suite for this model.
+
 """
 
 # work_function :
@@ -29,7 +32,6 @@ from scipy.optimize import Bounds, least_squares
 
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
-from eemilib.emission_data.emission_data import MissingDataError
 from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
@@ -71,9 +73,7 @@ class Dionne(Model):
     is_3d = False
     is_dielectrics_compatible = False
     model_config = ModelConfig(
-        emission_yield_files=("SE",),
-        emission_energy_files=(),
-        emission_angle_files=(),
+        emission_yields=("SE",), emission_energies=(), emission_angles=()
     )
     initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = {
         "excitation_energy": {
@@ -119,6 +119,7 @@ class Dionne(Model):
             "description": "Exponent in the power law energy loss model.",
         },
     }
+    _url_doc_override = "manual/models/dionne"
 
     def __init__(
         self,
@@ -138,26 +139,14 @@ class Dionne(Model):
             :func:`.dionne.range_func` for more info.
 
         """
-        super().__init__(url_doc_override="manual/models/dionne")
+        super().__init__(parameters_values)
+        self.parameters = cast(DionneParameters, self.parameters)
         self._energy_loss_model: EnergyLossModel = energy_loss_model
 
-        self.parameters = cast(
-            DionneParameters,
-            {
-                name: Parameter(**cast(dict, kwargs))
-                for name, kwargs in self.initial_parameters.items()
-            },
-        )
-        self._generate_parameter_docs()
-        if parameters_values is not None:
-            self.set_parameters_values(parameters_values)
-
-        self._func = dionne_func
-
-    def get_data(
+    def compute_data(
         self,
-        population: ImplementedPop,
         data_type: ImplementedEmissionData,
+        population: ImplementedPop,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
         *args,
@@ -169,24 +158,24 @@ class Dionne(Model):
 
         """
         if population != "SE" or data_type != "Emission Yield":
-            return super().get_data(
-                population, data_type, energy, theta, *args, **kwargs
+            return super().compute_data(
+                data_type, population, energy, theta, *args, **kwargs
             )
         out = np.zeros(len(energy))
 
         for i, ene in enumerate(energy):
-            out[i] = self._func(ene, **self.parameters)
+            out[i] = dionne_func(ene, **self.parameters)
 
-        out_dict = {COL_ENERGY: energy, COL_NORMAL: out}
+        out_dict = {
+            COL_ENERGY: energy,
+            **{f"{the} [deg]": out for the in theta},
+        }
         return pd.DataFrame(out_dict)
 
-    def find_optimal_parameters(
+    def _find_optimal_parameters(
         self, data_matrix: DataMatrix, **kwargs
     ) -> None:
         """Extract main |SEEY| curve parameters from measure."""
-        if not data_matrix.has_all_mandatory_files(self.model_config):
-            raise MissingDataError("Files are not all provided.")
-
         emission_yield = data_matrix.seey
         assert emission_yield.population == "SE"
 

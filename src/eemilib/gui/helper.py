@@ -9,6 +9,7 @@ from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtGui import QDesktopServices, QDoubleValidator, QIntValidator
 from PyQt5.QtWidgets import (
     QCheckBox,
+    QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
@@ -26,37 +27,60 @@ from eemilib.model.parameter import Parameter
 class LinspaceEntries(NamedTuple):
     """Named values returned by ``setup_linspace_entries``."""
 
-    #: Layout object
-    layout: QHBoxLayout
+    #: Row title
+    label: QLabel
     #: Start of the linspace
     first: QWidget
     #: End of the linspace
     last: QWidget
     #: Number of linspace points
     n_points: QWidget
+    #: When checked, values are taken from measurements; the entries above
+    #: are greyed out
+    use_measured: QCheckBox
 
 
 def setup_linspace_entries(
     label: str,
     initial_values: tuple[float, float, int],
     max_value: float | None = None,
+    use_measured_text: str = "Match measurements",
 ) -> LinspaceEntries:
-    """Create an input to call np.linspace."""
-    layout = QHBoxLayout()
-    layout.addWidget(QLabel(label))
+    """Create the widgets of an input to call np.linspace."""
+    widgets = [
+        _linspace_entry(is_int, x_0=x_0, x_max=x_max)
+        for is_int, x_0, x_max in zip(
+            (False, False, True), initial_values, (max_value, max_value, None)
+        )
+    ]
 
-    widgets: list[QWidget] = []
-    for button_label, is_int, x_0, x_max in zip(
-        ("first", "last", "n_points"),
-        (False, False, True),
-        initial_values,
-        (max_value, max_value, None),
+    use_measured = QCheckBox(use_measured_text)
+    use_measured.setEnabled(False)
+
+    def grey_out_entries(checked: bool) -> None:
+        for widget in widgets:
+            widget.setEnabled(not checked)
+
+    use_measured.toggled.connect(grey_out_entries)
+
+    return LinspaceEntries(QLabel(label), *widgets, use_measured)
+
+
+def add_linspace_row(
+    grid: QGridLayout, row: int, entries: LinspaceEntries
+) -> None:
+    """Place ``entries`` on a row of ``grid``, with the sub-labels."""
+    grid.addWidget(entries.label, row, 0)
+    for i, (name, widget) in enumerate(
+        (
+            ("first", entries.first),
+            ("last", entries.last),
+            ("n_points", entries.n_points),
+        )
     ):
-        layout.addWidget(QLabel(button_label))
-        widgets.append(w := _linspace_entry(is_int, x_0=x_0, x_max=x_max))
-        layout.addWidget(w)
-
-    return LinspaceEntries(layout, *widgets)
+        grid.addWidget(QLabel(name), row, 1 + 2 * i)
+        grid.addWidget(widget, row, 2 + 2 * i)
+    grid.addWidget(entries.use_measured, row, 7)
 
 
 def _linspace_entry(

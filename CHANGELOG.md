@@ -13,10 +13,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.1]
 
+### Added
+
+- GUI:
+  - Buttons to clear file paths / loaded data.
+- `DataMatrix` has now two subclasses:
+  - `MeasuredDataMatrix`: a plain `DataMatrix` with nothing added, but
+    semantically clearer.
+  - `ModelledDataMatrix`: stored in `Model._cached_data_matrix`. Defines the
+    `ModelledDataMatrix.get_or_compute_data` method that is called by
+    `Model.get_or_compute_data` method.
+- `Model.get_or_compute_data` method, that returns cached data if it was already
+  calculated.
+- `Model.plot` accepts `None` as value for `energies` and `angles` arguments. In
+  this case, data is plotted using the energies from the `reference_data`, _ie_
+  the data the `Model` was plotted on.
+  - In GUI, check the corresponding "Use measured" checkboxes.
+
+### Changed
+
+- `DataMatrix._set_data` no longer needs the `data_type` and `population`
+  attribute, and the `emission_data: list[EmissionData]` argument no longer
+  needs to be an homogeneous list.
+
 ### Fixed
 
 - GUI automatic find of energy/angle limits was broken since
   `DataMatrix.get_data` returns a `list`.
+- Proper package version printed in the logs.
 
 ## [0.2.0] -- 2026-08-06
 
