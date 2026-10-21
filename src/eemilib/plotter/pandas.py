@@ -3,11 +3,8 @@
 import logging
 from typing import Any
 
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 from matplotlib.axes import Axes
-from numpy.typing import NDArray
 
 from eemilib.plotter.helper import explicit_column_names
 from eemilib.plotter.plotter import Plotter
@@ -22,18 +19,9 @@ from eemilib.util.constants import (
 class PandasPlotter(Plotter):
     """A :class:`.Plotter` using pandas lib."""
 
-    def __init__(self, gui: bool = False) -> None:
-        """Instantiate object.
-
-        Parameters
-        ----------
-        gui :
-            Activates interactive plotting if using GUI.
-
-        """
-        if gui:
-            plt.ion()
-        super().__init__(gui=gui)
+    def __init__(self) -> None:
+        """Instantiate object."""
+        super().__init__()
 
     def plot_emission_yield(
         self,
@@ -180,74 +168,43 @@ class PandasPlotter(Plotter):
     ) -> dict[str, Any]:
         """Resolve plot kwargs.
 
-        Priority is the following: ``population`` < ``is_model`` < ``kwargs``.
+        Priority is the following: ``kwargs`` > ``is_model`` > ``population``.
+
+        Parameters
+        ----------
+        population :
+            Plotted population. Defines the line color.
+        is_model :
+            Whether plotted data is measured or modelled. Defines whether
+            markers are plotted.
+        data_type :
+            Type of plotted data. Defines the linestyle.
+        kwargs :
+            User keyword arguments. They have priority other defaults.
+
+        Returns
+        -------
+            kwargs for the plot.
 
         """
         merged_kwargs = {}
         if data_type == "Emission Yield":
-            default_population_style = self.pop_styles_ey
+            style_by_pop = self.pop_styles_ey
         elif data_type == "Emission Energy":
-            default_population_style = self.pop_styles_emission_energy
+            style_by_pop = self.pop_styles_emission_energy
         else:
             logging.info(
-                f"{data_type = } not implemented. Setting a default population style."
+                f"{data_type = } not implemented. Setting a default population"
+                " style."
             )
-            default_population_style = self.pop_styles_emission_energy
+            style_by_pop = self.pop_styles_emission_energy
 
         if population is not None:
-            merged_kwargs.update(default_population_style[population])
+            merged_kwargs.update(style_by_pop[population])
         merged_kwargs.update(self.is_model_styles[is_model])
         merged_kwargs.update(kwargs)
         return merged_kwargs
 
-    def infer_energies(
-        self,
-        axes: Axes | None,
-        data_type: ImplementedEmissionData,
-        n_points: int = 5001,
-    ) -> NDArray[np.float64]:
-        """Create array of electrons energies from given axes.
 
-        Used for :class:`.Model` plots, in order to keep measurements maximum
-        energy.
-
-        Parameters
-        ----------
-        axes :
-            Pre-existing axes; should contain measurement data.
-        data_type :
-            Type of plotted data.
-        n_points :
-            Number of points for the x axis.
-
-        Returns
-        -------
-            Array of energies ready to use by a :class:`.Model`. Spans from
-            minimum x-data up to maximum x-data across every
-            :class:`matplotlib.lines.Line2D` in the given |Axes|. If no data
-            was plotted, we use the current ``axes`` limits, though it will
-            generally be meaningless.
-
-        """
-        if data_type == "Emission Angle":
-            raise NotImplementedError(
-                "Currently cannot pick up energies for emission angle "
-                "distribution, because its xdata is not energies but angles."
-            )
-        if axes is None:
-            raise ValueError("Cannot infer energies if ``axes`` is ``None``.")
-        lines = axes.get_lines()
-        if not lines:
-            logging.warning(
-                "Given axes is empty. Its x-limits are probably meaningless. "
-                "Inferring x limits from it anyway."
-            )
-            xmin, xmax = axes.get_xlim()
-
-        else:
-            xmin = min([np.nanmin(line.get_data()[0]) for line in lines])
-            xmax = max([np.nanmax(line.get_data()[0]) for line in lines])
-
-        if xmin < 0:
-            xmin = 0.0
-        return np.linspace(xmin, xmax, n_points)
+class GUIPandasPlotter(PandasPlotter):
+    """A :class:`.PandasPlotter` handling plot interactivity."""

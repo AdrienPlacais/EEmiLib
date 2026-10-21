@@ -1,6 +1,7 @@
 """Define a model parameter."""
 
 import logging
+from collections.abc import Callable
 
 import numpy as np
 
@@ -76,12 +77,15 @@ class Parameter:
         self.markdown = markdown
         self.unit = unit
         self._value = value
+        #: Callables invoked whenever :attr:`value` changes.
+        self._on_change: list[Callable[[], None]] = []
         #: Raw lower bound for fitting, as provided by the user. The
         #: actual :attr:`lower_bound` may be different if :attr:`.is_locked` is
         #: ``True``, because in this case the bounds are tightly set around
         #: current value.
         self._lower_bound = lower_bound
         self._upper_bound = upper_bound
+        #: Store a small description of the parameter.
         self.description = description
         #: Whether the parameter is allowed to change values during the fit.
         #: Concretely, setting this to ``True`` sets very tight lower and upper
@@ -207,18 +211,25 @@ class Parameter:
                 value = float(value[0])
             else:
                 raise ValueError(f"Trying to set unsupported {value = }")
+
         if self._value == value:
             logging.debug(f"{self.name:<52}: is already {value}.")
-        else:
-            debug = (
-                f"{self.name:<52}: updating {self._value:<35} -> {value:<35}"
-            )
-            if abs(value - self.lower_bound) < 0.5 * self._tol:
-                debug += " new value very close to lower bound "
-            if abs(value - self.upper_bound) < 0.5 * self._tol:
-                debug += " new value very close to upper bound "
-            logging.debug(debug)
+            return
+
+        debug = f"{self.name:<52}: updating {self._value:<35} -> {value:<35}"
+        if abs(value - self.lower_bound) < 0.5 * self._tol:
+            debug += " new value very close to lower bound "
+        if abs(value - self.upper_bound) < 0.5 * self._tol:
+            debug += " new value very close to upper bound "
+        logging.debug(debug)
+
         self._value = value
+        for callback in self._on_change:
+            callback()
+
+    def subscribe(self, callback: Callable[[], None]) -> None:
+        """Register a callback to run whenever :attr:`value` changes."""
+        self._on_change.append(callback)
 
     @property
     def lower_bound(self) -> float:
@@ -271,3 +282,33 @@ class Parameter:
         if not self.is_locked:
             return
         self.is_locked = False
+
+
+class ParameterSet(dict[str, Parameter]):
+    """A set of :class:`Parameter` for a :class:`.Model`.
+
+    .. note::
+       Do not forget to ``cast`` the actual parameters to a typed dict for the
+       static checker to work correctly. Example:
+
+       .. code-block::
+
+          self.parameters = cast(
+             VaughanParameters,  # a ``TypedDict``
+             ParametersSet(
+                {
+                   name: Parameter(**cast(dict, kwargs))
+                   for name, kwargs in self.initial_parameters.items()
+                }
+             )
+          )
+
+    """
+
+    def __init__(
+        self, parameters: dict[str, Parameter], on_change: Callable[[], None]
+    ) -> None:
+        """Wire the ``on_change`` callback to every :class:`Parameter`."""
+        super().__init__(parameters)
+        for parameter in self.values():
+            parameter.subscribe(on_change)

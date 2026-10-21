@@ -16,10 +16,9 @@ This script showcases:
 # sphinx_gallery_thumbnail_number = 1
 
 import matplotlib.pyplot as plt
-import numpy as np
 
 from eemilib.data.cu.emission_yield import teey_cu_1_eroded as filepath
-from eemilib.emission_data import DataMatrix
+from eemilib.emission_data._data_matrix import MeasuredDataMatrix
 from eemilib.loader import PandasLoader
 from eemilib.model import Vaughan
 from eemilib.plotter import PandasPlotter
@@ -27,26 +26,21 @@ from eemilib.plotter import PandasPlotter
 # %%
 # Load data
 # ---------
-data_matrix = DataMatrix()
-data_matrix.set_files(filepath, population="all", data_type="Emission Yield")
-data_matrix.load_data(PandasLoader())
+measured_data = MeasuredDataMatrix()
+measured_data.set_files(filepath, population="all", data_type="Emission Yield")
+measured_data.load_data(PandasLoader())
 plotter = PandasPlotter()
 
 # %%
 # Basic fitting
 # -------------
-axes_1 = data_matrix.plot(
+axes_1 = measured_data.plot(
     plotter, population="all", data_type="Emission Yield"
 )
 model_classic = Vaughan()
-model_classic.find_optimal_parameters(data_matrix)
+model_classic.find_optimal_parameters(measured_data)
 model_classic.plot(
-    plotter,
-    population="all",
-    data_type="Emission Yield",
-    energies=np.linspace(0, 1000, 1001),
-    angles=np.linspace(0, 60, 4),
-    axes=axes_1,
+    plotter=plotter, population="all", data_type="Emission Yield", axes=axes_1
 )
 plt.show()
 
@@ -69,11 +63,11 @@ model_cst = Vaughan(implementation="CST")
 
 models = (model_classic, model_spark, model_cst)
 for model in models[1:]:
-    model.find_optimal_parameters(data_matrix)
+    model.find_optimal_parameters(measured_data)
 
 # %%
 # Plot only at normal incidence to keep the plot readable.
-axes_2 = data_matrix.plot(
+axes_2 = measured_data.plot(
     plotter, population="all", data_type="Emission Yield"
 )
 colors = ("black", "grey", "cyan")
@@ -83,8 +77,6 @@ for model, color, ls in zip(models, colors, linestyles):
         plotter,
         population="all",
         data_type="Emission Yield",
-        energies=np.linspace(0, 1000, 1001),
-        angles=np.linspace(0, 0, 1),
         axes=axes_2,
         color=color,
         ls=ls,

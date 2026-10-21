@@ -15,10 +15,9 @@ This script showcases:
 # sphinx_gallery_thumbnail_number = 4
 
 import matplotlib.pyplot as plt
-import numpy as np
 
 from eemilib.data.ag.emission_energy import distrib_70eV, distrib_100eV
-from eemilib.emission_data import DataMatrix
+from eemilib.emission_data._data_matrix import MeasuredDataMatrix
 from eemilib.loader import PandasLoader
 from eemilib.model import ChungEverhart
 from eemilib.plotter import PandasPlotter
@@ -33,13 +32,15 @@ filepaths = (distrib_70eV, distrib_100eV)
 # ---------
 # We associate the filepaths from :mod:`eemilib.data.ag.emission_energy` to
 # the emission energy distribution of |EEs|.
-data_matrix = DataMatrix()
-data_matrix.set_files(filepaths, population="all", data_type="Emission Energy")
+measured_data = MeasuredDataMatrix()
+measured_data.set_files(
+    filepaths, population="all", data_type="Emission Energy"
+)
 
 # %%
 # We create a :class:`.Loader` that supports these files and load the data:
 loader = PandasLoader()
-data_matrix.load_data(loader)
+measured_data.load_data(loader)
 
 # %%
 # Create a default :class:`.Plotter` object:
@@ -48,7 +49,7 @@ plotter = PandasPlotter()
 # %%
 # We set ``group_by_pe=True`` to create one plot per energy distribution file,
 # *i.e.* one per |PE| impact energy:
-axes_1 = data_matrix.plot(
+axes_1 = measured_data.plot(
     plotter, population="all", data_type="Emission Energy", group_by_pe=True
 )
 plt.show()
@@ -64,19 +65,17 @@ __import__("pprint").pprint(axes_1)
 # Create a default :class:`.model.ChungEverhart` instance, and find the
 # :math:`W_f` parameter that works best for all given energies:
 model = ChungEverhart()
-model.find_optimal_parameters(data_matrix)
+model.find_optimal_parameters(measured_data)
 
 # %%
 # Plot the modelled emission energy, re-using the previous ``axes``:
-axes_2 = data_matrix.plot(
+axes_2 = measured_data.plot(
     plotter, population="all", data_type="Emission Energy", group_by_pe=True
 )  # Create new Figure from scratch only for ``sphinx_gallery``
 _ = model.plot(
     plotter,
     population="SE",
     data_type="Emission Energy",
-    energies=np.linspace(0, 100, 201),
-    angles=np.linspace(0, 0, 1),
     axes=axes_2,
     group_by_pe=True,
     color="red",
@@ -89,15 +88,13 @@ plt.show()
 #    for the :class:`.Model` plot.
 #    ``axes`` is then optional.
 #
-axes_3 = data_matrix.plot(
+axes_3 = measured_data.plot(
     plotter, population="all", data_type="Emission Energy", group_by_pe=True
 )  # Create new Figure from scratch only for ``sphinx_gallery``
 _ = model.plot(
     plotter,
     population="SE",
     data_type="Emission Energy",
-    energies=np.linspace(0, 50, 201),
-    angles=np.linspace(0, 0, 1),
     axes=axes_3,
     e_pes=[50, 70],
     group_by_pe=True,

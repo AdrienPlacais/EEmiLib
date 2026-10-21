@@ -64,9 +64,9 @@ def resample(ey: pd.DataFrame, n_interp: int = -1) -> pd.DataFrame:
 
 def get_emax_eymax(normal_ey: pd.DataFrame) -> tuple[float, float]:
     """Get energy and max emission yields."""
-    ser_max = normal_ey.loc[normal_ey[COL_NORMAL].idxmax()]
-    e_max = ser_max[COL_ENERGY]
-    ey_max = ser_max[COL_NORMAL]
+    e_max_ey_max = normal_ey.loc[normal_ey[COL_NORMAL].idxmax()]
+    e_max = e_max_ey_max[COL_ENERGY]
+    ey_max = e_max_ey_max[COL_NORMAL]
     return e_max, ey_max
 
 

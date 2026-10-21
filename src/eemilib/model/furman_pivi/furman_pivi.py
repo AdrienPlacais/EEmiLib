@@ -31,7 +31,6 @@ from scipy.optimize import least_squares
 
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
-from eemilib.emission_data.emission_data import MissingDataError
 from eemilib.emission_data.emission_energy_distribution import (
     AllEmissionEnergyDistribution,
     EmissionEnergyDistribution,
@@ -64,7 +63,6 @@ from eemilib.model.furman_pivi.se import (
     set_number_of_secondaries_probability_function,
 )
 from eemilib.model.model import Model
-from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
     COL_ENERGY,
     ImplementedEmissionData,
@@ -88,9 +86,9 @@ class FurmanPivi(Model):
     is_3d = True
     is_dielectrics_compatible = False
     model_config = ModelConfig(
-        emission_yield_files=("all",),
-        emission_energy_files=("all",),
-        emission_angle_files=(),
+        emission_yields=("all",),
+        emission_energies=("all",),
+        emission_angles=(),
     )
     initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = (
         INITIAL_FURMAN_PIVI_PARAMETERS
@@ -99,6 +97,7 @@ class FurmanPivi(Model):
         "distribution": FURMAN_PIVI_DISTRIBUTIONS,
         "normalization": FURMAN_PIVI_NORMALIZATIONS,
     }
+    _url_doc_override = "manual/models/furman_pivi"
 
     def __init__(
         self,
@@ -123,22 +122,10 @@ class FurmanPivi(Model):
             override the default values set in ``initial_parameters``.
 
         """
-        super().__init__(url_doc_override="manual/models/furman_pivi")
-
         for parameters_kwargs in self.initial_parameters.values():
             add_furman_pivi_notation(parameters_kwargs)
-
-        self.parameters = cast(
-            FurmanPiviParameters,
-            {
-                name: Parameter(**cast(dict, kwargs))
-                for name, kwargs in self.initial_parameters.items()
-            },
-        )
-
-        self._generate_parameter_docs()
-        if parameters_values is not None:
-            self.set_parameters_values(parameters_values)
+        super().__init__(parameters_values)
+        self.parameters = cast(FurmanPiviParameters, self.parameters)
 
         self.set_implementation("distribution", distribution)
         self._proba_emit_n_se: PROBA_EMIT_N_SE
@@ -253,10 +240,10 @@ class FurmanPivi(Model):
         }
         return pd.DataFrame(out_dict)
 
-    def get_data(
+    def compute_data(
         self,
-        population: ImplementedPop,
         data_type: ImplementedEmissionData,
+        population: ImplementedPop,
         energy: NDArray[np.float64],
         theta: NDArray[np.float64],
         e_pe: float | None = None,
@@ -286,8 +273,8 @@ class FurmanPivi(Model):
 
         """
         if data_type == "Emission Angle":
-            return super().get_data(
-                population, data_type, energy, theta, *args, **kwargs
+            return super().compute_data(
+                data_type, population, energy, theta, *args, **kwargs
             )
 
         if data_type == "Emission Energy":
@@ -296,14 +283,14 @@ class FurmanPivi(Model):
             )
             if data is not None:
                 return data
-            return super().get_data(
-                population, data_type, energy, theta, *args, **kwargs
+            return super().compute_data(
+                data_type, population, energy, theta, *args, **kwargs
             )
 
         ey_func = EMISSION_YIELD_FUNCS.get(population)
         if ey_func is None:
-            return super().get_data(
-                population, data_type, energy, theta, *args, **kwargs
+            return super().compute_data(
+                data_type, population, energy, theta, *args, **kwargs
             )
         out = np.zeros((len(energy), len(theta)))
         for i, ene in enumerate(energy):
@@ -316,7 +303,7 @@ class FurmanPivi(Model):
         }
         return pd.DataFrame(out_dict)
 
-    def find_optimal_parameters(
+    def _find_optimal_parameters(
         self, data_matrix: DataMatrix, **kwargs
     ) -> None:
         """Fit all Furman and Pivi parameters on measurements.
@@ -330,9 +317,6 @@ class FurmanPivi(Model):
             Unused kwargs.
 
         """
-        if not data_matrix.has_all_mandatory_files(self.model_config):
-            raise MissingDataError("Files are not all provided.")
-
         teeys = data_matrix.get_data("Emission Yield", "all")
         self.find_normal_ey_params(teeys)
         self.find_oblique_ey_params(teeys)
@@ -499,7 +483,9 @@ class FurmanPivi(Model):
     # =========================================================================
     # 4. Post
     # =========================================================================
-    def evaluate(self, data_matrix: DataMatrix) -> dict[str, float]:
+    def evaluate(
+        self, data_matrix: DataMatrix | None = None
+    ) -> dict[str, float]:
         """Evaluate the quality of the model using Fil criterions.
 
         Fil criterions :cite:`Fil2016a,Fil2020` are adapted to |TEEY| models.

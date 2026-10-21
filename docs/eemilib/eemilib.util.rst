@@ -13,6 +13,7 @@ Submodules
    :maxdepth: 5
 
    eemilib.util.constants
+   eemilib.util.exceptions
    eemilib.util.helper
    eemilib.util.log_manager
    eemilib.util.markdown

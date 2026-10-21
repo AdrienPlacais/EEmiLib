@@ -86,7 +86,7 @@ data_matrix = DataMatrix()
 data_matrix.set_files(
     filepath="path/to/a/TEEY/file.csv",
     population="all",
-    data_type="Emission Yield"
+    data_type="Emission Yield",
 )
 
 loader = PandasLoader()
@@ -97,9 +97,7 @@ model.find_optimal_parameters(data_matrix)
 
 plotter = PandasPlotter()
 axes = data_matrix.plot(
-    plotter=plotter,
-    population="all",
-    data_type="Emission Yield"
+    plotter=plotter, population="all", data_type="Emission Yield"
 )
 model.plot(
     plotter=plotter,
@@ -116,20 +114,18 @@ documentation](https://eemilib.readthedocs.io/en/latest/auto_examples/index.html
 
 ## Roadmap/To-Do
 
-- [x] Document abbreviations
 - GUI:
-  - [ ] Better handling of multiple `Plot data` and `Plot model` buttons push.
+  - [ ] Plot:
     - [ ] Let user choose `group_by_pe` and `e_pes` for `"Emission Energy"`
           plots.
-  - [x] Display quantitative criteria to assess model quality (e.g., Nicolas
-        Fil's criterion)
-  - [x] Display derived quantities such as crossover energies, maximum TEEY,
-        etc.
+    - [ ] Plot window should be completely separated.
+    - [ ] Changing parameter values should update the plot.
   - [ ] Let user load and plot files that are not needed for current `Model`, so
         they can compare `Model` data with tabulated data easily.
+  - [ ] `Parameters` :
+    - [ ] Unlocking should update the displayed bounds.
+  - [ ] Selecting `FurmanPivi` takes too long!
 - CI:
-  - [x] `PyPI` release.
-  - [x] Update installation instructions.
   - [ ] Allow execution on online Docker ?
 - [ ] `Export` buttons
   - [ ] Tabulated model data.
@@ -142,13 +138,14 @@ documentation](https://eemilib.readthedocs.io/en/latest/auto_examples/index.html
   ```
 
 - API:
-  - [x] `Model.display_parameters()` method for nice printing.
   - [ ] Import/export model configuration with a `TOML`.
-  - [ ] Make `Model` store its data in a `DataMatrix`?
   - [ ] Should every `Model` be fitted on `all` population?
+  - [ ] Locking should remove optimization variables, rather than setting tiny
+        bounds.
+  - [ ] Energy distributions handling is inconsistent, in particular wrt the
+        norm.
 - If it proves useful:
   - [ ] Handle experimental data with error bars
   - [ ] Add control over interpolation of loaded experimental data
   - [ ] Optional smoothing of measured data
-  - [x] Different line styles/colors for different populations.
   - [ ] Ready-to-use interface for PIC codes.
