@@ -27,6 +27,7 @@ from typing import Literal, cast
 
 import numpy as np
 from numpy.typing import NDArray
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -39,7 +40,6 @@ from PyQt5.QtWidgets import (
     QRadioButton,
     QTableWidget,
     QTableWidgetItem,
-    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -131,16 +131,19 @@ class EEmiLibGUI(QMainWindow):
         super().__init__()
         self.setWindowTitle("EEmiLib")
 
-        #: Holds all widgets of first tab
+        #: Holds all widgets of first window
         self.data_model_layout: QVBoxLayout
-        #: Holds all widgets of second tab
+
+        #: Separate window holding all plot widgets
+        self.plot_window: QWidget
+        #: Holds all widgets of second window
         self.plot_layout: QVBoxLayout
         self._setup_main_structure()
 
         #: Maps a dropdown name to its definition
         self.dropdowns: dict[Dropdowns, DropdownEntry] = {}
 
-        # Tab 1: Data & Model
+        # Window 1: Data & Model
         self.file_lists: list[list[None | QListWidget]]
         self._setup_file_selection_matrix()
 
@@ -157,7 +160,10 @@ class EEmiLibGUI(QMainWindow):
         self.evaluators_table: QTableWidget
         self._setup_model_evaluation()
 
-        # Tab 2: Plot
+        #: Add button to re-show the plot window to the data model layout
+        self._setup_show_plot_button()
+
+        # Window 2: Plot
         #: Stores the current figure(s).
         self.plot_area: TabbedPlotArea
         self._setup_plot_area()
@@ -205,34 +211,29 @@ class EEmiLibGUI(QMainWindow):
     # Main tabs organization
     # =========================================================================
     def _setup_main_structure(self) -> None:
-        """Organize the GUI into tabs.
+        """Split the GUI into a main window and a plot window.
 
-        1. First tab holds:
+        1. The main window holds:
             i. A :class:`.DataMatrix`;
             ii. :class:`.Model` parameters.
-        2. Second tab holds:
+        2. The plot window holds:
             i. The :class:`.Plotter` parameters.
 
-        Sets :attr:`data_model_layout` and :attr:`plot_layout`.
+        Sets :attr:`data_model_layout`, :attr:`plot_window` and
+        :attr:`plot_layout`.
 
         """
         central = QWidget()
         self.setCentralWidget(central)
-        main_layout = QVBoxLayout(central)
+        self.data_model_layout = QVBoxLayout(central)
 
-        tab = QTabWidget()
-        main_layout.addWidget(tab)
-
-        data_model_tab = QWidget()
-        self.data_model_layout = QVBoxLayout(data_model_tab)
-        tab.addTab(data_model_tab, "Data && Model")
-
-        plot_tab = QWidget()
-        self.plot_layout = QVBoxLayout(plot_tab)
-        tab.addTab(plot_tab, "Plot")
+        self.plot_window = QWidget(self, Qt.Window)
+        self.plot_window.setWindowTitle("EEmiLib - Plot")
+        self.plot_window.resize(900, 700)
+        self.plot_layout = QVBoxLayout(self.plot_window)
 
     # =========================================================================
-    # Tab 1 - File selection
+    # Window 1 - File selection
     # =========================================================================
     def _setup_file_selection_matrix(self) -> None:
         """Create the 4 * 3 matrix to select the files to load."""
@@ -259,7 +260,7 @@ class EEmiLibGUI(QMainWindow):
                 self._set_list_widget_state(self.file_lists[i][j], is_required)
 
     # =========================================================================
-    # Tab 1 - Load files
+    # Window 1 - Load files
     # =========================================================================
     def _setup_loader_dropdown(self) -> None:
         """Set the :class:`.Loader` dropdown."""
@@ -324,7 +325,7 @@ class EEmiLibGUI(QMainWindow):
             self._fill_plotting_ranges()
 
     # =========================================================================
-    # Tab 1 - Clear buttons
+    # Window 1 - Clear buttons
     # =========================================================================
     def _setup_clear_buttons(self) -> None:
         """Set two buttons to clear paths and data."""
@@ -341,7 +342,7 @@ class EEmiLibGUI(QMainWindow):
         self.data_model_layout.addLayout(layout)
 
     # =========================================================================
-    # Tab 1 - Model
+    # Window 1 - Model
     # =========================================================================
     def _setup_model_configuration(self) -> None:
         """Orchestrate :class:`.Model` :class:`.Parameter` related interfaces."""
@@ -460,7 +461,7 @@ class EEmiLibGUI(QMainWindow):
             )
 
     # =========================================================================
-    # Tab 1 - Model evaluation
+    # Window 1 - Model evaluation
     # =========================================================================
     def _setup_model_evaluation(self) -> None:
         """Create the display of the model evaluations.
@@ -492,8 +493,19 @@ class EEmiLibGUI(QMainWindow):
         populate_evaluators_table(self.evaluators_table, evaluations)
 
     # =========================================================================
-    # Tab 2 - Plot
+    # Window 2 - Plot
     # =========================================================================
+    def _setup_show_plot_button(self) -> None:
+        """Add a button to re-open the plot window."""
+        button = QPushButton("Show plot window")
+        button.clicked.connect(self._show_plot_window)
+        self.data_model_layout.addWidget(button)
+
+    def _show_plot_window(self) -> None:
+        """Open the plot window."""
+        self.plot_window.show()
+        self.plot_window.raise_()
+
     def _setup_plot_area(self) -> None:
         """Create the tabbed canvas area.
 
@@ -935,6 +947,7 @@ def main() -> None:
     app = QApplication(sys.argv)
     window = EEmiLibGUI()
     window.show()
+    window.plot_window.show()
     sys.exit(app.exec_())
 
 

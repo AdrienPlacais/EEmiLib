@@ -118,7 +118,7 @@ documentation](https://eemilib.readthedocs.io/en/latest/auto_examples/index.html
   - [ ] Plot:
     - [ ] Let user choose `group_by_pe` and `e_pes` for `"Emission Energy"`
           plots.
-    - [ ] Plot window should be completely separated.
+    - [x] Plot window should be completely separated.
     - [ ] Changing parameter values should update the plot.
   - [ ] Let user load and plot files that are not needed for current `Model`, so
         they can compare `Model` data with tabulated data easily.
