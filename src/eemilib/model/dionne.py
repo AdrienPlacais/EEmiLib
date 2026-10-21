@@ -28,7 +28,6 @@ from typing import Any, ClassVar, Literal, TypedDict, cast
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
-from scipy.optimize import Bounds, least_squares
 
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
@@ -36,7 +35,6 @@ from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
     COL_ENERGY,
-    COL_NORMAL,
     ImplementedEmissionData,
     ImplementedPop,
 )
@@ -175,17 +173,19 @@ class Dionne(Model):
     def _find_optimal_parameters(
         self, data_matrix: DataMatrix, **kwargs
     ) -> None:
-        """Extract main |SEEY| curve parameters from measure.
-
-        .. todo::
-            Getting optimizable parameters is very brittle, and does not take
-            ``unlocked`` into account.
-
-        """
+        """Extract main |SEEY| curve parameters from measure."""
         emission_yield = data_matrix.seey
         assert emission_yield.population == "SE"
 
-        # Not very robust, but should be same order as in `_residue` func
+        def _residue(kwargs: dict[str, float]) -> NDArray[np.float64]:
+            measured = emission_yield.normal_data
+            predicted = dionne_func(
+                emission_yield.energies,
+                energy_loss_model="Power law",
+                **kwargs,
+            )
+            return measured - predicted
+
         keys = (
             "excitation_energy",
             "diffusion_length",
@@ -193,28 +193,7 @@ class Dionne(Model):
             "power_law_scale",
             "power_law_exponent",
         )
-        params = [self.parameters[k] for k in keys]
-        if any(p.is_locked for p in params):
-            raise ValueError
-        x0 = [float(param) for param in params]
-        bounds = Bounds(
-            np.array([param.lower_bound for param in params]),
-            np.array([param.upper_bound for param in params]),
-        )
-        # fun = partial(_residue, energy_loss_model=self._energy_loss_model)
-
-        lsq = least_squares(
-            fun=_residue,
-            x0=x0,
-            bounds=bounds,
-            args=(
-                emission_yield.data[COL_ENERGY].to_numpy(),
-                emission_yield.data[COL_NORMAL].to_numpy(),
-            ),
-        )
-
-        optimized_values = {k: v for k, v in zip(keys, lsq.x, strict=True)}
-        self.set_parameters_values(optimized_values)
+        self._fit(keys, _residue)
 
     def evaluate(self, data_matrix: DataMatrix) -> dict[str, float]:
         """Evaluate the quality of the model using Fil criterions.
@@ -384,24 +363,6 @@ def transport(
 
     """
     return diffusion_length * (1 - np.exp(-range / diffusion_length))
-
-
-def _residue(
-    x: tuple[float, float, float, float, float],
-    ene: NDArray[np.float64],
-    measured: NDArray[np.float64],
-) -> NDArray[np.float64]:
-    modelled = dionne_func(
-        ene=ene,
-        excitation_energy=x[0],
-        diffusion_length=x[1],
-        escape_probability=x[2],
-        power_law_scale=x[3],
-        power_law_exponent=x[4],
-        energy_loss_model="Power law",
-    )
-    assert isinstance(modelled, np.ndarray)
-    return modelled - measured
 
 
 # Append dynamically generated docs to the module docstring
