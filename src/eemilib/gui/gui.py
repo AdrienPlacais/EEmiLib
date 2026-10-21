@@ -347,6 +347,9 @@ class EEmiLibGUI(QMainWindow):
     def _setup_model_configuration(self) -> None:
         """Orchestrate :class:`.Model` :class:`.Parameter` related interfaces."""
         model_group, self.parameters_table = model_configuration()
+        self.parameters_table.itemChanged.connect(
+            self._update_parameter_value_from_table
+        )
         self.data_model_layout.addWidget(model_group)
 
     def _setup_model_dropdown(self) -> None:
@@ -406,9 +409,6 @@ class EEmiLibGUI(QMainWindow):
         populate_parameters_table_constants(
             self.parameters_table, self.model.parameters
         )
-        self.parameters_table.itemChanged.connect(
-            self._update_parameter_value_from_table
-        )
 
     def _update_parameter_value_from_table(
         self, item: QTableWidgetItem
@@ -420,8 +420,8 @@ class EEmiLibGUI(QMainWindow):
         if attr not in updatable_attr:
             return
 
-        name = self.parameters_table.cellWidget(row, 0).objectName()
-        parameter = self.model.parameters.get(name)
+        name = list(self.model.parameters)[row]
+        parameter = self.model.parameters[name]
 
         if parameter:
             try:
