@@ -5,9 +5,6 @@
     Export/Import settings
 
 .. todo::
-   Make plot tab draggable so we can have model values and plot side by side.
-
-.. todo::
    Make model plot update on parameter value change (``Sync`` checkbox).
 
 .. note::

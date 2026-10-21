@@ -740,23 +740,13 @@ class DataMatrix:
             distrib.rescale(objective_yield=expected_area, norm=1.0)
 
     def clear_data(self) -> None:
-        """Clear loaded data.
-
-        .. todo::
-           Wire this to a button in the GUI.
-
-        """
+        """Clear loaded data."""
         self.data_matrix = [
             [[] for _ in range(_N_COLS)] for _ in range(_N_ROWS)
         ]
 
     def clear_filepaths(self) -> None:
-        """Clear stored filepaths.
-
-        .. todo::
-           Wire this to a button in the GUI.
-
-        """
+        """Clear stored filepaths."""
         self.files_matrix = [
             [[] for _ in range(_N_COLS)] for _ in range(_N_ROWS)
         ]
