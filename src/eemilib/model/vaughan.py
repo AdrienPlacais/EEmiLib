@@ -234,7 +234,7 @@ class Vaughan(Model):
                 override_lock=True,
             )
             self.parameters["E_0"].unlock()
-            e_0 = self._E_0_matching(E_c1=self.parameters["E_c1"])
+            e_0 = self._E_0_matching(E_c1=self.parameters["E_c1"].value)
             if np.isnan(e_0):
                 return
             self.set_parameter_value("E_0", e_0, override_lock=True)
@@ -315,6 +315,7 @@ class Vaughan(Model):
         Fil criterions :cite:`Fil2016a,Fil2020` are adapted to |TEEY| models.
 
         """
+        data_matrix = self._resolve_data_matrix(data_matrix)
         return self._evaluate_for_teey_models(data_matrix)
 
 
