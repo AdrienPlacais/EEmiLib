@@ -7,13 +7,11 @@ You will need to provide emission energy distribution measurements.
 
 """
 
-import logging
 from typing import Any, ClassVar, Literal, TypedDict, cast
 
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
-from scipy.optimize import Bounds, least_squares
 
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
@@ -21,7 +19,6 @@ from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
     COL_ENERGY,
-    COL_NORMAL,
     ImplementedEmissionData,
     ImplementedPop,
 )
@@ -168,37 +165,22 @@ class ChungEverhart(Model):
         if not distributions:
             raise MissingDataError(f"Missing emission energy for {population}")
 
-        def _aggregate_residue(w_f: float) -> NDArray[np.float64]:
-            """Compute residues on all distributions.
+        def _aggregate_residue(
+            kwargs: dict[str, float],
+        ) -> NDArray[np.float64]:
+            """Compute residues on all distributions."""
+            residuals = []
+            for distrib in distributions:
+                measured = distrib.normal_data
+                predicted = chung_everhart_func(distrib.energies, **kwargs)
+                residuals.append(predicted - measured)
+            return np.concatenate(residuals)
 
-            .. todo::
-               Use distribution.energies, distribution.normal_data in _residue?
-
-            """
-            return np.concatenate(
-                [
-                    _residue(
-                        w_f,
-                        distribution.data[COL_ENERGY].to_numpy(),
-                        distribution.data[COL_NORMAL].to_numpy(),
-                        # distribution.energies, distribution.normal_data
-                    )
-                    for distribution in distributions
-                ]
-            )
-
-        param = self.parameters["W_f"]
-        if not param.is_locked:
-            lsq = least_squares(
-                fun=_aggregate_residue,
-                x0=param,
-                bounds=Bounds(param.lower_bound, param.upper_bound),
-            )
-
-            if not lsq.success:
-                logging.error(f"The fit failed with message:\n{lsq.message}")
-            self.set_parameter_value("W_f", lsq.x[0])
-        self.set_parameter_value("norm", _chung_everhart_norm(param.value))
+        keys = ("W_f",)
+        self._fit(keys, _aggregate_residue)
+        self.set_parameter_value(
+            "norm", _chung_everhart_norm(self.parameters["W_f"].value)
+        )
 
 
 def _chung_everhart_norm(W_f: Parameter | float) -> float:
@@ -215,15 +197,6 @@ def chung_everhart_func(
     """Compute the energy distribution."""
     norm = norm if norm is not None else _chung_everhart_norm(W_f)
     return norm * ene / (ene + W_f) ** 4
-
-
-def _residue(
-    W_f: Parameter | float,
-    ene: NDArray[np.float64],
-    measured: NDArray[np.float64],
-) -> NDArray[np.float64]:
-    """Compute array of residues between model and measurements."""
-    return chung_everhart_func(ene, W_f) - measured
 
 
 # Append dynamically generated docs to the module docstring
