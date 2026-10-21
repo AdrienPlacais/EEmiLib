@@ -79,21 +79,17 @@ class Parameter:
         self._value = value
         #: Callables invoked whenever :attr:`value` changes.
         self._on_change: list[Callable[[], None]] = []
-        #: Raw lower bound for fitting, as provided by the user. The
-        #: actual :attr:`lower_bound` may be different if :attr:`.is_locked` is
-        #: ``True``, because in this case the bounds are tightly set around
-        #: current value.
+        #: Raw lower bound for fitting, as provided by the user.
         self._lower_bound = lower_bound
+        #: Raw upper bound for fitting, as provided by the user.
         self._upper_bound = upper_bound
         #: Store a small description of the parameter.
         self.description = description
         #: Whether the parameter is allowed to change values during the fit.
-        #: Concretely, setting this to ``True`` sets very tight lower and upper
-        #: bounds around current value during the fit.
+        #: This is checked in:
         #:
-        #: .. todo::
-        #:    It would be cleaner to remove the concerned parameter from the
-        #:    variables list...
+        #:    - :meth:`.Model.set_parameter_value`
+        #:    - :meth:`.Model.set_parameters_values`
         self.is_locked = is_locked
 
     def __repr__(self) -> str:
@@ -233,25 +229,7 @@ class Parameter:
 
     @property
     def lower_bound(self) -> float:
-        """Give the current lower bound of the parameter.
-
-        - If the parameter is not locked, we return the user-defined value
-          stored in :attr:`._lower_bound`.
-        - If it is locked, we return a lower bound that is :attr:`._tol` lower
-          than currently store value.
-
-          - Exception : if the user-defined :attr:`._lower_bound` is exactly
-            ``0.0``, we suppose that the value should stay positive. We update
-            the returned lower bound accordingly.
-
-        """
-        # if self.is_locked:
-        #     bound = min(self.value - self._tol, self.value + self._tol)
-        #     if self._lower_bound != 0.0 or abs(bound) >= self._tol:
-        #         return bound
-        #     # _lower_bound is exactly 0.0, and calculated bound is very close
-        #     # to 0: we enforce lower bound to 0.0 to avoid negative values
-        #     return 0.0
+        """Give the current lower bound of the parameter."""
         return self._lower_bound
 
     @lower_bound.setter
@@ -262,8 +240,6 @@ class Parameter:
     @property
     def upper_bound(self) -> float:
         """Give the current upper bound of the parameter."""
-        # if self.is_locked:
-        #     return max(self.value - self._tol, self.value + self._tol)
         return self._upper_bound
 
     @upper_bound.setter
