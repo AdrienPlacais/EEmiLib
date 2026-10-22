@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.3]
 
+### Added
+
+- GUI: it is possible to lock/unlock several `Parameter` by selecting them,
+  right-click, `"Unlock selected"` or `"Lock selected"`.
+
 ### Fixed
 
 - GUI: Exceptions are handled gracefully and do not make the code crash.

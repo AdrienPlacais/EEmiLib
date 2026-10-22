@@ -26,8 +26,9 @@ from typing import Literal, cast
 
 import numpy as np
 from numpy.typing import NDArray
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QPoint, Qt
 from PyQt5.QtWidgets import (
+    QAbstractItemView,
     QApplication,
     QCheckBox,
     QGridLayout,
@@ -35,6 +36,7 @@ from PyQt5.QtWidgets import (
     QLineEdit,
     QListWidget,
     QMainWindow,
+    QMenu,
     QPushButton,
     QRadioButton,
     QTableWidget,
@@ -59,7 +61,6 @@ from eemilib.gui.file_selection import (
     file_selection_matrix,
 )
 from eemilib.gui.helper import (
-    PARAMETER_ATTR_TO_POS,
     PARAMETER_POS_TO_ATTR,
     LinspaceEntries,
     add_linspace_row,
@@ -157,6 +158,7 @@ class EEmiLibGUI(QMainWindow):
         #: Store the :class:`.Parameter` logic for the :class:`.Model`.
         self.parameters_table: QTableWidget
         self._setup_model_configuration()
+        self._setup_parameters_context_menu()
 
         self._setup_model_dropdown()
 
@@ -452,18 +454,47 @@ class EEmiLibGUI(QMainWindow):
         as a function like :func:`.populate_parameters_table_constants`.
 
         """
-        for row, param in enumerate(self.model.parameters.values()):
-            for attr in ("value",):
-                col = PARAMETER_ATTR_TO_POS[attr]
-                attr_value = getattr(param, attr, None)
-                self.parameters_table.setItem(
-                    row, col, QTableWidgetItem(str(attr_value))
-                )
+        # for row, param in enumerate(self.model.parameters.values()):
+        #     for attr in ("value",):
+        #         col = PARAMETER_ATTR_TO_POS[attr]
+        #         attr_value = getattr(param, attr, None)
+        #         self.parameters_table.setItem(
+        #             row, col, QTableWidgetItem(str(attr_value))
+        #         )
 
-        for i, param in enumerate(self.model.parameters.values()):
+        for row, param in enumerate(self.model.parameters.values()):
             self.parameters_table.setItem(
-                i, 2, QTableWidgetItem(format_number(param.value))
+                row, 2, QTableWidgetItem(format_number(param.value))
             )
+
+    def _setup_parameters_context_menu(self) -> None:
+        """Allow locking/unlocking the selected parameters at once."""
+        table = self.parameters_table
+        table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        table.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        table.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        table.customContextMenuRequested.connect(self._show_parameters_menu)
+
+    def _show_parameters_menu(self, position: QPoint) -> None:
+        """Show the lock/unlock menu at the cursor."""
+        menu = QMenu(self)
+        menu.addAction("Lock selected", lambda: self._lock_selected(True))
+        menu.addAction("Unlock selected", lambda: self._lock_selected(False))
+        menu.exec_(self.parameters_table.viewport().mapToGlobal(position))
+
+    def _lock_selected(self, locked: bool) -> None:
+        """Lock or unlock all selected parameters."""
+        rows = {
+            index.row() for index in self.parameters_table.selectedIndexes()
+        }
+        names = list(self.model.parameters)
+        for row in rows:
+            parameter = self.model.parameters[names[row]]
+            parameter.lock() if locked else parameter.unlock()
+        populate_parameters_table_constants(
+            self.parameters_table, self.model.parameters
+        )
+        self._populate_parameters_table_values()
 
     # =========================================================================
     # Window 1 - Model evaluation
@@ -979,8 +1010,7 @@ def main() -> None:
         logging.error("Unhandled exception", exc_info=(exc_type, exc, tb))
         show_error(window, "Unexpected error", f"{exc_type.__name__}: {exc}")
 
-        sys.excepthook = excepthook
-
+    sys.excepthook = excepthook
     window.show()
     window.plot_window.show()
     sys.exit(app.exec_())
