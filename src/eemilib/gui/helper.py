@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
     QLabel,
     QLayout,
     QLineEdit,
+    QMessageBox,
     QPushButton,
     QRadioButton,
     QWidget,
@@ -185,6 +186,11 @@ def titled_group(title: str, layout: QLayout) -> QGroupBox:
     group.setStyleSheet(TITLE_STYLE)
     group.setLayout(layout)
     return group
+
+
+def show_error(parent: QWidget, title: str, message: str) -> None:
+    """Show a modal warning dialog."""
+    QMessageBox.warning(parent, title, message)
 
 
 # Associate Parameters attributes with their column position

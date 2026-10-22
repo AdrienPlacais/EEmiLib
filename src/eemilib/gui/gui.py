@@ -14,15 +14,14 @@
     3. Create layouts
     4. Call the `addWidget`, `addLayout` methods.
 
-.. todo::
-    A MissingDataError should not make the code crash.
-
 """
 
 import logging
 import sys
 from abc import ABCMeta
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
+from types import TracebackType
 from typing import Literal, cast
 
 import numpy as np
@@ -66,6 +65,7 @@ from eemilib.gui.helper import (
     add_linspace_row,
     set_help_button_action,
     setup_linspace_entries,
+    show_error,
     titled_group,
     to_plot_checkboxes,
 )
@@ -87,6 +87,10 @@ from eemilib.util.constants import (
     IMPLEMENTED_POP,
     ImplementedEmissionData,
     ImplementedPop,
+)
+from eemilib.util.exceptions import (
+    MissingDataError,
+    MissingNormalEmissionYieldError,
 )
 from eemilib.util.helper import flatten
 
@@ -437,8 +441,9 @@ class EEmiLibGUI(QMainWindow):
         if not hasattr(self, "model") or not self.model:
             logging.info("Please select a model before fitting.")
             return
-        self.model.find_optimal_parameters(self.data_matrix)
-        self._populate_parameters_table_values()
+        with self._report_errors():
+            self.model.find_optimal_parameters(self.data_matrix)
+            self._populate_parameters_table_values()
 
     def _populate_parameters_table_values(self) -> None:
         """Print out the :attr:`.Parameter.value` in the dedicated tab.
@@ -941,11 +946,41 @@ class EEmiLibGUI(QMainWindow):
         for key in DROPDOWNS:
             set_dropdown_value(self.dropdowns[key], self._defaults[key])
 
+    @contextmanager
+    def _report_errors(self, *exceptions: type[Exception]) -> Iterator[None]:
+        """Show a dialog instead of crashing when ``exceptions`` are raised.
+
+        :class:`.MissingDataError`, :class:`.MissingNormalEmissionYieldError`
+        are always caught.
+
+        """
+        try:
+            yield
+        except (
+            MissingDataError,
+            MissingNormalEmissionYieldError,
+            *exceptions,
+        ) as e:
+            logging.error(str(e))
+            show_error(self, type(e).__name__, str(e))
+
 
 def main() -> None:
     """Build the GUI interface."""
     app = QApplication(sys.argv)
     window = EEmiLibGUI()
+
+    def excepthook(
+        exc_type: type[BaseException],
+        exc: BaseException,
+        tb: TracebackType | None,
+    ) -> None:
+        """Log unhandled exceptions and show them in a dialog."""
+        logging.error("Unhandled exception", exc_info=(exc_type, exc, tb))
+        show_error(window, "Unexpected error", f"{exc_type.__name__}: {exc}")
+
+        sys.excepthook = excepthook
+
     window.show()
     window.plot_window.show()
     sys.exit(app.exec_())
