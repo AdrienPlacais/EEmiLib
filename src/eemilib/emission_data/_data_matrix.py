@@ -479,6 +479,29 @@ class DataMatrix:
         )
         self._rescale_energy_distributions_to_teey()
 
+    def missing_data(
+        self, model_config: ModelConfig
+    ) -> list[tuple[ImplementedEmissionData, ImplementedPop]]:
+        """List the unloaded data required by ``model_config``.
+
+        Parameters
+        ----------
+        model_config :
+            Lists the data necessary for a :class:`.Model` to be fitted.
+
+        Returns
+        -------
+            List of all mandatory but missing ``(data_type, population)``
+            pairs.
+
+        """
+        return [
+            (data_type, pop)
+            for data_type in IMPLEMENTED_EMISSION_DATA
+            for pop in model_config.mandatory_populations(data_type)
+            if not self.get_data(data_type, pop)
+        ]
+
     def holds_required_data(self, model_config: ModelConfig) -> bool:
         """Tell if data defined by :attr:`.Model.model_config` exists.
 
@@ -493,19 +516,7 @@ class DataMatrix:
             loaded or given directly).
 
         """
-        for data_type, data_type_attribute in zip(
-            IMPLEMENTED_EMISSION_DATA,
-            ("emission_yields", "emission_energies", "emission_angles"),
-            strict=True,
-        ):
-            required_pop = getattr(model_config, data_type_attribute)
-
-            for pop in required_pop:
-                data = self.get_data(data_type, pop)
-                if not data:
-                    logging.error(f"No {data_type} found for {pop} electrons.")
-                    return False
-        return True
+        return not self.missing_data(model_config)
 
     @overload
     def plot[T](
