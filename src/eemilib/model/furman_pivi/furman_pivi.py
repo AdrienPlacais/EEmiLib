@@ -390,20 +390,20 @@ class FurmanPivi(Model):
         self, distribs: Sequence[AllEmissionEnergyDistribution]
     ) -> None:
         """Orchestrate fitting of all normal energy distribution parameters."""
-        p_ns = [
-            self.parameters[f"p_{i}"] for i in range(1, M_MAX_SECONDARIES + 1)
-        ]
-        eps_ns = [
-            self.parameters[f"eps_{i}"]
-            for i in range(1, M_MAX_SECONDARIES + 1)
-        ]
+        # p_ns = [
+        #     self.parameters[f"p_{i}"] for i in range(1, M_MAX_SECONDARIES + 1)
+        # ]
+        # eps_ns = [
+        #     self.parameters[f"eps_{i}"]
+        #     for i in range(1, M_MAX_SECONDARIES + 1)
+        # ]
         extra_kwargs = {
             **{
                 key: self.parameters[key]
                 for key in NORMAL_TEEY_PARAM_KEYS + OBLIQUE_TEEY_PARAM_KEYS
             },
-            "p_ns": p_ns,
-            "eps_ns": eps_ns,
+            # "p_ns": p_ns,
+            # "eps_ns": eps_ns,
             "proba_emit_n_se": self._proba_emit_n_se,
             "normalization": self._normalization,
         }
@@ -411,6 +411,15 @@ class FurmanPivi(Model):
         def _aggregate_residue(
             kwargs: dict[str, float],
         ) -> NDArray[np.float64]:
+            n_range = range(1, M_MAX_SECONDARIES + 1)
+            p_ns = [
+                kwargs.get(f"p_{i}", self.parameters[f"p_{i}"])
+                for i in n_range
+            ]
+            eps_ns = [
+                kwargs.get(f"eps_{i}", self.parameters[f"eps_{i}"])
+                for i in n_range
+            ]
             residuals = []
             for distrib in distribs:
                 measured = distrib.normal_data
@@ -419,6 +428,8 @@ class FurmanPivi(Model):
                     the=0.0,
                     emission_energies=distrib.energies,
                     halve_ebe_contribution=True,
+                    p_ns=p_ns,
+                    eps_ns=eps_ns,
                     **kwargs,
                     **extra_kwargs,
                 )
