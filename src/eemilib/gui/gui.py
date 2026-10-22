@@ -112,6 +112,9 @@ class EEmiLibGUI(QMainWindow):
     autofill_plotting_ranges = True
     #: Whether plotting measurements should check the "use measured" boxes.
     autofill_use_measured = True
+    #: Whether loading data rescales the ``"all"`` emission energy
+    #: distributions so that their integral matches the |TEEY|.
+    rescale_energy_distributions_to_yield = True
 
     def __init__(
         self,
@@ -323,7 +326,10 @@ class EEmiLibGUI(QMainWindow):
 
         try:
             with self._busy("Loading data..."):
-                self.data_matrix.load_data(self.loader)
+                self.data_matrix.load_data(
+                    self.loader,
+                    rescale_energy_distributions_to_yield=self.rescale_energy_distributions_to_yield,
+                )
         except Exception as e:
             logging.error(
                 "An error was raised during the loading of the data file. "
