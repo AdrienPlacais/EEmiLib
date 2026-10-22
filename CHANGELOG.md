@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GUI:
   - It is possible to lock/unlock several `Parameter` by selecting them,
     right-click, `"Unlock selected"` or `"Lock selected"`.
+  - Similarly, you can reset the value or the bounds of several `Parameter`s by
+    selecting them, right-clicking, selecting appropriate option.
   - Status message when loading data, rendering parameters, fitting model.
 
 ### Fixed

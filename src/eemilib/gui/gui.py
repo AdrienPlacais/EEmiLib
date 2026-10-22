@@ -487,6 +487,12 @@ class EEmiLibGUI(QMainWindow):
         menu = QMenu(self)
         menu.addAction("Lock selected", lambda: self._lock_selected(True))
         menu.addAction("Unlock selected", lambda: self._lock_selected(False))
+        menu.addAction("Reset values", lambda: self._reset_selected("value"))
+        menu.addAction(
+            "Reset bounds",
+            lambda: self._reset_selected("lower_bound", "upper_bound"),
+        )
+
         viewport = self.parameters_table.viewport()
         assert viewport is not None
         menu.exec_(viewport.mapToGlobal(position))
@@ -980,6 +986,20 @@ class EEmiLibGUI(QMainWindow):
             {index.row() for index in self.parameters_table.selectedIndexes()}
         )
         return [(row, self.model.parameters[names[row]]) for row in rows]
+
+    def _reset_selected(self, *attrs: str) -> None:
+        """Reset ``attrs`` of selected parameters to their initial values."""
+        names = list(self.model.parameters)
+        for row, parameter in self._selected_parameters():
+            initial = self.model.initial_parameters[names[row]]
+            _dummy_parameter = Parameter(**initial)
+            for attr in attrs:
+                setattr(parameter, attr, getattr(_dummy_parameter, attr))
+                self.parameters_table.setItem(
+                    row,
+                    PARAMETER_ATTR_TO_POS[attr],
+                    QTableWidgetItem(str(getattr(parameter, attr))),
+                )
 
     # =========================================================================
     # Misc
