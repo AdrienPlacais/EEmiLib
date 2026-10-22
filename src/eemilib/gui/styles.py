@@ -10,7 +10,7 @@ import re
 from functools import lru_cache
 
 import matplotlib.pyplot as plt
-from PyQt5.QtCore import QEvent, Qt
+from PyQt5.QtCore import QEvent
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QLabel, QWidget
 
@@ -98,7 +98,6 @@ def _render_to_pixmap(
 
     Returns
     -------
-    QPixmap or None
         Rendered pixmap, or ``None`` if rendering failed.
 
     """
@@ -204,11 +203,6 @@ class MathTextLabel(QLabel):
         self._text = _compose_mathtext(body, units)
         self._last_width: int = 0
 
-        self.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
-        # Do an initial render at a sensible default width so the label is
-        # not blank before the first layout pass.
-        self._render(MATH_LABEL_DEFAULT_WIDTH_PX)
-
     def resizeEvent(self, event: QEvent) -> None:
         """Re-render the pixmap whenever the widget width changes."""
         super().resizeEvent(event)
@@ -225,7 +219,6 @@ class MathTextLabel(QLabel):
         if pixmap is not None:
             self.setPixmap(pixmap)
         else:
-            # Fallback: plain text is always readable.
             self.setText(self._text)
 
 
