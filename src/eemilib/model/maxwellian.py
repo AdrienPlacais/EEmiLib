@@ -130,7 +130,10 @@ class Maxwellian(Model):
         """
         distributions = data_matrix.get_data("Emission Energy", population)
         if not distributions:
-            raise MissingDataError(f"Missing emission energy for {population}")
+            raise MissingDataError(
+                f"Cannot fit {self.__class__.__name__}.",
+                missing=[("Emission Energy", population)],
+            )
 
         def _aggregate_residue(
             kwargs: dict[str, float],

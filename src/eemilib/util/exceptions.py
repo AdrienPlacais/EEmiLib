@@ -16,7 +16,12 @@ class NotImplementedEmissionDataTypeError(NotImplementedError):
 
 
 class MissingDataError(ValueError):
-    """Error raised when data is missing."""
+    """Error raised when data is missing.
+
+    It can happen either because a :class:`.DataMatrix` does not hold required
+    data, or because no :class:`.DataMatrix` could be found.
+
+    """
 
     def __init__(
         self, message: str = "", *, missing: Sequence[tuple[str, str]] = ()

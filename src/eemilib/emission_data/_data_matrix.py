@@ -688,7 +688,7 @@ class DataMatrix:
         """Return the |TEEY| directly."""
         emission_yield = self.get_data("Emission Yield", "all")
         if not emission_yield:
-            raise MissingDataError
+            raise MissingDataError(missing=[("Emission Yield", "all")])
         if len(emission_yield) > 1:
             logging.warning("Several TEEY are stored. Returning first.")
         return emission_yield[0]
@@ -698,7 +698,7 @@ class DataMatrix:
         """Return the |SEEY| directly."""
         emission_yield = self.get_data("Emission Yield", "SE")
         if not emission_yield:
-            raise MissingDataError
+            raise MissingDataError(missing=[("Emission Yield", "SE")])
         if len(emission_yield) > 1:
             logging.warning("Several SEEY are stored. Returning first.")
         return emission_yield[0]
@@ -724,7 +724,8 @@ class DataMatrix:
         if not teeys:
             raise MissingDataError(
                 "Missing TEEY measurement, needed to rescale energy "
-                "distributions."
+                "distributions.",
+                missing=[("Emission Yield", "all")],
             )
         if len(teeys) > 1:
             logging.warning(

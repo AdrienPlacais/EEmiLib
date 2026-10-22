@@ -960,8 +960,10 @@ class Model(ABC):
 
         try:
             ref_teey = ref_data_matrix.teey
-        except MissingDataError:
-            logging.error("TEEY is mandatory in order to perform evaluations.")
+        except MissingDataError as e:
+            logging.warning(
+                f"The TEEY is mandatory in order to perfo evaluations. {e}"
+            )
             return evaluations
 
         evaluations.update(
