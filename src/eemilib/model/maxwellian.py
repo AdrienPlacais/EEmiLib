@@ -2,6 +2,10 @@
 
 You will need to provide emission energy distribution measurements.
 
+.. todo::
+    When fitted on example Ag data, does not work very well. I think the
+    significant EBE peak at low energies messes up with the fit.
+
 """
 
 import math
@@ -141,8 +145,12 @@ class Maxwellian(Model):
             """Compute residues on all distributions."""
             residuals = []
             for distrib in distributions:
-                measured = distrib.normal_data
-                predicted = maxwellian_pdf(distrib.energies, **kwargs)
+                measured = distrib.se_peak_normalized_data
+                predicted = maxwellian_pdf(
+                    distrib.energies,
+                    norm=_maxwellian_norm(kwargs["temperature"]),
+                    **kwargs,
+                )
                 residuals.append(predicted - measured)
             return np.concatenate(residuals)
 
@@ -156,10 +164,10 @@ class Maxwellian(Model):
 def _maxwellian_norm(temp: float) -> float:
     """Return norm value to have distribution maximum to unity.
 
-    Maximum is at :math:`T/2`.
+    Maximum is at :math:`E = T`.
 
     """
-    return temp * math.sqrt(2 * pi) / (2 * math.exp(-0.5))
+    return math.e * math.sqrt(pi * temp)
 
 
 @overload

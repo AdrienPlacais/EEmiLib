@@ -112,6 +112,9 @@ class EEmiLibGUI(QMainWindow):
     autofill_plotting_ranges = True
     #: Whether plotting measurements should check the "use measured" boxes.
     autofill_use_measured = True
+    #: Whether loading data rescales the ``"all"`` emission energy
+    #: distributions so that their integral matches the |TEEY|.
+    rescale_energy_distributions_to_yield = True
 
     def __init__(
         self,
@@ -323,7 +326,10 @@ class EEmiLibGUI(QMainWindow):
 
         try:
             with self._busy("Loading data..."):
-                self.data_matrix.load_data(self.loader)
+                self.data_matrix.load_data(
+                    self.loader,
+                    rescale_energy_distributions_to_yield=self.rescale_energy_distributions_to_yield,
+                )
         except Exception as e:
             logging.error(
                 "An error was raised during the loading of the data file. "
@@ -756,6 +762,7 @@ class EEmiLibGUI(QMainWindow):
             if not success_angle:
                 return
 
+        self._warn_if_scales_mismatch(data_type)
         self._plot(
             self.model.plot,
             data_type=data_type,
@@ -1050,6 +1057,27 @@ class EEmiLibGUI(QMainWindow):
         finally:
             status_bar.clearMessage()
             QApplication.restoreOverrideCursor()
+
+    def _warn_if_scales_mismatch(
+        self, data_type: ImplementedEmissionData
+    ) -> None:
+        """Tell the user when measured and modelled scales differ."""
+        if data_type != "Emission Energy":
+            return
+        if self.model.needs_yield_scaled_distributions:
+            return
+        distribs = self.data_matrix.get_data(
+            "Emission Energy", IMPLEMENTED_POP
+        )
+        if any(d.is_rescaled for d in distribs):
+            logging.warning(
+                "Measured energy distributions were rescaled to match the "
+                f"TEEY, but {self.model.__class__.__name__} predicts a "
+                "distribution with an SE peak of 1. Curves are not on the same"
+                " scale; the fit is not affected. Reload with "
+                "`rescale_energy_distributions_to_yield=False` to compare "
+                "them."
+            )
 
 
 def main() -> None:

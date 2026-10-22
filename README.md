@@ -144,7 +144,7 @@ documentation](https://eemilib.readthedocs.io/en/latest/auto_examples/index.html
   - [ ] Should every `Model` be fitted on `all` population?
   - [x] Locking should remove optimization variables, rather than setting tiny
         bounds.
-  - [ ] Energy distributions handling is inconsistent, in particular wrt the
+  - [x] Energy distributions handling is inconsistent, in particular wrt the
         norm.
 - If it proves useful:
   - [ ] Handle experimental data with error bars

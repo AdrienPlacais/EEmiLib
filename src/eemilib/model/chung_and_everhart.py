@@ -171,7 +171,7 @@ class ChungEverhart(Model):
             """Compute residues on all distributions."""
             residuals = []
             for distrib in distributions:
-                measured = distrib.normal_data
+                measured = distrib.se_peak_normalized_data
                 predicted = chung_everhart_func(distrib.energies, **kwargs)
                 residuals.append(predicted - measured)
             return np.concatenate(residuals)

@@ -77,6 +77,9 @@ class Model(ABC):
     implementation_choices: ClassVar[dict[str, tuple[str, ...]]] = {}
     #: Override default URL in documentation
     _url_doc_override: str | None = None
+    #: Whether measured energy distributions must be scaled so that their
+    #: integral matches the |TEEY|.
+    needs_yield_scaled_distributions: ClassVar[bool] = False
 
     def __init__(
         self, parameters_values: dict[str, Any] | None = None
