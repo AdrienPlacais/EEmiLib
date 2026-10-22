@@ -83,6 +83,7 @@ from eemilib.gui.plot_canvas import TabbedPlotArea
 from eemilib.gui.styles import format_number
 from eemilib.loader.loader import Loader
 from eemilib.model.model import Model
+from eemilib.model.parameter import Parameter
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
     IMPLEMENTED_EMISSION_DATA,
@@ -485,14 +486,10 @@ class EEmiLibGUI(QMainWindow):
 
     def _lock_selected(self, locked: bool) -> None:
         """Lock or unlock all selected parameters."""
-        table = self.parameters_table
         col_lock = PARAMETER_ATTR_TO_POS["lock"]
-        names = list(self.model.parameters)
-        for row in {index.row() for index in table.selectedIndexes()}:
-            parameter = self.model.parameters[names[row]]
+        for row, parameter in self._selected_parameters():
             parameter.lock() if locked else parameter.unlock()
-
-            widget = table.cellWidget(row, col_lock)
+            widget = self.parameters_table.cellWidget(row, col_lock)
             checkbox = (
                 widget
                 if isinstance(widget, QCheckBox)
@@ -967,6 +964,14 @@ class EEmiLibGUI(QMainWindow):
         )
         impacts = {d.e_pe for d in distribs}
         return sorted(impacts)
+
+    def _selected_parameters(self) -> list[tuple[int, Parameter]]:
+        """Give row and parameter of every selected row."""
+        names = list(self.model.parameters)
+        rows = sorted(
+            {index.row() for index in self.parameters_table.selectedIndexes()}
+        )
+        return [(row, self.model.parameters[names[row]]) for row in rows]
 
     # =========================================================================
     # Misc
