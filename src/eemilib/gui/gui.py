@@ -235,7 +235,7 @@ class EEmiLibGUI(QMainWindow):
         self.setCentralWidget(central)
         self.data_model_layout = QVBoxLayout(central)
 
-        self.plot_window = QWidget(self, Qt.Window)
+        self.plot_window = QWidget(self, Qt.WindowType.Window)
         self.plot_window.setWindowTitle("EEmiLib - Plot")
         self.plot_window.resize(900, 700)
         self.plot_layout = QVBoxLayout(self.plot_window)
@@ -312,10 +312,11 @@ class EEmiLibGUI(QMainWindow):
             for j, data in enumerate(IMPLEMENTED_EMISSION_DATA):
                 file_list_widget = self.file_lists[i][j]
                 if file_list_widget is not None:
-                    file_names = [
-                        file_list_widget.item(k).text()
-                        for k in range(file_list_widget.count())
-                    ]
+                    file_names = []
+                    for k in range(file_list_widget.count()):
+                        item = file_list_widget.item(k)
+                        assert item is not None
+                        file_names.append(item.text())
                     self.data_matrix.set_files(
                         file_names, data_type=data, population=pop
                     )
@@ -484,7 +485,9 @@ class EEmiLibGUI(QMainWindow):
         menu = QMenu(self)
         menu.addAction("Lock selected", lambda: self._lock_selected(True))
         menu.addAction("Unlock selected", lambda: self._lock_selected(False))
-        menu.exec_(self.parameters_table.viewport().mapToGlobal(position))
+        viewport = self.parameters_table.viewport()
+        assert viewport is not None
+        menu.exec_(viewport.mapToGlobal(position))
 
     def _lock_selected(self, locked: bool) -> None:
         """Lock or unlock all selected parameters."""
@@ -492,6 +495,7 @@ class EEmiLibGUI(QMainWindow):
         for row, parameter in self._selected_parameters():
             parameter.lock() if locked else parameter.unlock()
             widget = self.parameters_table.cellWidget(row, col_lock)
+            assert widget is not None
             checkbox = (
                 widget
                 if isinstance(widget, QCheckBox)
@@ -1010,14 +1014,19 @@ class EEmiLibGUI(QMainWindow):
     @contextmanager
     def _busy(self, message: str) -> Iterator[None]:
         """Show a wait cursor and a status message during a long operation."""
-        QApplication.setOverrideCursor(Qt.WaitCursor)
-        self.statusBar().showMessage(message)
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        status_bar = self.statusBar()
+        if status_bar is None:
+            return
+        status_bar.showMessage(message)
         QApplication.processEvents()
         try:
             yield
-            QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
+            QApplication.processEvents(
+                QEventLoop.ProcessEventsFlag.ExcludeUserInputEvents
+            )
         finally:
-            self.statusBar().clearMessage()
+            status_bar.clearMessage()
             QApplication.restoreOverrideCursor()
 
 
