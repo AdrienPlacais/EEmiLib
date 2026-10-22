@@ -15,12 +15,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Similarly, you can reset the value or the bounds of several `Parameter`s by
     selecting them, right-clicking, selecting appropriate option.
   - Status message when loading data, rendering parameters, fitting model.
+  - A checkbox in the `Loader`'s parameters lets you uncheck the automatic
+    measured emission energy re-normalization when TEEY is also provided.
+    - Will make `FurmanPivi` crash.
+    - Generally not useful with `ChungEverhart` and `Maxwellian`, because you do
+      not need to load TEEYs.
 
 ### Fixed
 
 - GUI:
   - Exceptions are handled gracefully and do not make the code crash.
   - Loading `Model`s, and in particular `FurmanPivi`, is faster.
+- Emission Energy Distributions have more consistent normalization.
 
 ## [0.2.2]
 
