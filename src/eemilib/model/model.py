@@ -414,8 +414,10 @@ class Model(ABC):
         """
         data_matrix = self._resolve_data_matrix(data_matrix)
         self.set_reference_data(data_matrix)
-        if not data_matrix.holds_required_data(self.model_config):
-            raise MissingDataError("Files are not all provided.")
+        if missing := data_matrix.missing_data(self.model_config):
+            raise MissingDataError(
+                f"Cannot fit {self.__class__.__name__}.", missing=missing
+            )
         self._find_optimal_parameters(data_matrix, **kwargs)
 
     @abstractmethod
