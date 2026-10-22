@@ -34,6 +34,17 @@ class ModelConfig:
                         f"populations, ie {IMPLEMENTED_POP}."
                     )
 
+    @property
+    def populations_by_data_type(
+        self,
+    ) -> dict[ImplementedEmissionData, Collection[ImplementedPop]]:
+        """Map each emission data type to its required populations."""
+        return {
+            "Emission Yield": self.emission_yields,
+            "Emission Energy": self.emission_energies,
+            "Emission Angle": self.emission_angles,
+        }
+
     def mandatory_populations(
         self, data_type: ImplementedEmissionData
     ) -> list[ImplementedPop]:
@@ -44,12 +55,8 @@ class ModelConfig:
         discriminate the different emitted populations.
 
         """
-        if data_type == "Emission Yield":
-            return list(self.emission_yields)
-        if data_type == "Emission Energy":
-            return list(self.emission_energies)
-        if data_type == "Emission Angle":
-            return list(self.emission_angles)
-        raise RuntimeError(
-            f"{data_type = } is not in {IMPLEMENTED_EMISSION_DATA = }"
-        )
+        if data_type not in IMPLEMENTED_EMISSION_DATA:
+            raise RuntimeError(
+                f"{data_type = } is not in {IMPLEMENTED_EMISSION_DATA = }"
+            )
+        return list(self.populations_by_data_type[data_type])
