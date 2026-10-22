@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updating `Parameter`'s `value`, `lower_bound`, `upper_bound`, `is_locked` is
   correctly taken into account.
 - `E_0` in `Vaughan` respects the given bounds.
+- Current value of `Parameter` outside the bounds does not raise `ValueError`
+  anymore at optimization step.
 
 ## [0.2.1] -- 2026-10-21
 

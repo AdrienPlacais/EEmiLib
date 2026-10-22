@@ -443,16 +443,25 @@ class Model(ABC):
         free = [key for key in keys if not self.parameters[key].is_locked]
         if not free:
             return
+        x0 = [self.parameters[key].value for key in free]
+        lower = [self.parameters[key].lower_bound for key in free]
+        upper = [self.parameters[key].upper_bound for key in free]
+
+        outside = (x0 < lower) | (x0 > upper)
+        for key in np.array(free)[outside]:
+            logging.warning(
+                f"Initial value of {key} lies outside its bounds, clipping it "
+                "for the fit."
+            )
+        x0 = np.clip(x0, lower, upper)
+
         locked = {
             key: self.parameters[key].value for key in keys if key not in free
         }
         lsq = least_squares(
             fun=lambda x: residue({**locked, **dict(zip(free, x))}),
-            x0=[self.parameters[key].value for key in free],
-            bounds=(
-                [self.parameters[key].lower_bound for key in free],
-                [self.parameters[key].upper_bound for key in free],
-            ),
+            x0=x0,
+            bounds=(lower, upper),
         )
         if not lsq.success:
             logging.error(f"The fit failed with message:\n{lsq.message}")
