@@ -7,9 +7,8 @@ from eemilib.util.constants import (
     COL_ENERGY,
     ImplementedEmissionData,
     ImplementedPop,
-    md_energy_distrib,
-    md_ey,
 )
+from eemilib.util.markdown import ENE_DISTRIB_LABELS, EY_LABELS
 
 
 def explicit_column_names(
@@ -60,10 +59,10 @@ def explicit_column_names(
             modelled = ""
 
         if data_type == "Emission Yield":
-            _types_of_data = md_ey
+            _types_of_data = EY_LABELS
             pe = ""
         elif data_type == "Emission Energy":
-            _types_of_data = md_energy_distrib
+            _types_of_data = ENE_DISTRIB_LABELS
             pe = f"${e_pe}" + r"\,\mathrm{eV}$" if e_pe is not None else ""
         else:
             raise ValueError(

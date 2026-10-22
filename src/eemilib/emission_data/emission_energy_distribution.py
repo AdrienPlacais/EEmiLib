@@ -13,12 +13,8 @@ from eemilib.emission_data.emission_data import EmissionData
 from eemilib.loader.helper import DataPath
 from eemilib.loader.loader import Loader
 from eemilib.plotter.plotter import Plotter
-from eemilib.util.constants import (
-    COL_ENERGY,
-    COL_NORMAL,
-    ImplementedPop,
-    md_energy_distrib,
-)
+from eemilib.util.constants import COL_ENERGY, COL_NORMAL, ImplementedPop
+from eemilib.util.markdown import ENE_DISTRIB_LABELS
 
 
 class EmissionEnergyDistribution(EmissionData):
@@ -183,7 +179,7 @@ class EmissionEnergyDistribution(EmissionData):
     @property
     def label(self) -> str:
         """Print nature of data (markdown)."""
-        return md_energy_distrib[self.population]
+        return ENE_DISTRIB_LABELS[self.population]
 
     def plot[T](
         self,

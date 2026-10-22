@@ -23,13 +23,9 @@ from eemilib.emission_data.helper import (
 from eemilib.loader.helper import DataPath
 from eemilib.loader.loader import Loader
 from eemilib.plotter.plotter import Plotter
-from eemilib.util.constants import (
-    COL_ENERGY,
-    COL_NORMAL,
-    ImplementedPop,
-    md_ey,
-)
+from eemilib.util.constants import COL_ENERGY, COL_NORMAL, ImplementedPop
 from eemilib.util.exceptions import MissingNormalEmissionYieldError
+from eemilib.util.markdown import EY_LABELS
 
 
 class EmissionYield(EmissionData):
@@ -94,7 +90,7 @@ class EmissionYield(EmissionData):
     @property
     def label(self) -> str:
         """Print nature of data (markdown)."""
-        return md_ey[self.population]
+        return EY_LABELS[self.population]
 
     def plot[T](
         self,
