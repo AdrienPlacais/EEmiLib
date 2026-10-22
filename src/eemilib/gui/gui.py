@@ -322,7 +322,8 @@ class EEmiLibGUI(QMainWindow):
                     )
 
         try:
-            self.data_matrix.load_data(self.loader)
+            with self._busy("Loading data..."):
+                self.data_matrix.load_data(self.loader)
         except Exception as e:
             logging.error(
                 "An error was raised during the loading of the data file. "
@@ -449,7 +450,8 @@ class EEmiLibGUI(QMainWindow):
             logging.info("Please select a model before fitting.")
             return
         with self._report_errors():
-            self.model.find_optimal_parameters(self.data_matrix)
+            with self._busy("Fitting model..."):
+                self.model.find_optimal_parameters(self.data_matrix)
             self._populate_parameters_table_values()
 
     def _populate_parameters_table_values(self) -> None:

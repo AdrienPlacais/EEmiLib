@@ -9,12 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- GUI: it is possible to lock/unlock several `Parameter` by selecting them,
-  right-click, `"Unlock selected"` or `"Lock selected"`.
+- GUI:
+  - It is possible to lock/unlock several `Parameter` by selecting them,
+    right-click, `"Unlock selected"` or `"Lock selected"`.
+  - Status message when loading data, rendering parameters, fitting model.
 
 ### Fixed
 
-- GUI: Exceptions are handled gracefully and do not make the code crash.
+- GUI:
+  - Exceptions are handled gracefully and do not make the code crash.
+  - Loading `Model`s, and in particular `FurmanPivi`, is faster.
 
 ## [0.2.2]
 

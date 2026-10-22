@@ -126,7 +126,7 @@ documentation](https://eemilib.readthedocs.io/en/latest/auto_examples/index.html
     - [x] The bounds set in GUI are not taken into account.
     - [x] The values set in GUI are not taken into account.
     - [x] The `lock` checkbox is not taken into account.
-  - [ ] Selecting `FurmanPivi` takes too long!
+  - [x] Selecting `FurmanPivi` takes too long!
 - CI:
   - [ ] Allow execution on online Docker ?
 - [ ] `Export` buttons
