@@ -236,6 +236,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "description": (
             "Scale parameter for n=1 in the SEs energy spectrum, Eq. (33)."
         ),
+        "is_locked": True,
     },
     "eps_2": {
         "markdown": EPS_2,
@@ -245,6 +246,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "description": (
             "Scale parameter for n=2 in the SEs energy spectrum, Eq. (33)."
         ),
+        "is_locked": True,
     },
     "eps_3": {
         "markdown": EPS_3,
@@ -254,6 +256,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "description": (
             "Scale parameter for n=3 in the SEs energy spectrum, Eq. (33)."
         ),
+        "is_locked": True,
     },
     "eps_4": {
         "markdown": EPS_4,
@@ -263,6 +266,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "description": (
             "Scale parameter for n=4 in the SEs energy spectrum, Eq. (33)."
         ),
+        "is_locked": True,
     },
     "eps_5": {
         "markdown": EPS_5,
@@ -272,6 +276,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "description": (
             "Scale parameter for n=5 in the SEs energy spectrum, Eq. (33)."
         ),
+        "is_locked": True,
     },
     "eps_6": {
         "markdown": EPS_6,
@@ -281,6 +286,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "description": (
             "Scale parameter for n=6 in the SEs energy spectrum, Eq. (33)."
         ),
+        "is_locked": True,
     },
     "eps_7": {
         "markdown": EPS_7,
@@ -290,6 +296,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "description": (
             "Scale parameter for n=7 in the SEs energy spectrum, Eq. (33)."
         ),
+        "is_locked": True,
     },
     "eps_8": {
         "markdown": EPS_8,
@@ -299,6 +306,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "description": (
             "Scale parameter for n=8 in the SEs energy spectrum, Eq. (33)."
         ),
+        "is_locked": True,
     },
     "eps_9": {
         "markdown": EPS_9,
@@ -308,6 +316,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "description": (
             "Scale parameter for n=9 in the SEs energy spectrum, Eq. (33)."
         ),
+        "is_locked": True,
     },
     "eps_10": {
         "markdown": EPS_10,
@@ -317,6 +326,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "description": (
             "Scale parameter for n=10 in the SEs energy spectrum, Eq. (33)."
         ),
+        "is_locked": True,
     },
     "p_1": {
         "markdown": P_1,
@@ -326,6 +336,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "description": (
             "Shape parameter for n=1 in the SEs energy spectrum, Eq. (33)."
         ),
+        "is_locked": True,
     },
     "p_2": {
         "markdown": P_2,
@@ -335,6 +346,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "description": (
             "Shape parameter for n=2 in the SEs energy spectrum, Eq. (33)."
         ),
+        "is_locked": True,
     },
     "p_3": {
         "markdown": P_3,
@@ -344,6 +356,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "description": (
             "Shape parameter for n=3 in the SEs energy spectrum, Eq. (33)."
         ),
+        "is_locked": True,
     },
     "p_4": {
         "markdown": P_4,
@@ -353,6 +366,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "description": (
             "Shape parameter for n=4 in the SEs energy spectrum, Eq. (33)."
         ),
+        "is_locked": True,
     },
     "p_5": {
         "markdown": P_5,
@@ -362,6 +376,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "description": (
             "Shape parameter for n=5 in the SEs energy spectrum, Eq. (33)."
         ),
+        "is_locked": True,
     },
     "p_6": {
         "markdown": P_6,
@@ -371,6 +386,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "description": (
             "Shape parameter for n=6 in the SEs energy spectrum, Eq. (33)."
         ),
+        "is_locked": True,
     },
     "p_7": {
         "markdown": P_7,
@@ -380,6 +396,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "description": (
             "Shape parameter for n=7 in the SEs energy spectrum, Eq. (33)."
         ),
+        "is_locked": True,
     },
     "p_8": {
         "markdown": P_8,
@@ -389,6 +406,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "description": (
             "Shape parameter for n=8 in the SEs energy spectrum, Eq. (33)."
         ),
+        "is_locked": True,
     },
     "p_9": {
         "markdown": P_9,
@@ -398,6 +416,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "description": (
             "Shape parameter for n=9 in the SEs energy spectrum, Eq. (33)."
         ),
+        "is_locked": True,
     },
     "p_10": {
         "markdown": P_10,
@@ -407,6 +426,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "description": (
             "Shape parameter for n=10 in the SEs energy spectrum, Eq. (33)."
         ),
+        "is_locked": True,
     },
     # =====================================================================
     # Elastically Backscattered Electrons (or "Reflected")
