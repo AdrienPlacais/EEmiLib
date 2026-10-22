@@ -1,4 +1,10 @@
-"""Define a model parameter."""
+"""Define a model parameter.
+
+.. todo::
+    Some parameters are not fitted. For example, Ec1 is often directly read
+    from the measurements. Find a way to explicit this?
+
+"""
 
 import logging
 from collections.abc import Callable
