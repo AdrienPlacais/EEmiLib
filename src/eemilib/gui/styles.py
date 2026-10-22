@@ -10,7 +10,7 @@ import re
 from functools import lru_cache
 
 import matplotlib.pyplot as plt
-from PyQt5.QtCore import QEvent
+from PyQt5.QtCore import QEvent, QTimer
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QLabel, QWidget
 
@@ -202,14 +202,19 @@ class MathTextLabel(QLabel):
         self._dpi = dpi
         self._text = _compose_mathtext(body, units)
         self._last_width: int = 0
+        self._timer = QTimer(self)
+        self._timer.setSingleShot(True)
+        self._timer.setInterval(0)
+        self._timer.timeout.connect(lambda: self._render(self._last_width))
 
     def resizeEvent(self, event: QEvent) -> None:
         """Re-render the pixmap whenever the widget width changes."""
         super().resizeEvent(event)
         new_width = event.size().width()
-        if new_width != self._last_width:
-            self._last_width = new_width
-            self._render(new_width)
+        if new_width == self._last_width:
+            return
+        self._last_width = new_width
+        self._timer.start()
 
     def _render(self, width_px: int) -> None:
         """Render at *width_px* and update the displayed pixmap."""

@@ -26,7 +26,7 @@ from typing import Literal, cast
 
 import numpy as np
 from numpy.typing import NDArray
-from PyQt5.QtCore import QPoint, Qt
+from PyQt5.QtCore import QEventLoop, QPoint, Qt
 from PyQt5.QtWidgets import (
     QAbstractItemView,
     QApplication,
@@ -400,9 +400,10 @@ class EEmiLibGUI(QMainWindow):
         def settings_action() -> int:
             code = ModelImplementationsDialog(self, self.model).exec()
             self._populate_parameters_table_values()
-            populate_parameters_table_constants(
-                self.parameters_table, self.model.parameters
-            )
+            with self._busy("Rendering parameters..."):
+                populate_parameters_table_constants(
+                    self.parameters_table, self.model.parameters
+                )
             return code
 
         return settings_label, settings_action
@@ -414,9 +415,10 @@ class EEmiLibGUI(QMainWindow):
         help_button = self.dropdowns["Model"].buttons[0]
         set_help_button_action(help_button, self.model)
 
-        populate_parameters_table_constants(
-            self.parameters_table, self.model.parameters
-        )
+        with self._busy("Rendering parameters..."):
+            populate_parameters_table_constants(
+                self.parameters_table, self.model.parameters
+            )
 
     def _update_parameter_value_from_table(
         self, item: QTableWidgetItem
@@ -1004,6 +1006,19 @@ class EEmiLibGUI(QMainWindow):
         except (MissingNormalEmissionYieldError, *exceptions) as e:
             logging.error(str(e))
             show_error(self, type(e).__name__, str(e))
+
+    @contextmanager
+    def _busy(self, message: str) -> Iterator[None]:
+        """Show a wait cursor and a status message during a long operation."""
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        self.statusBar().showMessage(message)
+        QApplication.processEvents()
+        try:
+            yield
+            QApplication.processEvents(QEventLoop.ExcludeUserInputEvents)
+        finally:
+            self.statusBar().clearMessage()
+            QApplication.restoreOverrideCursor()
 
 
 def main() -> None:
