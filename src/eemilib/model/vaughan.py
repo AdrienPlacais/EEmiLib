@@ -16,7 +16,6 @@ from typing import Any, ClassVar, Literal, TypedDict, cast
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
-from scipy.optimize import least_squares
 
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
@@ -234,10 +233,7 @@ class Vaughan(Model):
                 override_lock=True,
             )
             self.parameters["E_0"].unlock()
-            e_0 = self._E_0_matching(E_c1=self.parameters["E_c1"].value)
-            if np.isnan(e_0):
-                return
-            self.set_parameter_value("E_0", e_0, override_lock=True)
+            self._fit_E_0_to_retrieve_Ec1(E_c1=self.parameters["E_c1"].value)
             return
 
         logging.error(f"{implementation = } not in {VaughanImplementation}")
@@ -289,23 +285,21 @@ class Vaughan(Model):
             }
         )
         if not self.parameters["E_0"].is_locked:
-            E_0 = self._E_0_matching(E_c1=self.parameters["E_c1"].value)
-            self.set_parameter_value("E_0", E_0)
+            self._fit_E_0_to_retrieve_Ec1(E_c1=self.parameters["E_c1"].value)
 
-    def _E_0_matching(self, *, E_c1: float) -> float:
+    def _fit_E_0_to_retrieve_Ec1(self, *, E_c1: float) -> None:
         """Fit E_0 to retrieve E_c1 (SPARK3D)."""
         values = {k: p.value for k, p in self.parameters.items()}
 
-        def _to_minimize(E_0: float) -> float:
+        def _residues(kwargs: dict[str, float]) -> NDArray[np.float64]:
             teey_at_crossover = vaughan_func(
-                ene=E_c1, the=0.0, **{**values, "E_0": E_0}
+                ene=E_c1, the=0.0, **{**values, **kwargs}
             )
             if isinstance(teey_at_crossover, np.ndarray):
                 teey_at_crossover = teey_at_crossover[0]
-            return abs(teey_at_crossover - 1.0)
+            return np.atleast_1d(teey_at_crossover - 1.0)
 
-        optimized_E_0 = least_squares(_to_minimize, x0=12.5).x
-        return float(optimized_E_0[0])
+        self._fit(("E_0",), _residues)
 
     def evaluate(
         self, data_matrix: DataMatrix | None = None

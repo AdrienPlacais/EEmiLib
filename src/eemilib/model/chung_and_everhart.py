@@ -146,9 +146,6 @@ class ChungEverhart(Model):
     ) -> None:
         """Fit model parameters on measurements.
 
-        .. todo::
-           Use helper ``self._fit``.
-
         Parameters
         ----------
         data_matrix :

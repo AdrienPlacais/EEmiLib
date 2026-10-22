@@ -142,7 +142,7 @@ documentation](https://eemilib.readthedocs.io/en/latest/auto_examples/index.html
 - API:
   - [ ] Import/export model configuration with a `TOML`.
   - [ ] Should every `Model` be fitted on `all` population?
-  - [ ] Locking should remove optimization variables, rather than setting tiny
+  - [x] Locking should remove optimization variables, rather than setting tiny
         bounds.
   - [ ] Energy distributions handling is inconsistent, in particular wrt the
         norm.
