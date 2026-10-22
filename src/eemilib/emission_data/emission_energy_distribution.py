@@ -74,7 +74,7 @@ class EmissionEnergyDistribution(EmissionData):
         #:       :meth:`.DataMatrix.load_data` (with
         #:       `rescale_energy_distributions_to_teey=True`)
         #:
-        self.unnormalized_data = self.data
+        self.unnormalized_data = self.data.copy()
         self.normalize()
 
     def __str__(self) -> str:
@@ -165,7 +165,10 @@ class EmissionEnergyDistribution(EmissionData):
         )
         if norms is None:
             norms = [None for _ in results]
-        return [cls(data, e_pe=e_pe) for data, e_pe in results.values()]
+        return [
+            cls(data, e_pe=e_pe, norm=norm)
+            for (data, e_pe), norm in zip(results.values(), norms, strict=True)
+        ]
 
     @abstractmethod
     def _default_norm(self) -> float:
