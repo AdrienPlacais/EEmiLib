@@ -7,6 +7,7 @@ In particular, define functions to display math equations.
 import io
 import logging
 import re
+from functools import lru_cache
 
 import matplotlib.pyplot as plt
 from PyQt5.QtCore import QEvent, Qt
@@ -73,6 +74,7 @@ def _parse_key(key: str) -> tuple[str, str]:
     return body, units
 
 
+@lru_cache(maxsize=512)
 def _render_to_pixmap(
     text: str,
     width_px: int,
