@@ -257,6 +257,12 @@ class EmissionEnergyDistribution(EmissionData):
         self.normalize()
 
     @property
+    def se_peak_normalized_data(self) -> NDArray[np.float64]:
+        """Normal data scaled so the |SE| peak is 1, whatever :attr:`norm`."""
+        se_peak = self.data[: self._se_ebe_limit][COL_NORMAL].max()
+        return self.normal_data / se_peak
+
+    @property
     def _se_ebe_limit(self) -> int:
         """Arbitrary index limit between |SEs| and |EBEs|."""
         return int(self._n_points / 4)
@@ -310,6 +316,11 @@ class SEEmissionEnergyDistribution(EmissionEnergyDistribution):
 
         """
         return self.peak_value
+
+    @property
+    def se_peak_normalized_data(self) -> NDArray[np.float64]:
+        """Normal data scaled so the peak is 1, whatever :attr:`norm`."""
+        return self.normal_data / self.normal_data.max()
 
 
 class EBEEmissionEnergyDistribution(EmissionEnergyDistribution):

@@ -145,7 +145,7 @@ class Maxwellian(Model):
             """Compute residues on all distributions."""
             residuals = []
             for distrib in distributions:
-                measured = distrib.normal_data
+                measured = distrib.se_peak_normalized_data
                 predicted = maxwellian_pdf(
                     distrib.energies,
                     norm=_maxwellian_norm(kwargs["temperature"]),

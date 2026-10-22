@@ -875,6 +875,8 @@ def _build_emission_data(
     if data_type == "Emission Yield":
         return [EMISSION_YIELDS_BY_POP[population](data)]
     if data_type == "Emission Energy":
-        return [EMISSION_ENERGIES_BY_POP[population](data, e_pe=e_pe)]
+        return [
+            EMISSION_ENERGIES_BY_POP[population](data, e_pe=e_pe, norm=1.0)
+        ]
     else:
         raise NotImplementedEmissionDataTypeError(data_type)
