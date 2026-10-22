@@ -61,6 +61,7 @@ from eemilib.gui.file_selection import (
     file_selection_matrix,
 )
 from eemilib.gui.helper import (
+    PARAMETER_ATTR_TO_POS,
     PARAMETER_POS_TO_ATTR,
     LinspaceEntries,
     add_linspace_row,
@@ -484,17 +485,21 @@ class EEmiLibGUI(QMainWindow):
 
     def _lock_selected(self, locked: bool) -> None:
         """Lock or unlock all selected parameters."""
-        rows = {
-            index.row() for index in self.parameters_table.selectedIndexes()
-        }
+        table = self.parameters_table
+        col_lock = PARAMETER_ATTR_TO_POS["lock"]
         names = list(self.model.parameters)
-        for row in rows:
+        for row in {index.row() for index in table.selectedIndexes()}:
             parameter = self.model.parameters[names[row]]
             parameter.lock() if locked else parameter.unlock()
-        populate_parameters_table_constants(
-            self.parameters_table, self.model.parameters
-        )
-        self._populate_parameters_table_values()
+
+            widget = table.cellWidget(row, col_lock)
+            checkbox = (
+                widget
+                if isinstance(widget, QCheckBox)
+                else widget.findChild(QCheckBox)
+            )
+            if checkbox is not None:
+                checkbox.setChecked(locked)
 
     # =========================================================================
     # Window 1 - Model evaluation
@@ -987,11 +992,11 @@ class EEmiLibGUI(QMainWindow):
         """
         try:
             yield
-        except (
-            MissingDataError,
-            MissingNormalEmissionYieldError,
-            *exceptions,
-        ) as e:
+        except MissingDataError as e:
+            message = f"{e!s}\nDo not forget to hit the 'Load data' button!"
+            logging.error(message)
+            show_error(self, type(e).__name__, message)
+        except (MissingNormalEmissionYieldError, *exceptions) as e:
             logging.error(str(e))
             show_error(self, type(e).__name__, str(e))
 
