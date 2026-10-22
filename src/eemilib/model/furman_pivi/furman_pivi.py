@@ -96,6 +96,7 @@ class FurmanPivi(Model):
         "normalization": FURMAN_PIVI_NORMALIZATIONS,
     }
     _url_doc_override = "manual/models/furman_pivi"
+    needs_yield_scaled_distributions = True
 
     def __init__(
         self,

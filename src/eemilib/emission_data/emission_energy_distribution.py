@@ -75,6 +75,8 @@ class EmissionEnergyDistribution(EmissionData):
         #:       `rescale_energy_distributions_to_teey=True`)
         #:
         self.unnormalized_data = self.data.copy()
+        #: Whether :meth:`rescale` altered :attr:`unnormalized_data`.
+        self.is_rescaled = False
         self.normalize()
 
     def __str__(self) -> str:
@@ -242,6 +244,7 @@ class EmissionEnergyDistribution(EmissionData):
 
         data_columns = [c for c in self.data.columns if c != COL_ENERGY]
         self.unnormalized_data[data_columns] *= scale
+        self.is_rescaled = True
 
         new_area = self._emission_yield
 
