@@ -309,8 +309,9 @@ class Vaughan(Model):
         Fil criterions :cite:`Fil2016a,Fil2020` are adapted to |TEEY| models.
 
         """
-        data_matrix = self._resolve_data_matrix(data_matrix)
-        return self._evaluate_for_teey_models(data_matrix)
+        return self._evaluate_for_teey_models(
+            self._resolve_data_matrix(data_matrix)
+        )
 
 
 def vaughan_func(

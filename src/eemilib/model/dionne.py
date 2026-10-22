@@ -195,13 +195,17 @@ class Dionne(Model):
         )
         self._fit(keys, _residue)
 
-    def evaluate(self, data_matrix: DataMatrix) -> dict[str, float]:
+    def evaluate(
+        self, data_matrix: DataMatrix | None = None
+    ) -> dict[str, float]:
         """Evaluate the quality of the model using Fil criterions.
 
         Fil criterions :cite:`Fil2016a,Fil2020` are adapted to |TEEY| models.
 
         """
-        return self._evaluate_for_teey_models(data_matrix)
+        return self._evaluate_for_teey_models(
+            self._resolve_data_matrix(data_matrix)
+        )
 
 
 def dionne_func(

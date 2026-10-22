@@ -306,6 +306,12 @@ class FurmanPivi(Model):
     ) -> None:
         """Fit all Furman and Pivi parameters on measurements.
 
+        The optimization is performed in three steps:
+
+        1. Find normal emission yield parameters.
+        2. Find oblique incidence emission yield parameters.
+        3. Find energy distributions parameters.
+
         Parameters
         ----------
         data_matrix :
@@ -316,16 +322,13 @@ class FurmanPivi(Model):
 
         """
         teeys = data_matrix.get_data("Emission Yield", "all")
-        self.find_normal_ey_params(teeys)
-        self.find_oblique_ey_params(teeys)
+        self._find_normal_ey_params(teeys)
+        self._find_oblique_ey_params(teeys)
 
         distribs = data_matrix.get_data("Emission Energy", "all")
-        self.find_energy_distribution_parameters(distribs)
+        self._find_energy_distribution_parameters(distribs)
 
-    # =========================================================================
-    # 1. Find best parameters for emission yield at normal incidence
-    # =========================================================================
-    def find_normal_ey_params(self, teeys: Sequence[TEEY]) -> None:
+    def _find_normal_ey_params(self, teeys: Sequence[TEEY]) -> None:
         """Orchestrate the find of |TEEY| parameters.
 
         Parameters
@@ -357,10 +360,7 @@ class FurmanPivi(Model):
 
         self._fit(NORMAL_TEEY_PARAM_KEYS, _aggregate_residue)
 
-    # =========================================================================
-    # 2. Find best parameters for emission yield at oblique incidence
-    # =========================================================================
-    def find_oblique_ey_params(self, teeys: Sequence[TEEY]) -> None:
+    def _find_oblique_ey_params(self, teeys: Sequence[TEEY]) -> None:
         """Orchestrate fitting of all oblique emission yields parameters."""
         if len(teeys) > 1:
             logging.warning(
@@ -386,10 +386,7 @@ class FurmanPivi(Model):
 
         self._fit(OBLIQUE_TEEY_PARAM_KEYS, _aggregate_residue)
 
-    # =========================================================================
-    # 3. Find best parameters for emission distribution at normal incidence
-    # =========================================================================
-    def find_energy_distribution_parameters(
+    def _find_energy_distribution_parameters(
         self, distribs: Sequence[AllEmissionEnergyDistribution]
     ) -> None:
         """Orchestrate fitting of all normal energy distribution parameters."""
@@ -430,9 +427,6 @@ class FurmanPivi(Model):
 
         self._fit(ALL_DISTRIB_PARAMETERS, _aggregate_residue)
 
-    # =========================================================================
-    # 4. Post
-    # =========================================================================
     def evaluate(
         self, data_matrix: DataMatrix | None = None
     ) -> dict[str, float]:
@@ -441,8 +435,9 @@ class FurmanPivi(Model):
         Fil criterions :cite:`Fil2016a,Fil2020` are adapted to |TEEY| models.
 
         """
-        data_matrix = self._resolve_data_matrix(data_matrix)
-        return self._evaluate_for_teey_models(data_matrix)
+        return self._evaluate_for_teey_models(
+            self._resolve_data_matrix(data_matrix)
+        )
 
 
 # Append dynamically generated docs to the module docstring
