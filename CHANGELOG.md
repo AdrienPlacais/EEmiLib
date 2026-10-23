@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Will make `FurmanPivi` crash.
     - Generally not useful with `ChungEverhart` and `Maxwellian`, because you do
       not need to load TEEYs.
+- The different Dionne implementations as listed in the article.
 
 ### Fixed
 

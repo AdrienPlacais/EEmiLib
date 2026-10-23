@@ -143,6 +143,16 @@ class FurmanPivi(Model):
             or ``"penetrated"`` (Eq. 43).
 
         """
+        choices = self.implementation_choices.get(name)
+        if choices is None:
+            logging.error(f"Unknown implementation axis {name = } for Dionne.")
+            return
+        if value not in choices:
+            logging.error(
+                f"Unknown value for {name}: {value}.\nAllowed: {choices}"
+            )
+            return
+
         if name == "distribution":
             self._proba_emit_n_se = (
                 set_number_of_secondaries_probability_function(

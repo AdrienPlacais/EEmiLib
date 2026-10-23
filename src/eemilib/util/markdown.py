@@ -63,7 +63,7 @@ DIFFUSION_LENGTH = "d"
 POWER_LAW_EXPONENT = "n"
 POWER_LAW_SCALE = "A"
 ESCAPE_PROBABILITY = "S"
-EXCITATION_ENERGY = r"\xi"
+EXCITATION_ENERGY = r"\Phi"
 
 # =============================================================================
 # Chung Everhart, Maxwellian
