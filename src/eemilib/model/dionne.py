@@ -82,7 +82,8 @@ class Dionne(Model):
             "value": 4.6,
             "lower_bound": 0.0,
             "description": (
-                "Energy required to excite a secondary electron in the material."
+                "Energy required to excite a secondary electron in the "
+                "material."
             ),
             "is_locked": True,
         },
@@ -142,6 +143,8 @@ class Dionne(Model):
             :func:`.dionne.range_func` for more info.
 
         """
+        for parameters_kwargs in self.initial_parameters.values():
+            self.add_original_notation(parameters_kwargs, "Dionne")
         super().__init__(parameters_values)
         self.parameters = cast(DionneParameters, self.parameters)
         self._energy_loss_model: EnergyLossModel = energy_loss_model

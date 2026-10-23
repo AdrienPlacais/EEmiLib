@@ -43,7 +43,6 @@ from eemilib.model.furman_pivi.all import (
     teey_normal,
 )
 from eemilib.model.furman_pivi.ebe import ebe_energy_distribution, ebeey
-from eemilib.model.furman_pivi.helper import add_furman_pivi_notation
 from eemilib.model.furman_pivi.ibe import ibe_energy_distribution, ibeey
 from eemilib.model.furman_pivi.physics import (
     DISTRIBUTION_T,
@@ -122,7 +121,7 @@ class FurmanPivi(Model):
 
         """
         for parameters_kwargs in self.initial_parameters.values():
-            add_furman_pivi_notation(parameters_kwargs)
+            self.add_original_notation(parameters_kwargs, "Furman and Pivi")
         super().__init__(parameters_values)
         self.parameters = cast(FurmanPiviParameters, self.parameters)
 
@@ -183,7 +182,7 @@ class FurmanPivi(Model):
             "     - Description",
         ]
         for name, kwargs in cls.initial_parameters.items():
-            add_furman_pivi_notation(kwargs)
+            cls.add_original_notation(kwargs, "Furman and Pivi")
             doc = [
                 f"   * - :math:`{kwargs.get('markdown', '')}`",
                 f"     - {name}",

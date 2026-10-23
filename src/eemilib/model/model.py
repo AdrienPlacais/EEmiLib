@@ -149,6 +149,42 @@ class Model(ABC):
             doc_lines += doc
         return "\n".join(doc_lines)
 
+    def display_parameters(self) -> None:
+        """Display the parameters and their values in a nice looking way."""
+        if not hasattr(self, "parameters"):
+            logging.info("`parameters` attribute was not set.")
+
+        msg = {
+            f"{key:>20}": str(param) for key, param in self.parameters.items()
+        }
+        logging.info("Parameters values:\n" + pformat(msg))
+
+    @classmethod
+    def add_original_notation(
+        cls, parameters_kwargs: dict[str, str | float | bool], author: str
+    ) -> None:
+        """Modify dict in-place to mention original notation.
+
+        Parameters
+        ----------
+        parameters_kwargs :
+            A :class:`.Parameter` kwargs. If an ``"original_notation"`` key is
+            found, it is removed and added to the ``"description"`` value --
+            provided that both keys are valid strings.
+        author :
+            Name of the author to append to the description.
+
+        """
+        description = parameters_kwargs.get("description")
+        if not isinstance(description, str):
+            return
+        original_notation = parameters_kwargs.pop("original_notation", None)
+        if not isinstance(original_notation, str):
+            return
+        parameters_kwargs["description"] = " ".join(
+            (description, f"Denoted :math:`{original_notation}` by {author}.")
+        )
+
     def teey(
         self,
         energy: NDArray[np.float64],
@@ -1032,16 +1068,6 @@ class Model(ABC):
 
         error = 100.0 * np.std((measured_teey - modelled_teey), ddof=1.0)
         return float(error)
-
-    def display_parameters(self) -> None:
-        """Display the parameters and their values in a nice looking way."""
-        if not hasattr(self, "parameters"):
-            logging.info("`parameters` attribute was not set.")
-
-        msg = {
-            f"{key:>20}": str(param) for key, param in self.parameters.items()
-        }
-        logging.info("Parameters values:\n" + pformat(msg))
 
 
 def _dummy_df(

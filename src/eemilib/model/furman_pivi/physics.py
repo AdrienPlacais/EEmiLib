@@ -187,7 +187,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "value": 310.0,
         "lower_bound": 0.0,
         "description": "Energy where SEEY is maximum at normal incidence.",
-        "furman_pivi_notation": NORMAL_E_MAX_SE_FP,
+        "original_notation": NORMAL_E_MAX_SE_FP,
     },
     "normal_delta_max": {
         "markdown": DELTA_MAX,
@@ -195,7 +195,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "value": 1.22,
         "lower_bound": 0.0,
         "description": "Maximum SEEY at normal incidence.",
-        "furman_pivi_notation": DELTA_MAX_FP,
+        "original_notation": DELTA_MAX_FP,
     },
     "t_1": {
         "markdown": T1,
@@ -438,7 +438,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "lower_bound": 0.0,
         "is_locked": True,
         "description": "Energy where EBEEY is maximum at normal incidence.",
-        "furman_pivi_notation": NORMAL_E_MAX_EBE_FP,
+        "original_notation": NORMAL_E_MAX_EBE_FP,
     },
     "eta_e_max": {
         "markdown": ETA_E_MAX,
@@ -510,7 +510,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
             r" has reached :math:`63.2\,\%` of its asymptotic "
             "maximum."
         ),
-        "furman_pivi_notation": E_IBE_FP,
+        "original_notation": E_IBE_FP,
     },
     "eta_i_max": {
         "markdown": ETA_I_MAX,
@@ -519,7 +519,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "lower_bound": 0.0,
         "upper_bound": 1.0,
         "description": "IBEEY asymptotic maximum.",
-        "furman_pivi_notation": ETA_I_MAX_FP,
+        "original_notation": ETA_I_MAX_FP,
     },
     "r": {
         "markdown": R,
