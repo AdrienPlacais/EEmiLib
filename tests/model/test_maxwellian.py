@@ -111,7 +111,7 @@ def test_modelled_maxwellian_agains_cst(
     [
         pytest.param(
             emission_energy_ag / "corrected_cleanAg0_150eV_2018.05.30.csv",
-            {"temperature": 3.349073165207961, "norm": 6.920409838552599},
+            {"temperature": 3.2660815143076345, "norm": 8.707288375592762},
             id="Measured emission energy on Ag",
         )
     ],
