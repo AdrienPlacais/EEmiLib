@@ -23,7 +23,9 @@ from eemilib.util.markdown import (
     EPS_9,
     EPS_10,
     ETA_E_MAX,
+    ETA_E_MAX_FP,
     ETA_E_MIN,
+    ETA_E_MIN_FP,
     ETA_I_MAX,
     ETA_I_MAX_FP,
     NORMAL_E_MAX_EBE,
@@ -128,11 +130,11 @@ class FurmanPiviParameters(TypedDict):
     # =========================================================================
     normal_e_max_se: Parameter
     normal_delta_max: Parameter
+    s: Parameter
     t_1: Parameter
     t_2: Parameter
     t_3: Parameter
     t_4: Parameter
-    s: Parameter
     eps_1: Parameter
     eps_2: Parameter
     eps_3: Parameter
@@ -201,24 +203,28 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": T1,
         "unit": "1",
         "value": 0.66,
+        "lower_bound": 0.0,
         "description": "Scaling parameter in SEEY impact angle fit.",
     },
     "t_2": {
         "markdown": T2,
         "unit": "1",
         "value": 0.80,
+        "lower_bound": 0.0,
         "description": "Exponent parameter in SEEY impact angle fit.",
     },
     "t_3": {
         "markdown": T3,
         "unit": "1",
         "value": 0.70,
+        "lower_bound": 0.0,
         "description": "Scaling parameter in SEEY energy impact angle fit.",
     },
     "t_4": {
         "markdown": T4,
         "unit": "1",
         "value": 1.0,
+        "lower_bound": 0.0,
         "description": "Exponent parameter in SEEY energy impact angle fit.",
     },
     "s": {
@@ -451,6 +457,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
             f"Must be bigger than :math:`{ETA_E_MIN}`, which is currently "
             "not enforced."
         ),
+        "original_notation": ETA_E_MAX_FP,
     },
     "sigma": {
         "markdown": SIGMA,
@@ -470,6 +477,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
             "EBEEY asymptotic minimum. Must be lower than "
             rf":math:`{ETA_E_MAX}`, which is currently not enforced."
         ),
+        "original_notation": ETA_E_MIN_FP,
     },
     "W": {
         "markdown": W,
@@ -489,12 +497,14 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": E1,
         "unit": "1",
         "value": 0.26,
+        "lower_bound": 0.0,
         "description": "Scaling parameter in EBEEY impact angle fit.",
     },
     "e_2": {
         "markdown": E2,
         "unit": "1",
         "value": 2.0,
+        "lower_bound": 0.0,
         "description": "Exponent parameter in EBEEY impact angle fit.",
     },
     # =====================================================================
@@ -532,18 +542,21 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": Q,
         "unit": "1",
         "value": 0.4,
+        "lower_bound": 0.0,
         "description": "Parameter in the IBEEY PDF function.",
     },
     "r_1": {
         "markdown": R1,
         "unit": "1",
         "value": 0.26,
+        "lower_bound": 0.0,
         "description": "Scaling parameter in IBEEY impact angle fit.",
     },
     "r_2": {
         "markdown": R2,
         "unit": "1",
         "value": 2.0,
+        "lower_bound": 0.0,
         "description": "Exponent parameter in IBEEY impact angle fit.",
     },
 }
