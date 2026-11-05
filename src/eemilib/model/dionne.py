@@ -3,13 +3,6 @@ r"""Create the Dionne model, to compute |SEEY|.
 This is a physical model developed by Dionne :cite:`Lye1957,Dionne1973,
 Dionne1975`.
 
-.. todo::
-   Handle the different implementations like :class:`~eemilib.model.FurmanPivi`
-   does.
-
-.. todo::
-   Test suite for this model.
-
 """
 
 # work_function :
