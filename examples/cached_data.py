@@ -43,7 +43,7 @@ my_distribution = model.get_or_compute_data(
     "SE",
     energy=np.linspace(0, 100, 10001),
     theta=None,
-    e_pe=None,
+    e_pes=None,
 )[0]
 # %%
 # The distribution is stored:
@@ -57,7 +57,7 @@ my_second_distribution = model.get_or_compute_data(
     "SE",
     energy=np.linspace(0, 100, 10001),
     theta=None,
-    e_pe=None,
+    e_pes=None,
 )[0]
 # %%
 # The new distribution is the same object as the previous one.
@@ -73,7 +73,7 @@ my_third_distribution = model.get_or_compute_data(
     "SE",
     energy=np.linspace(0, 99.999999, 10001),
     theta=None,
-    e_pe=None,
+    e_pes=None,
 )[0]
 # %%
 # The new distribution is a different object:

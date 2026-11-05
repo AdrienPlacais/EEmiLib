@@ -8,7 +8,7 @@
 import logging
 import math
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Collection, Sequence
+from collections.abc import Callable, Collection, Iterable, Sequence
 from pprint import pformat
 from typing import Any, ClassVar, Literal, cast, overload
 
@@ -308,7 +308,7 @@ class Model(ABC):
         population: ImplementedPop,
         energy: NDArray[np.float64] | None = None,
         theta: NDArray[np.float64] | None = None,
-        e_pe: float | None = None,
+        e_pes: Iterable[float] | float | None = None,
         *args,
         **kwargs,
     ) -> Sequence[EmissionData]:
@@ -332,29 +332,45 @@ class Model(ABC):
 
         theta :
             Array of |PE| electrons impact angle in :unit:`\\degree`.
-        e_pe :
-            Energy of |PEs| in :unit:`eV`, if applicable.
+        e_pes :
+            Energy of |PEs| in :unit:`eV`. Only used for ``"Emission Energy"``,
+            ignored with a warning otherwise. A single ``float`` of ``None``
+            are accepted.
         args, kwargs :
             Forwarded to :meth:`compute_data` on a cache miss.
 
         Return
         ------
-            The cached or freshly computed :class:`.EmissionData`.
+            The cached or freshly computed :class:`.EmissionData`. If
+            applicable, one per element of ``e_pes``.
 
         """
-        if energy is None:
-            energy = self._infer_energy(data_type, population, e_pe=e_pe)
-        if theta is None:
-            theta = self._infer_theta(data_type, population)
+        pes = _normalize_e_pes(data_type, e_pes)
+        if not pes:
+            return []
+
+        _energies = [
+            (
+                energy
+                if energy is not None
+                else self._infer_energy(data_type, population, e_pe=e_pe)
+            )
+            for e_pe in pes
+        ]
+        _theta = (
+            theta
+            if theta is not None
+            else self._infer_theta(data_type, population)
+        )
 
         result = self._cached_data_matrix.get_or_compute_data(
             data_type,
             population,
-            energy,
-            theta,
-            e_pe,
-            compute=lambda: self.compute_data(
-                data_type, population, energy, theta, e_pe, *args, **kwargs
+            _energies,
+            _theta,
+            pes,
+            compute=lambda ene, e_pe: self.compute_data(
+                data_type, population, ene, _theta, e_pe, *args, **kwargs
             ),
         )
         return result
@@ -707,7 +723,7 @@ class Model(ABC):
                 )
             return axes
         data = self.get_or_compute_data(
-            data_type, population, energy=energies, theta=angles, e_pe=e_pe
+            data_type, population, energy=energies, theta=angles, e_pes=e_pe
         )
         if not data:
             logging.info(
@@ -1082,3 +1098,26 @@ def _dummy_df(
         **{f"{the} [deg]": out[:, j] for j, the in enumerate(theta)},
     }
     return pd.DataFrame(out_dict)
+
+
+def _normalize_e_pes(
+    data_type: ImplementedEmissionData, e_pes: Iterable[float] | float | None
+) -> tuple[float | None, ...]:
+    """Format the given ``e_pes`` consistently.
+
+    - For emission yields, we check that no ``e_pes`` was given, and return a
+      tuple with a single ``None``.
+    - For emission energy distribution, we return a tuple.
+
+    """
+    if data_type != "Emission Energy":
+        if e_pes is not None:
+            logging.warning(
+                f"You gave {e_pes = }, but this argument describes a fixed PE "
+                "energy and is used only for emission energy distributions. "
+                "Ignoring..."
+            )
+        return (None,)
+    if isinstance(e_pes, Iterable):
+        return tuple(e_pes)
+    return (e_pes,)

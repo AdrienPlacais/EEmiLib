@@ -778,7 +778,7 @@ class ModelledDataMatrix(DataMatrix):
     def __init__(self) -> None:
         """Instantiate the object with an empty cache."""
         super().__init__()
-        #: Tracks the ``(energy, theta, e_pe)`` that produced each cell's
+        #: Tracks the ``(energy, theta, e_pes)`` that produced each cell's
         #: current content, so that a mismatched request can invalidate one
         #: cell rather than the whole matrix.
         self._requests: list[list[tuple]]
@@ -799,10 +799,12 @@ class ModelledDataMatrix(DataMatrix):
         self,
         data_type: ImplementedEmissionData,
         population: ImplementedPop,
-        energy: NDArray[np.float64],
+        energies: Sequence[NDArray[np.float64]],
         theta: NDArray[np.float64],
-        e_pe: float | None,
-        compute: Callable[[], pd.DataFrame | None],
+        e_pes: Sequence[float | None],
+        compute: Callable[
+            [NDArray[np.float64], float | None], pd.DataFrame | None
+        ],
     ) -> Sequence[EmissionData]:
         """Return cached entry for this cell, compute and cache it if new.
 
@@ -816,24 +818,28 @@ class ModelledDataMatrix(DataMatrix):
             Desired type of data.
         population :
             Desired population.
-        energy :
-            |PE| impact energies for emission yield, |EE| emission energies for
-            emission energy distribution.
+        energies :
+            One array per element of ``e_pes``. |PE| impact energies for
+            emission yield, |EE| emission energies for emission energy
+            distribution.
         theta :
             |PE| impact angles.
-        e_pe :
-            |PE| impact energy for emission energy distribution.
+        e_pes :
+            |PE| impact energies for emission energy distribution. One
+            :class:`.EmissionData` is built per |PE| energy.
         compute :
-            Function computing the cell if cache misses. Returns ``None`` if
-            this model does not support this request.
+            Function computing the data for one ``(energy, e_pe)`` if cache
+            misses. Returns ``None`` if this model does not support this
+            request.
 
         Return
         ------
             Cached or freshly computed emission data. Empty list if it failed.
+            Order as ``e_pes`` if applicable.
 
         """
         row, col = _natures_to_indexes(data_type, population)
-        request = (energy, theta, e_pe)
+        request = (energies, theta, e_pes)
         stored = self._requests[row][col]
 
         if _is_same_request(stored, request) and (
@@ -841,11 +847,16 @@ class ModelledDataMatrix(DataMatrix):
         ):
             return cached
 
-        data = compute()
-        if data is None:
-            return []
+        emission_data: list[EmissionData] = []
 
-        emission_data = _build_emission_data(data_type, population, data, e_pe)
+        for energy, e_pe in zip(energies, e_pes, strict=True):
+            data = compute(energy, e_pe)
+            if data is None:
+                return []
+
+            emission_data.append(
+                _build_emission_data(data_type, population, data, e_pe)
+            )
 
         self.set_data(emission_data, data_type, population)
         self._requests[row][col] = request
@@ -856,12 +867,13 @@ def _is_same_request(stored: tuple, request: tuple) -> bool:
     """Tell whether ``request`` arguments are exactly ``stored``."""
     if not stored:
         return False
-    s_energy, s_theta, s_e_pe = stored
-    r_energy, r_theta, r_e_pe = request
+    s_energies, s_theta, s_e_pes = stored
+    r_energies, r_theta, r_e_pes = request
     return (
-        np.array_equal(s_energy, r_energy)
+        len(s_energies) == len(r_energies)
+        and all(np.array_equal(s, r) for s, r in zip(s_energies, r_energies))
         and np.array_equal(s_theta, r_theta)
-        and s_e_pe == r_e_pe
+        and s_e_pes == r_e_pes
     )
 
 
@@ -870,13 +882,12 @@ def _build_emission_data(
     population: ImplementedPop,
     data: pd.DataFrame,
     e_pe: float | None = None,
-) -> Sequence[EmissionData]:
+) -> EmissionData:
     """Instantiate the proper :class:`EmissionData` subclass from data."""
     if data_type == "Emission Yield":
-        return [EMISSION_YIELDS_BY_POP[population](data)]
+        return EMISSION_YIELDS_BY_POP[population](data)
+
     if data_type == "Emission Energy":
-        return [
-            EMISSION_ENERGIES_BY_POP[population](data, e_pe=e_pe, norm=1.0)
-        ]
-    else:
-        raise NotImplementedEmissionDataTypeError(data_type)
+        return EMISSION_ENERGIES_BY_POP[population](data, e_pe=e_pe, norm=1.0)
+
+    raise NotImplementedEmissionDataTypeError(data_type)
