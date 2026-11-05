@@ -282,7 +282,7 @@ class Model(ABC):
               impact energy of the |PE| is also the last value of ``energy``.
 
         theta :
-            Array of |PE| electrons impact angle in :unit:`\degrees`.
+            Array of |PE| electrons impact angle in :unit:`\\degree`.
         e_pe :
             Energy of |PEs| in :unit:`eV`, if applicable.
         args :
@@ -331,7 +331,7 @@ class Model(ABC):
               impact energy of the |PE| is also the last value of ``energy``.
 
         theta :
-            Array of |PE| electrons impact angle in :unit:`\degrees`.
+            Array of |PE| electrons impact angle in :unit:`\\degree`.
         e_pe :
             Energy of |PEs| in :unit:`eV`, if applicable.
         args, kwargs :

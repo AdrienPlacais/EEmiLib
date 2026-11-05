@@ -104,7 +104,7 @@ class ChungEverhart(Model):
             not used in this model, allowing unphysical |SEs| with energy
             higher than the |PE|.
         theta :
-            Array of |PE| electrons impact angle in :unit:`\degree`. Will be
+            Array of |PE| electrons impact angle in :unit:`\\degree`. Will be
             ignored, as this model models only normal incidence impact.
         args :
             Other arguments passed to model functions.

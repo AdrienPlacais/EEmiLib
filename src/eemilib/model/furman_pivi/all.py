@@ -90,7 +90,7 @@ def teey(ene: float, the: float, **kwargs) -> float:
     ene :
         Impact energy in :unit:`eV`.
     the :
-        Impact angle in :unit:`\degree`.
+        Impact angle in :unit:`\\degree`.
     kwargs :
         Model parameters.
 

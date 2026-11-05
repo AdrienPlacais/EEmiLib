@@ -94,7 +94,7 @@ def at_theta_incidence(
     Parameters
     ----------
     the :
-        Incidence angle in :unit:`\degree`.
+        Incidence angle in :unit:`\\degree`.
     at_normal :
         Quantity at :math:`\theta = 0\degree`.
     a_1 :
