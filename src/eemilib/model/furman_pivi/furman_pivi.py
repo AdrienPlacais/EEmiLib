@@ -22,18 +22,16 @@ This is an empirical model developed by Dionne :cite:`Furman2002,Furman2013`.
 import logging
 from collections.abc import Callable, Sequence
 from functools import partial
-from typing import Any, ClassVar, cast
+from typing import Any, ClassVar, Literal, cast
 
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
-from scipy.optimize import least_squares
 
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
 from eemilib.emission_data.emission_energy_distribution import (
     AllEmissionEnergyDistribution,
-    EmissionEnergyDistribution,
 )
 from eemilib.emission_data.emission_yield import TEEY
 from eemilib.model.furman_pivi.all import (
@@ -45,7 +43,6 @@ from eemilib.model.furman_pivi.all import (
     teey_normal,
 )
 from eemilib.model.furman_pivi.ebe import ebe_energy_distribution, ebeey
-from eemilib.model.furman_pivi.helper import add_furman_pivi_notation
 from eemilib.model.furman_pivi.ibe import ibe_energy_distribution, ibeey
 from eemilib.model.furman_pivi.physics import (
     DISTRIBUTION_T,
@@ -75,6 +72,8 @@ EMISSION_YIELD_FUNCS: dict[ImplementedPop, Callable] = {
     "IBE": ibeey,
     "all": teey,
 }
+FIT_STRATEGY_T = Literal["sequential", "joint"]
+FIT_STRATEGIES: tuple[FIT_STRATEGY_T, ...] = ("sequential", "joint")
 
 
 class FurmanPivi(Model):
@@ -93,16 +92,28 @@ class FurmanPivi(Model):
     initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = (
         INITIAL_FURMAN_PIVI_PARAMETERS
     )
-    implementation_choices: ClassVar[dict[str, tuple[str, ...]]] = {
+    implementation_choices: ClassVar[
+        dict[str, tuple[str, ...] | tuple[bool, ...]]
+    ] = {
         "distribution": FURMAN_PIVI_DISTRIBUTIONS,
         "normalization": FURMAN_PIVI_NORMALIZATIONS,
+        "halve_ebe_contribution_in_EBE_peak": (True, False),
+        "fit_strategy": FIT_STRATEGIES,
+    }
+    #: Multiplies the residuals of each dataset in the ``"joint"`` fit.
+    fit_weights: ClassVar[dict[str, float]] = {
+        "yield": 1.0,
+        "distribution": 1.0,
     }
     _url_doc_override = "manual/models/furman_pivi"
+    needs_yield_scaled_distributions = True
 
     def __init__(
         self,
         distribution: DISTRIBUTION_T = "Poisson",
         normalization: NORMALIZATION_T = "penetrated",
+        halve_ebe_contribution_in_EBE_peak: bool = True,
+        fit_strategy: FIT_STRATEGY_T = "joint",
         parameters_values: dict[str, Any] | None = None,
     ) -> None:
         r"""Instantiate the object.
@@ -117,13 +128,26 @@ class FurmanPivi(Model):
             Normalization used for the associated probabilities, *cf* Eqs.
             (35) and (43). Can be changed later with
             :meth:`set_implementation`.
+        halve_ebe_contribution_in_EBE_peak :
+            Whether we should try to fit the double height of EBE peak. See
+            Section VI. :cite:`Furman2002`. Can be changed later with
+            :meth:`set_implementation`.
+        fit_strategy :
+            With ``"sequential"``, we fit the model in three steps:
+
+                1. Normal emission yields
+                2. Oblique emission yields
+                3. Normal emission energy distribution
+
+            With ``"joint"``, we fit everything at once. Can be changed later
+            with :meth:`set_implementation`.
         parameters_values :
             Contains name of parameters and associated value. If provided, will
             override the default values set in ``initial_parameters``.
 
         """
         for parameters_kwargs in self.initial_parameters.values():
-            add_furman_pivi_notation(parameters_kwargs)
+            self.add_original_notation(parameters_kwargs, "Furman and Pivi")
         super().__init__(parameters_values)
         self.parameters = cast(FurmanPiviParameters, self.parameters)
 
@@ -132,19 +156,45 @@ class FurmanPivi(Model):
         self._normalization: NORMALIZATION_T
         self.set_implementation("normalization", normalization)
 
-    def set_implementation(self, name: str, value: str) -> None:
+        self._halve_ebe_contribution_in_EBE_peak: bool
+        self.set_implementation(
+            "halve_ebe_contribution_in_EBE_peak",
+            halve_ebe_contribution_in_EBE_peak,
+        )
+
+        self._fit_strategy: FIT_STRATEGY_T
+        self.set_implementation("fit_strategy", fit_strategy)
+
+    def set_implementation(self, name: str, value: str | bool) -> None:
         r"""Update one implementation axis.
 
         Parameters
         ----------
         name :
-            ``"distribution"`` or ``"normalization"``.
+            ``"distribution"``, ``"normalization"``,
+            ``"halve_ebe_contribution_in_EBE_peak"`` or ``"fit_strategy"``.
         value :
-            For ``"distribution"``: ``"Poisson"`` or ``"Binomial"``, *cf*
-            Eqs. (37)/(38). For ``"normalization"``: ``"incident"`` (Eq. 35)
-            or ``"penetrated"`` (Eq. 43).
+            - ``"distribution"``: ``"Poisson"`` or ``"Binomial"``, *cf* Eqs.
+              (37)/(38).
+            - ``"normalization"``: ``"incident"`` (Eq. 35) or ``"penetrated"``
+              (Eq. 43).
+            - ``"halve_ebe_contribution_in_EBE_peak"``: True or False. See
+              Section VI :cite:`Furman2002`.
+            - ``"fit_strategy"``: ``"joint"`` or ``"sequential"``.
 
         """
+        choices = self.implementation_choices.get(name)
+        if choices is None:
+            logging.error(
+                f"Unknown implementation axis {name = } for Furman and Pivi."
+            )
+            return
+        if value not in choices:
+            logging.error(
+                f"Unknown value for {name}: {value}.\nAllowed: {choices}"
+            )
+            return
+
         if name == "distribution":
             self._proba_emit_n_se = (
                 set_number_of_secondaries_probability_function(
@@ -159,6 +209,16 @@ class FurmanPivi(Model):
             self.current_implementations["normalization"] = value
             return
 
+        if name == "halve_ebe_contribution_in_EBE_peak":
+            self._halve_ebe_contribution_in_EBE_peak = cast(bool, value)
+            self.current_implementations[
+                "halve_ebe_contribution_in_EBE_peak"
+            ] = value
+            return
+        if name == "fit_strategy":
+            self._fit_strategy = cast(FIT_STRATEGY_T, value)
+            self.current_implementations["fit_strategy"] = value
+            return
         logging.error(f"Unknown implementation axis {name = } for FurmanPivi.")
 
     @classmethod
@@ -184,7 +244,7 @@ class FurmanPivi(Model):
             "     - Description",
         ]
         for name, kwargs in cls.initial_parameters.items():
-            add_furman_pivi_notation(kwargs)
+            cls.add_original_notation(kwargs, "Furman and Pivi")
             doc = [
                 f"   * - :math:`{kwargs.get('markdown', '')}`",
                 f"     - {name}",
@@ -222,7 +282,11 @@ class FurmanPivi(Model):
             "EBE": ebe_energy_distribution,
             "IBE": ibe_energy_distribution,
             "SE": partial(se_energy_distribution, **se_kwargs),
-            "all": partial(all_energy_distribution, **se_kwargs),
+            "all": partial(
+                all_energy_distribution,
+                halve_ebe_contribution=False,
+                **se_kwargs,
+            ),
         }
         dist_func = dist_funcs.get(population)
         if dist_func is None:
@@ -308,6 +372,16 @@ class FurmanPivi(Model):
     ) -> None:
         """Fit all Furman and Pivi parameters on measurements.
 
+        With :attr:`.fit_strategy` set to ``"sequental"``, the optimization is
+        performed in three steps:
+
+        1. Find normal emission yield parameters.
+        2. Find oblique incidence emission yield parameters.
+        3. Find energy distributions parameters.
+
+        With ``"joint"``, all steps are performed at the same time. This option
+        takes longer, but can lead to better results.
+
         Parameters
         ----------
         data_matrix :
@@ -317,17 +391,17 @@ class FurmanPivi(Model):
             Unused kwargs.
 
         """
+        if self._fit_strategy == "joint":
+            self._find_parameters_jointly(data_matrix)
+            return
+
         teeys = data_matrix.get_data("Emission Yield", "all")
-        self.find_normal_ey_params(teeys)
-        self.find_oblique_ey_params(teeys)
-
+        self._find_normal_ey_params(teeys)
+        self._find_oblique_ey_params(teeys)
         distribs = data_matrix.get_data("Emission Energy", "all")
-        self.find_energy_distribution_parameters(distribs)
+        self._find_energy_distribution_parameters(distribs)
 
-    # =========================================================================
-    # 1. Find best parameters for emission yield at normal incidence
-    # =========================================================================
-    def find_normal_ey_params(self, teeys: Sequence[TEEY]) -> None:
+    def _find_normal_ey_params(self, teeys: Sequence[TEEY]) -> None:
         """Orchestrate the find of |TEEY| parameters.
 
         Parameters
@@ -341,148 +415,147 @@ class FurmanPivi(Model):
             logging.warning(
                 "Method not actually adapted to several TEEY objects"
             )
-        for _teey in teeys:
-            normal_e_max_se = self.parameters["normal_e_max_se"]
-            normal_e_max_se.value = _teey.e_max
-            normal_e_max_se.lower_bound = _teey.e_max - 5.0
-            normal_e_max_se.upper_bound = _teey.e_max + 5.0
 
-        self._fit_normal_teey(teeys)
-
-    def _fit_normal_teey(self, teeys: Sequence[TEEY]) -> None:
-        """Fit |TEEY| parameters."""
-
-        def _aggregate_residue(x: NDArray[np.float64]) -> NDArray[np.float64]:
-            kwargs = dict(zip(NORMAL_TEEY_PARAM_KEYS, x))
-            residuals = []
-            for _teey in teeys:
-                measured = _teey.normal_data
-                predicted = teey_normal(_teey.energies, **kwargs)
-                residuals.append(measured - predicted)
-            return np.concatenate(residuals)
-
-        x0 = [self.parameters[key].value for key in NORMAL_TEEY_PARAM_KEYS]
-        lower_bounds = [
-            self.parameters[key].lower_bound for key in NORMAL_TEEY_PARAM_KEYS
-        ]
-        upper_bounds = [
-            self.parameters[key].upper_bound for key in NORMAL_TEEY_PARAM_KEYS
-        ]
-
-        lsq = least_squares(
-            fun=_aggregate_residue, x0=x0, bounds=(lower_bounds, upper_bounds)
+        self._fit(
+            NORMAL_TEEY_PARAM_KEYS, partial(self._normal_yield_residue, teeys)
         )
-        fitted = dict(zip(NORMAL_TEEY_PARAM_KEYS, lsq.x))
-        self.set_parameters_values(fitted)
 
-    # =========================================================================
-    # 2. Find best parameters for emission yield at oblique incidence
-    # =========================================================================
-    def find_oblique_ey_params(self, teeys: Sequence[TEEY]) -> None:
+    def _find_oblique_ey_params(self, teeys: Sequence[TEEY]) -> None:
         """Orchestrate fitting of all oblique emission yields parameters."""
         if len(teeys) > 1:
             logging.warning(
                 "Method not actually adapted to several TEEY objects"
             )
-        self._fit_oblique_teey(teeys)
-
-    def _fit_oblique_teey(self, teeys: Sequence[TEEY]) -> None:
-        r"""Find oblique |TEEY| parameters."""
         extra_kwargs = {
-            **{key: self.parameters[key] for key in NORMAL_TEEY_PARAM_KEYS}
+            key: self.parameters[key] for key in NORMAL_TEEY_PARAM_KEYS
         }
 
-        def _aggregate_residue(x: NDArray[np.float64]) -> NDArray[np.float64]:
-            kwargs = dict(zip(OBLIQUE_TEEY_PARAM_KEYS, x))
-            residuals = []
-            for _teey in teeys:
-                for theta, measured in zip(
-                    _teey.angles[1:], _teey.oblique_data, strict=True
-                ):
-                    predicted = teey(
-                        _teey.energies, theta, **kwargs, **extra_kwargs
-                    )
-                    residuals.append(measured - predicted)
-            return np.concatenate(residuals)
+        def _aggregate_residue(
+            kwargs: dict[str, float],
+        ) -> NDArray[np.float64]:
+            return self._oblique_yield_residue(
+                teeys, {**kwargs, **extra_kwargs}
+            )
 
-        x0 = [self.parameters[key].value for key in OBLIQUE_TEEY_PARAM_KEYS]
-        lower_bounds = [
-            self.parameters[key].lower_bound for key in OBLIQUE_TEEY_PARAM_KEYS
-        ]
-        upper_bounds = [
-            self.parameters[key].upper_bound for key in OBLIQUE_TEEY_PARAM_KEYS
-        ]
+        self._fit(OBLIQUE_TEEY_PARAM_KEYS, _aggregate_residue)
 
-        lsq = least_squares(
-            fun=_aggregate_residue, x0=x0, bounds=(lower_bounds, upper_bounds)
-        )
-        fitted = dict(zip(OBLIQUE_TEEY_PARAM_KEYS, lsq.x))
-        self.set_parameters_values(fitted)
-
-    # =========================================================================
-    # 3. Find best parameters for emission distribution at normal incidence
-    # =========================================================================
-    def find_energy_distribution_parameters(
+    def _find_energy_distribution_parameters(
         self, distribs: Sequence[AllEmissionEnergyDistribution]
     ) -> None:
         """Orchestrate fitting of all normal energy distribution parameters."""
-        self._fit_energy_distribs(distribs)
-
-    def _fit_energy_distribs(
-        self, distribs: Sequence[EmissionEnergyDistribution]
-    ) -> None:
-        """Fit energy distributions parameters."""
-        p_ns = [
-            self.parameters[f"p_{i}"] for i in range(1, M_MAX_SECONDARIES + 1)
-        ]
-        eps_ns = [
-            self.parameters[f"eps_{i}"]
-            for i in range(1, M_MAX_SECONDARIES + 1)
-        ]
         extra_kwargs = {
             **{
                 key: self.parameters[key]
                 for key in NORMAL_TEEY_PARAM_KEYS + OBLIQUE_TEEY_PARAM_KEYS
             },
-            "p_ns": p_ns,
-            "eps_ns": eps_ns,
+            **self._implementation_kwargs,
+        }
+        self._fit(
+            ALL_DISTRIB_PARAMETERS,
+            partial(
+                self._distribution_residue, distribs, extra_kwargs=extra_kwargs
+            ),
+        )
+
+    @property
+    def _implementation_kwargs(self) -> dict[str, Any]:
+        """Gather the implementation choices used by the distributions."""
+        return {
             "proba_emit_n_se": self._proba_emit_n_se,
             "normalization": self._normalization,
+            "halve_ebe_contribution": (
+                self._halve_ebe_contribution_in_EBE_peak
+            ),
         }
 
-        def _aggregate_residue(x: NDArray[np.float64]) -> NDArray[np.float64]:
-            kwargs = dict(zip(ALL_DISTRIB_PARAMETERS, x))
-            residuals = []
-            for distrib in distribs:
-                measured = distrib.normal_data
-                predicted = all_energy_distribution(
-                    e_pe=distrib.e_pe,
-                    the=0.0,
-                    emission_energies=distrib.energies,
-                    halve_ebe_contribution=True,
-                    **kwargs,
-                    **extra_kwargs,
-                )
-                residuals.append(measured - predicted)
-            return np.concatenate(residuals)
-
-        x0 = [self.parameters[key].value for key in ALL_DISTRIB_PARAMETERS]
-        lower_bounds = [
-            self.parameters[key].lower_bound for key in ALL_DISTRIB_PARAMETERS
-        ]
-        upper_bounds = [
-            self.parameters[key].upper_bound for key in ALL_DISTRIB_PARAMETERS
-        ]
-
-        lsq = least_squares(
-            fun=_aggregate_residue, x0=x0, bounds=(lower_bounds, upper_bounds)
+    def _normal_yield_residue(
+        self, teeys: Sequence[TEEY], kwargs: dict[str, float]
+    ) -> NDArray[np.float64]:
+        """Compute |TEEY| residuals at normal incidence."""
+        return np.concatenate(
+            [
+                _teey.normal_data - teey_normal(_teey.energies, **kwargs)
+                for _teey in teeys
+            ]
         )
-        fitted = dict(zip(ALL_DISTRIB_PARAMETERS, lsq.x))
-        self.set_parameters_values(fitted)
 
-    # =========================================================================
-    # 4. Post
-    # =========================================================================
+    def _oblique_yield_residue(
+        self, teeys: Sequence[TEEY], kwargs: dict[str, float]
+    ) -> NDArray[np.float64]:
+        """Compute |TEEY| residuals at oblique incidence."""
+        residuals = []
+        for _teey in teeys:
+            for theta, measured in zip(
+                _teey.angles[1:], _teey.oblique_data, strict=True
+            ):
+                predicted = teey(_teey.energies, theta, **kwargs)
+                residuals.append(measured - predicted)
+        return np.concatenate(residuals)
+
+    def _distribution_residue(
+        self,
+        distribs: Sequence[AllEmissionEnergyDistribution],
+        kwargs: dict[str, float],
+        extra_kwargs: dict[str, Any],
+    ) -> NDArray[np.float64]:
+        """Compute residuals of the energy distributions."""
+        n_range = range(1, M_MAX_SECONDARIES + 1)
+        p_ns = [
+            kwargs.get(f"p_{i}", self.parameters[f"p_{i}"]) for i in n_range
+        ]
+        eps_ns = [
+            kwargs.get(f"eps_{i}", self.parameters[f"eps_{i}"])
+            for i in n_range
+        ]
+        residuals = []
+        for distrib in distribs:
+            predicted = all_energy_distribution(
+                e_pe=distrib.e_pe,
+                the=0.0,
+                emission_energies=distrib.energies,
+                p_ns=p_ns,
+                eps_ns=eps_ns,
+                **kwargs,
+                **extra_kwargs,
+            )
+            residuals.append(distrib.normal_data - predicted)
+        return np.concatenate(residuals)
+
+    def _find_parameters_jointly(self, data_matrix: DataMatrix) -> None:
+        """Fit yield and distribution parameters at once.
+
+        The |SE|/|EBE|/|IBE| partition cannot be determined from the |TEEY|
+        alone, so all parameters are fitted on the concatenated residuals,
+        scaled by :attr:`fit_weights`.
+
+        """
+        teeys = data_matrix.get_data("Emission Yield", "all")
+        distribs = data_matrix.get_data("Emission Energy", "all")
+        extra_kwargs = self._implementation_kwargs
+        w_yield = self.fit_weights["yield"]
+        w_distrib = self.fit_weights["distribution"]
+
+        def _aggregate_residue(
+            kwargs: dict[str, float],
+        ) -> NDArray[np.float64]:
+            return np.concatenate(
+                [
+                    w_yield * self._normal_yield_residue(teeys, kwargs),
+                    w_yield * self._oblique_yield_residue(teeys, kwargs),
+                    w_distrib
+                    * self._distribution_residue(
+                        distribs, kwargs, extra_kwargs
+                    ),
+                ]
+            )
+
+        self._fit(
+            NORMAL_TEEY_PARAM_KEYS
+            + OBLIQUE_TEEY_PARAM_KEYS
+            + ALL_DISTRIB_PARAMETERS,
+            _aggregate_residue,
+        )
+
     def evaluate(
         self, data_matrix: DataMatrix | None = None
     ) -> dict[str, float]:
@@ -491,7 +564,9 @@ class FurmanPivi(Model):
         Fil criterions :cite:`Fil2016a,Fil2020` are adapted to |TEEY| models.
 
         """
-        return self._evaluate_for_teey_models(data_matrix)
+        return self._evaluate_for_teey_models(
+            self._resolve_data_matrix(data_matrix)
+        )
 
 
 # Append dynamically generated docs to the module docstring

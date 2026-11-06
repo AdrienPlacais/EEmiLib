@@ -12,7 +12,6 @@ from typing import Any, ClassVar, Literal, TypedDict, cast
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
-from scipy.optimize import Bounds, least_squares
 
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
@@ -20,7 +19,6 @@ from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
     COL_ENERGY,
-    COL_NORMAL,
     ImplementedEmissionData,
     ImplementedPop,
 )
@@ -106,7 +104,7 @@ class ChungEverhart(Model):
             not used in this model, allowing unphysical |SEs| with energy
             higher than the |PE|.
         theta :
-            Array of |PE| electrons impact angle in :unit:`\degree`. Will be
+            Array of |PE| electrons impact angle in :unit:`\\degree`. Will be
             ignored, as this model models only normal incidence impact.
         args :
             Other arguments passed to model functions.
@@ -162,31 +160,26 @@ class ChungEverhart(Model):
         """
         distributions = data_matrix.get_data("Emission Energy", population)
         if not distributions:
-            raise MissingDataError(f"Missing emission energy for {population}")
-
-        def _aggregate_residue(w_f: float) -> NDArray[np.float64]:
-            """Compute residues on all distributions."""
-            return np.concatenate(
-                [
-                    _residue(
-                        w_f,
-                        distribution.data[COL_ENERGY].to_numpy(),
-                        distribution.data[COL_NORMAL].to_numpy(),
-                        # distribution.energies, distribution.normal_data
-                    )
-                    for distribution in distributions
-                ]
+            raise MissingDataError(
+                f"Cannot fit {self.__class__.__name__}.",
+                missing=[("Emission Energy", population)],
             )
 
-        param = self.parameters["W_f"]
-        lsq = least_squares(
-            fun=_aggregate_residue,
-            x0=param,
-            bounds=Bounds(param.lower_bound, param.upper_bound),
-        )
-        w_f = lsq.x[0]
-        self.set_parameters_values(
-            {"W_f": w_f, "norm": _chung_everhart_norm(w_f)}
+        def _aggregate_residue(
+            kwargs: dict[str, float],
+        ) -> NDArray[np.float64]:
+            """Compute residues on all distributions."""
+            residuals = []
+            for distrib in distributions:
+                measured = distrib.se_peak_normalized_data
+                predicted = chung_everhart_func(distrib.energies, **kwargs)
+                residuals.append(predicted - measured)
+            return np.concatenate(residuals)
+
+        keys = ("W_f",)
+        self._fit(keys, _aggregate_residue)
+        self.set_parameter_value(
+            "norm", _chung_everhart_norm(self.parameters["W_f"].value)
         )
 
 
@@ -204,15 +197,6 @@ def chung_everhart_func(
     """Compute the energy distribution."""
     norm = norm if norm is not None else _chung_everhart_norm(W_f)
     return norm * ene / (ene + W_f) ** 4
-
-
-def _residue(
-    W_f: Parameter | float,
-    ene: NDArray[np.float64],
-    measured: NDArray[np.float64],
-) -> NDArray[np.float64]:
-    """Compute array of residues between model and measurements."""
-    return chung_everhart_func(ene, W_f) - measured
 
 
 # Append dynamically generated docs to the module docstring

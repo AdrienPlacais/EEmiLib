@@ -118,17 +118,20 @@ documentation](https://eemilib.readthedocs.io/en/latest/auto_examples/index.html
   - [ ] Plot:
     - [ ] Let user choose `group_by_pe` and `e_pes` for `"Emission Energy"`
           plots.
-    - [ ] Plot window should be completely separated.
+    - [x] Plot window should be completely separated.
     - [ ] Changing parameter values should update the plot.
   - [ ] Let user load and plot files that are not needed for current `Model`, so
         they can compare `Model` data with tabulated data easily.
-  - [ ] `Parameters` :
-    - [ ] Unlocking should update the displayed bounds.
-  - [ ] Selecting `FurmanPivi` takes too long!
+  - [x] `Parameters` :
+    - [x] The bounds set in GUI are not taken into account.
+    - [x] The values set in GUI are not taken into account.
+    - [x] The `lock` checkbox is not taken into account.
+  - [x] Selecting `FurmanPivi` takes too long!
 - CI:
   - [ ] Allow execution on online Docker ?
 - [ ] `Export` buttons
   - [ ] Tabulated model data.
+    - First draft in `scripts/export_modelled.py`
   - [ ] Model parameters value (makes sense along with an `Import` button).
 - [ ] Fix error when not running from a git repo:
 
@@ -140,10 +143,11 @@ documentation](https://eemilib.readthedocs.io/en/latest/auto_examples/index.html
 - API:
   - [ ] Import/export model configuration with a `TOML`.
   - [ ] Should every `Model` be fitted on `all` population?
-  - [ ] Locking should remove optimization variables, rather than setting tiny
+  - [x] Locking should remove optimization variables, rather than setting tiny
         bounds.
-  - [ ] Energy distributions handling is inconsistent, in particular wrt the
+  - [x] Energy distributions handling is inconsistent, in particular wrt the
         norm.
+  - [ ] Make loading emission energy plots more robust.
 - If it proves useful:
   - [ ] Handle experimental data with error bars
   - [ ] Add control over interpolation of loaded experimental data

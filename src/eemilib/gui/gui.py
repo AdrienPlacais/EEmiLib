@@ -5,9 +5,6 @@
     Export/Import settings
 
 .. todo::
-   Make plot tab draggable so we can have model values and plot side by side.
-
-.. todo::
    Make model plot update on parameter value change (``Sync`` checkbox).
 
 .. note::
@@ -22,12 +19,16 @@
 import logging
 import sys
 from abc import ABCMeta
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
+from types import TracebackType
 from typing import Literal, cast
 
 import numpy as np
 from numpy.typing import NDArray
+from PyQt5.QtCore import QEventLoop, QPoint, Qt
 from PyQt5.QtWidgets import (
+    QAbstractItemView,
     QApplication,
     QCheckBox,
     QGridLayout,
@@ -35,11 +36,11 @@ from PyQt5.QtWidgets import (
     QLineEdit,
     QListWidget,
     QMainWindow,
+    QMenu,
     QPushButton,
     QRadioButton,
     QTableWidget,
     QTableWidgetItem,
-    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -66,6 +67,7 @@ from eemilib.gui.helper import (
     add_linspace_row,
     set_help_button_action,
     setup_linspace_entries,
+    show_error,
     titled_group,
     to_plot_checkboxes,
 )
@@ -81,12 +83,17 @@ from eemilib.gui.plot_canvas import TabbedPlotArea
 from eemilib.gui.styles import format_number
 from eemilib.loader.loader import Loader
 from eemilib.model.model import Model
+from eemilib.model.parameter import Parameter
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
     IMPLEMENTED_EMISSION_DATA,
     IMPLEMENTED_POP,
     ImplementedEmissionData,
     ImplementedPop,
+)
+from eemilib.util.exceptions import (
+    MissingDataError,
+    MissingNormalEmissionYieldError,
 )
 from eemilib.util.helper import flatten
 
@@ -105,6 +112,9 @@ class EEmiLibGUI(QMainWindow):
     autofill_plotting_ranges = True
     #: Whether plotting measurements should check the "use measured" boxes.
     autofill_use_measured = True
+    #: Whether loading data rescales the ``"all"`` emission energy
+    #: distributions so that their integral matches the |TEEY|.
+    rescale_energy_distributions_to_yield = True
 
     def __init__(
         self,
@@ -131,16 +141,19 @@ class EEmiLibGUI(QMainWindow):
         super().__init__()
         self.setWindowTitle("EEmiLib")
 
-        #: Holds all widgets of first tab
+        #: Holds all widgets of first window
         self.data_model_layout: QVBoxLayout
-        #: Holds all widgets of second tab
+
+        #: Separate window holding all plot widgets
+        self.plot_window: QWidget
+        #: Holds all widgets of second window
         self.plot_layout: QVBoxLayout
         self._setup_main_structure()
 
         #: Maps a dropdown name to its definition
         self.dropdowns: dict[Dropdowns, DropdownEntry] = {}
 
-        # Tab 1: Data & Model
+        # Window 1: Data & Model
         self.file_lists: list[list[None | QListWidget]]
         self._setup_file_selection_matrix()
 
@@ -150,6 +163,7 @@ class EEmiLibGUI(QMainWindow):
         #: Store the :class:`.Parameter` logic for the :class:`.Model`.
         self.parameters_table: QTableWidget
         self._setup_model_configuration()
+        self._setup_parameters_context_menu()
 
         self._setup_model_dropdown()
 
@@ -157,7 +171,10 @@ class EEmiLibGUI(QMainWindow):
         self.evaluators_table: QTableWidget
         self._setup_model_evaluation()
 
-        # Tab 2: Plot
+        #: Add button to re-show the plot window to the data model layout
+        self._setup_show_plot_button()
+
+        # Window 2: Plot
         #: Stores the current figure(s).
         self.plot_area: TabbedPlotArea
         self._setup_plot_area()
@@ -205,34 +222,29 @@ class EEmiLibGUI(QMainWindow):
     # Main tabs organization
     # =========================================================================
     def _setup_main_structure(self) -> None:
-        """Organize the GUI into tabs.
+        """Split the GUI into a main window and a plot window.
 
-        1. First tab holds:
+        1. The main window holds:
             i. A :class:`.DataMatrix`;
             ii. :class:`.Model` parameters.
-        2. Second tab holds:
+        2. The plot window holds:
             i. The :class:`.Plotter` parameters.
 
-        Sets :attr:`data_model_layout` and :attr:`plot_layout`.
+        Sets :attr:`data_model_layout`, :attr:`plot_window` and
+        :attr:`plot_layout`.
 
         """
         central = QWidget()
         self.setCentralWidget(central)
-        main_layout = QVBoxLayout(central)
+        self.data_model_layout = QVBoxLayout(central)
 
-        tab = QTabWidget()
-        main_layout.addWidget(tab)
-
-        data_model_tab = QWidget()
-        self.data_model_layout = QVBoxLayout(data_model_tab)
-        tab.addTab(data_model_tab, "Data && Model")
-
-        plot_tab = QWidget()
-        self.plot_layout = QVBoxLayout(plot_tab)
-        tab.addTab(plot_tab, "Plot")
+        self.plot_window = QWidget(self, Qt.WindowType.Window)
+        self.plot_window.setWindowTitle("EEmiLib - Plot")
+        self.plot_window.resize(900, 700)
+        self.plot_layout = QVBoxLayout(self.plot_window)
 
     # =========================================================================
-    # Tab 1 - File selection
+    # Window 1 - File selection
     # =========================================================================
     def _setup_file_selection_matrix(self) -> None:
         """Create the 4 * 3 matrix to select the files to load."""
@@ -259,7 +271,7 @@ class EEmiLibGUI(QMainWindow):
                 self._set_list_widget_state(self.file_lists[i][j], is_required)
 
     # =========================================================================
-    # Tab 1 - Load files
+    # Window 1 - Load files
     # =========================================================================
     def _setup_loader_dropdown(self) -> None:
         """Set the :class:`.Loader` dropdown."""
@@ -303,16 +315,21 @@ class EEmiLibGUI(QMainWindow):
             for j, data in enumerate(IMPLEMENTED_EMISSION_DATA):
                 file_list_widget = self.file_lists[i][j]
                 if file_list_widget is not None:
-                    file_names = [
-                        file_list_widget.item(k).text()
-                        for k in range(file_list_widget.count())
-                    ]
+                    file_names = []
+                    for k in range(file_list_widget.count()):
+                        item = file_list_widget.item(k)
+                        assert item is not None
+                        file_names.append(item.text())
                     self.data_matrix.set_files(
                         file_names, data_type=data, population=pop
                     )
 
         try:
-            self.data_matrix.load_data(self.loader)
+            with self._busy("Loading data..."):
+                self.data_matrix.load_data(
+                    self.loader,
+                    rescale_energy_distributions_to_yield=self.rescale_energy_distributions_to_yield,
+                )
         except Exception as e:
             logging.error(
                 "An error was raised during the loading of the data file. "
@@ -324,7 +341,7 @@ class EEmiLibGUI(QMainWindow):
             self._fill_plotting_ranges()
 
     # =========================================================================
-    # Tab 1 - Clear buttons
+    # Window 1 - Clear buttons
     # =========================================================================
     def _setup_clear_buttons(self) -> None:
         """Set two buttons to clear paths and data."""
@@ -341,11 +358,14 @@ class EEmiLibGUI(QMainWindow):
         self.data_model_layout.addLayout(layout)
 
     # =========================================================================
-    # Tab 1 - Model
+    # Window 1 - Model
     # =========================================================================
     def _setup_model_configuration(self) -> None:
         """Orchestrate :class:`.Model` :class:`.Parameter` related interfaces."""
         model_group, self.parameters_table = model_configuration()
+        self.parameters_table.itemChanged.connect(
+            self._update_parameter_value_from_table
+        )
         self.data_model_layout.addWidget(model_group)
 
     def _setup_model_dropdown(self) -> None:
@@ -388,9 +408,10 @@ class EEmiLibGUI(QMainWindow):
         def settings_action() -> int:
             code = ModelImplementationsDialog(self, self.model).exec()
             self._populate_parameters_table_values()
-            populate_parameters_table_constants(
-                self.parameters_table, self.model.parameters
-            )
+            with self._busy("Rendering parameters..."):
+                populate_parameters_table_constants(
+                    self.parameters_table, self.model.parameters
+                )
             return code
 
         return settings_label, settings_action
@@ -402,12 +423,10 @@ class EEmiLibGUI(QMainWindow):
         help_button = self.dropdowns["Model"].buttons[0]
         set_help_button_action(help_button, self.model)
 
-        populate_parameters_table_constants(
-            self.parameters_table, self.model.parameters
-        )
-        self.parameters_table.itemChanged.connect(
-            self._update_parameter_value_from_table
-        )
+        with self._busy("Rendering parameters..."):
+            populate_parameters_table_constants(
+                self.parameters_table, self.model.parameters
+            )
 
     def _update_parameter_value_from_table(
         self, item: QTableWidgetItem
@@ -419,8 +438,8 @@ class EEmiLibGUI(QMainWindow):
         if attr not in updatable_attr:
             return
 
-        name = self.parameters_table.cellWidget(row, 0).objectName()
-        parameter = self.model.parameters.get(name)
+        name = list(self.model.parameters)[row]
+        parameter = self.model.parameters[name]
 
         if parameter:
             try:
@@ -436,8 +455,10 @@ class EEmiLibGUI(QMainWindow):
         if not hasattr(self, "model") or not self.model:
             logging.info("Please select a model before fitting.")
             return
-        self.model.find_optimal_parameters(self.data_matrix)
-        self._populate_parameters_table_values()
+        with self._report_errors():
+            with self._busy("Fitting model..."):
+                self.model.find_optimal_parameters(self.data_matrix)
+            self._populate_parameters_table_values()
 
     def _populate_parameters_table_values(self) -> None:
         """Print out the :attr:`.Parameter.value` in the dedicated tab.
@@ -446,21 +467,59 @@ class EEmiLibGUI(QMainWindow):
         as a function like :func:`.populate_parameters_table_constants`.
 
         """
-        for row, param in enumerate(self.model.parameters.values()):
-            for attr in ("value",):
-                col = PARAMETER_ATTR_TO_POS[attr]
-                attr_value = getattr(param, attr, None)
-                self.parameters_table.setItem(
-                    row, col, QTableWidgetItem(str(attr_value))
-                )
+        # for row, param in enumerate(self.model.parameters.values()):
+        #     for attr in ("value",):
+        #         col = PARAMETER_ATTR_TO_POS[attr]
+        #         attr_value = getattr(param, attr, None)
+        #         self.parameters_table.setItem(
+        #             row, col, QTableWidgetItem(str(attr_value))
+        #         )
 
-        for i, param in enumerate(self.model.parameters.values()):
+        for row, param in enumerate(self.model.parameters.values()):
             self.parameters_table.setItem(
-                i, 2, QTableWidgetItem(format_number(param.value))
+                row, 2, QTableWidgetItem(format_number(param.value))
             )
 
+    def _setup_parameters_context_menu(self) -> None:
+        """Allow locking/unlocking the selected parameters at once."""
+        table = self.parameters_table
+        table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        table.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        table.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        table.customContextMenuRequested.connect(self._show_parameters_menu)
+
+    def _show_parameters_menu(self, position: QPoint) -> None:
+        """Show the lock/unlock menu at the cursor."""
+        menu = QMenu(self)
+        menu.addAction("Lock selected", lambda: self._lock_selected(True))
+        menu.addAction("Unlock selected", lambda: self._lock_selected(False))
+        menu.addAction("Reset values", lambda: self._reset_selected("value"))
+        menu.addAction(
+            "Reset bounds",
+            lambda: self._reset_selected("lower_bound", "upper_bound"),
+        )
+
+        viewport = self.parameters_table.viewport()
+        assert viewport is not None
+        menu.exec_(viewport.mapToGlobal(position))
+
+    def _lock_selected(self, locked: bool) -> None:
+        """Lock or unlock all selected parameters."""
+        col_lock = PARAMETER_ATTR_TO_POS["lock"]
+        for row, parameter in self._selected_parameters():
+            parameter.lock() if locked else parameter.unlock()
+            widget = self.parameters_table.cellWidget(row, col_lock)
+            assert widget is not None
+            checkbox = (
+                widget
+                if isinstance(widget, QCheckBox)
+                else widget.findChild(QCheckBox)
+            )
+            if checkbox is not None:
+                checkbox.setChecked(locked)
+
     # =========================================================================
-    # Tab 1 - Model evaluation
+    # Window 1 - Model evaluation
     # =========================================================================
     def _setup_model_evaluation(self) -> None:
         """Create the display of the model evaluations.
@@ -492,8 +551,19 @@ class EEmiLibGUI(QMainWindow):
         populate_evaluators_table(self.evaluators_table, evaluations)
 
     # =========================================================================
-    # Tab 2 - Plot
+    # Window 2 - Plot
     # =========================================================================
+    def _setup_show_plot_button(self) -> None:
+        """Add a button to re-open the plot window."""
+        button = QPushButton("Show plot window")
+        button.clicked.connect(self._show_plot_window)
+        self.data_model_layout.addWidget(button)
+
+    def _show_plot_window(self) -> None:
+        """Open the plot window."""
+        self.plot_window.show()
+        self.plot_window.raise_()
+
     def _setup_plot_area(self) -> None:
         """Create the tabbed canvas area.
 
@@ -692,6 +762,7 @@ class EEmiLibGUI(QMainWindow):
             if not success_angle:
                 return
 
+        self._warn_if_scales_mismatch(data_type)
         self._plot(
             self.model.plot,
             data_type=data_type,
@@ -915,6 +986,28 @@ class EEmiLibGUI(QMainWindow):
         impacts = {d.e_pe for d in distribs}
         return sorted(impacts)
 
+    def _selected_parameters(self) -> list[tuple[int, Parameter]]:
+        """Give row and parameter of every selected row."""
+        names = list(self.model.parameters)
+        rows = sorted(
+            {index.row() for index in self.parameters_table.selectedIndexes()}
+        )
+        return [(row, self.model.parameters[names[row]]) for row in rows]
+
+    def _reset_selected(self, *attrs: str) -> None:
+        """Reset ``attrs`` of selected parameters to their initial values."""
+        names = list(self.model.parameters)
+        for row, parameter in self._selected_parameters():
+            initial = self.model.initial_parameters[names[row]]
+            _dummy_parameter = Parameter(**initial)
+            for attr in attrs:
+                setattr(parameter, attr, getattr(_dummy_parameter, attr))
+                self.parameters_table.setItem(
+                    row,
+                    PARAMETER_ATTR_TO_POS[attr],
+                    QTableWidgetItem(str(getattr(parameter, attr))),
+                )
+
     # =========================================================================
     # Misc
     # =========================================================================
@@ -929,12 +1022,81 @@ class EEmiLibGUI(QMainWindow):
         for key in DROPDOWNS:
             set_dropdown_value(self.dropdowns[key], self._defaults[key])
 
+    @contextmanager
+    def _report_errors(self, *exceptions: type[Exception]) -> Iterator[None]:
+        """Show a dialog instead of crashing when ``exceptions`` are raised.
+
+        :class:`.MissingDataError`, :class:`.MissingNormalEmissionYieldError`
+        are always caught.
+
+        """
+        try:
+            yield
+        except MissingDataError as e:
+            message = f"{e!s}\nDo not forget to hit the 'Load data' button!"
+            logging.error(message)
+            show_error(self, type(e).__name__, message)
+        except (MissingNormalEmissionYieldError, *exceptions) as e:
+            logging.error(str(e))
+            show_error(self, type(e).__name__, str(e))
+
+    @contextmanager
+    def _busy(self, message: str) -> Iterator[None]:
+        """Show a wait cursor and a status message during a long operation."""
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        status_bar = self.statusBar()
+        if status_bar is None:
+            return
+        status_bar.showMessage(message)
+        QApplication.processEvents()
+        try:
+            yield
+            QApplication.processEvents(
+                QEventLoop.ProcessEventsFlag.ExcludeUserInputEvents
+            )
+        finally:
+            status_bar.clearMessage()
+            QApplication.restoreOverrideCursor()
+
+    def _warn_if_scales_mismatch(
+        self, data_type: ImplementedEmissionData
+    ) -> None:
+        """Tell the user when measured and modelled scales differ."""
+        if data_type != "Emission Energy":
+            return
+        if self.model.needs_yield_scaled_distributions:
+            return
+        distribs = self.data_matrix.get_data(
+            "Emission Energy", IMPLEMENTED_POP
+        )
+        if any(d.is_rescaled for d in distribs):
+            logging.warning(
+                "Measured energy distributions were rescaled to match the "
+                f"TEEY, but {self.model.__class__.__name__} predicts a "
+                "distribution with an SE peak of 1. Curves are not on the same"
+                " scale; the fit is not affected. Reload with "
+                "`rescale_energy_distributions_to_yield=False` to compare "
+                "them."
+            )
+
 
 def main() -> None:
     """Build the GUI interface."""
     app = QApplication(sys.argv)
     window = EEmiLibGUI()
+
+    def excepthook(
+        exc_type: type[BaseException],
+        exc: BaseException,
+        tb: TracebackType | None,
+    ) -> None:
+        """Log unhandled exceptions and show them in a dialog."""
+        logging.error("Unhandled exception", exc_info=(exc_type, exc, tb))
+        show_error(window, "Unexpected error", f"{exc_type.__name__}: {exc}")
+
+    sys.excepthook = excepthook
     window.show()
+    window.plot_window.show()
     sys.exit(app.exec_())
 
 

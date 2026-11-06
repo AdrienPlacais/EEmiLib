@@ -9,15 +9,28 @@ Quoting Furman and Pivi :cite:`Furman2002`:
     :math:`\mathrm{d}\delta/\mathrm{d}E` at :math:`E_0=300\,\mathrm{eV}`
     (Fig. 5) and :math:`1100\,\mathrm{eV}` (not shown).
 
-- Emission Yields:
-  - Normal incidence
-  - :math:`0` to :math:`1000\,\mathrm{eV}`
-- Energy Distributions:
-  - Normal incidence
-  - |PE| energy is :math:`100\,\mathrm{eV}`.
-
 Parameters are taken from Tab. 1 and 2 in Furman and Pivi paper
-:cite:`Furman2002` (stainless steel). Data generated using CST.
+:cite:`Furman2002` (stainless steel).
+
+Two sets of data:
+
+1. Manual export from CST:
+    - Emission Yields:
+        - Normal incidence
+        - :math:`0` to :math:`1000\,\mathrm{eV}`
+    - Energy Distributions:
+        - Normal incidence
+        - |PE| energy is :math:`100\,\mathrm{eV}`.
+2. Export from EEmiLib:
+    - Emission Yields:
+        - :math:`0\\degree`, :math:`20\\degree`, :math:`40\\degree`,
+          :math:`60\\degree`
+        - :math:`0` to :math:`500\,\mathrm{eV}`
+    - Energy Distributions:
+        - Normal incidence
+        - |PE| energies: :math:`10\,\mathrm{eV}`, :math:`30\,\mathrm{eV}`,
+          :math:`50\,\mathrm{eV}`, :math:`70\,\mathrm{eV}`,
+          :math:`100\,\mathrm{eV}`, :math:`150\,\mathrm{eV}`.
 
 .. note::
    These settings are the default in CST when selecting Furman and Pivi model.
@@ -29,6 +42,22 @@ from importlib import resources
 files = resources.files(__name__)
 cst_emission_yields = files / "cst_emission_yields.txt"
 cst_energy_distributions = files / "cst_energy_distributions.txt"
+
+eemilib_emission_yields = files / "eemilib_emission_yield.csv"
+eemilib_distrib_10eV = files / "eemilib_emission_energy_10eV.csv"
+eemilib_distrib_30eV = files / "eemilib_emission_energy_30eV.csv"
+eemilib_distrib_50eV = files / "eemilib_emission_energy_50eV.csv"
+eemilib_distrib_70eV = files / "eemilib_emission_energy_70eV.csv"
+eemilib_distrib_100eV = files / "eemilib_emission_energy_100eV.csv"
+eemilib_distrib_150eV = files / "eemilib_emission_energy_150eV.csv"
+eemilib_energy_distributions = (
+    eemilib_distrib_10eV,
+    eemilib_distrib_30eV,
+    eemilib_distrib_50eV,
+    eemilib_distrib_70eV,
+    eemilib_distrib_100eV,
+    eemilib_distrib_150eV,
+)
 
 furman_pivi_parameters_values = {
     # =====================================================================

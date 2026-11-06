@@ -3,8 +3,8 @@ message: If you use this software, please cite it as below.
 title: EEmiLib
 abstract: A library gathering electron emission models and fitting methods, oriented
   toward multipactor studies.
-version: 0.2.1
-date-released: '2026-10-21'
+version: 0.2.2
+date-released: '2026-11-06'
 authors:
 - family-names: Plaçais
   given-names: Adrien

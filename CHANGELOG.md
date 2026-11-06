@@ -5,6 +5,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.2] -- 2026-11-06
+
+### Added
+
+- GUI:
+  - It is possible to lock/unlock several `Parameter` by selecting them,
+    right-click, `"Unlock selected"` or `"Lock selected"`.
+  - Similarly, you can reset the value or the bounds of several `Parameter`s by
+    selecting them, right-clicking, selecting appropriate option.
+  - Status message when loading data, rendering parameters, fitting model.
+  - A checkbox in the `Loader`'s parameters lets you uncheck the automatic
+    measured emission energy re-normalization when TEEY is also provided.
+    - Will make `FurmanPivi` crash.
+    - Generally not useful with `ChungEverhart` and `Maxwellian`, because you do
+      not need to load TEEYs.
+- The different Dionne implementations as listed in the article.
+- Test suite for Dionne model.
+- Different Dionne model implementations.
+- `FurmanPivi`:
+  - You can choose to halve the EBE peak with
+    `halve_ebe_contribution_in_ebe_peak` implementation.
+  - You can choose between different fit strategies: `joint` or `sequential`.
+    `joint` seems to lead to better results.
+
+### Changed
+
+- GUI: `Plot` is now in a separated window.
+
+### Fixed
+
+- GUI:
+  - Exceptions are handled gracefully and do not make the code crash.
+  - Loading `Model`s, and in particular `FurmanPivi`, is faster.
+- Emission Energy Distributions have more consistent normalization.
+- Updating `Parameter`'s `value`, `lower_bound`, `upper_bound`, `is_locked` is
+  correctly taken into account.
+- `E_0` in `Vaughan` respects the given bounds.
+- Current value of `Parameter` outside the bounds does not raise `ValueError`
+  anymore at optimization step.
+
 ## [0.2.1] -- 2026-10-21
 
 ### Added

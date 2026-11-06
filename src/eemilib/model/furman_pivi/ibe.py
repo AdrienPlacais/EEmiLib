@@ -84,7 +84,7 @@ def ibeey(
     ene :
         Impact energy of the |PE| in :unit:`eV`.
     the :
-        Impact angle of the |PE| in :unit:`\degree`.
+        Impact angle of the |PE| in :unit:`\\degree`.
     e_ibe :
         Furman and Pivi normal |IBEEY| parameter.
     eta_i_max :
@@ -145,7 +145,7 @@ def ibe_energy_distribution(
     e_pe :
         Impact energy of the |PE| in :unit:`eV`.
     the :
-        Impact angle of the |PE| in :unit:`\degree`.
+        Impact angle of the |PE| in :unit:`\\degree`.
     emission_energies :
         |IBE| emission energies you want the distribution from.
     e_ibe :

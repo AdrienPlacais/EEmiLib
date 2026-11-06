@@ -13,12 +13,8 @@ from eemilib.emission_data.emission_data import EmissionData
 from eemilib.loader.helper import DataPath
 from eemilib.loader.loader import Loader
 from eemilib.plotter.plotter import Plotter
-from eemilib.util.constants import (
-    COL_ENERGY,
-    COL_NORMAL,
-    ImplementedPop,
-    md_energy_distrib,
-)
+from eemilib.util.constants import COL_ENERGY, COL_NORMAL, ImplementedPop
+from eemilib.util.markdown import ENE_DISTRIB_LABELS
 
 
 class EmissionEnergyDistribution(EmissionData):
@@ -78,7 +74,9 @@ class EmissionEnergyDistribution(EmissionData):
         #:       :meth:`.DataMatrix.load_data` (with
         #:       `rescale_energy_distributions_to_teey=True`)
         #:
-        self.unnormalized_data = self.data
+        self.unnormalized_data = self.data.copy()
+        #: Whether :meth:`rescale` altered :attr:`unnormalized_data`.
+        self.is_rescaled = False
         self.normalize()
 
     def __str__(self) -> str:
@@ -169,7 +167,10 @@ class EmissionEnergyDistribution(EmissionData):
         )
         if norms is None:
             norms = [None for _ in results]
-        return [cls(data, e_pe=e_pe) for data, e_pe in results.values()]
+        return [
+            cls(data, e_pe=e_pe, norm=norm)
+            for (data, e_pe), norm in zip(results.values(), norms, strict=True)
+        ]
 
     @abstractmethod
     def _default_norm(self) -> float:
@@ -183,7 +184,7 @@ class EmissionEnergyDistribution(EmissionData):
     @property
     def label(self) -> str:
         """Print nature of data (markdown)."""
-        return md_energy_distrib[self.population]
+        return ENE_DISTRIB_LABELS[self.population]
 
     def plot[T](
         self,
@@ -243,6 +244,7 @@ class EmissionEnergyDistribution(EmissionData):
 
         data_columns = [c for c in self.data.columns if c != COL_ENERGY]
         self.unnormalized_data[data_columns] *= scale
+        self.is_rescaled = True
 
         new_area = self._emission_yield
 
@@ -256,6 +258,12 @@ class EmissionEnergyDistribution(EmissionData):
             return
         self.norm = norm
         self.normalize()
+
+    @property
+    def se_peak_normalized_data(self) -> NDArray[np.float64]:
+        """Normal data scaled so the |SE| peak is 1, whatever :attr:`norm`."""
+        se_peak = self.data[: self._se_ebe_limit][COL_NORMAL].max()
+        return self.normal_data / se_peak
 
     @property
     def _se_ebe_limit(self) -> int:
@@ -311,6 +319,11 @@ class SEEmissionEnergyDistribution(EmissionEnergyDistribution):
 
         """
         return self.peak_value
+
+    @property
+    def se_peak_normalized_data(self) -> NDArray[np.float64]:
+        """Normal data scaled so the peak is 1, whatever :attr:`norm`."""
+        return self.normal_data / self.normal_data.max()
 
 
 class EBEEmissionEnergyDistribution(EmissionEnergyDistribution):

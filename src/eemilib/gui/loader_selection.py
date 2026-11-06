@@ -1,7 +1,7 @@
 """Define interface related to :class:`.Loader` in GUI."""
 
 from PyQt5.QtGui import QWindow
-from PyQt5.QtWidgets import QLabel, QLineEdit
+from PyQt5.QtWidgets import QCheckBox, QLabel, QLineEdit
 
 from eemilib.gui.dialogs import SettingsDialog
 from eemilib.loader.loader import Loader
@@ -34,6 +34,23 @@ class LoaderSettingsDialog(SettingsDialog):
             self._layout.addWidget(label)
             self._layout.addWidget(box)
 
+        self._gui = parent
+        self._rescale_checkbox = QCheckBox(
+            "Rescale energy distributions to TEEY"
+        )
+        self._rescale_checkbox.setChecked(
+            parent.rescale_energy_distributions_to_yield
+        )
+        self._rescale_checkbox.setToolTip(
+            "When both a TEEY and an 'all' emission energy distribution are "
+            "loaded, scale each distribution so that its integral equals the "
+            "TEEY at the same impact energy.\n"
+            "Required by FurmanPivi. The other models predict an SE peak of 1, "
+            "so their curves will not match the measurements' scale on the "
+            "plot (the fit is not affected).\n"
+            "Takes effect the next time you press 'Load data'."
+        )
+        self._layout.addWidget(self._rescale_checkbox)
         self._finalize()
 
     def _sep_selector(self) -> tuple[QLabel, QLineEdit] | None:
@@ -78,3 +95,6 @@ class LoaderSettingsDialog(SettingsDialog):
             self._loader.sep = self.selected_sep
         if self.selected_comment is not None:
             self._loader.comment = self.selected_comment
+        self._gui.rescale_energy_distributions_to_yield = (
+            self._rescale_checkbox.isChecked()
+        )

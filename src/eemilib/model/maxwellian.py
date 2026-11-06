@@ -2,6 +2,10 @@
 
 You will need to provide emission energy distribution measurements.
 
+.. todo::
+    When fitted on example Ag data, does not work very well. I think the
+    significant EBE peak at low energies messes up with the fit.
+
 """
 
 import math
@@ -11,7 +15,6 @@ import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
 from scipy.constants import pi
-from scipy.optimize import Bounds, least_squares
 
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
@@ -19,7 +22,6 @@ from eemilib.model.model import Model
 from eemilib.model.parameter import Parameter
 from eemilib.util.constants import (
     COL_ENERGY,
-    COL_NORMAL,
     ImplementedEmissionData,
     ImplementedPop,
 )
@@ -132,40 +134,40 @@ class Maxwellian(Model):
         """
         distributions = data_matrix.get_data("Emission Energy", population)
         if not distributions:
-            raise MissingDataError(f"Missing emission energy for {population}")
-
-        def _aggregate_residue(temperature: float) -> NDArray[np.float64]:
-            """Compute residues on all distributions."""
-            return np.concatenate(
-                [
-                    _residue(
-                        temperature,
-                        distribution.data[COL_ENERGY].to_numpy(),
-                        distribution.data[COL_NORMAL].to_numpy(),
-                    )
-                    for distribution in distributions
-                ]
+            raise MissingDataError(
+                f"Cannot fit {self.__class__.__name__}.",
+                missing=[("Emission Energy", population)],
             )
 
-        param = self.parameters["temperature"]
-        lsq = least_squares(
-            fun=_aggregate_residue,
-            x0=param,
-            bounds=Bounds(param.lower_bound, param.upper_bound),
-        )
-        temp = lsq.x[0]
-        self.set_parameters_values(
-            {"temperature": temp, "norm": _maxwellian_norm(temp)}
+        def _aggregate_residue(
+            kwargs: dict[str, float],
+        ) -> NDArray[np.float64]:
+            """Compute residues on all distributions."""
+            residuals = []
+            for distrib in distributions:
+                measured = distrib.se_peak_normalized_data
+                predicted = maxwellian_pdf(
+                    distrib.energies,
+                    norm=_maxwellian_norm(kwargs["temperature"]),
+                    **kwargs,
+                )
+                residuals.append(predicted - measured)
+            return np.concatenate(residuals)
+
+        keys = ("temperature",)
+        self._fit(keys, _aggregate_residue)
+        self.set_parameter_value(
+            "norm", _maxwellian_norm(self.parameters["temperature"].value)
         )
 
 
 def _maxwellian_norm(temp: float) -> float:
     """Return norm value to have distribution maximum to unity.
 
-    Maximum is at :math:`T/2`.
+    Maximum is at :math:`E = T`.
 
     """
-    return temp * math.sqrt(2 * pi) / (2 * math.exp(-0.5))
+    return math.e * math.sqrt(pi * temp)
 
 
 @overload
@@ -198,13 +200,6 @@ def maxwellian_pdf(
         * np.sqrt(ene**2 / (pi * temperature**3))
         * np.exp(-ene / temperature)
     )
-
-
-def _residue(
-    temp: float, ene: NDArray[np.float64], measured: NDArray[np.float64]
-) -> NDArray[np.float64]:
-    """Compute array of residues between model and measurements."""
-    return maxwellian_pdf(ene, temp) - measured
 
 
 # Append dynamically generated docs to the module docstring

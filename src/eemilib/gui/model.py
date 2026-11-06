@@ -12,6 +12,7 @@ import logging
 
 from PyQt5.QtGui import QWindow
 from PyQt5.QtWidgets import (
+    QCheckBox,
     QComboBox,
     QGroupBox,
     QHeaderView,
@@ -172,15 +173,22 @@ class ModelImplementationsDialog(SettingsDialog):
         )
         self._model = model
 
-        self._implementation_dropdowns: dict[str, QComboBox] = {}
-        for label, dropdown in self._implementation_selectors():
+        self._implementation_widgets: dict[str, QComboBox | QCheckBox] = {}
+        for label, widget in self._implementation_selectors():
             self._layout.addWidget(label)
-            self._layout.addWidget(dropdown)
+            self._layout.addWidget(widget)
 
         self._finalize()
 
-    def _implementation_selectors(self) -> list[tuple[QLabel, QComboBox]]:
-        """Create one dropdown per implementation entry."""
+    def _implementation_selectors(
+        self,
+    ) -> list[tuple[QLabel, QComboBox | QCheckBox]]:
+        """Create one widget per implementation entry.
+
+        - Checkbox for True/False choices,
+        - Dropdown otherwise.
+
+        """
         choices = getattr(
             self._model.__class__, "implementation_choices", None
         )
@@ -201,14 +209,22 @@ class ModelImplementationsDialog(SettingsDialog):
         for name, options in choices.items():
             label = QLabel(name.replace("_", " ").capitalize())
 
-            dropdown = QComboBox()
-            dropdown.addItems(options)
-            current_value = current.get(name)
-            if current_value:
-                dropdown.setCurrentText(current_value)
+            widget: QComboBox | QCheckBox
+            if set(options) == {True, False}:
+                widget = QCheckBox()
+                current_value = current.get(name)
+                if current_value:
+                    widget.setChecked(bool(current_value))
 
-            self._implementation_dropdowns[name] = dropdown
-            selectors.append((label, dropdown))
+            else:
+                widget = QComboBox()
+                widget.addItems(options)
+                current_value = current.get(name)
+                if current_value:
+                    widget.setCurrentText(current_value)
+
+            self._implementation_widgets[name] = widget
+            selectors.append((label, widget))
         return selectors
 
     def apply(self) -> None:
@@ -216,5 +232,10 @@ class ModelImplementationsDialog(SettingsDialog):
         set_implementation = getattr(self._model, "set_implementation", None)
         if not callable(set_implementation):
             return
-        for name, dropdown in self._implementation_dropdowns.items():
-            set_implementation(name, dropdown.currentText())
+        for name, widget in self._implementation_widgets.items():
+            value = (
+                widget.isChecked()
+                if isinstance(widget, QCheckBox)
+                else widget.currentText()
+            )
+            set_implementation(name, value)

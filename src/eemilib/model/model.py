@@ -8,13 +8,14 @@
 import logging
 import math
 from abc import ABC, abstractmethod
-from collections.abc import Collection, Sequence
+from collections.abc import Callable, Collection, Iterable, Sequence
 from pprint import pformat
 from typing import Any, ClassVar, Literal, cast, overload
 
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
+from scipy.optimize import least_squares
 
 from eemilib.core.model_config import ModelConfig
 from eemilib.emission_data import DataMatrix
@@ -73,9 +74,14 @@ class Model(ABC):
     is_dielectrics_compatible: bool
     initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = {}
     model_config: ModelConfig
-    implementation_choices: ClassVar[dict[str, tuple[str, ...]]] = {}
+    implementation_choices: ClassVar[
+        dict[str, tuple[str, ...] | tuple[bool, ...]]
+    ] = {}
     #: Override default URL in documentation
     _url_doc_override: str | None = None
+    #: Whether measured energy distributions must be scaled so that their
+    #: integral matches the |TEEY|.
+    needs_yield_scaled_distributions: ClassVar[bool] = False
 
     def __init__(
         self, parameters_values: dict[str, Any] | None = None
@@ -106,10 +112,10 @@ class Model(ABC):
 
         self._generate_parameter_docs()
         if parameters_values is not None:
-            self.set_parameters_values(parameters_values)
+            self.set_parameters_values(parameters_values, override_lock=True)
         #: Maps each axis name (see :attr:`.Model.implementation_choices`) to
         #: the currently selected option.
-        self.current_implementations: dict[str, str] = {}
+        self.current_implementations: dict[str, str | bool] = {}
 
         #: Optional reference; used to infer ``energy`` and ``theta`` when not
         #: given, and as default for :meth:`.Model.find_optimal_parameters` and
@@ -144,6 +150,42 @@ class Model(ABC):
             ]
             doc_lines += doc
         return "\n".join(doc_lines)
+
+    def display_parameters(self) -> None:
+        """Display the parameters and their values in a nice looking way."""
+        if not hasattr(self, "parameters"):
+            logging.info("`parameters` attribute was not set.")
+
+        msg = {
+            f"{key:>20}": str(param) for key, param in self.parameters.items()
+        }
+        logging.info("Parameters values:\n" + pformat(msg))
+
+    @classmethod
+    def add_original_notation(
+        cls, parameters_kwargs: dict[str, str | float | bool], author: str
+    ) -> None:
+        """Modify dict in-place to mention original notation.
+
+        Parameters
+        ----------
+        parameters_kwargs :
+            A :class:`.Parameter` kwargs. If an ``"original_notation"`` key is
+            found, it is removed and added to the ``"description"`` value --
+            provided that both keys are valid strings.
+        author :
+            Name of the author to append to the description.
+
+        """
+        description = parameters_kwargs.get("description")
+        if not isinstance(description, str):
+            return
+        original_notation = parameters_kwargs.pop("original_notation", None)
+        if not isinstance(original_notation, str):
+            return
+        parameters_kwargs["description"] = " ".join(
+            (description, f"Denoted :math:`{original_notation}` by {author}.")
+        )
 
     def teey(
         self,
@@ -242,7 +284,7 @@ class Model(ABC):
               impact energy of the |PE| is also the last value of ``energy``.
 
         theta :
-            Array of |PE| electrons impact angle in :unit:`\degrees`.
+            Array of |PE| electrons impact angle in :unit:`\\degree`.
         e_pe :
             Energy of |PEs| in :unit:`eV`, if applicable.
         args :
@@ -268,7 +310,7 @@ class Model(ABC):
         population: ImplementedPop,
         energy: NDArray[np.float64] | None = None,
         theta: NDArray[np.float64] | None = None,
-        e_pe: float | None = None,
+        e_pes: Iterable[float] | float | None = None,
         *args,
         **kwargs,
     ) -> Sequence[EmissionData]:
@@ -291,30 +333,46 @@ class Model(ABC):
               impact energy of the |PE| is also the last value of ``energy``.
 
         theta :
-            Array of |PE| electrons impact angle in :unit:`\degrees`.
-        e_pe :
-            Energy of |PEs| in :unit:`eV`, if applicable.
+            Array of |PE| electrons impact angle in :unit:`\\degree`.
+        e_pes :
+            Energy of |PEs| in :unit:`eV`. Only used for ``"Emission Energy"``,
+            ignored with a warning otherwise. A single ``float`` of ``None``
+            are accepted.
         args, kwargs :
             Forwarded to :meth:`compute_data` on a cache miss.
 
         Return
         ------
-            The cached or freshly computed :class:`.EmissionData`.
+            The cached or freshly computed :class:`.EmissionData`. If
+            applicable, one per element of ``e_pes``.
 
         """
-        if energy is None:
-            energy = self._infer_energy(data_type, population, e_pe=e_pe)
-        if theta is None:
-            theta = self._infer_theta(data_type, population)
+        pes = _normalize_e_pes(data_type, e_pes)
+        if not pes:
+            return []
+
+        _energies = [
+            (
+                energy
+                if energy is not None
+                else self._infer_energy(data_type, population, e_pe=e_pe)
+            )
+            for e_pe in pes
+        ]
+        _theta = (
+            theta
+            if theta is not None
+            else self._infer_theta(data_type, population)
+        )
 
         result = self._cached_data_matrix.get_or_compute_data(
             data_type,
             population,
-            energy,
-            theta,
-            e_pe,
-            compute=lambda: self.compute_data(
-                data_type, population, energy, theta, e_pe, *args, **kwargs
+            _energies,
+            _theta,
+            pes,
+            compute=lambda ene, e_pe: self.compute_data(
+                data_type, population, ene, _theta, e_pe, *args, **kwargs
             ),
         )
         return result
@@ -413,8 +471,10 @@ class Model(ABC):
         """
         data_matrix = self._resolve_data_matrix(data_matrix)
         self.set_reference_data(data_matrix)
-        if not data_matrix.holds_required_data(self.model_config):
-            raise MissingDataError("Files are not all provided.")
+        if missing := data_matrix.missing_data(self.model_config):
+            raise MissingDataError(
+                f"Cannot fit {self.__class__.__name__}.", missing=missing
+            )
         self._find_optimal_parameters(data_matrix, **kwargs)
 
     @abstractmethod
@@ -422,6 +482,49 @@ class Model(ABC):
         self, data_matrix: DataMatrix, **kwargs
     ) -> None:
         """Fit the parameters against ``data_matrix``."""
+
+    def _fit(
+        self,
+        keys: Sequence[str],
+        residue: Callable[[dict[str, float]], NDArray[np.float64]],
+    ) -> None:
+        """Fit the unlocked parameters among ``keys`` by least squares.
+
+        Parameters
+        ----------
+        keys :
+            Names of the candidate parameters.
+        residue :
+            Residuals as a function of all parameters in ``keys``. Locked
+            ones are given their current value.
+
+        """
+        free = [key for key in keys if not self.parameters[key].is_locked]
+        if not free:
+            return
+        x0 = [self.parameters[key].value for key in free]
+        lower = [self.parameters[key].lower_bound for key in free]
+        upper = [self.parameters[key].upper_bound for key in free]
+
+        outside = (x0 < lower) | (x0 > upper)
+        for key in np.array(free)[outside]:
+            logging.warning(
+                f"Initial value of {key} lies outside its bounds, clipping it "
+                "for the fit."
+            )
+        x0 = np.clip(x0, lower, upper)
+
+        locked = {
+            key: self.parameters[key].value for key in keys if key not in free
+        }
+        lsq = least_squares(
+            fun=lambda x: residue({**locked, **dict(zip(free, x))}),
+            x0=x0,
+            bounds=(lower, upper),
+        )
+        if not lsq.success:
+            logging.error(f"The fit failed with message:\n{lsq.message}")
+        self.set_parameters_values(dict(zip(free, lsq.x)))
 
     @overload
     def plot[T](
@@ -622,7 +725,7 @@ class Model(ABC):
                 )
             return axes
         data = self.get_or_compute_data(
-            data_type, population, energy=energies, theta=angles, e_pe=e_pe
+            data_type, population, energy=energies, theta=angles, e_pes=e_pe
         )
         if not data:
             logging.info(
@@ -706,19 +809,71 @@ class Model(ABC):
             )
         return axes
 
-    def set_parameter_value(self, name: str, value: Any) -> None:
-        """Give the parameter named ``name`` the value ``value``."""
-        if name not in self.parameters:
+    def set_parameter_value(
+        self, name: str, value: float, override_lock: bool = False
+    ) -> None:
+        """Give the parameter named ``name`` the value ``value``.
+
+        Parameters
+        ----------
+        name :
+            Name of the :class:`.Parameter` to update.
+        value :
+            New value for ``name``.
+        override_lock :
+            If a :class:`.Parameter` with :attr:`.Parameter.is_locked` set to
+            ``True`` should be updated anyway.
+
+        """
+        parameter = self.parameters.get(name)
+        if parameter is None:
             logging.warning(
                 f"{name = } is not defined for {self}. Skipping... "
             )
             return
-        self.parameters[name].value = value
 
-    def reset_parameter_value(self, name: str) -> None:
+        if not parameter.is_locked or override_lock:
+            parameter.value = value
+            return
+
+        logging.debug(
+            f"NOT changing the value of {name} to {value} because it is "
+            "locked."
+        )
+
+    def set_parameters_values(
+        self, values: dict[str, float], override_lock: bool = False
+    ) -> None:
+        """Call :meth:`.set_parameter_value` for every give parameter.
+
+        Parameter
+        ---------
+        values :
+            Maps :class:`.Parameter` names to their new values.
+        override_lock :
+            If a :class:`.Parameter` with :attr:`.Parameter.is_locked` set to
+            ``True`` should be updated anyway.
+
+        """
+        for name, value in values.items():
+            self.set_parameter_value(name, value, override_lock=override_lock)
+
+    def _reset_parameter_value(
+        self, name: str, override_lock: bool = True
+    ) -> None:
         """Reset a parameter value to its default.
 
         Default is defined in ``initial_parameters``.
+
+        Parameters
+        ----------
+        name :
+            Name of the :class:`.Parameter` to reset.
+        override_lock :
+            If a :class:`.Parameter` with :attr:`.Parameter.is_locked` set to
+            ``True`` should be updated anyway. The default is ``True``, which
+            is different from the more commonly used
+            :meth:`set_parameter_value`.
 
         """
         if name not in self.parameters:
@@ -731,18 +886,28 @@ class Model(ABC):
                 f"{name = } has not initial value for {self}. Skipping... "
             )
             return
+
         value = float(self.initial_parameters[name]["value"])
-        self.parameters[name].value = value
+        self.set_parameter_value(name, value, override_lock=override_lock)
 
-    def set_parameters_values(self, values: dict[str, Any]) -> None:
-        """Set multiple parameter values."""
-        for name, value in values.items():
-            self.set_parameter_value(name, value)
+    def _reset_parameters_values(
+        self, *names: str, override_lock: bool = True
+    ) -> None:
+        """Reset multiple parameter values.
 
-    def reset_parameters_values(self, *names: str) -> None:
-        """Reset multiple parameter values."""
+        Parameters
+        ----------
+        names :
+            Names of the :class:`.Parameter` to reset.
+        override_lock :
+            If a :class:`.Parameter` with :attr:`.Parameter.is_locked` set to
+            ``True`` should be updated anyway. The default is ``True``, which
+            is different from the more commonly used
+            :meth:`reset_parameter_value`.
+
+        """
         for name in names:
-            self.reset_parameter_value(name)
+            self._reset_parameter_value(name, override_lock=override_lock)
 
     def _on_parameter_changed(self) -> None:
         """Set events that should occur on parameter change.
@@ -786,7 +951,7 @@ class Model(ABC):
             f" matrix on {self.__class__.__name__}."
         )
 
-    def set_implementation(self, name: str, value: str) -> None:
+    def set_implementation(self, name: str, value: str | bool) -> None:
         """Update one implementation axis.
 
         Subclasses defining :attr:`implementation_choices` must override
@@ -852,8 +1017,10 @@ class Model(ABC):
 
         try:
             ref_teey = ref_data_matrix.teey
-        except MissingDataError:
-            logging.error("TEEY is mandatory in order to perform evaluations.")
+        except MissingDataError as e:
+            logging.warning(
+                f"The TEEY is mandatory in order to perform evaluations. {e}"
+            )
             return evaluations
 
         evaluations.update(
@@ -920,16 +1087,6 @@ class Model(ABC):
         error = 100.0 * np.std((measured_teey - modelled_teey), ddof=1.0)
         return float(error)
 
-    def display_parameters(self) -> None:
-        """Display the parameters and their values in a nice looking way."""
-        if not hasattr(self, "parameters"):
-            logging.info("`parameters` attribute was not set.")
-
-        msg = {
-            f"{key:>20}": str(param) for key, param in self.parameters.items()
-        }
-        logging.info("Parameters values:\n" + pformat(msg))
-
 
 def _dummy_df(
     energy: NDArray[np.float64], theta: NDArray[np.float64]
@@ -943,3 +1100,29 @@ def _dummy_df(
         **{f"{the} [deg]": out[:, j] for j, the in enumerate(theta)},
     }
     return pd.DataFrame(out_dict)
+
+
+def _normalize_e_pes(
+    data_type: ImplementedEmissionData, e_pes: Iterable[float] | float | None
+) -> tuple[float | None, ...]:
+    """Format the given ``e_pes`` consistently.
+
+    - For emission yields, we check that no ``e_pes`` was given, and return a
+      tuple with a single ``None``.
+    - For emission energy distribution, we return a tuple.
+
+    """
+    if data_type != "Emission Energy":
+        if e_pes is not None:
+            logging.warning(
+                f"You gave {e_pes = }, but this argument describes a fixed PE "
+                "energy and is used only for emission energy distributions. "
+                "Ignoring..."
+            )
+        return (None,)
+    pes = tuple(e_pes) if isinstance(e_pes, Iterable) else (e_pes,)
+    if invalid := [e_pe for e_pe in pes if e_pe is not None and e_pe <= 0]:
+        raise ValueError(
+            f"|PE| energies must be strictly positive, got {invalid}."
+        )
+    return pes

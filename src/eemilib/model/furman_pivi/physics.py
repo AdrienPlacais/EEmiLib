@@ -23,7 +23,9 @@ from eemilib.util.markdown import (
     EPS_9,
     EPS_10,
     ETA_E_MAX,
+    ETA_E_MAX_FP,
     ETA_E_MIN,
+    ETA_E_MIN_FP,
     ETA_I_MAX,
     ETA_I_MAX_FP,
     NORMAL_E_MAX_EBE,
@@ -70,7 +72,7 @@ def at_theta_incidence(
     at_normal: Parameter | float,
     a_1: Parameter | float,
     a_2: Parameter | float,
-    tol: float = 1e-8,
+    tol: float = 0.1,
     **kwargs,
 ) -> float:
     r"""Compute given quantity at non-normal incidence.
@@ -92,7 +94,7 @@ def at_theta_incidence(
     Parameters
     ----------
     the :
-        Incidence angle in :unit:`\degree`.
+        Incidence angle in :unit:`\\degree`.
     at_normal :
         Quantity at :math:`\theta = 0\degree`.
     a_1 :
@@ -128,11 +130,11 @@ class FurmanPiviParameters(TypedDict):
     # =========================================================================
     normal_e_max_se: Parameter
     normal_delta_max: Parameter
+    s: Parameter
     t_1: Parameter
     t_2: Parameter
     t_3: Parameter
     t_4: Parameter
-    s: Parameter
     eps_1: Parameter
     eps_2: Parameter
     eps_3: Parameter
@@ -187,7 +189,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "value": 310.0,
         "lower_bound": 0.0,
         "description": "Energy where SEEY is maximum at normal incidence.",
-        "furman_pivi_notation": NORMAL_E_MAX_SE_FP,
+        "original_notation": NORMAL_E_MAX_SE_FP,
     },
     "normal_delta_max": {
         "markdown": DELTA_MAX,
@@ -195,30 +197,34 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "value": 1.22,
         "lower_bound": 0.0,
         "description": "Maximum SEEY at normal incidence.",
-        "furman_pivi_notation": DELTA_MAX_FP,
+        "original_notation": DELTA_MAX_FP,
     },
     "t_1": {
         "markdown": T1,
         "unit": "1",
         "value": 0.66,
+        "lower_bound": 0.0,
         "description": "Scaling parameter in SEEY impact angle fit.",
     },
     "t_2": {
         "markdown": T2,
         "unit": "1",
         "value": 0.80,
+        "lower_bound": 0.0,
         "description": "Exponent parameter in SEEY impact angle fit.",
     },
     "t_3": {
         "markdown": T3,
         "unit": "1",
         "value": 0.70,
+        "lower_bound": 0.0,
         "description": "Scaling parameter in SEEY energy impact angle fit.",
     },
     "t_4": {
         "markdown": T4,
         "unit": "1",
         "value": 1.0,
+        "lower_bound": 0.0,
         "description": "Exponent parameter in SEEY energy impact angle fit.",
     },
     "s": {
@@ -232,7 +238,8 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": EPS_1,
         "unit": "1",
         "value": 3.9,
-        "lower_bound": 0.0,
+        "lower_bound": 0.1,
+        "upper_bound": 20.0,
         "description": (
             "Scale parameter for n=1 in the SEs energy spectrum, Eq. (33)."
         ),
@@ -241,7 +248,8 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": EPS_2,
         "unit": "1",
         "value": 6.2,
-        "lower_bound": 0.0,
+        "lower_bound": 0.1,
+        "upper_bound": 20.0,
         "description": (
             "Scale parameter for n=2 in the SEs energy spectrum, Eq. (33)."
         ),
@@ -250,7 +258,8 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": EPS_3,
         "unit": "1",
         "value": 13.0,
-        "lower_bound": 0.0,
+        "lower_bound": 0.1,
+        "upper_bound": 20.0,
         "description": (
             "Scale parameter for n=3 in the SEs energy spectrum, Eq. (33)."
         ),
@@ -259,7 +268,8 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": EPS_4,
         "unit": "1",
         "value": 8.8,
-        "lower_bound": 0.0,
+        "lower_bound": 0.1,
+        "upper_bound": 20.0,
         "description": (
             "Scale parameter for n=4 in the SEs energy spectrum, Eq. (33)."
         ),
@@ -268,7 +278,8 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": EPS_5,
         "unit": "1",
         "value": 6.25,
-        "lower_bound": 0.0,
+        "lower_bound": 0.1,
+        "upper_bound": 20.0,
         "description": (
             "Scale parameter for n=5 in the SEs energy spectrum, Eq. (33)."
         ),
@@ -277,7 +288,8 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": EPS_6,
         "unit": "1",
         "value": 2.25,
-        "lower_bound": 0.0,
+        "lower_bound": 0.1,
+        "upper_bound": 20.0,
         "description": (
             "Scale parameter for n=6 in the SEs energy spectrum, Eq. (33)."
         ),
@@ -286,7 +298,8 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": EPS_7,
         "unit": "1",
         "value": 9.20,
-        "lower_bound": 0.0,
+        "lower_bound": 0.1,
+        "upper_bound": 20.0,
         "description": (
             "Scale parameter for n=7 in the SEs energy spectrum, Eq. (33)."
         ),
@@ -295,7 +308,8 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": EPS_8,
         "unit": "1",
         "value": 5.3,
-        "lower_bound": 0.0,
+        "lower_bound": 0.1,
+        "upper_bound": 20.0,
         "description": (
             "Scale parameter for n=8 in the SEs energy spectrum, Eq. (33)."
         ),
@@ -304,7 +318,8 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": EPS_9,
         "unit": "1",
         "value": 17.8,
-        "lower_bound": 0.0,
+        "lower_bound": 0.1,
+        "upper_bound": 20.0,
         "description": (
             "Scale parameter for n=9 in the SEs energy spectrum, Eq. (33)."
         ),
@@ -313,7 +328,8 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": EPS_10,
         "unit": "1",
         "value": 10.0,
-        "lower_bound": 0.0,
+        "lower_bound": 0.1,
+        "upper_bound": 20.0,
         "description": (
             "Scale parameter for n=10 in the SEs energy spectrum, Eq. (33)."
         ),
@@ -322,7 +338,8 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": P_1,
         "unit": "1",
         "value": 1.6,
-        "lower_bound": 0.0,
+        "lower_bound": 1.0,
+        "upper_bound": 20.0,
         "description": (
             "Shape parameter for n=1 in the SEs energy spectrum, Eq. (33)."
         ),
@@ -331,7 +348,8 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": P_2,
         "unit": "1",
         "value": 2.0,
-        "lower_bound": 0.0,
+        "lower_bound": 1.0,
+        "upper_bound": 20.0,
         "description": (
             "Shape parameter for n=2 in the SEs energy spectrum, Eq. (33)."
         ),
@@ -340,7 +358,8 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": P_3,
         "unit": "1",
         "value": 1.8,
-        "lower_bound": 0.0,
+        "lower_bound": 1.0,
+        "upper_bound": 20.0,
         "description": (
             "Shape parameter for n=3 in the SEs energy spectrum, Eq. (33)."
         ),
@@ -349,7 +368,8 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": P_4,
         "unit": "1",
         "value": 4.7,
-        "lower_bound": 0.0,
+        "lower_bound": 1.0,
+        "upper_bound": 20.0,
         "description": (
             "Shape parameter for n=4 in the SEs energy spectrum, Eq. (33)."
         ),
@@ -358,7 +378,8 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": P_5,
         "unit": "1",
         "value": 1.8,
-        "lower_bound": 0.0,
+        "lower_bound": 1.0,
+        "upper_bound": 20.0,
         "description": (
             "Shape parameter for n=5 in the SEs energy spectrum, Eq. (33)."
         ),
@@ -367,7 +388,8 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": P_6,
         "unit": "1",
         "value": 2.4,
-        "lower_bound": 0.0,
+        "lower_bound": 1.0,
+        "upper_bound": 20.0,
         "description": (
             "Shape parameter for n=6 in the SEs energy spectrum, Eq. (33)."
         ),
@@ -376,7 +398,8 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": P_7,
         "unit": "1",
         "value": 1.8,
-        "lower_bound": 0.0,
+        "lower_bound": 1.0,
+        "upper_bound": 20.0,
         "description": (
             "Shape parameter for n=7 in the SEs energy spectrum, Eq. (33)."
         ),
@@ -385,7 +408,8 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": P_8,
         "unit": "1",
         "value": 1.8,
-        "lower_bound": 0.0,
+        "lower_bound": 1.0,
+        "upper_bound": 20.0,
         "description": (
             "Shape parameter for n=8 in the SEs energy spectrum, Eq. (33)."
         ),
@@ -394,7 +418,8 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": P_9,
         "unit": "1",
         "value": 2.3,
-        "lower_bound": 0.0,
+        "lower_bound": 1.0,
+        "upper_bound": 20.0,
         "description": (
             "Shape parameter for n=9 in the SEs energy spectrum, Eq. (33)."
         ),
@@ -403,7 +428,8 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": P_10,
         "unit": "1",
         "value": 1.8,
-        "lower_bound": 0.0,
+        "lower_bound": 1.0,
+        "upper_bound": 20.0,
         "description": (
             "Shape parameter for n=10 in the SEs energy spectrum, Eq. (33)."
         ),
@@ -418,7 +444,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "lower_bound": 0.0,
         "is_locked": True,
         "description": "Energy where EBEEY is maximum at normal incidence.",
-        "furman_pivi_notation": NORMAL_E_MAX_EBE_FP,
+        "original_notation": NORMAL_E_MAX_EBE_FP,
     },
     "eta_e_max": {
         "markdown": ETA_E_MAX,
@@ -431,6 +457,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
             f"Must be bigger than :math:`{ETA_E_MIN}`, which is currently "
             "not enforced."
         ),
+        "original_notation": ETA_E_MAX_FP,
     },
     "sigma": {
         "markdown": SIGMA,
@@ -450,6 +477,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
             "EBEEY asymptotic minimum. Must be lower than "
             rf":math:`{ETA_E_MAX}`, which is currently not enforced."
         ),
+        "original_notation": ETA_E_MIN_FP,
     },
     "W": {
         "markdown": W,
@@ -469,12 +497,14 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": E1,
         "unit": "1",
         "value": 0.26,
+        "lower_bound": 0.0,
         "description": "Scaling parameter in EBEEY impact angle fit.",
     },
     "e_2": {
         "markdown": E2,
         "unit": "1",
         "value": 2.0,
+        "lower_bound": 0.0,
         "description": "Exponent parameter in EBEEY impact angle fit.",
     },
     # =====================================================================
@@ -490,7 +520,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
             r" has reached :math:`63.2\,\%` of its asymptotic "
             "maximum."
         ),
-        "furman_pivi_notation": E_IBE_FP,
+        "original_notation": E_IBE_FP,
     },
     "eta_i_max": {
         "markdown": ETA_I_MAX,
@@ -499,7 +529,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "lower_bound": 0.0,
         "upper_bound": 1.0,
         "description": "IBEEY asymptotic maximum.",
-        "furman_pivi_notation": ETA_I_MAX_FP,
+        "original_notation": ETA_I_MAX_FP,
     },
     "r": {
         "markdown": R,
@@ -512,18 +542,21 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": Q,
         "unit": "1",
         "value": 0.4,
+        "lower_bound": 0.0,
         "description": "Parameter in the IBEEY PDF function.",
     },
     "r_1": {
         "markdown": R1,
         "unit": "1",
         "value": 0.26,
+        "lower_bound": 0.0,
         "description": "Scaling parameter in IBEEY impact angle fit.",
     },
     "r_2": {
         "markdown": R2,
         "unit": "1",
         "value": 2.0,
+        "lower_bound": 0.0,
         "description": "Exponent parameter in IBEEY impact angle fit.",
     },
 }

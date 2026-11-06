@@ -1,4 +1,4 @@
-"""AG emission distributions.
+"""Ag emission distributions.
 
 Emission energy measurements realized at ONERA, Toulouse, France using the
 DEESSE test facility on 2018-05-30.

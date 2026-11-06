@@ -7,9 +7,10 @@ In particular, define functions to display math equations.
 import io
 import logging
 import re
+from functools import lru_cache
 
 import matplotlib.pyplot as plt
-from PyQt5.QtCore import QEvent, Qt
+from PyQt5.QtCore import QEvent, QTimer
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QLabel, QWidget
 
@@ -73,6 +74,7 @@ def _parse_key(key: str) -> tuple[str, str]:
     return body, units
 
 
+@lru_cache(maxsize=512)
 def _render_to_pixmap(
     text: str,
     width_px: int,
@@ -96,7 +98,6 @@ def _render_to_pixmap(
 
     Returns
     -------
-    QPixmap or None
         Rendered pixmap, or ``None`` if rendering failed.
 
     """
@@ -201,19 +202,19 @@ class MathTextLabel(QLabel):
         self._dpi = dpi
         self._text = _compose_mathtext(body, units)
         self._last_width: int = 0
-
-        self.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
-        # Do an initial render at a sensible default width so the label is
-        # not blank before the first layout pass.
-        self._render(MATH_LABEL_DEFAULT_WIDTH_PX)
+        self._timer = QTimer(self)
+        self._timer.setSingleShot(True)
+        self._timer.setInterval(0)
+        self._timer.timeout.connect(lambda: self._render(self._last_width))
 
     def resizeEvent(self, event: QEvent) -> None:
         """Re-render the pixmap whenever the widget width changes."""
         super().resizeEvent(event)
         new_width = event.size().width()
-        if new_width != self._last_width:
-            self._last_width = new_width
-            self._render(new_width)
+        if new_width == self._last_width:
+            return
+        self._last_width = new_width
+        self._timer.start()
 
     def _render(self, width_px: int) -> None:
         """Render at *width_px* and update the displayed pixmap."""
@@ -223,7 +224,6 @@ class MathTextLabel(QLabel):
         if pixmap is not None:
             self.setPixmap(pixmap)
         else:
-            # Fallback: plain text is always readable.
             self.setText(self._text)
 
 

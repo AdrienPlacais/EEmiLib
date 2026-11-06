@@ -12,8 +12,8 @@ from eemilib.util.constants import (
     COL_ENERGY,
     ImplementedEmissionData,
     ImplementedPop,
-    md_ylabel,
 )
+from eemilib.util.markdown import DATA_TYPE_LABELS
 
 
 class PandasPlotter(Plotter):
@@ -81,7 +81,7 @@ class PandasPlotter(Plotter):
             *args,
             x=explicit[COL_ENERGY],
             ax=axes,
-            ylabel=md_ylabel["Emission Yield"],
+            ylabel=DATA_TYPE_LABELS["Emission Yield"],
             **merged_kwargs,
         )
 
@@ -140,7 +140,7 @@ class PandasPlotter(Plotter):
             *args,
             x=explicit[COL_ENERGY],
             ax=axes,
-            ylabel=md_ylabel["Emission Energy"],
+            ylabel=DATA_TYPE_LABELS["Emission Energy"],
             **merged_kwargs,
         )
         assert isinstance(axes, Axes)
