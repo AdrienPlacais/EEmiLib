@@ -258,7 +258,7 @@ class FurmanPivi(Model):
             "SE": partial(se_energy_distribution, **se_kwargs),
             "all": partial(
                 all_energy_distribution,
-                halve_ebe_contribution_in_EBE_peak=self._halve_ebe_contribution_in_EBE_peak,
+                halve_ebe_contribution=self._halve_ebe_contribution_in_EBE_peak,
                 **se_kwargs,
             ),
         }
@@ -437,7 +437,7 @@ class FurmanPivi(Model):
             },
             "proba_emit_n_se": self._proba_emit_n_se,
             "normalization": self._normalization,
-            "halve_ebe_contribution_in_EBE_peak": self._halve_ebe_contribution_in_EBE_peak,
+            "halve_ebe_contribution": self._halve_ebe_contribution_in_EBE_peak,
         }
 
         def _aggregate_residue(
