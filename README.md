@@ -131,6 +131,7 @@ documentation](https://eemilib.readthedocs.io/en/latest/auto_examples/index.html
   - [ ] Allow execution on online Docker ?
 - [ ] `Export` buttons
   - [ ] Tabulated model data.
+    - First draft in `scripts/export_modelled.py`
   - [ ] Model parameters value (makes sense along with an `Import` button).
 - [ ] Fix error when not running from a git repo:
 
@@ -146,6 +147,7 @@ documentation](https://eemilib.readthedocs.io/en/latest/auto_examples/index.html
         bounds.
   - [x] Energy distributions handling is inconsistent, in particular wrt the
         norm.
+  - [ ] Make loading emission energy plots more robust.
 - If it proves useful:
   - [ ] Handle experimental data with error bars
   - [ ] Add control over interpolation of loaded experimental data
