@@ -6,6 +6,9 @@ r"""Create the Vaughan model, to compute |TEEY|.
 .. todo::
     Make this more robust. Especially the _vaughan_func.
 
+.. todo::
+   CST does not accept negative threshold energy!
+
 """
 
 import logging
