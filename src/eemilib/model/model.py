@@ -74,7 +74,9 @@ class Model(ABC):
     is_dielectrics_compatible: bool
     initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = {}
     model_config: ModelConfig
-    implementation_choices: ClassVar[dict[str, tuple[str, ...]]] = {}
+    implementation_choices: ClassVar[
+        dict[str, tuple[str, ...] | tuple[bool, ...]]
+    ] = {}
     #: Override default URL in documentation
     _url_doc_override: str | None = None
     #: Whether measured energy distributions must be scaled so that their
@@ -113,7 +115,7 @@ class Model(ABC):
             self.set_parameters_values(parameters_values, override_lock=True)
         #: Maps each axis name (see :attr:`.Model.implementation_choices`) to
         #: the currently selected option.
-        self.current_implementations: dict[str, str] = {}
+        self.current_implementations: dict[str, str | bool] = {}
 
         #: Optional reference; used to infer ``energy`` and ``theta`` when not
         #: given, and as default for :meth:`.Model.find_optimal_parameters` and
@@ -949,7 +951,7 @@ class Model(ABC):
             f" matrix on {self.__class__.__name__}."
         )
 
-    def set_implementation(self, name: str, value: str) -> None:
+    def set_implementation(self, name: str, value: str | bool) -> None:
         """Update one implementation axis.
 
         Subclasses defining :attr:`implementation_choices` must override
