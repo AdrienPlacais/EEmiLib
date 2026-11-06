@@ -171,8 +171,8 @@ class FurmanPivi(Model):
         Parameters
         ----------
         name :
-            ``"distribution"``, ``"normalization"``, or
-            ``"halve_ebe_contribution_in_EBE_peak"``.
+            ``"distribution"``, ``"normalization"``,
+            ``"halve_ebe_contribution_in_EBE_peak"`` or ``"fit_strategy"``.
         value :
             - ``"distribution"``: ``"Poisson"`` or ``"Binomial"``, *cf* Eqs.
               (37)/(38).
@@ -180,6 +180,7 @@ class FurmanPivi(Model):
               (Eq. 43).
             - ``"halve_ebe_contribution_in_EBE_peak"``: True or False. See
               Section VI :cite:`Furman2002`.
+            - ``"fit_strategy"``: ``"joint"`` or ``"sequential"``.
 
         """
         choices = self.implementation_choices.get(name)
@@ -283,7 +284,7 @@ class FurmanPivi(Model):
             "SE": partial(se_energy_distribution, **se_kwargs),
             "all": partial(
                 all_energy_distribution,
-                halve_ebe_contribution=self._halve_ebe_contribution_in_EBE_peak,
+                halve_ebe_contribution=False,
                 **se_kwargs,
             ),
         }
@@ -393,6 +394,7 @@ class FurmanPivi(Model):
         if self._fit_strategy == "joint":
             self._find_parameters_jointly(data_matrix)
             return
+
         teeys = data_matrix.get_data("Emission Yield", "all")
         self._find_normal_ey_params(teeys)
         self._find_oblique_ey_params(teeys)
@@ -446,7 +448,7 @@ class FurmanPivi(Model):
                 key: self.parameters[key]
                 for key in NORMAL_TEEY_PARAM_KEYS + OBLIQUE_TEEY_PARAM_KEYS
             },
-            **self._implementation_kwargs(),
+            **self._implementation_kwargs,
         }
         self._fit(
             ALL_DISTRIB_PARAMETERS,
@@ -455,6 +457,7 @@ class FurmanPivi(Model):
             ),
         )
 
+    @property
     def _implementation_kwargs(self) -> dict[str, Any]:
         """Gather the implementation choices used by the distributions."""
         return {
@@ -528,7 +531,7 @@ class FurmanPivi(Model):
         """
         teeys = data_matrix.get_data("Emission Yield", "all")
         distribs = data_matrix.get_data("Emission Energy", "all")
-        extra_kwargs = self._implementation_kwargs()
+        extra_kwargs = self._implementation_kwargs
         w_yield = self.fit_weights["yield"]
         w_distrib = self.fit_weights["distribution"]
 

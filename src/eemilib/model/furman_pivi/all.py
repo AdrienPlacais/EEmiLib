@@ -156,7 +156,6 @@ def all_energy_distribution(
         the peak [viz. Eq. (26)], hence by doubling the height we ensure that
         the area under the peak, which we believe to be a better measure of
         :math:`\delta_e`, matches the measured value."
-
     kwargs :
         Furman and Pivi |SEEY|, |EBEEY|, |IBEEY|, |EBE| and |IBE| PDF
         parameters.
