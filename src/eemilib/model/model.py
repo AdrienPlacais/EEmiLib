@@ -521,6 +521,7 @@ class Model(ABC):
             fun=lambda x: residue({**locked, **dict(zip(free, x))}),
             x0=x0,
             bounds=(lower, upper),
+            verbose=2,
         )
         if not lsq.success:
             logging.error(f"The fit failed with message:\n{lsq.message}")

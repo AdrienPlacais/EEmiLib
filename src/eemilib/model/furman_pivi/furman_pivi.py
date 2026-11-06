@@ -22,7 +22,7 @@ This is an empirical model developed by Dionne :cite:`Furman2002,Furman2013`.
 import logging
 from collections.abc import Callable, Sequence
 from functools import partial
-from typing import Any, ClassVar, cast
+from typing import Any, ClassVar, Literal, cast
 
 import numpy as np
 import pandas as pd
@@ -72,6 +72,8 @@ EMISSION_YIELD_FUNCS: dict[ImplementedPop, Callable] = {
     "IBE": ibeey,
     "all": teey,
 }
+FIT_STRATEGY_T = Literal["sequential", "joint"]
+FIT_STRATEGIES: tuple[FIT_STRATEGY_T, ...] = ("sequential", "joint")
 
 
 class FurmanPivi(Model):
@@ -96,6 +98,12 @@ class FurmanPivi(Model):
         "distribution": FURMAN_PIVI_DISTRIBUTIONS,
         "normalization": FURMAN_PIVI_NORMALIZATIONS,
         "halve_ebe_contribution_in_EBE_peak": (True, False),
+        "fit_strategy": FIT_STRATEGIES,
+    }
+    #: Multiplies the residuals of each dataset in the ``"joint"`` fit.
+    fit_weights: ClassVar[dict[str, float]] = {
+        "yield": 1.0,
+        "distribution": 1.0,
     }
     _url_doc_override = "manual/models/furman_pivi"
     needs_yield_scaled_distributions = True
@@ -105,6 +113,7 @@ class FurmanPivi(Model):
         distribution: DISTRIBUTION_T = "Poisson",
         normalization: NORMALIZATION_T = "penetrated",
         halve_ebe_contribution_in_EBE_peak: bool = True,
+        fit_strategy: FIT_STRATEGY_T = "joint",
         parameters_values: dict[str, Any] | None = None,
     ) -> None:
         r"""Instantiate the object.
@@ -121,7 +130,17 @@ class FurmanPivi(Model):
             :meth:`set_implementation`.
         halve_ebe_contribution_in_EBE_peak :
             Whether we should try to fit the double height of EBE peak. See
-            Section VI. :cite:`Furman2002`.
+            Section VI. :cite:`Furman2002`. Can be changed later with
+            :meth:`set_implementation`.
+        fit_strategy :
+            With ``"sequential"``, we fit the model in three steps:
+
+                1. Normal emission yields
+                2. Oblique emission yields
+                3. Normal emission energy distribution
+
+            With ``"joint"``, we fit everything at once. Can be changed later
+            with :meth:`set_implementation`.
         parameters_values :
             Contains name of parameters and associated value. If provided, will
             override the default values set in ``initial_parameters``.
@@ -142,6 +161,9 @@ class FurmanPivi(Model):
             "halve_ebe_contribution_in_EBE_peak",
             halve_ebe_contribution_in_EBE_peak,
         )
+
+        self._fit_strategy: FIT_STRATEGY_T
+        self.set_implementation("fit_strategy", fit_strategy)
 
     def set_implementation(self, name: str, value: str | bool) -> None:
         r"""Update one implementation axis.
@@ -192,7 +214,10 @@ class FurmanPivi(Model):
                 "halve_ebe_contribution_in_EBE_peak"
             ] = value
             return
-
+        if name == "fit_strategy":
+            self._fit_strategy = cast(FIT_STRATEGY_T, value)
+            self.current_implementations["fit_strategy"] = value
+            return
         logging.error(f"Unknown implementation axis {name = } for FurmanPivi.")
 
     @classmethod
@@ -346,11 +371,15 @@ class FurmanPivi(Model):
     ) -> None:
         """Fit all Furman and Pivi parameters on measurements.
 
-        The optimization is performed in three steps:
+        With :attr:`.fit_strategy` set to ``"sequental"``, the optimization is
+        performed in three steps:
 
         1. Find normal emission yield parameters.
         2. Find oblique incidence emission yield parameters.
         3. Find energy distributions parameters.
+
+        With ``"joint"``, all steps are performed at the same time. This option
+        takes longer, but can lead to better results.
 
         Parameters
         ----------
@@ -361,10 +390,12 @@ class FurmanPivi(Model):
             Unused kwargs.
 
         """
+        if self._fit_strategy == "joint":
+            self._find_parameters_jointly(data_matrix)
+            return
         teeys = data_matrix.get_data("Emission Yield", "all")
         self._find_normal_ey_params(teeys)
         self._find_oblique_ey_params(teeys)
-
         distribs = data_matrix.get_data("Emission Energy", "all")
         self._find_energy_distribution_parameters(distribs)
 
@@ -383,17 +414,9 @@ class FurmanPivi(Model):
                 "Method not actually adapted to several TEEY objects"
             )
 
-        def _aggregate_residue(
-            kwargs: dict[str, float],
-        ) -> NDArray[np.float64]:
-            residuals = []
-            for _teey in teeys:
-                measured = _teey.normal_data
-                predicted = teey_normal(_teey.energies, **kwargs)
-                residuals.append(measured - predicted)
-            return np.concatenate(residuals)
-
-        self._fit(NORMAL_TEEY_PARAM_KEYS, _aggregate_residue)
+        self._fit(
+            NORMAL_TEEY_PARAM_KEYS, partial(self._normal_yield_residue, teeys)
+        )
 
     def _find_oblique_ey_params(self, teeys: Sequence[TEEY]) -> None:
         """Orchestrate fitting of all oblique emission yields parameters."""
@@ -402,22 +425,15 @@ class FurmanPivi(Model):
                 "Method not actually adapted to several TEEY objects"
             )
         extra_kwargs = {
-            **{key: self.parameters[key] for key in NORMAL_TEEY_PARAM_KEYS}
+            key: self.parameters[key] for key in NORMAL_TEEY_PARAM_KEYS
         }
 
         def _aggregate_residue(
             kwargs: dict[str, float],
         ) -> NDArray[np.float64]:
-            residuals = []
-            for _teey in teeys:
-                for theta, measured in zip(
-                    _teey.angles[1:], _teey.oblique_data, strict=True
-                ):
-                    predicted = teey(
-                        _teey.energies, theta, **kwargs, **extra_kwargs
-                    )
-                    residuals.append(measured - predicted)
-            return np.concatenate(residuals)
+            return self._oblique_yield_residue(
+                teeys, {**kwargs, **extra_kwargs}
+            )
 
         self._fit(OBLIQUE_TEEY_PARAM_KEYS, _aggregate_residue)
 
@@ -430,39 +446,112 @@ class FurmanPivi(Model):
                 key: self.parameters[key]
                 for key in NORMAL_TEEY_PARAM_KEYS + OBLIQUE_TEEY_PARAM_KEYS
             },
+            **self._implementation_kwargs(),
+        }
+        self._fit(
+            ALL_DISTRIB_PARAMETERS,
+            partial(
+                self._distribution_residue, distribs, extra_kwargs=extra_kwargs
+            ),
+        )
+
+    def _implementation_kwargs(self) -> dict[str, Any]:
+        """Gather the implementation choices used by the distributions."""
+        return {
             "proba_emit_n_se": self._proba_emit_n_se,
             "normalization": self._normalization,
-            "halve_ebe_contribution": self._halve_ebe_contribution_in_EBE_peak,
+            "halve_ebe_contribution": (
+                self._halve_ebe_contribution_in_EBE_peak
+            ),
         }
+
+    def _normal_yield_residue(
+        self, teeys: Sequence[TEEY], kwargs: dict[str, float]
+    ) -> NDArray[np.float64]:
+        """Compute |TEEY| residuals at normal incidence."""
+        return np.concatenate(
+            [
+                _teey.normal_data - teey_normal(_teey.energies, **kwargs)
+                for _teey in teeys
+            ]
+        )
+
+    def _oblique_yield_residue(
+        self, teeys: Sequence[TEEY], kwargs: dict[str, float]
+    ) -> NDArray[np.float64]:
+        """Compute |TEEY| residuals at oblique incidence."""
+        residuals = []
+        for _teey in teeys:
+            for theta, measured in zip(
+                _teey.angles[1:], _teey.oblique_data, strict=True
+            ):
+                predicted = teey(_teey.energies, theta, **kwargs)
+                residuals.append(measured - predicted)
+        return np.concatenate(residuals)
+
+    def _distribution_residue(
+        self,
+        distribs: Sequence[AllEmissionEnergyDistribution],
+        kwargs: dict[str, float],
+        extra_kwargs: dict[str, Any],
+    ) -> NDArray[np.float64]:
+        """Compute residuals of the energy distributions."""
+        n_range = range(1, M_MAX_SECONDARIES + 1)
+        p_ns = [
+            kwargs.get(f"p_{i}", self.parameters[f"p_{i}"]) for i in n_range
+        ]
+        eps_ns = [
+            kwargs.get(f"eps_{i}", self.parameters[f"eps_{i}"])
+            for i in n_range
+        ]
+        residuals = []
+        for distrib in distribs:
+            predicted = all_energy_distribution(
+                e_pe=distrib.e_pe,
+                the=0.0,
+                emission_energies=distrib.energies,
+                p_ns=p_ns,
+                eps_ns=eps_ns,
+                **kwargs,
+                **extra_kwargs,
+            )
+            residuals.append(distrib.normal_data - predicted)
+        return np.concatenate(residuals)
+
+    def _find_parameters_jointly(self, data_matrix: DataMatrix) -> None:
+        """Fit yield and distribution parameters at once.
+
+        The |SE|/|EBE|/|IBE| partition cannot be determined from the |TEEY|
+        alone, so all parameters are fitted on the concatenated residuals,
+        scaled by :attr:`fit_weights`.
+
+        """
+        teeys = data_matrix.get_data("Emission Yield", "all")
+        distribs = data_matrix.get_data("Emission Energy", "all")
+        extra_kwargs = self._implementation_kwargs()
+        w_yield = self.fit_weights["yield"]
+        w_distrib = self.fit_weights["distribution"]
 
         def _aggregate_residue(
             kwargs: dict[str, float],
         ) -> NDArray[np.float64]:
-            n_range = range(1, M_MAX_SECONDARIES + 1)
-            p_ns = [
-                kwargs.get(f"p_{i}", self.parameters[f"p_{i}"])
-                for i in n_range
-            ]
-            eps_ns = [
-                kwargs.get(f"eps_{i}", self.parameters[f"eps_{i}"])
-                for i in n_range
-            ]
-            residuals = []
-            for distrib in distribs:
-                measured = distrib.normal_data
-                predicted = all_energy_distribution(
-                    e_pe=distrib.e_pe,
-                    the=0.0,
-                    emission_energies=distrib.energies,
-                    p_ns=p_ns,
-                    eps_ns=eps_ns,
-                    **kwargs,
-                    **extra_kwargs,
-                )
-                residuals.append(measured - predicted)
-            return np.concatenate(residuals)
+            return np.concatenate(
+                [
+                    w_yield * self._normal_yield_residue(teeys, kwargs),
+                    w_yield * self._oblique_yield_residue(teeys, kwargs),
+                    w_distrib
+                    * self._distribution_residue(
+                        distribs, kwargs, extra_kwargs
+                    ),
+                ]
+            )
 
-        self._fit(ALL_DISTRIB_PARAMETERS, _aggregate_residue)
+        self._fit(
+            NORMAL_TEEY_PARAM_KEYS
+            + OBLIQUE_TEEY_PARAM_KEYS
+            + ALL_DISTRIB_PARAMETERS,
+            _aggregate_residue,
+        )
 
     def evaluate(
         self, data_matrix: DataMatrix | None = None
