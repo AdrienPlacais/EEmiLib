@@ -137,9 +137,9 @@ class Vaughan(Model):
             "is_locked": False,
         },
     }
-    implementation_choices: ClassVar[dict[str, tuple[str, ...]]] = {
-        "implementation": VAUGHAN_IMPLEMENTATIONS
-    }
+    implementation_choices: ClassVar[
+        dict[str, tuple[str, ...] | tuple[bool, ...]]
+    ] = {"implementation": VAUGHAN_IMPLEMENTATIONS}
     _url_doc_override = "manual/models/vaughan"
 
     def __init__(
@@ -171,7 +171,7 @@ class Vaughan(Model):
         self.current_implementation: VaughanImplementation
         self.set_implementation("implementation", implementation)
 
-    def set_implementation(self, name: str, value: str) -> None:
+    def set_implementation(self, name: str, value: str | bool) -> None:
         r"""Update some parameters to reproduce a specific implementation.
 
         Vaughan CST:

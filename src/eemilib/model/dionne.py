@@ -124,10 +124,9 @@ class Dionne(Model):
             "description": "Exponent in the power law energy loss model.",
         },
     }
-    implementation_choices: ClassVar[dict[str, tuple[str, ...]]] = {
-        "energy_loss": ENERGY_LOSS,
-        "secondary_scattering": SCATTERING,
-    }
+    implementation_choices: ClassVar[
+        dict[str, tuple[str, ...] | tuple[bool, ...]]
+    ] = {"energy_loss": ENERGY_LOSS, "secondary_scattering": SCATTERING}
     _url_doc_override = "manual/models/dionne"
 
     def __init__(
@@ -161,7 +160,7 @@ class Dionne(Model):
         self.set_implementation("energy_loss", energy_loss)
         self.set_implementation("secondary_scattering", secondary_scattering)
 
-    def set_implementation(self, name: str, value: str) -> None:
+    def set_implementation(self, name: str, value: str | bool) -> None:
         r"""Update one implementation axis.
 
         Parameters
