@@ -5,14 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.4]
-
-### Added
-
-- Test suite for Dionne model.
-- Different Dionne model implementations.
-
-## [0.2.3]
+## [0.2.2]
 
 ### Added
 
@@ -28,15 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Generally not useful with `ChungEverhart` and `Maxwellian`, because you do
       not need to load TEEYs.
 - The different Dionne implementations as listed in the article.
-
-### Fixed
-
-- GUI:
-  - Exceptions are handled gracefully and do not make the code crash.
-  - Loading `Model`s, and in particular `FurmanPivi`, is faster.
-- Emission Energy Distributions have more consistent normalization.
-
-## [0.2.2]
+- Test suite for Dionne model.
+- Different Dionne model implementations.
 
 ### Changed
 
@@ -44,6 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- GUI:
+  - Exceptions are handled gracefully and do not make the code crash.
+  - Loading `Model`s, and in particular `FurmanPivi`, is faster.
+- Emission Energy Distributions have more consistent normalization.
 - Updating `Parameter`'s `value`, `lower_bound`, `upper_bound`, `is_locked` is
   correctly taken into account.
 - `E_0` in `Vaughan` respects the given bounds.
