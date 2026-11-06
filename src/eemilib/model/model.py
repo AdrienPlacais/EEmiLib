@@ -1118,6 +1118,9 @@ def _normalize_e_pes(
                 "Ignoring..."
             )
         return (None,)
-    if isinstance(e_pes, Iterable):
-        return tuple(e_pes)
-    return (e_pes,)
+    pes = tuple(e_pes) if isinstance(e_pes, Iterable) else (e_pes,)
+    if invalid := [e_pe for e_pe in pes if e_pe is not None and e_pe <= 0]:
+        raise ValueError(
+            f"|PE| energies must be strictly positive, got {invalid}."
+        )
+    return pes
