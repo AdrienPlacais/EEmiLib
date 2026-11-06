@@ -50,6 +50,14 @@ eemilib_distrib_50eV = files / "eemilib_emission_energy_50eV.csv"
 eemilib_distrib_70eV = files / "eemilib_emission_energy_70eV.csv"
 eemilib_distrib_100eV = files / "eemilib_emission_energy_100eV.csv"
 eemilib_distrib_150eV = files / "eemilib_emission_energy_150eV.csv"
+eemilib_energy_distributions = (
+    eemilib_distrib_10eV,
+    eemilib_distrib_30eV,
+    eemilib_distrib_50eV,
+    eemilib_distrib_70eV,
+    eemilib_distrib_100eV,
+    eemilib_distrib_150eV,
+)
 
 furman_pivi_parameters_values = {
     # =====================================================================
