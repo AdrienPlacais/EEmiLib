@@ -90,9 +90,12 @@ class FurmanPivi(Model):
     initial_parameters: ClassVar[dict[str, dict[str, str | float | bool]]] = (
         INITIAL_FURMAN_PIVI_PARAMETERS
     )
-    implementation_choices: ClassVar[dict[str, tuple[str, ...]]] = {
+    implementation_choices: ClassVar[
+        dict[str, tuple[str, ...] | tuple[bool, ...]]
+    ] = {
         "distribution": FURMAN_PIVI_DISTRIBUTIONS,
         "normalization": FURMAN_PIVI_NORMALIZATIONS,
+        "halve_ebe_contribution_in_EBE_peak": (True, False),
     }
     _url_doc_override = "manual/models/furman_pivi"
     needs_yield_scaled_distributions = True
@@ -101,6 +104,7 @@ class FurmanPivi(Model):
         self,
         distribution: DISTRIBUTION_T = "Poisson",
         normalization: NORMALIZATION_T = "penetrated",
+        halve_ebe_contribution_in_EBE_peak: bool = True,
         parameters_values: dict[str, Any] | None = None,
     ) -> None:
         r"""Instantiate the object.
@@ -115,6 +119,9 @@ class FurmanPivi(Model):
             Normalization used for the associated probabilities, *cf* Eqs.
             (35) and (43). Can be changed later with
             :meth:`set_implementation`.
+        halve_ebe_contribution_in_EBE_peak :
+            Whether we should try to fit the double height of EBE peak. See
+            Section VI. :cite:`Furman2002`.
         parameters_values :
             Contains name of parameters and associated value. If provided, will
             override the default values set in ``initial_parameters``.
@@ -130,22 +137,34 @@ class FurmanPivi(Model):
         self._normalization: NORMALIZATION_T
         self.set_implementation("normalization", normalization)
 
-    def set_implementation(self, name: str, value: str) -> None:
+        self._halve_ebe_contribution_in_EBE_peak: bool
+        self.set_implementation(
+            "halve_ebe_contribution_in_EBE_peak",
+            halve_ebe_contribution_in_EBE_peak,
+        )
+
+    def set_implementation(self, name: str, value: str | bool) -> None:
         r"""Update one implementation axis.
 
         Parameters
         ----------
         name :
-            ``"distribution"`` or ``"normalization"``.
+            ``"distribution"``, ``"normalization"``, or
+            ``"halve_ebe_contribution_in_EBE_peak"``.
         value :
-            For ``"distribution"``: ``"Poisson"`` or ``"Binomial"``, *cf*
-            Eqs. (37)/(38). For ``"normalization"``: ``"incident"`` (Eq. 35)
-            or ``"penetrated"`` (Eq. 43).
+            - ``"distribution"``: ``"Poisson"`` or ``"Binomial"``, *cf* Eqs.
+              (37)/(38).
+            - ``"normalization"``: ``"incident"`` (Eq. 35) or ``"penetrated"``
+              (Eq. 43).
+            - ``"halve_ebe_contribution_in_EBE_peak"``: True or False. See
+              Section VI :cite:`Furman2002`.
 
         """
         choices = self.implementation_choices.get(name)
         if choices is None:
-            logging.error(f"Unknown implementation axis {name = } for Dionne.")
+            logging.error(
+                f"Unknown implementation axis {name = } for Furman and Pivi."
+            )
             return
         if value not in choices:
             logging.error(
@@ -165,6 +184,13 @@ class FurmanPivi(Model):
         if name == "normalization":
             self._normalization = cast(NORMALIZATION_T, value)
             self.current_implementations["normalization"] = value
+            return
+
+        if name == "halve_ebe_contribution_in_EBE_peak":
+            self._halve_ebe_contribution_in_EBE_peak = cast(bool, value)
+            self.current_implementations[
+                "halve_ebe_contribution_in_EBE_peak"
+            ] = value
             return
 
         logging.error(f"Unknown implementation axis {name = } for FurmanPivi.")
@@ -230,7 +256,11 @@ class FurmanPivi(Model):
             "EBE": ebe_energy_distribution,
             "IBE": ibe_energy_distribution,
             "SE": partial(se_energy_distribution, **se_kwargs),
-            "all": partial(all_energy_distribution, **se_kwargs),
+            "all": partial(
+                all_energy_distribution,
+                halve_ebe_contribution_in_EBE_peak=self._halve_ebe_contribution_in_EBE_peak,
+                **se_kwargs,
+            ),
         }
         dist_func = dist_funcs.get(population)
         if dist_func is None:
@@ -400,22 +430,14 @@ class FurmanPivi(Model):
         self, distribs: Sequence[AllEmissionEnergyDistribution]
     ) -> None:
         """Orchestrate fitting of all normal energy distribution parameters."""
-        # p_ns = [
-        #     self.parameters[f"p_{i}"] for i in range(1, M_MAX_SECONDARIES + 1)
-        # ]
-        # eps_ns = [
-        #     self.parameters[f"eps_{i}"]
-        #     for i in range(1, M_MAX_SECONDARIES + 1)
-        # ]
         extra_kwargs = {
             **{
                 key: self.parameters[key]
                 for key in NORMAL_TEEY_PARAM_KEYS + OBLIQUE_TEEY_PARAM_KEYS
             },
-            # "p_ns": p_ns,
-            # "eps_ns": eps_ns,
             "proba_emit_n_se": self._proba_emit_n_se,
             "normalization": self._normalization,
+            "halve_ebe_contribution_in_EBE_peak": self._halve_ebe_contribution_in_EBE_peak,
         }
 
         def _aggregate_residue(
@@ -437,7 +459,6 @@ class FurmanPivi(Model):
                     e_pe=distrib.e_pe,
                     the=0.0,
                     emission_energies=distrib.energies,
-                    halve_ebe_contribution=True,
                     p_ns=p_ns,
                     eps_ns=eps_ns,
                     **kwargs,
