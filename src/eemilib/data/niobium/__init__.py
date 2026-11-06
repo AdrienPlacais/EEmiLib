@@ -1,7 +1,7 @@
 r"""Provide data for niobium.
 
 It was manually extracted from following papers:
-- :math:`300\,\mathrm{\degree C}` baked out niobium: :cite:`Piel1988`.
+- :math:`300\\degree\mathrm{C}` baked out niobium: :cite:`Piel1988`.
 - Degreased niobium: :cite:`Aull2015`.
 - Sputtered niobium: :cite:`Aull2015`.
 
