@@ -23,6 +23,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The different Dionne implementations as listed in the article.
 - Test suite for Dionne model.
 - Different Dionne model implementations.
+- `FurmanPivi`:
+  - You can choose to halve the EBE peak with
+    `halve_ebe_contribution_in_ebe_peak` implementation.
+  - You can choose between different fit strategies: `joint` or `sequential`.
+    `joint` seems to lead to better results.
 
 ### Changed
 
