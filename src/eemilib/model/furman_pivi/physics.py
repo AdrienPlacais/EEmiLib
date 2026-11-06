@@ -72,7 +72,7 @@ def at_theta_incidence(
     at_normal: Parameter | float,
     a_1: Parameter | float,
     a_2: Parameter | float,
-    tol: float = 1e-8,
+    tol: float = 0.1,
     **kwargs,
 ) -> float:
     r"""Compute given quantity at non-normal incidence.
@@ -238,7 +238,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": EPS_1,
         "unit": "1",
         "value": 3.9,
-        "lower_bound": 1e-8,
+        "lower_bound": 0.1,
         "upper_bound": 20.0,
         "description": (
             "Scale parameter for n=1 in the SEs energy spectrum, Eq. (33)."
@@ -248,7 +248,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": EPS_2,
         "unit": "1",
         "value": 6.2,
-        "lower_bound": 1e-8,
+        "lower_bound": 0.1,
         "upper_bound": 20.0,
         "description": (
             "Scale parameter for n=2 in the SEs energy spectrum, Eq. (33)."
@@ -258,7 +258,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": EPS_3,
         "unit": "1",
         "value": 13.0,
-        "lower_bound": 1e-8,
+        "lower_bound": 0.1,
         "upper_bound": 20.0,
         "description": (
             "Scale parameter for n=3 in the SEs energy spectrum, Eq. (33)."
@@ -268,7 +268,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": EPS_4,
         "unit": "1",
         "value": 8.8,
-        "lower_bound": 1e-8,
+        "lower_bound": 0.1,
         "upper_bound": 20.0,
         "description": (
             "Scale parameter for n=4 in the SEs energy spectrum, Eq. (33)."
@@ -278,7 +278,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": EPS_5,
         "unit": "1",
         "value": 6.25,
-        "lower_bound": 1e-8,
+        "lower_bound": 0.1,
         "upper_bound": 20.0,
         "description": (
             "Scale parameter for n=5 in the SEs energy spectrum, Eq. (33)."
@@ -288,7 +288,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": EPS_6,
         "unit": "1",
         "value": 2.25,
-        "lower_bound": 1e-8,
+        "lower_bound": 0.1,
         "upper_bound": 20.0,
         "description": (
             "Scale parameter for n=6 in the SEs energy spectrum, Eq. (33)."
@@ -298,7 +298,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": EPS_7,
         "unit": "1",
         "value": 9.20,
-        "lower_bound": 1e-8,
+        "lower_bound": 0.1,
         "upper_bound": 20.0,
         "description": (
             "Scale parameter for n=7 in the SEs energy spectrum, Eq. (33)."
@@ -308,7 +308,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": EPS_8,
         "unit": "1",
         "value": 5.3,
-        "lower_bound": 1e-8,
+        "lower_bound": 0.1,
         "upper_bound": 20.0,
         "description": (
             "Scale parameter for n=8 in the SEs energy spectrum, Eq. (33)."
@@ -318,7 +318,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": EPS_9,
         "unit": "1",
         "value": 17.8,
-        "lower_bound": 1e-8,
+        "lower_bound": 0.1,
         "upper_bound": 20.0,
         "description": (
             "Scale parameter for n=9 in the SEs energy spectrum, Eq. (33)."
@@ -328,7 +328,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": EPS_10,
         "unit": "1",
         "value": 10.0,
-        "lower_bound": 1e-8,
+        "lower_bound": 0.1,
         "upper_bound": 20.0,
         "description": (
             "Scale parameter for n=10 in the SEs energy spectrum, Eq. (33)."
@@ -338,7 +338,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": P_1,
         "unit": "1",
         "value": 1.6,
-        "lower_bound": 0.0,
+        "lower_bound": 1.0,
         "upper_bound": 20.0,
         "description": (
             "Shape parameter for n=1 in the SEs energy spectrum, Eq. (33)."
@@ -348,7 +348,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": P_2,
         "unit": "1",
         "value": 2.0,
-        "lower_bound": 0.0,
+        "lower_bound": 1.0,
         "upper_bound": 20.0,
         "description": (
             "Shape parameter for n=2 in the SEs energy spectrum, Eq. (33)."
@@ -358,7 +358,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": P_3,
         "unit": "1",
         "value": 1.8,
-        "lower_bound": 0.0,
+        "lower_bound": 1.0,
         "upper_bound": 20.0,
         "description": (
             "Shape parameter for n=3 in the SEs energy spectrum, Eq. (33)."
@@ -368,7 +368,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": P_4,
         "unit": "1",
         "value": 4.7,
-        "lower_bound": 0.0,
+        "lower_bound": 1.0,
         "upper_bound": 20.0,
         "description": (
             "Shape parameter for n=4 in the SEs energy spectrum, Eq. (33)."
@@ -378,7 +378,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": P_5,
         "unit": "1",
         "value": 1.8,
-        "lower_bound": 0.0,
+        "lower_bound": 1.0,
         "upper_bound": 20.0,
         "description": (
             "Shape parameter for n=5 in the SEs energy spectrum, Eq. (33)."
@@ -388,7 +388,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": P_6,
         "unit": "1",
         "value": 2.4,
-        "lower_bound": 0.0,
+        "lower_bound": 1.0,
         "upper_bound": 20.0,
         "description": (
             "Shape parameter for n=6 in the SEs energy spectrum, Eq. (33)."
@@ -398,7 +398,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": P_7,
         "unit": "1",
         "value": 1.8,
-        "lower_bound": 0.0,
+        "lower_bound": 1.0,
         "upper_bound": 20.0,
         "description": (
             "Shape parameter for n=7 in the SEs energy spectrum, Eq. (33)."
@@ -408,7 +408,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": P_8,
         "unit": "1",
         "value": 1.8,
-        "lower_bound": 0.0,
+        "lower_bound": 1.0,
         "upper_bound": 20.0,
         "description": (
             "Shape parameter for n=8 in the SEs energy spectrum, Eq. (33)."
@@ -418,7 +418,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": P_9,
         "unit": "1",
         "value": 2.3,
-        "lower_bound": 0.0,
+        "lower_bound": 1.0,
         "upper_bound": 20.0,
         "description": (
             "Shape parameter for n=9 in the SEs energy spectrum, Eq. (33)."
@@ -428,7 +428,7 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": P_10,
         "unit": "1",
         "value": 1.8,
-        "lower_bound": 0.0,
+        "lower_bound": 1.0,
         "upper_bound": 20.0,
         "description": (
             "Shape parameter for n=10 in the SEs energy spectrum, Eq. (33)."
