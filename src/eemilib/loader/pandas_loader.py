@@ -344,13 +344,16 @@ class PandasLoader(Loader):
                 "Can only export distributions with two columns (energy and "
                 f"one incidence angle), got {list(data.columns)}."
             )
-        name = f"{prefix}_emission_energy_{population}_{e_pe:g}eV.csv"
+        path = (
+            Path(folder)
+            / f"{prefix}_emission_energy_{population}_{e_pe:g}eV.csv"
+        )
         self._write(
             data,
-            Path(folder) / name,
+            path,
             ["PEs energy in eV", str(float(e_pe)), *(comments or [])],
         )
-        return Path(folder) / name
+        return path
 
     def _write(
         self, data: pd.DataFrame, path: Path, comments: Sequence[str]
