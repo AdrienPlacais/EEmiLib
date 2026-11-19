@@ -31,6 +31,7 @@ from PyQt5.QtWidgets import (
     QAbstractItemView,
     QApplication,
     QCheckBox,
+    QFileDialog,
     QGridLayout,
     QHBoxLayout,
     QLineEdit,
@@ -68,6 +69,7 @@ from eemilib.gui.helper import (
     set_help_button_action,
     setup_linspace_entries,
     show_error,
+    show_info,
     titled_group,
     to_plot_checkboxes,
 )
@@ -127,6 +129,7 @@ class EEmiLibGUI(QMainWindow):
             "Model": default_model,
             "Loader": default_loader,
             "Plotter": default_plotter,
+            "ExportLoader": default_loader,
         }
 
         # EEmiLib attributes
@@ -137,6 +140,8 @@ class EEmiLibGUI(QMainWindow):
         self.loader: Loader
         #: Currently selected plotter
         self.plotter: Plotter
+        #: Loader used for modelled data export
+        self.export_loader: Loader
 
         super().__init__()
         self.setWindowTitle("EEmiLib")
@@ -193,6 +198,7 @@ class EEmiLibGUI(QMainWindow):
         #: Let user select which kind of electron population should be plotted.
         self.population_checkboxes: list[QCheckBox]
         self._setup_plotter_dropdowns()
+        self._setup_export_loader_dropdown()
 
         # Call the methods called by the model_dropdown index change
         self._set_default_dropdown()
@@ -299,13 +305,19 @@ class EEmiLibGUI(QMainWindow):
         help_button = self.dropdowns["Loader"].buttons[0]
         set_help_button_action(help_button, self.loader)
 
-    def _setup_loader_settings_dialog(self) -> tuple[str, Callable]:
-        """Give arguments to setup the loader settings button."""
+    def _setup_loader_settings_dialog(
+        self, loader_attr: str = "loader"
+    ) -> tuple[str, Callable]:
+        """Give arguments to setup the loader settings button.
+
+        ``loader_attr`` is the name of the attribute holding the loader.
+
+        """
         settings_label = "⚙️ Settings"
 
         def settings_action() -> int:
-            code = LoaderSettingsDialog(self, self.loader).exec()
-            return code
+            loader = getattr(self, loader_attr)
+            return LoaderSettingsDialog(self, loader).exec()
 
         return settings_label, settings_action
 
@@ -677,6 +689,20 @@ class EEmiLibGUI(QMainWindow):
             )
         return linspace
 
+    def _get_angles_for_model_plot(
+        self,
+    ) -> tuple[bool, NDArray[np.float64] | None]:
+        """Get proper angles for :meth:`.Model.plot` and :meth:`.Model.export`.
+
+        If the "use measured" checkbox is checked, return ``None`` as angles:
+        they will be inferred from the measurements. Otherwise, build them from
+        the angle linspace inputs. The boolean tells if this succeeded.
+
+        """
+        if self.angle.use_measured.isChecked():
+            return True, None
+        return self._gen_linspace("angle")
+
     def _setup_plotter_dropdowns(self) -> None:
         """Set the :class:`.Plotter` related interface."""
         self._set_up_data_to_plot_checkboxes()
@@ -703,6 +729,84 @@ class EEmiLibGUI(QMainWindow):
     def _setup_plotter(self) -> None:
         """Set up new plotter when the dropdown menu is changed."""
         self.plotter = self._dropdown_to_class("Plotter")()
+
+    def _setup_export_loader_dropdown(self) -> None:
+        """Set the row used to export modelled data.
+
+        Changing the main loader selects the same one here, but not the other
+        way around: you can load with a loader that cannot export, and still
+        export with another one.
+
+        """
+        settings_label, settings_action = self._setup_loader_settings_dialog(
+            "export_loader"
+        )
+        entry = setup_dropdown(
+            module_name="eemilib.loader",
+            base_class=Loader,
+            buttons_args={
+                "Help": lambda _: logging.info("Help not set."),
+                "Export modelled data": self.export_data,
+                settings_label: settings_action,
+            },
+            label="Export with:",
+        )
+        self.dropdowns["ExportLoader"] = entry
+
+        entry.dropdown.currentIndexChanged.connect(
+            self._instantiate_a_new_export_loader
+        )
+        self.dropdowns["Loader"].dropdown.currentIndexChanged.connect(
+            self._sync_export_loader
+        )
+        self.plot_layout.addLayout(entry.layout)
+
+    def _instantiate_a_new_export_loader(self) -> None:
+        """Set up new export loader whenever its dropdown is changed."""
+        self.export_loader = self._dropdown_to_class("ExportLoader")()
+        help_button = self.dropdowns["ExportLoader"].buttons[0]
+        set_help_button_action(help_button, self.export_loader)
+
+    def _sync_export_loader(self) -> None:
+        """Select in the export dropdown the loader of the main one."""
+        set_dropdown_value(
+            self.dropdowns["ExportLoader"],
+            self.dropdowns["Loader"].dropdown.currentText(),
+        )
+
+    def export_data(self) -> None:
+        """Export the modelled data with :attr:`export_loader`.
+
+        Errors are logged, never raised, so that a loader that cannot export
+        does not crash the GUI.
+
+        """
+        folder = QFileDialog.getExistingDirectory(self, "Export folder")
+        if not folder:
+            return
+        success_angle, angles = self._get_angles_for_model_plot()
+        if not success_angle:
+            return
+
+        self.model.set_reference_data(self.data_matrix)
+        try:
+            with self._busy("Exporting modelled data..."):
+                paths = self.model.export(
+                    self.export_loader,
+                    folder,
+                    energy=self._get_energies_for_model_plot(),
+                    theta=angles,
+                    e_pes=self._known_impact_energies() or None,
+                )
+        except Exception as e:
+            logging.error(f"Could not export modelled data. Error:\n{e}")
+            return
+        show_info(
+            self,
+            "Export",
+            f"Exported {len(paths)} file(s) to {folder}.",
+            "\n".join(str(path) for path in paths),
+        )
 
     def _set_up_data_to_plot_checkboxes(self) -> None:
         """Add checkbox to select which data should be plotted."""
@@ -755,13 +859,11 @@ class EEmiLibGUI(QMainWindow):
         data_type = self._get_data_type_to_plot()
         if data_type is None:
             return
-        energies = self._get_energies_for_model_plot()
-        angles = None
-        if not self.angle.use_measured.isChecked():
-            success_angle, angles = self._gen_linspace("angle")
-            if not success_angle:
-                return
 
+        energies = self._get_energies_for_model_plot()
+        success_angle, angles = self._get_angles_for_model_plot()
+        if not success_angle:
+            return
         self._warn_if_scales_mismatch(data_type)
         self._plot(
             self.model.plot,
