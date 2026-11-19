@@ -9,6 +9,7 @@ import logging
 import math
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Collection, Iterable, Sequence
+from pathlib import Path
 from pprint import pformat
 from typing import Any, ClassVar, Literal, cast, overload
 
@@ -23,6 +24,8 @@ from eemilib.emission_data._data_matrix import ModelledDataMatrix
 from eemilib.emission_data.emission_data import EmissionData
 from eemilib.emission_data.emission_yield import TEEY
 from eemilib.emission_data.helper import get_ec1, get_max
+from eemilib.loader.helper import WritablePath
+from eemilib.loader.loader import Loader
 from eemilib.model.parameter import Parameter, ParameterSet
 from eemilib.plotter.plotter import Plotter
 from eemilib.util.constants import (
@@ -39,6 +42,11 @@ from eemilib.util.markdown import _TEEY, E_MAX, EC_1, SIGMA_MAX, tex_math
 _DEFAULT_ENERGY = np.linspace(0.0, 500.0, 501)
 #: Default angle, when none is provided
 _DEFAULT_THETA = np.array([0.0])
+#: Default |PEs| energies for exported emission energy distributions, when none
+#: are given nor found in the reference data.
+_DEFAULT_E_PES = (10.0, 30.0, 50.0, 70.0, 100.0, 150.0)
+#: Tolerance when trimming distributions at the |PE| energy, in :unit:`eV`.
+_ENERGY_TOLERANCE = 1e-9
 
 
 class Model(ABC):
@@ -808,6 +816,183 @@ class Model(ABC):
                 **kwargs,
             )
         return axes
+
+    def export(
+        self,
+        loader: Loader,
+        folder: WritablePath,
+        prefix: str = "eemilib",
+        *,
+        data_types: Collection[ImplementedEmissionData] | None = None,
+        populations: Collection[ImplementedPop] | None = None,
+        energy: NDArray[np.float64] | None = None,
+        theta: NDArray[np.float64] | None = None,
+        e_pes: Collection[float] | None = None,
+        comments: Sequence[str] | None = None,
+    ) -> list[Path]:
+        """Export modelled data with ``loader``, in a loadable format.
+
+        ``"Emission Angle"`` data is not exported yet. Emission energy
+        distributions are exported at normal incidence only, and trimmed so
+        that no electron is emitted above the |PE| energy.
+
+        Parameters
+        ----------
+        loader :
+            Writes the files, in the format it can load back.
+        folder :
+            Where to write the files.
+        prefix :
+            Start of the file names.
+        data_types :
+            Types of data to export. Defaults to :attr:`data_types`.
+        populations :
+            Populations to export. Defaults to :attr:`populations`.
+        energy :
+            Energies at which the model is evaluated. If omitted, we infer
+            them as in :meth:`get_or_compute_data`.
+        theta :
+            Incidence angles for emission yields. If omitted, we infer them as
+            in :meth:`get_or_compute_data`.
+        e_pes :
+            |PEs| energies of the emission energy distributions. If omitted,
+            we take them from :attr:`reference_data`, or else use default
+            ones.
+        comments :
+            Metadata lines written at the start of every file. Defaults to the
+            model name and its parameters values.
+
+        Returns
+        -------
+            Paths of the written files.
+
+        """
+        if comments is None:
+            comments = self._export_comments()
+        if data_types is None:
+            data_types = self.data_types
+        if populations is None:
+            populations = self.populations
+
+        if (
+            "Emission Energy" in data_types
+            and theta is not None
+            and np.any(theta != 0.0)
+        ):
+            logging.warning(
+                "Emission energy distributions are exported at normal "
+                "incidence only, ignoring other angles."
+            )
+
+        paths: list[Path] = []
+        for population in populations:
+            if "Emission Yield" in data_types:
+                paths += self._export_emission_yields(
+                    loader, folder, prefix, population, energy, theta, comments
+                )
+            if "Emission Energy" in data_types:
+                paths += self._export_emission_energy_distributions(
+                    loader, folder, prefix, population, energy, e_pes, comments
+                )
+        logging.info(f"Exported {len(paths)} file(s) to {folder}.")
+        return paths
+
+    def _export_comments(self) -> list[str]:
+        """List the model name and parameters values, as file comments."""
+        parameters = [
+            f"{name:<20s} : {param.value:.6e}"
+            for name, param in self.parameters.items()
+        ]
+        return [f"{self.__class__.__name__} data", *parameters]
+
+    def _export_emission_yields(
+        self,
+        loader: Loader,
+        folder: WritablePath,
+        prefix: str,
+        population: ImplementedPop,
+        energy: NDArray[np.float64] | None,
+        theta: NDArray[np.float64] | None,
+        comments: Sequence[str],
+    ) -> list[Path]:
+        """Export the emission yield of one population."""
+        emission_yields = self.get_or_compute_data(
+            "Emission Yield", population, energy, theta
+        )
+        if not emission_yields:
+            logging.info(f"No emission yield modelled for {population = }.")
+        return [
+            loader.export_emission_yield(
+                emission_yield.data,
+                folder,
+                prefix,
+                population=population,
+                comments=comments,
+            )
+            for emission_yield in emission_yields
+        ]
+
+    def _export_emission_energy_distributions(
+        self,
+        loader: Loader,
+        folder: WritablePath,
+        prefix: str,
+        population: ImplementedPop,
+        energy: NDArray[np.float64] | None,
+        e_pes: Collection[float] | None,
+        comments: Sequence[str],
+    ) -> list[Path]:
+        """Export the emission energy distributions of one population."""
+        pes = tuple(e_pes) if e_pes else self._export_e_pes(population)
+        distributions = self.get_or_compute_data(
+            "Emission Energy", population, energy, _DEFAULT_THETA, e_pes=pes
+        )
+        if not distributions:
+            logging.info(
+                f"No energy distribution modelled for {population = }."
+            )
+
+        paths = []
+        for distribution, e_pe in zip(distributions, pes, strict=True):
+            data = distribution.data
+            trimmed = data.loc[
+                data[COL_ENERGY] <= e_pe + _ENERGY_TOLERANCE,
+                [COL_ENERGY, COL_NORMAL],
+            ]
+            paths.append(
+                loader.export_emission_energy_distribution(
+                    trimmed,
+                    folder,
+                    prefix,
+                    population=population,
+                    e_pe=e_pe,
+                    comments=comments,
+                )
+            )
+        return paths
+
+    def _export_e_pes(self, population: ImplementedPop) -> tuple[float, ...]:
+        """Find the |PEs| energies to export distributions at.
+
+        Taken from :attr:`reference_data` if possible, else defaults.
+
+        """
+        if self.reference_data is not None:
+            for pop in (population, "all"):
+                found = {
+                    getattr(data, "e_pe", None)
+                    for data in self.reference_data.get_data(
+                        "Emission Energy", pop
+                    )
+                }
+                found.discard(None)
+                if found:
+                    return tuple(sorted(found))
+        logging.warning(
+            "No |PE| energies given nor found in reference data, using "
+            f"default ones: {_DEFAULT_E_PES}."
+        )
+        return _DEFAULT_E_PES
 
     def set_parameter_value(
         self, name: str, value: float, override_lock: bool = False

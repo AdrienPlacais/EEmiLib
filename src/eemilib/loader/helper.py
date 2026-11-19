@@ -8,6 +8,8 @@ from eemilib.util.constants import COL_ENERGY
 #: .. todo::
 #:    All loaders should support Traversable also
 DataPath = str | Path | Traversable
+#: Paths we can write to.
+WritablePath = str | Path
 
 
 def read_header(

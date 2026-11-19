@@ -7,13 +7,20 @@ formats.
 """
 
 import logging
+from collections.abc import Sequence
+from pathlib import Path
 from typing import Any
 
 import pandas as pd
 
-from eemilib.loader.helper import DataPath, read_comments, read_header
+from eemilib.loader.helper import (
+    DataPath,
+    WritablePath,
+    read_comments,
+    read_header,
+)
 from eemilib.loader.loader import Loader
-from eemilib.util.constants import ImplementedPop
+from eemilib.util.constants import COL_ENERGY, ImplementedPop
 
 
 class PandasLoader(Loader):
@@ -248,3 +255,125 @@ class PandasLoader(Loader):
             f"Successfully loaded emission energy distribution file(s) {filepath}"
         )
         return df, e_pe
+
+    def export_emission_yield(
+        self,
+        data: pd.DataFrame,
+        folder: WritablePath,
+        prefix: str = "eemilib",
+        *,
+        population: ImplementedPop,
+        comments: Sequence[str] | None = None,
+    ) -> Path:
+        """Export emission yield to a file.
+
+        The file is named ``{prefix}_emission_yield_{population}.csv``. If it
+        already exists, it is renamed with a ``.bak`` suffix, replacing any
+        previous backup.
+
+        Parameters
+        ----------
+        data :
+            Emission yield to export.
+        folder :
+            Where to write the file. Created if missing.
+        prefix :
+            Start of the file name.
+        population :
+            Nature of the exported electrons.
+        comments :
+            Lines written at the start of the file, after the comment
+            character.
+
+        Returns
+        -------
+            Path to the written file.
+
+        """
+        path = Path(folder) / f"{prefix}_emission_yield_{population}.csv"
+        self._write(data, path, comments or [])
+        return path
+
+    def export_emission_energy_distribution(
+        self,
+        data: pd.DataFrame,
+        folder: WritablePath,
+        prefix: str = "eemilib",
+        *,
+        population: ImplementedPop,
+        e_pe: float,
+        comments: Sequence[str] | None = None,
+    ) -> Path:
+        """Export a distribution to a file.
+
+        The file is named
+        ``{prefix}_emission_energy_{population}_{e_pe}eV.csv``. The first two
+        comment lines hold the |PEs| energy, as expected by
+        :meth:`load_emission_energy_distribution`; ``comments`` come next. If
+        the file already exists, it is renamed with a ``.bak`` suffix,
+        replacing any previous backup.
+
+        Parameters
+        ----------
+        data :
+            Emission energy distribution to export. Must hold the energy
+            column and a single data column.
+        folder :
+            Where to write the file. Created if missing.
+        prefix :
+            Start of the file name.
+        population :
+            Nature of the exported electrons.
+        e_pe :
+            Energy of |PEs| in :unit:`eV`.
+        comments :
+            Lines written after the |PEs| energy.
+
+        Returns
+        -------
+            Path to the written file.
+
+        Raises
+        ------
+        ValueError
+            If ``data`` does not have exactly two columns.
+
+        """
+        if len(data.columns) != 2:
+            raise ValueError(
+                "Can only export distributions with two columns (energy and "
+                f"one incidence angle), got {list(data.columns)}."
+            )
+        path = (
+            Path(folder)
+            / f"{prefix}_emission_energy_{population}_{e_pe:g}eV.csv"
+        )
+        self._write(
+            data,
+            path,
+            ["PEs energy in eV", str(float(e_pe)), *(comments or [])],
+        )
+        return path
+
+    def _write(
+        self, data: pd.DataFrame, path: Path, comments: Sequence[str]
+    ) -> None:
+        """Write ``comments`` then ``data``, backing up any existing file."""
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if path.exists():
+            backup = path.with_name(path.name + ".bak")
+            path.replace(backup)
+            logging.info(f"{path} already existed, renamed to {backup}.")
+
+        angles = [col for col in data.columns if col != COL_ENERGY]
+        header = ["0.0", *(col.removesuffix(" [deg]") for col in angles)]
+        with path.open("w", encoding="utf-8", newline="") as file:
+            file.writelines(f"{self.comment} {c}\n" for c in comments)
+            data[[COL_ENERGY, *angles]].to_csv(
+                file,
+                header=header,
+                index=False,
+                sep=self.sep,
+                lineterminator="\n",
+            )
+        logging.info(f"Exported data to {path}.")
