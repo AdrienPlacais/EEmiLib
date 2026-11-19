@@ -129,8 +129,8 @@ documentation](https://eemilib.readthedocs.io/en/latest/auto_examples/index.html
   - [x] Selecting `FurmanPivi` takes too long!
 - CI:
   - [ ] Allow execution on online Docker ?
-- [ ] `Export` buttons
-  - [ ] Tabulated model data.
+- [x] `Export` buttons
+  - [x] Tabulated model data.
     - First draft in `scripts/export_modelled.py`
   - [ ] Model parameters value (makes sense along with an `Import` button).
 - [ ] Fix error when not running from a git repo:
