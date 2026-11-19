@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from eemilib.loader.helper import DataPath
+from eemilib.loader.helper import DataPath, WritablePath
 from eemilib.util.constants import ImplementedPop
 from eemilib.util.helper import documentation_url
 
@@ -84,7 +84,7 @@ class Loader(ABC):
     def export_emission_yield(
         self,
         data: pd.DataFrame,
-        folder: Path | str,
+        folder: WritablePath,
         prefix: str = "eemilib",
         *,
         population: ImplementedPop,
@@ -118,7 +118,7 @@ class Loader(ABC):
     def export_emission_energy_distribution(
         self,
         data: pd.DataFrame,
-        folder: Path | str,
+        folder: WritablePath,
         prefix: str = "eemilib",
         *,
         population: ImplementedPop,
