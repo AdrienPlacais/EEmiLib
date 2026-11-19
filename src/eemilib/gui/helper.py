@@ -193,6 +193,15 @@ def show_error(parent: QWidget, title: str, message: str) -> None:
     QMessageBox.warning(parent, title, message)
 
 
+def show_info(
+    parent: QWidget, title: str, message: str, details: str = ""
+) -> None:
+    """Show a modal information dialog, with optional expandable details."""
+    box = QMessageBox(QMessageBox.Information, title, message, parent=parent)
+    box.setDetailedText(details)
+    box.exec_()
+
+
 # Associate Parameters attributes with their column position
 # Note that "name" is the key in the Model.parameters dict rather than the
 # Parameter.name attribute (which is not consistent)
