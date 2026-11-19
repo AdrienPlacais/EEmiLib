@@ -15,8 +15,8 @@ from PyQt5.QtWidgets import QComboBox, QHBoxLayout, QLabel, QPushButton
 
 from eemilib.util.helper import get_classes
 
-DROPDOWNS = ("Loader", "Model", "Plotter")
-Dropdowns = Literal["Loader", "Model", "Plotter"]
+DROPDOWNS = ("Loader", "Model", "Plotter", "ExportLoader")
+Dropdowns = Literal["Loader", "Model", "Plotter", "ExportLoader"]
 
 
 @dataclass
@@ -41,7 +41,10 @@ class DropdownEntry:
 
 
 def setup_dropdown(
-    module_name: str, base_class: ABCMeta, buttons_args: dict[str, Any]
+    module_name: str,
+    base_class: ABCMeta,
+    buttons_args: dict[str, Any],
+    label: str | None = None,
 ) -> DropdownEntry:
     """Set up interface with a dropdown menu and buttons next to it.
 
@@ -56,6 +59,9 @@ def setup_dropdown(
         the dropdown menu, and values the callable that will be called when
         clicking the button. Several callables can be provided as a list or
         tuple.
+    label :
+        Text displayed in the first entry. Defaults to
+        ``Select <base class name>:``.
 
     Returns
     -------
@@ -68,7 +74,7 @@ def setup_dropdown(
 
     dropdown = QComboBox()
     dropdown.addItems(classes.keys())
-    layout.addWidget(QLabel(f"Select {base_class.__name__}:"))
+    layout.addWidget(QLabel(label or f"Select {base_class.__name__}:"))
     layout.addWidget(dropdown)
 
     buttons = []
