@@ -43,13 +43,13 @@ files = resources.files(__name__)
 cst_emission_yields = files / "cst_emission_yields.txt"
 cst_energy_distributions = files / "cst_energy_distributions.txt"
 
-eemilib_emission_yields = files / "eemilib_emission_yield.csv"
-eemilib_distrib_10eV = files / "eemilib_emission_energy_10eV.csv"
-eemilib_distrib_30eV = files / "eemilib_emission_energy_30eV.csv"
-eemilib_distrib_50eV = files / "eemilib_emission_energy_50eV.csv"
-eemilib_distrib_70eV = files / "eemilib_emission_energy_70eV.csv"
-eemilib_distrib_100eV = files / "eemilib_emission_energy_100eV.csv"
-eemilib_distrib_150eV = files / "eemilib_emission_energy_150eV.csv"
+eemilib_emission_yields = files / "eemilib_emission_yield_all.csv"
+eemilib_distrib_10eV = files / "eemilib_emission_energy_all_10eV.csv"
+eemilib_distrib_30eV = files / "eemilib_emission_energy_all_30eV.csv"
+eemilib_distrib_50eV = files / "eemilib_emission_energy_all_50eV.csv"
+eemilib_distrib_70eV = files / "eemilib_emission_energy_all_70eV.csv"
+eemilib_distrib_100eV = files / "eemilib_emission_energy_all_100eV.csv"
+eemilib_distrib_150eV = files / "eemilib_emission_energy_all_150eV.csv"
 eemilib_energy_distributions = (
     eemilib_distrib_10eV,
     eemilib_distrib_30eV,
