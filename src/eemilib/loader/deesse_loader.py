@@ -116,7 +116,7 @@ class DeesseLoader(Loader):
             raise ValueError("Cannot load, no file provided.")
 
         if e_pes is None:
-            raise ValueError("DesseLoader nees PEs energy to work.")
+            raise ValueError("DesseLoader needs PEs energy to work.")
 
         return {
             fp: self._load_single_emission_energy_distribution(fp, e_pe=e_pe)
@@ -155,7 +155,7 @@ class DeesseLoader(Loader):
         """
         col1 = "Kinetic Energy [eV]"
         col2 = "Intensity[cts/s]"
-        if isinstance(filepath, Traversable):
+        if not isinstance(filepath, (str, Path)):
             raise NotImplementedError("Not yet handling Traversable")
         extension = Path(filepath).suffix
         if extension == ".csv":
