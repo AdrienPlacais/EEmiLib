@@ -463,9 +463,11 @@ INITIAL_FURMAN_PIVI_PARAMETERS = {
         "markdown": SIGMA,
         "unit": "1",
         "value": 1.9,
-        "lower_bound": 0.1,  # TODO: check min/max values
-        "upper_bound": 10.0,
-        "description": "Parameter in EBE PDF function.",
+        "lower_bound": 0.1,
+        "upper_bound": 1.0,
+        "description": (
+            "Parameter in EBE PDF function. Characterizes width of EBE peak."
+        ),
     },
     "eta_e_min": {
         "markdown": ETA_E_MIN,
