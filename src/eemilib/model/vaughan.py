@@ -7,8 +7,7 @@ r"""Create the Vaughan model, to compute |TEEY|.
     Make this more robust. Especially the _vaughan_func.
 
 .. todo::
-   CST does not accept negative threshold energy! Also raise a warning when
-   the threshold energy reaches 0.
+   Raise a warning when the threshold energy reaches 0.
 
 """
 
