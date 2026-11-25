@@ -45,11 +45,14 @@ from eemilib.model.furman_pivi.all import (
 from eemilib.model.furman_pivi.ebe import ebe_energy_distribution, ebeey
 from eemilib.model.furman_pivi.ibe import ibe_energy_distribution, ibeey
 from eemilib.model.furman_pivi.physics import (
+    BOUNDS_DEFINITIONS,
+    BOUNDS_DEFINITIONS_T,
     DISTRIBUTION_T,
     FURMAN_PIVI_DISTRIBUTIONS,
     FURMAN_PIVI_NORMALIZATIONS,
     INITIAL_FURMAN_PIVI_PARAMETERS,
     M_MAX_SECONDARIES,
+    MUST_BE_POSITIVE_IN_CST,
     NORMALIZATION_T,
     FurmanPiviParameters,
 )
@@ -99,6 +102,7 @@ class FurmanPivi(Model):
         "normalization": FURMAN_PIVI_NORMALIZATIONS,
         "halve_ebe_contribution_in_EBE_peak": (True, False),
         "fit_strategy": FIT_STRATEGIES,
+        "bounds_definition": BOUNDS_DEFINITIONS,
     }
     #: Multiplies the residuals of each dataset in the ``"joint"`` fit.
     fit_weights: ClassVar[dict[str, float]] = {
@@ -114,6 +118,7 @@ class FurmanPivi(Model):
         normalization: NORMALIZATION_T = "penetrated",
         halve_ebe_contribution_in_EBE_peak: bool = True,
         fit_strategy: FIT_STRATEGY_T = "joint",
+        bounds_definition: BOUNDS_DEFINITIONS_T = "classic",
         parameters_values: dict[str, Any] | None = None,
     ) -> None:
         r"""Instantiate the object.
@@ -141,6 +146,10 @@ class FurmanPivi(Model):
 
             With ``"joint"``, we fit everything at once. Can be changed later
             with :meth:`set_implementation`.
+        bounds_definition :
+            If set to ``"CST"``, the parameters defined in
+            :data:`.MUST_BE_POSITIVE_IN_CST` must specifically be positive --
+            which can hinder convergence of optimization algorithm.
         parameters_values :
             Contains name of parameters and associated value. If provided, will
             override the default values set in ``initial_parameters``.
@@ -165,6 +174,9 @@ class FurmanPivi(Model):
         self._fit_strategy: FIT_STRATEGY_T
         self.set_implementation("fit_strategy", fit_strategy)
 
+        self._bounds_definition: BOUNDS_DEFINITIONS_T
+        self.set_implementation("bounds_definition", bounds_definition)
+
     def set_implementation(self, name: str, value: str | bool) -> None:
         r"""Update one implementation axis.
 
@@ -172,7 +184,8 @@ class FurmanPivi(Model):
         ----------
         name :
             ``"distribution"``, ``"normalization"``,
-            ``"halve_ebe_contribution_in_EBE_peak"`` or ``"fit_strategy"``.
+            ``"halve_ebe_contribution_in_EBE_peak"``, ``"fit_strategy"``, or
+            ``"bounds_definition"``.
         value :
             - ``"distribution"``: ``"Poisson"`` or ``"Binomial"``, *cf* Eqs.
               (37)/(38).
@@ -181,6 +194,7 @@ class FurmanPivi(Model):
             - ``"halve_ebe_contribution_in_EBE_peak"``: True or False. See
               Section VI :cite:`Furman2002`.
             - ``"fit_strategy"``: ``"joint"`` or ``"sequential"``.
+            - ``"bounds_definition"``: ``"classic"`` or ``"CST"``.
 
         """
         choices = self.implementation_choices.get(name)
@@ -218,6 +232,14 @@ class FurmanPivi(Model):
         if name == "fit_strategy":
             self._fit_strategy = cast(FIT_STRATEGY_T, value)
             self.current_implementations["fit_strategy"] = value
+            return
+
+        if name == "bounds_definition":
+            self._bounds_definition = cast(BOUNDS_DEFINITIONS_T, value)
+            self.current_implementations["bounds_definition"] = value
+            lower_bound = 0.0 if value == "CST" else -np.inf
+            for key in MUST_BE_POSITIVE_IN_CST:
+                self.parameters[key].lower_bound = lower_bound
             return
         logging.error(f"Unknown implementation axis {name = } for FurmanPivi.")
 
