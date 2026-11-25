@@ -17,7 +17,7 @@ This script showcases:
 import matplotlib.pyplot as plt
 
 from eemilib.data.ag.emission_energy import distrib_70eV, distrib_100eV
-from eemilib.emission_data._data_matrix import MeasuredDataMatrix
+from eemilib.emission_data import MeasuredDataMatrix
 from eemilib.loader import PandasLoader
 from eemilib.model import ChungEverhart
 from eemilib.plotter import PandasPlotter

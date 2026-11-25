@@ -18,7 +18,7 @@ This script showcases:
 import matplotlib.pyplot as plt
 
 from eemilib.data.cu.emission_yield import teey_cu_1_eroded as filepath
-from eemilib.emission_data._data_matrix import MeasuredDataMatrix
+from eemilib.emission_data import MeasuredDataMatrix
 from eemilib.loader import PandasLoader
 from eemilib.model import Vaughan
 from eemilib.plotter import PandasPlotter
