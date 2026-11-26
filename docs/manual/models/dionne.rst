@@ -65,6 +65,10 @@ where :math:`A` and :math:`n` are obtained by fitting.
     CSDA may also be inaccurate at low-energies, were the range is almost constant.
     See Refs. :cite:`Inguimbert2017,Inguimbert2017a` for an alternative model.
 
+    .. todo::
+       Document that constant loss and power law are implemented.
+     
+
 Generation term
 ^^^^^^^^^^^^^^^
 
@@ -89,6 +93,9 @@ sample surface.
 
 where the diffusion length :math:`d` is the typical distance between to |SE|-material interactions.
 It is determined by fitting.
+
+.. todo::
+   Document that two models are implemented for scattering of SEs.
 
 Escape term
 ^^^^^^^^^^^
